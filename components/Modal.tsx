@@ -87,7 +87,7 @@ const Modal = ({ children, onClose, className, containerClasses }: IModal) => {
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div
       className={cn(containerPatterns.modalOverlay, "px-3 md:px-0", className)}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      onClick={(e) => { if (e.target === e.currentTarget) { console.trace('[DEBUG] Modal overlay clicked - closing'); onClose(); } }}
     >
       <div
         ref={modalRef}

@@ -46,6 +46,7 @@ const Settings = ({ defaultTab = "general" }: SettingsProps) => {
 
   // Show tabs only when editing an existing artist (not workspace, not create mode)
   const showTabs = settingMode === SETTING_MODE.UPDATE && !isWorkspace;
+  console.log(`[DEBUG] Settings render: showTabs=${showTabs}, settingMode=${settingMode}, isWorkspace=${isWorkspace}, defaultTab=${defaultTab}`);
 
   const handleSave = async () => {
     const artistInfo = await saveSetting();
