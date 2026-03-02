@@ -25,7 +25,6 @@ const useArtistMode = (
   };
 
   const toggleSettingModal = () => {
-    console.trace(`[DEBUG] toggleSettingModal called, isOpenSettingModal=${isOpenSettingModal}, setting to ${!isOpenSettingModal}`);
     setIsOpenSettingModal(!isOpenSettingModal);
   };
 

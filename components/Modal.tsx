@@ -21,6 +21,11 @@ const Modal = ({ children, onClose, className, containerClasses }: IModal) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<Element | null>(null);
   const onCloseRef = useRef(onClose);
+  // Track whether mousedown started on the overlay itself.
+  // Prevents "split clicks" where mousedown is inside the modal but a DOM reflow
+  // (e.g., tab content change) causes mouseup to land on the overlay, generating
+  // a click event on the overlay that would incorrectly close the modal.
+  const overlayMouseDownRef = useRef(false);
 
   // Keep onClose ref updated without triggering effect re-runs
   useEffect(() => {
@@ -87,7 +92,15 @@ const Modal = ({ children, onClose, className, containerClasses }: IModal) => {
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div
       className={cn(containerPatterns.modalOverlay, "px-3 md:px-0", className)}
-      onClick={(e) => { if (e.target === e.currentTarget) { console.trace('[DEBUG] Modal overlay clicked - closing'); onClose(); } }}
+      onMouseDown={(e) => {
+        overlayMouseDownRef.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && overlayMouseDownRef.current) {
+          onClose();
+        }
+        overlayMouseDownRef.current = false;
+      }}
     >
       <div
         ref={modalRef}
