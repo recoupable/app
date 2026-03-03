@@ -16,8 +16,7 @@ import AccountIdDisplay from "./AccountIdDisplay";
 import { borderPatterns, buttonPatterns, iconPatterns, textPatterns } from "@/lib/styles/patterns";
 import { cn } from "@/lib/utils";
 import { useOrganization } from "@/providers/OrganizationProvider";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArtistConnectorsTab } from "./ArtistConnectorsTab";
+import { TabbedSettings } from "./TabbedSettings";
 
 interface SettingsProps {
   /** Which tab to show initially (defaults to "general") */
@@ -36,10 +35,10 @@ const Settings = ({ defaultTab = "general" }: SettingsProps) => {
   } = useArtistProvider();
   const { selectedOrgId } = useOrganization();
   const [isVisibleDeleteModal, setIsVisibleDeleteModal] = useState(false);
-  
+
   // Determine if this is a workspace (not an artist)
   const isWorkspace = editableArtist?.isWorkspace === true;
-  
+
   // Show "Add to Org" only when editing in Personal view
   const showAddToOrg = settingMode === SETTING_MODE.UPDATE && selectedOrgId === null;
   const entityLabel = isWorkspace ? "Workspace" : "Artist";
@@ -139,36 +138,13 @@ const Settings = ({ defaultTab = "general" }: SettingsProps) => {
 
   // Tabbed layout: UPDATE mode for artists
   return (
-    <div className="w-full">
-      {header}
-      <Tabs defaultValue={defaultTab} className="w-full mt-2">
-        <TabsList className="w-full">
-          <TabsTrigger value="general" className="flex-1">
-            General
-          </TabsTrigger>
-          <TabsTrigger value="connectors" className="flex-1">
-            Connectors
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="general">
-          <Form
-            id="artist-setting"
-            className="w-full grid grid-cols-12 gap-2 md:gap-3"
-            validationSchema={validation}
-            onSubmit={handleSave}
-          >
-            {generalContent}
-          </Form>
-        </TabsContent>
-
-        <TabsContent value="connectors">
-          {editableArtist && (
-            <ArtistConnectorsTab artistAccountId={editableArtist.account_id} />
-          )}
-        </TabsContent>
-      </Tabs>
-    </div>
+    <TabbedSettings
+      header={header}
+      generalContent={generalContent}
+      defaultTab={defaultTab}
+      artistAccountId={editableArtist!.account_id}
+      onSave={handleSave}
+    />
   );
 };
 
