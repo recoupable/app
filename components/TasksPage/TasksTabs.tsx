@@ -9,12 +9,12 @@ import RecentRunsList from "./RecentRunsList";
 import PulseHeader from "@/components/Pulse/PulseHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-const VALID_TABS = ["schedule", "recent", "pulse"];
+const VALID_TABS = ["schedules", "recents", "pulses"];
 
 const TasksTabs = () => {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const defaultTab = tabParam && VALID_TABS.includes(tabParam) ? tabParam : "schedule";
+  const defaultTab = tabParam && VALID_TABS.includes(tabParam) ? tabParam : "schedules";
   const { selectedArtist } = useArtistProvider();
   const artistAccountId = selectedArtist?.account_id as string | undefined;
   const { data, isLoading, isError } = useScheduledActions({
@@ -32,16 +32,16 @@ const TasksTabs = () => {
   return (
     <Tabs defaultValue={defaultTab} className="max-w-2xl">
       <TabsList>
-        <TabsTrigger value="schedule">Schedule</TabsTrigger>
-        <TabsTrigger value="recent">Recent</TabsTrigger>
-        <TabsTrigger value="pulse">Pulse</TabsTrigger>
+        <TabsTrigger value="schedules">Schedules</TabsTrigger>
+        <TabsTrigger value="recents">Recents</TabsTrigger>
+        <TabsTrigger value="pulses">Pulses</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="schedule">
+      <TabsContent value="schedules">
         <TasksList tasks={tasks} isLoading={isLoading} isError={isError} />
       </TabsContent>
 
-      <TabsContent value="recent">
+      <TabsContent value="recents">
         <div className="mt-4">
           <RecentRunsList
             runs={runs}
@@ -51,7 +51,7 @@ const TasksTabs = () => {
         </div>
       </TabsContent>
 
-      <TabsContent value="pulse">
+      <TabsContent value="pulses">
         <div className="mt-4">
           <PulseHeader />
         </div>

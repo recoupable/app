@@ -30,11 +30,11 @@ export default function PulseToolResult({
     usePulseToggle();
 
   useEffect(() => {
-    router.prefetch("/tasks?tab=pulse");
+    router.prefetch("/tasks?tab=pulses");
   }, [router]);
 
   const handleTitleClick = () => {
-    router.push("/tasks?tab=pulse");
+    router.push("/tasks?tab=pulses");
   };
 
   if ("error" in result) {
