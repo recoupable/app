@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useScheduledActions } from "@/hooks/useScheduledActions";
 import { useTaskRuns } from "@/hooks/useTaskRuns";
@@ -8,7 +9,12 @@ import RecentRunsList from "./RecentRunsList";
 import PulseHeader from "@/components/Pulse/PulseHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
+const VALID_TABS = ["schedule", "recent", "pulse"];
+
 const TasksTabs = () => {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const defaultTab = tabParam && VALID_TABS.includes(tabParam) ? tabParam : "schedule";
   const { selectedArtist } = useArtistProvider();
   const artistAccountId = selectedArtist?.account_id as string | undefined;
   const { data, isLoading, isError } = useScheduledActions({
@@ -24,7 +30,7 @@ const TasksTabs = () => {
   const runs = taskRuns ?? [];
 
   return (
-    <Tabs defaultValue="schedule" className="max-w-2xl">
+    <Tabs defaultValue={defaultTab} className="max-w-2xl">
       <TabsList>
         <TabsTrigger value="schedule">Schedule</TabsTrigger>
         <TabsTrigger value="recent">Recent</TabsTrigger>
