@@ -6,7 +6,7 @@ import { usePulseToggle } from "@/hooks/usePulseToggle";
 import PulseToggle from "@/components/Pulse/PulseToggle";
 import PulseToggleSkeleton from "@/components/Pulse/PulseToggleSkeleton";
 import { CheckCircle, XCircle, Activity } from "lucide-react";
-import type { Pulse } from "@/lib/tasks/getPulse";
+import type { Pulse } from "@/lib/pulse/getPulse";
 
 type PulseSuccessResult = {
   status: "success";
