@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAccessToken } from "@/hooks/useAccessToken";
 import { fetchConnectorsApi } from "@/lib/composio/api/fetchConnectorsApi";
 import { authorizeConnectorApi } from "@/lib/composio/api/authorizeConnectorApi";
@@ -34,7 +34,12 @@ interface UseConnectorsConfig {
  */
 export function useConnectors(config?: UseConnectorsConfig) {
   const { accountId, allowedSlugs, callbackUrl } = config ?? {};
-  const slugFilter = allowedSlugs ?? ALLOWED_CONNECTORS;
+  const slugFilterKey = allowedSlugs?.join(",") ?? "";
+  const slugFilter = useMemo(
+    () => allowedSlugs ?? ALLOWED_CONNECTORS,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [slugFilterKey],
+  );
   const accessToken = useAccessToken();
 
   const [connectors, setConnectors] = useState<ConnectorInfo[]>([]);

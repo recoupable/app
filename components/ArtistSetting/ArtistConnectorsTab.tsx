@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useConnectors } from "@/hooks/useConnectors";
 import { ALLOWED_ARTIST_CONNECTORS } from "@/lib/composio/allowedArtistConnectors";
 import { ConnectorCard } from "@/components/ConnectorsPage/ConnectorCard";
@@ -14,13 +15,13 @@ interface ArtistConnectorsTabProps {
  * Reuses ConnectorCard from the user-level ConnectorsPage (DRY).
  */
 export function ArtistConnectorsTab({ artistAccountId }: ArtistConnectorsTabProps) {
-  const callbackUrl = `${window.location.origin}${window.location.pathname}?artist_connected=true&artist_id=${artistAccountId}`;
+  const config = useMemo(() => ({
+    accountId: artistAccountId,
+    allowedSlugs: [...ALLOWED_ARTIST_CONNECTORS],
+    callbackUrl: `${window.location.origin}${window.location.pathname}?artist_connected=true&artist_id=${artistAccountId}`,
+  }), [artistAccountId]);
   const { connectors, isLoading, error, authorize, disconnect } =
-    useConnectors({
-      accountId: artistAccountId,
-      allowedSlugs: [...ALLOWED_ARTIST_CONNECTORS],
-      callbackUrl,
-    });
+    useConnectors(config);
 
   if (isLoading) {
     return (
