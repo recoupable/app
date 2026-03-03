@@ -1,41 +1,28 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useOrganization } from "@/providers/OrganizationProvider";
-import { useUserProvider } from "@/providers/UserProvder";
 import { useAccessToken } from "@/hooks/useAccessToken";
 import { getPulse } from "@/lib/pulse/getPulse";
 import { updatePulse } from "@/lib/pulse/updatePulse";
 import { toast } from "sonner";
 
+const QUERY_KEY = ["pulse"];
+
 export function usePulseToggle() {
-  const { selectedOrgId } = useOrganization();
-  const { userData } = useUserProvider();
   const accessToken = useAccessToken();
   const queryClient = useQueryClient();
 
-  const accountId = selectedOrgId ? userData?.account_id : undefined;
-  const queryKey = ["pulse", accountId];
-
   const { data, isLoading: isInitialLoading } = useQuery({
-    queryKey,
-    queryFn: () =>
-      getPulse({
-        accessToken: accessToken!,
-        accountId,
-      }),
+    queryKey: QUERY_KEY,
+    queryFn: () => getPulse({ accessToken: accessToken! }),
     enabled: !!accessToken,
   });
 
   const { mutate, isPending: isToggling } = useMutation({
     mutationFn: (active: boolean) =>
-      updatePulse({
-        accessToken: accessToken!,
-        active,
-        accountId,
-      }),
+      updatePulse({ accessToken: accessToken!, active }),
     onMutate: async (newActive) => {
-      await queryClient.cancelQueries({ queryKey });
-      const previousData = queryClient.getQueryData(queryKey);
-      queryClient.setQueryData(queryKey, (old: typeof data) =>
+      await queryClient.cancelQueries({ queryKey: QUERY_KEY });
+      const previousData = queryClient.getQueryData(QUERY_KEY);
+      queryClient.setQueryData(QUERY_KEY, (old: typeof data) =>
         old
           ? { ...old, pulses: [{ ...old.pulses[0], active: newActive }] }
           : old
@@ -43,7 +30,7 @@ export function usePulseToggle() {
       return { previousData };
     },
     onError: (_err, _newActive, context) => {
-      queryClient.setQueryData(queryKey, context?.previousData);
+      queryClient.setQueryData(QUERY_KEY, context?.previousData);
       toast.error("Failed to update pulse status");
     },
     onSuccess: (data) => {
@@ -52,7 +39,7 @@ export function usePulseToggle() {
       );
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },
   });
 

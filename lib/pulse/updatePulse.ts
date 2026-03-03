@@ -3,13 +3,11 @@ import { PulseResponse, PULSE_API_URL } from "./getPulse";
 export type UpdatePulseParams = {
   accessToken: string;
   active: boolean;
-  accountId?: string;
 };
 
 export async function updatePulse({
   accessToken,
   active,
-  accountId,
 }: UpdatePulseParams): Promise<PulseResponse> {
   const response = await fetch(PULSE_API_URL, {
     method: "PATCH",
@@ -17,10 +15,7 @@ export async function updatePulse({
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     },
-    body: JSON.stringify({
-      active,
-      ...(accountId && { account_id: accountId }),
-    }),
+    body: JSON.stringify({ active }),
   });
 
   if (!response.ok) {

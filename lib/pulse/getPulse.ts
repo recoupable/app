@@ -15,19 +15,12 @@ export type PulseResponse = {
 
 export type GetPulseParams = {
   accessToken: string;
-  accountId?: string;
 };
 
 export async function getPulse({
   accessToken,
-  accountId,
 }: GetPulseParams): Promise<PulseResponse> {
-  const url = new URL(PULSE_API_URL);
-  if (accountId) {
-    url.searchParams.set("account_id", accountId);
-  }
-
-  const response = await fetch(url.toString(), {
+  const response = await fetch(PULSE_API_URL, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
