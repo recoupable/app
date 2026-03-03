@@ -6,7 +6,7 @@ import { usePulseToggle } from "@/hooks/usePulseToggle";
 import PulseToggle from "@/components/Pulse/PulseToggle";
 import PulseToggleSkeleton from "@/components/Pulse/PulseToggleSkeleton";
 import { CheckCircle, XCircle, Activity } from "lucide-react";
-import type { Pulse } from "@/lib/pulse/getPulse";
+import type { Pulse } from "@/lib/tasks/getPulse";
 
 type PulseSuccessResult = {
   status: "success";
@@ -30,11 +30,11 @@ export default function PulseToolResult({
     usePulseToggle();
 
   useEffect(() => {
-    router.prefetch("/pulse");
+    router.prefetch("/tasks");
   }, [router]);
 
   const handleTitleClick = () => {
-    router.push("/pulse");
+    router.push("/tasks");
   };
 
   if ("error" in result) {

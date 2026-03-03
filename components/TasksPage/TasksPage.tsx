@@ -5,7 +5,9 @@ import { useScheduledActions } from "@/hooks/useScheduledActions";
 import { useTaskRuns } from "@/hooks/useTaskRuns";
 import TasksList from "./TasksList";
 import RecentRunsList from "./RecentRunsList";
+import PulseHeader from "@/components/Pulse/PulseHeader";
 import useAutoLogin from "@/hooks/useAutoLogin";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const TasksPage = () => {
   useAutoLogin();
@@ -28,24 +30,37 @@ const TasksPage = () => {
       <h1 className="text-left font-heading text-3xl font-bold dark:text-white mb-4">
         Tasks
       </h1>
-      <p className="text-lg text-muted-foreground text-left mb-4 font-light font-sans max-w-2xl">
+      <p className="text-lg text-muted-foreground text-left mb-6 font-light font-sans max-w-2xl">
         View and manage all the tasks for your selected artist.
       </p>
 
-      <TasksList tasks={tasks} isLoading={isLoading} isError={isError} />
+      <Tabs defaultValue="schedule" className="max-w-2xl">
+        <TabsList>
+          <TabsTrigger value="schedule">Schedule</TabsTrigger>
+          <TabsTrigger value="recent">Recent</TabsTrigger>
+          <TabsTrigger value="pulse">Pulse</TabsTrigger>
+        </TabsList>
 
-      <div className="max-w-2xl mx-auto mt-8">
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-foreground dark:text-white">
-            Recent Runs
-          </h3>
-        </div>
-        <RecentRunsList
-          runs={runs}
-          isLoading={isRunsLoading}
-          isError={isRunsError}
-        />
-      </div>
+        <TabsContent value="schedule">
+          <TasksList tasks={tasks} isLoading={isLoading} isError={isError} />
+        </TabsContent>
+
+        <TabsContent value="recent">
+          <div className="mt-4">
+            <RecentRunsList
+              runs={runs}
+              isLoading={isRunsLoading}
+              isError={isRunsError}
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="pulse">
+          <div className="mt-4">
+            <PulseHeader />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
