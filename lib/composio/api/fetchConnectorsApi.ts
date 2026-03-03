@@ -28,5 +28,5 @@ export async function fetchConnectorsApi(
   }
 
   const data = await response.json();
-  return data.connectors ?? [];
+  return Array.isArray(data?.data?.connectors) ? data.data.connectors : [];
 }

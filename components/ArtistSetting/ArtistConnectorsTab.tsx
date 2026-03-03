@@ -1,6 +1,7 @@
 "use client";
 
-import { useArtistConnectors } from "@/hooks/useArtistConnectors";
+import { useConnectors } from "@/hooks/useConnectors";
+import { ALLOWED_ARTIST_CONNECTORS } from "@/lib/composio/allowedArtistConnectors";
 import { ConnectorCard } from "@/components/ConnectorsPage/ConnectorCard";
 import { Loader2, Plug } from "lucide-react";
 
@@ -13,8 +14,13 @@ interface ArtistConnectorsTabProps {
  * Reuses ConnectorCard from the user-level ConnectorsPage (DRY).
  */
 export function ArtistConnectorsTab({ artistAccountId }: ArtistConnectorsTabProps) {
+  const callbackUrl = `${window.location.origin}${window.location.pathname}?artist_connected=true&artist_id=${artistAccountId}`;
   const { connectors, isLoading, error, authorize, disconnect } =
-    useArtistConnectors(artistAccountId);
+    useConnectors({
+      accountId: artistAccountId,
+      allowedSlugs: [...ALLOWED_ARTIST_CONNECTORS],
+      callbackUrl,
+    });
 
   if (isLoading) {
     return (

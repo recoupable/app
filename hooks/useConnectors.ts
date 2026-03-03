@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { NEW_API_BASE_URL } from "@/lib/consts";
 import { useAccessToken } from "@/hooks/useAccessToken";
+import { fetchConnectorsApi } from "@/lib/composio/api/fetchConnectorsApi";
+import { authorizeConnectorApi } from "@/lib/composio/api/authorizeConnectorApi";
+import { disconnectConnectorApi } from "@/lib/composio/api/disconnectConnectorApi";
 
 /**
  * Connector info from the API.
@@ -20,19 +22,28 @@ export interface ConnectorInfo {
  */
 const ALLOWED_CONNECTORS = ["googlesheets", "googledrive", "googledocs"];
 
+interface UseConnectorsConfig {
+  accountId?: string;
+  allowedSlugs?: string[];
+  callbackUrl?: string;
+}
+
 /**
  * Hook for managing connectors.
- * Fetches connector status and provides authorize function.
+ * Works for both user-level and artist-level connectors via optional config.
  */
-export function useConnectors() {
+export function useConnectors(config?: UseConnectorsConfig) {
+  const { accountId, allowedSlugs, callbackUrl } = config ?? {};
+  const slugFilter = allowedSlugs ?? ALLOWED_CONNECTORS;
   const accessToken = useAccessToken();
 
   const [connectors, setConnectors] = useState<ConnectorInfo[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!accountId);
   const [error, setError] = useState<string | null>(null);
 
   const fetchConnectors = useCallback(async () => {
-    if (!accessToken) {
+    if (!accessToken || (accountId !== undefined && !accountId)) {
+      if (accountId !== undefined) setConnectors([]);
       setIsLoading(false);
       return;
     }
@@ -41,19 +52,10 @@ export function useConnectors() {
     setError(null);
 
     try {
-      const response = await fetch(`${NEW_API_BASE_URL}/api/connectors`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch connectors");
-      }
-
-      const data = await response.json();
-      const visible = data.data.connectors.filter((c: ConnectorInfo) =>
-        ALLOWED_CONNECTORS.includes(c.slug.toLowerCase()),
+      const allConnectors = await fetchConnectorsApi(accessToken, accountId);
+      const allowed = new Set(slugFilter);
+      const visible = allConnectors.filter((c) =>
+        allowed.has(c.slug.toLowerCase()),
       );
       setConnectors(visible);
     } catch (err) {
@@ -61,58 +63,34 @@ export function useConnectors() {
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken]);
+  }, [accessToken, accountId, slugFilter]);
 
   const authorize = useCallback(
     async (connector: string): Promise<string | null> => {
       if (!accessToken) return null;
+      if (accountId !== undefined && !accountId) return null;
 
       try {
-        const response = await fetch(
-          `${NEW_API_BASE_URL}/api/connectors/authorize`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({ connector }),
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to authorize connector");
-        }
-
-        const data = await response.json();
-        return data.data.redirectUrl;
+        return await authorizeConnectorApi(accessToken, {
+          connector,
+          accountId,
+          callbackUrl,
+        });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
         return null;
       }
     },
-    [accessToken],
+    [accessToken, accountId, callbackUrl],
   );
 
   const disconnect = useCallback(
     async (connectedAccountId: string): Promise<boolean> => {
       if (!accessToken) return false;
+      if (accountId !== undefined && !accountId) return false;
 
       try {
-        const response = await fetch(`${NEW_API_BASE_URL}/api/connectors`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ connected_account_id: connectedAccountId }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to disconnect connector");
-        }
-
-        // Refresh the connectors list after disconnect
+        await disconnectConnectorApi(accessToken, connectedAccountId, accountId);
         await fetchConnectors();
         return true;
       } catch (err) {
@@ -120,7 +98,7 @@ export function useConnectors() {
         return false;
       }
     },
-    [accessToken, fetchConnectors],
+    [accessToken, accountId, fetchConnectors],
   );
 
   useEffect(() => {
