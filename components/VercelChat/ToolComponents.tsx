@@ -624,6 +624,14 @@ export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
       </div>
     );
   } else if (toolName === "prompt_sandbox") {
+    const { runId } = result as SandboxStreamProgress;
+    if (runId) {
+      return (
+        <div key={toolCallId}>
+          <RunSandboxCommandResultWithPolling runId={runId} />
+        </div>
+      );
+    }
     return (
       <div key={toolCallId}>
         <PromptSandboxStreamProgress progress={result as SandboxStreamProgress} />

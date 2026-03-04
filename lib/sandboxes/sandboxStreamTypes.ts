@@ -7,4 +7,6 @@ export interface SandboxStreamProgress {
   stderr?: string;
   exitCode?: number;
   created?: boolean;
+  fromSnapshot?: boolean;
+  runId?: string;
 }
