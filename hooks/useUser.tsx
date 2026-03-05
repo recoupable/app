@@ -7,6 +7,7 @@ import { uploadFile } from "@/lib/arweave/uploadFile";
 import { useAccount } from "wagmi";
 import { toast } from "sonner";
 import { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
+import { triggerSandboxSetup } from "@/lib/sandbox/triggerSandboxSetup";
 
 const useUser = () => {
   const { login, user, logout } = usePrivy();
@@ -139,6 +140,9 @@ const useUser = () => {
 
       const data = await response.json();
       setUserData(data.data);
+      if (data.data?.account_id) {
+        triggerSandboxSetup(data.data.account_id);
+      }
       setImage(data.data?.image || "");
       setInstruction(data.data?.instruction || "");
       setName(data?.data?.name || "");
