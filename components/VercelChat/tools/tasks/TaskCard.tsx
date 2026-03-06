@@ -23,6 +23,7 @@ export interface TaskCardProps {
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, isDeleted, ownerEmail }) => {
+  console.log("[TaskCard] task data:", { id: task.id, title: task.title, schedule: task.schedule, enabled: task.enabled, ownerEmail });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { updateAction, isLoading: isUpdating } = useUpdateScheduledAction();
   const { deleteAction, isLoading: isDeleting } = useDeleteScheduledAction();

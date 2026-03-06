@@ -17,6 +17,8 @@ interface TasksListProps {
 }
 
 const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError }) => {
+  console.log("[TasksList] tasks:", tasks);
+  console.log("[TasksList] isLoading:", isLoading, "isError:", isError);
   const { userData } = useUserProvider();
   const { selectedArtist } = useArtistProvider();
   const isArtistSelected = !!selectedArtist;
