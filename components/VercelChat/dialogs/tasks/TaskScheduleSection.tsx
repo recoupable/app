@@ -14,7 +14,6 @@ const TaskScheduleSection = ({
   nextRun,
   isDeleted,
 }: TaskScheduleSectionProps) => {
-  console.log("[TaskScheduleSection] schedule:", schedule, "nextRun:", nextRun);
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
       <div className={cn("flex flex-col gap-1 p-2 rounded-lg bg-muted", {

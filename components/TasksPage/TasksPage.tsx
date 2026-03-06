@@ -15,11 +15,6 @@ const TasksPage = () => {
 
   const tasks = data ?? [];
 
-  console.log("[TasksPage] selectedArtist:", selectedArtist);
-  console.log("[TasksPage] artistAccountId:", artistAccountId);
-  console.log("[TasksPage] tasks:", tasks);
-  console.log("[TasksPage] isLoading:", isLoading, "isError:", isError);
-
   return (
     <div className="max-w-full md:max-w-[calc(100vw-200px)] grow py-8 px-6 md:px-12">
       <h1 className="text-left font-heading text-3xl font-bold dark:text-white mb-4">
