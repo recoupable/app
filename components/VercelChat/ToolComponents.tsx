@@ -597,11 +597,7 @@ export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
       </div>
     );
   } else if (toolName === "get_task_run_status" || toolName === "prompt_sandbox") {
-    const runId =
-      toolName === "get_task_run_status"
-        ? ((part as DynamicToolUIPart).input as { runId: string }).runId
-        : (result as { runId?: string }).runId;
-    if (!runId) return null;
+    const { runId } = (isMcp ? (part as DynamicToolUIPart).input : result) as { runId: string };
     return (
       <div key={toolCallId}>
         <RunSandboxCommandResultWithPolling runId={runId} />
