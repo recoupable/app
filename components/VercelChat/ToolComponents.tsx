@@ -313,13 +313,7 @@ export function getToolCallComponent(part: ToolUIPart) {
         <GetChatsSkeleton />
       </div>
     );
-  } else if (toolName === "get_task_run_status") {
-    return (
-      <div key={toolCallId}>
-        <RunPageSkeleton />
-      </div>
-    );
-  } else if (toolName === "prompt_sandbox") {
+  } else if (toolName === "get_task_run_status" || toolName === "prompt_sandbox") {
     return (
       <div key={toolCallId}>
         <RunPageSkeleton />
