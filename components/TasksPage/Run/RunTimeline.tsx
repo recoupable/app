@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { formatTimestamp } from "@/lib/tasks/formatTimestamp";
 import { formatDuration } from "@/lib/tasks/formatDuration";
 
@@ -8,20 +11,49 @@ interface RunTimelineProps {
   durationMs: number | null;
 }
 
+/**
+ * Computes a live elapsed duration from `startedAt` that ticks every second.
+ * Returns null when there is no startedAt or the task has already finished.
+ */
+function useElapsedMs(
+  startedAt: string | null,
+  finishedAt: string | null,
+): number | null {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    // Only tick while the task is in-progress.
+    if (!startedAt || finishedAt) return;
+
+    const id = setInterval(() => setNow(Date.now()), 1_000);
+    return () => clearInterval(id);
+  }, [startedAt, finishedAt]);
+
+  if (!startedAt || finishedAt) return null;
+
+  return Math.max(0, now - new Date(startedAt).getTime());
+}
+
 export default function RunTimeline({
   createdAt,
   startedAt,
   finishedAt,
   durationMs,
 }: RunTimelineProps) {
+  const elapsedMs = useElapsedMs(startedAt, finishedAt);
+
+  // Use the server-provided duration when the task is done,
+  // otherwise use the live elapsed timer.
+  const displayDuration = durationMs ?? elapsedMs;
+
   const items = [
     { label: "Created", value: formatTimestamp(createdAt) },
     startedAt ? { label: "Started", value: formatTimestamp(startedAt) } : null,
     finishedAt
       ? { label: "Finished", value: formatTimestamp(finishedAt) }
       : null,
-    durationMs !== null
-      ? { label: "Duration", value: formatDuration(durationMs) }
+    displayDuration !== null
+      ? { label: "Duration", value: formatDuration(displayDuration) }
       : null,
   ].filter(Boolean) as { label: string; value: string }[];
 
