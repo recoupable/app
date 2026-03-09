@@ -30,11 +30,11 @@ const TaskScheduleSection = ({
         <div className={cn("break-words text-muted-foreground", {
           "text-red-600": isDeleted
         })}>
-          <span className="font-mono">{schedule}</span>
+          <span className="font-mono">{schedule || "No schedule"}</span>
           <div className={cn("text-[10px] mt-0.5 text-muted-foreground", {
             "text-red-500": isDeleted
           })}>
-            {parseCronToHuman(schedule)}
+            {schedule ? parseCronToHuman(schedule) : "No schedule"}
           </div>
         </div>
       </div>
