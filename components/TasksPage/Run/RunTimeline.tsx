@@ -17,7 +17,7 @@ export default function RunTimeline({
   finishedAt,
   durationMs,
 }: RunTimelineProps) {
-  const displayDuration = useElapsedMs(startedAt, finishedAt, durationMs);
+  const displayDuration = useElapsedMs(startedAt, durationMs);
 
   const items = [
     { label: "Created", value: formatTimestamp(createdAt) },
