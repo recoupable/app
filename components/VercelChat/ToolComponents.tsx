@@ -127,7 +127,6 @@ import GetChatsResult, {
   GetChatsResultType,
 } from "./tools/chats/GetChatsResult";
 import RunPageSkeleton from "@/components/TasksPage/Run/RunPageSkeleton";
-import SandboxCreatedResult from "./tools/sandbox/SandboxCreatedResult";
 import RunSandboxCommandResultWithPolling from "./tools/sandbox/RunSandboxCommandResultWithPolling";
 import PromptSandboxStreamProgress from "./tools/sandbox/PromptSandboxStreamProgress";
 import type { SandboxStreamProgress } from "@/lib/sandboxes/sandboxStreamTypes";
@@ -316,7 +315,7 @@ export function getToolCallComponent(part: ToolUIPart) {
         <GetChatsSkeleton />
       </div>
     );
-  } else if (toolName === "run_sandbox_command" || toolName === "get_task_run_status") {
+  } else if (toolName === "get_task_run_status") {
     return (
       <div key={toolCallId}>
         <RunPageSkeleton />
@@ -603,17 +602,6 @@ export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
     return (
       <div key={toolCallId}>
         <GetChatsResult result={result as GetChatsResultType} />
-      </div>
-    );
-  } else if (toolName === "run_sandbox_command") {
-    const { runId } = result as { runId?: string };
-    if (!runId) {
-      const { sandboxId } = result as { sandboxId: string };
-      return <SandboxCreatedResult key={toolCallId} sandboxId={sandboxId} />;
-    }
-    return (
-      <div key={toolCallId}>
-        <RunSandboxCommandResultWithPolling runId={runId} />
       </div>
     );
   } else if (toolName === "get_task_run_status") {
