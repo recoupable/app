@@ -333,12 +333,26 @@ export function getToolCallComponent(part: ToolUIPart) {
   );
 }
 
+/**
+ * Unwraps MCP CallToolResult format if present, otherwise returns raw output.
+ * Handles both wrapped `{ content: [{ text }] }` and pre-parsed objects.
+ */
+function parseMcpOutput(output: unknown): unknown {
+  const asCallResult = output as CallToolResult | undefined;
+  if (asCallResult?.content?.[0]?.text) {
+    try {
+      return JSON.parse(asCallResult.content[0].text);
+    } catch {
+      return output;
+    }
+  }
+  return output;
+}
+
 export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
   const { toolCallId, output, type } = part;
   const isMcp = type === "dynamic-tool";
-  const result = isMcp
-    ? JSON.parse((output as CallToolResult).content[0].text)
-    : output;
+  const result = isMcp ? parseMcpOutput(output) : output;
   const toolName = getToolOrDynamicToolName(part);
   const isSearchWebTool = toolName === "search_web";
   const isDeepResearchTool = toolName === "web_deep_research";
