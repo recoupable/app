@@ -1,8 +1,9 @@
 /**
  * Checks if a cron expression represents a recurring schedule (daily, weekly, or monthly)
  */
-export const isRecurring = (cronExpression: string): boolean => {
+export const isRecurring = (cronExpression: string | null | undefined): boolean => {
   try {
+    if (!cronExpression) return false;
     const parts = cronExpression.split(" ");
     if (parts.length >= 5) {
       const dayOfMonth = parts[2];

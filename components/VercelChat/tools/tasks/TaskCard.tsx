@@ -78,11 +78,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, isDeleted, ownerEmail }) => {
 
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
-          {isRecurring(task.schedule) && (
+          {isRecurring(task.schedule ?? "") && (
             <Repeat className="h-4 w-4 text-muted-foreground dark:text-muted-foreground flex-shrink-0" />
           )}
           <span className="text-base text-muted-foreground dark:text-muted-foreground">
-            {parseCronToHuman(task.schedule.trim())}
+            {parseCronToHuman(task.schedule?.trim() ?? "")}
           </span>
         </div>
         <div className="flex items-center space-x-2 w-20 justify-end relative">
