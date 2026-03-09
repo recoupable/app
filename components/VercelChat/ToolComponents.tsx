@@ -596,23 +596,17 @@ export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
         <GetChatsResult result={result as GetChatsResultType} />
       </div>
     );
-  } else if (toolName === "get_task_run_status") {
-    const { runId } = (part as DynamicToolUIPart).input as { runId: string };
+  } else if (toolName === "get_task_run_status" || toolName === "prompt_sandbox") {
+    const runId =
+      toolName === "get_task_run_status"
+        ? ((part as DynamicToolUIPart).input as { runId: string }).runId
+        : (result as { runId?: string }).runId;
+    if (!runId) return null;
     return (
       <div key={toolCallId}>
         <RunSandboxCommandResultWithPolling runId={runId} />
       </div>
     );
-  } else if (toolName === "prompt_sandbox") {
-    const { runId } = result as { runId?: string };
-    if (runId) {
-      return (
-        <div key={toolCallId}>
-          <RunSandboxCommandResultWithPolling runId={runId} />
-        </div>
-      );
-    }
-    return null;
   }
 
   // Default generic result for other tools
