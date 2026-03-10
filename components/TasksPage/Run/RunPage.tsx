@@ -1,6 +1,7 @@
 "use client";
 
-import { XCircle } from "lucide-react";
+import Link from "next/link";
+import { ChevronRight, XCircle } from "lucide-react";
 import { useTaskRunStatus } from "@/hooks/useTaskRunStatus";
 import RunPageSkeleton from "./RunPageSkeleton";
 import RunDetails from "./RunDetails";
@@ -29,5 +30,21 @@ export default function RunPage({ runId }: RunPageProps) {
     content = <RunDetails runId={runId} data={data} />;
   }
 
-  return <div className="h-screen max-w-2xl">{content}</div>;
+  return (
+    <div className="h-screen max-w-2xl">
+      <nav className="flex items-center gap-1 px-6 pt-4 text-sm text-muted-foreground">
+        <Link
+          href="/tasks?tab=recents"
+          className="hover:text-foreground transition-colors"
+        >
+          Tasks
+        </Link>
+        <ChevronRight className="size-3.5" />
+        <span className="truncate text-foreground font-medium">
+          {runId}
+        </span>
+      </nav>
+      {content}
+    </div>
+  );
 }
