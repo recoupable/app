@@ -1,16 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { XCircle } from "lucide-react";
 import { useTaskRunStatus } from "@/hooks/useTaskRunStatus";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
+import RunBreadcrumb from "./RunBreadcrumb";
 import RunPageSkeleton from "./RunPageSkeleton";
 import RunDetails from "./RunDetails";
 
@@ -40,19 +32,7 @@ export default function RunPage({ runId }: RunPageProps) {
 
   return (
     <div className="h-screen max-w-2xl">
-      <Breadcrumb className="px-6 pt-4">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/tasks?tab=recents">Tasks</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{runId}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+      <RunBreadcrumb runId={runId} />
       {content}
     </div>
   );
