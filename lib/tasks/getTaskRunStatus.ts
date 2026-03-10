@@ -55,6 +55,6 @@ export async function getTaskRunStatus(
     createdAt: run.createdAt,
     startedAt: run.startedAt ?? null,
     finishedAt: run.finishedAt ?? null,
-    durationMs: run.durationMs ?? null,
+    durationMs: run.finishedAt ? (run.durationMs ?? null) : null,
   } as TaskRunStatus;
 }
