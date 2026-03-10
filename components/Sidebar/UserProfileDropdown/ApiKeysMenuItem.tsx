@@ -6,7 +6,7 @@ const ApiKeysMenuItem = () => {
   return (
     <DropdownMenuItem asChild className="cursor-pointer">
       <Link href="/keys">
-        <KeyRound className="h-4 w-4" />
+        <KeyRound aria-hidden="true" className="h-4 w-4" />
         API Keys
       </Link>
     </DropdownMenuItem>
