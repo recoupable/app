@@ -1,8 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, XCircle } from "lucide-react";
+import { XCircle } from "lucide-react";
 import { useTaskRunStatus } from "@/hooks/useTaskRunStatus";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb";
 import RunPageSkeleton from "./RunPageSkeleton";
 import RunDetails from "./RunDetails";
 
@@ -32,18 +40,19 @@ export default function RunPage({ runId }: RunPageProps) {
 
   return (
     <div className="h-screen max-w-2xl">
-      <nav className="flex items-center gap-1 px-6 pt-4 text-sm text-muted-foreground">
-        <Link
-          href="/tasks?tab=recents"
-          className="hover:text-foreground transition-colors"
-        >
-          Tasks
-        </Link>
-        <ChevronRight className="size-3.5" />
-        <span className="truncate text-foreground font-medium">
-          {runId}
-        </span>
-      </nav>
+      <Breadcrumb className="px-6 pt-4">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href="/tasks?tab=recents">Tasks</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{runId}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       {content}
     </div>
   );
