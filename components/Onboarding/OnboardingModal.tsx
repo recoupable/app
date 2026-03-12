@@ -11,6 +11,7 @@ import { OnboardingConnectionsStep } from "./OnboardingConnectionsStep";
 import { OnboardingPulseStep } from "./OnboardingPulseStep";
 import { OnboardingTasksStep } from "./OnboardingTasksStep";
 import { OnboardingCompleteStep } from "./OnboardingCompleteStep";
+import { OnboardingStepDots } from "./OnboardingStepDots";
 import { useUserProvider } from "@/providers/UserProvder";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import saveArtist from "@/lib/saveArtist";
@@ -27,37 +28,31 @@ type Step =
   | "tasks"
   | "complete";
 
-// Steps that show the progress bar
 const PROGRESS_STEPS: Step[] = ["role", "context", "artists", "connections", "pulse", "tasks"];
-
-function getProgress(step: Step): number {
-  const idx = PROGRESS_STEPS.indexOf(step);
-  if (idx === -1) return 0;
-  return Math.round(((idx + 1) / PROGRESS_STEPS.length) * 100);
-}
-
-function getStepLabel(step: Step): string {
-  const idx = PROGRESS_STEPS.indexOf(step);
-  if (idx === -1) return "";
-  return `${idx + 1} of ${PROGRESS_STEPS.length}`;
-}
 
 /**
  * Full onboarding wizard — non-dismissable modal that fires once for new users.
- * Sequence: welcome → role → context → artists → connections → pulse → tasks → complete
+ * Flow: welcome → role → context → artists → connections → pulse → tasks → complete
+ *
+ * Features:
+ * - Back navigation on all steps after welcome
+ * - Spotify artist search with avatars
+ * - Pre-filled name from Privy
+ * - Confetti on complete
+ * - Framer Motion transitions
+ * - Pulse & connectors activated inline
  */
 export default function OnboardingModal() {
-  const { isOpen, step, data, updateData, nextStep, complete } = useOnboarding();
+  const { isOpen, step, data, updateData, nextStep, prevStep, complete } = useOnboarding();
   const { userData } = useUserProvider();
   const { getArtists } = useArtistProvider();
   const accessToken = useAccessToken();
 
-  // When we hit tasks step: create artists, activate pulse, persist onboarding
+  // When tasks step is reached: persist everything and set up artists + pulse
   useEffect(() => {
     if (step !== "tasks" || !userData?.account_id) return;
 
     const run = async () => {
-      // Create priority artists
       const artistPromises = (data.artists ?? []).map(a =>
         saveArtist({
           name: a.name,
@@ -67,12 +62,10 @@ export default function OnboardingModal() {
       );
       await Promise.allSettled(artistPromises);
 
-      // Activate pulse if user opted in
       if (data.pulseEnabled && accessToken) {
         await updatePulse({ accessToken, active: true }).catch(console.error);
       }
 
-      // Persist role + context + onboarding status
       await fetch("/api/account/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -95,7 +88,6 @@ export default function OnboardingModal() {
         }),
       }).catch(console.error);
 
-      // Refresh the artist sidebar
       if (typeof getArtists === "function") {
         await getArtists().catch(console.error);
       }
@@ -106,7 +98,6 @@ export default function OnboardingModal() {
 
   const handleComplete = useCallback(async () => {
     await complete();
-    // Auto-fire a proactive first chat
     const artistNames = (data.artists ?? []).map(a => a.name);
     if (artistNames.length > 0) {
       const q = encodeURIComponent(
@@ -116,6 +107,8 @@ export default function OnboardingModal() {
     }
   }, [complete, data.artists]);
 
+  const isProgressStep = PROGRESS_STEPS.includes(step as Step);
+
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent
@@ -123,23 +116,17 @@ export default function OnboardingModal() {
         onInteractOutside={e => e.preventDefault()}
         onEscapeKeyDown={e => e.preventDefault()}
       >
-        {/* Header */}
-        {PROGRESS_STEPS.includes(step as Step) && (
-          <>
-            <div className="flex items-center justify-between border-b px-6 py-3.5">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-foreground">Recoupable</span>
-              </div>
-              <span className="text-xs text-muted-foreground">{getStepLabel(step as Step)}</span>
+        {/* Header + step dots */}
+        {isProgressStep && (
+          <div className="flex flex-col gap-3 border-b px-6 pt-4 pb-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-foreground">Recoupable</span>
+              <span className="text-xs text-muted-foreground">
+                {PROGRESS_STEPS.indexOf(step as Step) + 1} of {PROGRESS_STEPS.length}
+              </span>
             </div>
-            {/* Progress bar */}
-            <div className="h-1 w-full bg-muted">
-              <div
-                className="h-1 bg-primary transition-all duration-500"
-                style={{ width: `${getProgress(step as Step)}%` }}
-              />
-            </div>
-          </>
+            <OnboardingStepDots current={step as Step} />
+          </div>
         )}
 
         {/* Step content */}
@@ -164,9 +151,11 @@ export default function OnboardingModal() {
             <OnboardingContextStep
               name={data.name}
               companyName={data.companyName}
+              roleType={data.roleType}
               onChangeName={v => updateData({ name: v })}
               onChangeCompany={v => updateData({ companyName: v })}
               onNext={nextStep}
+              onBack={prevStep}
             />
           )}
 
@@ -175,6 +164,8 @@ export default function OnboardingModal() {
               artists={data.artists ?? []}
               onUpdate={artists => updateData({ artists })}
               onNext={nextStep}
+              onBack={prevStep}
+              roleType={data.roleType}
             />
           )}
 
@@ -185,6 +176,7 @@ export default function OnboardingModal() {
                 updateData({ connectedSlugs: [...(data.connectedSlugs ?? []), slug] })
               }
               onNext={nextStep}
+              onBack={prevStep}
             />
           )}
 
@@ -193,6 +185,7 @@ export default function OnboardingModal() {
               enabled={data.pulseEnabled ?? false}
               onToggle={v => updateData({ pulseEnabled: v })}
               onNext={nextStep}
+              onBack={prevStep}
             />
           )}
 
@@ -201,6 +194,7 @@ export default function OnboardingModal() {
               roleType={data.roleType}
               artistNames={(data.artists ?? []).map(a => a.name)}
               onNext={nextStep}
+              onBack={prevStep}
             />
           )}
 

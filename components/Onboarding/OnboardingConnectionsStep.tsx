@@ -38,12 +38,13 @@ interface Props {
   connected: string[];
   onConnect: (slug: string) => void;
   onNext: () => void;
+  onBack: () => void;
 }
 
 /**
  * Step to connect key platform integrations during onboarding.
  */
-export function OnboardingConnectionsStep({ connected, onConnect, onNext }: Props) {
+export function OnboardingConnectionsStep({ connected, onConnect, onNext, onBack }: Props) {
   const accessToken = useAccessToken();
   const [connecting, setConnecting] = useState<string | null>(null);
 
@@ -122,14 +123,15 @@ export function OnboardingConnectionsStep({ connected, onConnect, onNext }: Prop
       </div>
 
       <div className="flex flex-col gap-2">
-        <Button onClick={onNext} className="w-full">
-          {connected.length > 0 ? `Continue with ${connected.length} connected →` : "Skip for now →"}
-        </Button>
-        {connected.length === 0 && (
-          <p className="text-xs text-center text-muted-foreground">
-            You can always connect more later in Settings → Connectors
-          </p>
-        )}
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={onBack} className="w-24">← Back</Button>
+          <Button onClick={onNext} className="flex-1">
+            {connected.length > 0 ? `Continue with ${connected.length} connected →` : "Skip for now →"}
+          </Button>
+        </div>
+        <p className="text-xs text-center text-muted-foreground">
+          More connectors available in Settings → Connectors
+        </p>
       </div>
     </div>
   );

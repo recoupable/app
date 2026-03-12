@@ -51,13 +51,14 @@ interface Props {
   roleType: string | undefined;
   artistNames: string[];
   onNext: () => void;
+  onBack: () => void;
 }
 
 /**
  * Shows auto-generated tasks tailored to the user's role + artists,
  * giving them an immediate preview of what Recoupable will do for them.
  */
-export function OnboardingTasksStep({ roleType, artistNames, onNext }: Props) {
+export function OnboardingTasksStep({ roleType, artistNames, onNext, onBack }: Props) {
   const tasks = ROLE_TASKS[roleType ?? ""] ?? DEFAULT_TASKS;
   const [revealed, setRevealed] = useState<number[]>([]);
 
@@ -109,9 +110,10 @@ export function OnboardingTasksStep({ roleType, artistNames, onNext }: Props) {
         ))}
       </div>
 
-      <Button onClick={onNext} className="w-full">
-        See your dashboard →
-      </Button>
+      <div className="flex gap-2">
+        <Button variant="outline" onClick={onBack} className="w-24">← Back</Button>
+        <Button onClick={onNext} className="flex-1">See your dashboard →</Button>
+      </div>
     </div>
   );
 }

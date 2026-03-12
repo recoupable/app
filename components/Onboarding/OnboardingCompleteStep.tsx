@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 interface Props {
   artistNames: string[];
@@ -12,8 +12,43 @@ interface Props {
   onComplete: () => void;
 }
 
+function useConfetti() {
+  const triggered = useRef(false);
+
+  useEffect(() => {
+    if (triggered.current) return;
+    triggered.current = true;
+
+    // Dynamically import canvas-confetti if available, otherwise use CSS fallback
+    import("canvas-confetti").then(({ default: confetti }) => {
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.55 },
+        colors: ["#6366f1", "#8b5cf6", "#a855f7", "#ec4899", "#f97316"],
+      });
+      setTimeout(() => {
+        confetti({
+          particleCount: 60,
+          spread: 100,
+          origin: { y: 0.5, x: 0.2 },
+          angle: 60,
+        });
+        confetti({
+          particleCount: 60,
+          spread: 100,
+          origin: { y: 0.5, x: 0.8 },
+          angle: 120,
+        });
+      }, 300);
+    }).catch(() => {
+      // canvas-confetti not available — silently skip
+    });
+  }, []);
+}
+
 /**
- * The "aha moment" reveal — everything they just set up, summarized as social proof.
+ * The "aha moment" — everything summarized with Framer Motion reveals + confetti.
  */
 export function OnboardingCompleteStep({
   artistNames,
@@ -22,17 +57,20 @@ export function OnboardingCompleteStep({
   pulseEnabled,
   onComplete,
 }: Props) {
+  useConfetti();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 150);
+    const t = setTimeout(() => setVisible(true), 100);
     return () => clearTimeout(t);
   }, []);
 
   const summaryItems = [
     artistNames.length > 0 && {
       icon: "🎤",
-      text: `Deep research running on ${artistNames.slice(0, 2).join(" & ")}${artistNames.length > 2 ? ` +${artistNames.length - 2} more` : ""}`,
+      text: `Deep research running on ${artistNames.slice(0, 2).join(" & ")}${
+        artistNames.length > 2 ? ` +${artistNames.length - 2} more` : ""
+      }`,
     },
     connectedCount > 0 && {
       icon: "🔗",
@@ -40,61 +78,77 @@ export function OnboardingCompleteStep({
     },
     pulseEnabled && {
       icon: "⚡",
-      text: "Pulse active — your first briefing arrives tomorrow",
+      text: "Pulse active — briefing arrives tomorrow morning",
     },
-    {
-      icon: "✅",
-      text: "First week of tasks queued and ready",
-    },
-    {
-      icon: "🧠",
-      text: "AI is learning your artists, fans, and priorities right now",
-    },
+    { icon: "✅", text: "First week of tasks queued" },
+    { icon: "🧠", text: "AI learning your artists and fans right now" },
   ].filter(Boolean) as { icon: string; text: string }[];
 
   return (
-    <div
-      className={cn(
-        "flex flex-col items-center gap-7 text-center transition-all duration-700",
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
-      )}
-    >
-      {/* Celebration */}
-      <div className="flex flex-col items-center gap-3">
-        <div className="text-5xl">🚀</div>
-        <h2 className="text-2xl font-bold tracking-tight leading-tight">
-          {name ? `${name}, you're already ahead.` : "You're already ahead."}
-        </h2>
-        <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
-          While your competitors are guessing, you have AI running intelligence on every move.
-        </p>
-      </div>
-
-      {/* Summary pills */}
-      <div className="flex flex-col gap-2.5 w-full text-left">
-        {summaryItems.map((item, i) => (
-          <div
-            key={i}
-            style={{ transitionDelay: `${100 + i * 80}ms` }}
-            className={cn(
-              "flex items-center gap-3 rounded-xl border bg-muted/30 px-4 py-3 text-sm transition-all duration-500",
-              visible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2",
-            )}
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          className="flex flex-col items-center gap-7 text-center"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          {/* Trophy */}
+          <motion.div
+            initial={{ scale: 0, rotate: -20 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: "spring", stiffness: 200, damping: 12, delay: 0.1 }}
+            className="text-6xl"
           >
-            <span className="text-lg">{item.icon}</span>
-            <span className="font-medium">{item.text}</span>
-          </div>
-        ))}
-      </div>
+            🚀
+          </motion.div>
 
-      <div className="flex flex-col gap-3 w-full">
-        <Button onClick={onComplete} className="w-full text-base py-5">
-          Open my dashboard 🎯
-        </Button>
-        <p className="text-xs text-muted-foreground">
-          Your friends in music will want to know what you&apos;re using. You don&apos;t have to tell them.
-        </p>
-      </div>
-    </div>
+          <motion.div
+            className="flex flex-col gap-1.5"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <h2 className="text-2xl font-bold tracking-tight leading-tight">
+              {name ? `${name.split(" ")[0]}, you're already ahead.` : "You're already ahead."}
+            </h2>
+            <p className="text-sm text-muted-foreground max-w-xs">
+              While competitors are guessing, you have AI running intelligence on every move.
+            </p>
+          </motion.div>
+
+          {/* Summary items */}
+          <div className="flex flex-col gap-2.5 w-full text-left">
+            {summaryItems.map((item, i) => (
+              <motion.div
+                key={i}
+                className="flex items-center gap-3 rounded-xl border bg-muted/30 px-4 py-3 text-sm"
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.35 + i * 0.07 }}
+              >
+                <span className="text-lg">{item.icon}</span>
+                <span className="font-medium">{item.text}</span>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            className="flex flex-col gap-3 w-full"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <Button onClick={onComplete} className="w-full text-base py-5">
+              Open my dashboard 🎯
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Your peers in music will want to know what you&apos;re using.
+              You don&apos;t have to tell them.
+            </p>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

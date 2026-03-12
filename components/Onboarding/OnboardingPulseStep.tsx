@@ -15,12 +15,13 @@ interface Props {
   enabled: boolean;
   onToggle: (v: boolean) => void;
   onNext: () => void;
+  onBack: () => void;
 }
 
 /**
  * Onboarding step to activate Pulse — daily AI briefings per artist.
  */
-export function OnboardingPulseStep({ enabled, onToggle, onNext }: Props) {
+export function OnboardingPulseStep({ enabled, onToggle, onNext, onBack }: Props) {
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -71,13 +72,16 @@ export function OnboardingPulseStep({ enabled, onToggle, onNext }: Props) {
         ))}
       </div>
 
-      <Button
-        onClick={onNext}
-        className="w-full"
-        variant={enabled ? "default" : "outline"}
-      >
-        {enabled ? "Pulse is on — continue →" : "Skip for now →"}
-      </Button>
+      <div className="flex gap-2">
+        <Button variant="outline" onClick={onBack} className="w-24">← Back</Button>
+        <Button
+          onClick={onNext}
+          className="flex-1"
+          variant={enabled ? "default" : "outline"}
+        >
+          {enabled ? "Pulse is on — continue →" : "Skip for now →"}
+        </Button>
+      </div>
     </div>
   );
 }

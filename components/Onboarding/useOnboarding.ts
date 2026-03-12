@@ -71,9 +71,17 @@ export function useOnboarding() {
     });
   }, []);
 
+  const prevStep = useCallback(() => {
+    setStep(prev => {
+      const idx = STEP_ORDER.indexOf(prev);
+      if (idx <= 1) return prev; // can't go before "role"
+      return STEP_ORDER[idx - 1];
+    });
+  }, []);
+
   const complete = useCallback(() => {
     setIsOpen(false);
   }, []);
 
-  return { isOpen, step, data, updateData, nextStep, complete };
+  return { isOpen, step, data, updateData, nextStep, prevStep, complete };
 }
