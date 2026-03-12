@@ -4,72 +4,97 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const HIGHLIGHTS = [
-  { icon: "🎯", title: "Fan segments mapped", desc: "Know exactly who's listening and where to grow." },
-  { icon: "📅", title: "Release window insights", desc: "Best timing to drop based on your fans' activity." },
-  { icon: "✅", title: "Proactive tasks queued", desc: "Your first week's to-do list — already written." },
-  { icon: "💬", title: "AI artist chat ready", desc: "Ask anything about your artists. Get instant answers." },
-];
-
 interface Props {
   artistNames: string[];
   name: string | undefined;
+  connectedCount: number;
+  pulseEnabled: boolean;
   onComplete: () => void;
 }
 
-export function OnboardingCompleteStep({ artistNames, name, onComplete }: Props) {
+/**
+ * The "aha moment" reveal — everything they just set up, summarized as social proof.
+ */
+export function OnboardingCompleteStep({
+  artistNames,
+  name,
+  connectedCount,
+  pulseEnabled,
+  onComplete,
+}: Props) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 100);
+    const t = setTimeout(() => setVisible(true), 150);
     return () => clearTimeout(t);
   }, []);
+
+  const summaryItems = [
+    artistNames.length > 0 && {
+      icon: "🎤",
+      text: `Deep research running on ${artistNames.slice(0, 2).join(" & ")}${artistNames.length > 2 ? ` +${artistNames.length - 2} more` : ""}`,
+    },
+    connectedCount > 0 && {
+      icon: "🔗",
+      text: `${connectedCount} platform${connectedCount > 1 ? "s" : ""} connected`,
+    },
+    pulseEnabled && {
+      icon: "⚡",
+      text: "Pulse active — your first briefing arrives tomorrow",
+    },
+    {
+      icon: "✅",
+      text: "First week of tasks queued and ready",
+    },
+    {
+      icon: "🧠",
+      text: "AI is learning your artists, fans, and priorities right now",
+    },
+  ].filter(Boolean) as { icon: string; text: string }[];
 
   return (
     <div
       className={cn(
-        "flex flex-col items-center gap-6 text-center transition-all duration-700",
+        "flex flex-col items-center gap-7 text-center transition-all duration-700",
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
       )}
     >
       {/* Celebration */}
-      <div className="flex flex-col items-center gap-2">
-        <div className="text-5xl">🎉</div>
-        <h2 className="text-2xl font-bold tracking-tight">
-          {name ? `${name}, you're all set.` : "You're all set."}
+      <div className="flex flex-col items-center gap-3">
+        <div className="text-5xl">🚀</div>
+        <h2 className="text-2xl font-bold tracking-tight leading-tight">
+          {name ? `${name}, you're already ahead.` : "You're already ahead."}
         </h2>
-        <p className="text-sm text-muted-foreground max-w-xs">
-          {artistNames.length > 0
-            ? `Your intelligence files for ${artistNames.slice(0, 2).join(" and ")}${artistNames.length > 2 ? ` (+${artistNames.length - 2} more)` : ""} are ready.`
-            : "Your Recoupable workspace is ready to go."}
+        <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
+          While your competitors are guessing, you have AI running intelligence on every move.
         </p>
       </div>
 
-      {/* Feature cards */}
-      <div className="grid grid-cols-2 gap-3 w-full">
-        {HIGHLIGHTS.map((h, i) => (
+      {/* Summary pills */}
+      <div className="flex flex-col gap-2.5 w-full text-left">
+        {summaryItems.map((item, i) => (
           <div
             key={i}
-            style={{ transitionDelay: `${i * 80}ms` }}
+            style={{ transitionDelay: `${100 + i * 80}ms` }}
             className={cn(
-              "flex flex-col items-start gap-1.5 rounded-xl border bg-muted/30 p-4 text-left transition-all duration-500",
-              visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2",
+              "flex items-center gap-3 rounded-xl border bg-muted/30 px-4 py-3 text-sm transition-all duration-500",
+              visible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2",
             )}
           >
-            <span className="text-xl">{h.icon}</span>
-            <p className="text-xs font-semibold">{h.title}</p>
-            <p className="text-xs text-muted-foreground">{h.desc}</p>
+            <span className="text-lg">{item.icon}</span>
+            <span className="font-medium">{item.text}</span>
           </div>
         ))}
       </div>
 
-      <Button onClick={onComplete} className="w-full text-base py-5">
-        Let&apos;s go 🚀
-      </Button>
-
-      <p className="text-xs text-muted-foreground">
-        Your friends will ask how you got so ahead. Tell them.
-      </p>
+      <div className="flex flex-col gap-3 w-full">
+        <Button onClick={onComplete} className="w-full text-base py-5">
+          Open my dashboard 🎯
+        </Button>
+        <p className="text-xs text-muted-foreground">
+          Your friends in music will want to know what you&apos;re using. You don&apos;t have to tell them.
+        </p>
+      </div>
     </div>
   );
 }

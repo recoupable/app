@@ -1,60 +1,63 @@
 "use client";
 
 import { useCallback, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useOnboarding } from "./useOnboarding";
+import { OnboardingWelcomeStep } from "./OnboardingWelcomeStep";
 import { OnboardingRoleStep } from "./OnboardingRoleStep";
 import { OnboardingContextStep } from "./OnboardingContextStep";
 import { OnboardingArtistsStep } from "./OnboardingArtistsStep";
-import { OnboardingResearchingStep } from "./OnboardingResearchingStep";
+import { OnboardingConnectionsStep } from "./OnboardingConnectionsStep";
+import { OnboardingPulseStep } from "./OnboardingPulseStep";
+import { OnboardingTasksStep } from "./OnboardingTasksStep";
 import { OnboardingCompleteStep } from "./OnboardingCompleteStep";
 import { useUserProvider } from "@/providers/UserProvder";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import saveArtist from "@/lib/saveArtist";
+import { updatePulse } from "@/lib/pulse/updatePulse";
+import { useAccessToken } from "@/hooks/useAccessToken";
 
-const STEP_TITLES: Record<string, string> = {
-  role: "1 of 3",
-  context: "2 of 3",
-  artists: "3 of 3",
-  researching: "",
-  complete: "",
-};
+type Step =
+  | "welcome"
+  | "role"
+  | "context"
+  | "artists"
+  | "connections"
+  | "pulse"
+  | "tasks"
+  | "complete";
+
+// Steps that show the progress bar
+const PROGRESS_STEPS: Step[] = ["role", "context", "artists", "connections", "pulse", "tasks"];
+
+function getProgress(step: Step): number {
+  const idx = PROGRESS_STEPS.indexOf(step);
+  if (idx === -1) return 0;
+  return Math.round(((idx + 1) / PROGRESS_STEPS.length) * 100);
+}
+
+function getStepLabel(step: Step): string {
+  const idx = PROGRESS_STEPS.indexOf(step);
+  if (idx === -1) return "";
+  return `${idx + 1} of ${PROGRESS_STEPS.length}`;
+}
 
 /**
- * Full-screen onboarding wizard that fires once for new users.
- * Walks through role selection → context → artist setup → research → wow moment.
+ * Full onboarding wizard — non-dismissable modal that fires once for new users.
+ * Sequence: welcome → role → context → artists → connections → pulse → tasks → complete
  */
 export default function OnboardingModal() {
   const { isOpen, step, data, updateData, nextStep, complete } = useOnboarding();
   const { userData } = useUserProvider();
   const { getArtists } = useArtistProvider();
+  const accessToken = useAccessToken();
 
-  // Persist role + context to account when we reach the artists step
+  // When we hit tasks step: create artists, activate pulse, persist onboarding
   useEffect(() => {
-    if (step !== "artists" || !userData?.account_id) return;
-    if (!data.roleType && !data.name) return;
-
-    fetch("/api/account/update", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        accountId: userData.account_id,
-        roleType: data.roleType,
-        name: data.name,
-        companyName: data.companyName,
-      }),
-    }).catch(console.error);
-  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // When researching starts, actually create artists and persist onboarding_status
-  useEffect(() => {
-    if (step !== "researching" || !userData?.account_id) return;
+    if (step !== "tasks" || !userData?.account_id) return;
 
     const run = async () => {
-      // Create each artist in parallel
+      // Create priority artists
       const artistPromises = (data.artists ?? []).map(a =>
         saveArtist({
           name: a.name,
@@ -64,18 +67,35 @@ export default function OnboardingModal() {
       );
       await Promise.allSettled(artistPromises);
 
-      // Mark onboarding complete on account_info
+      // Activate pulse if user opted in
+      if (data.pulseEnabled && accessToken) {
+        await updatePulse({ accessToken, active: true }).catch(console.error);
+      }
+
+      // Persist role + context + onboarding status
       await fetch("/api/account/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           accountId: userData.account_id,
-          onboardingStatus: { completed: true, completedAt: new Date().toISOString() },
+          roleType: data.roleType,
+          name: data.name,
+          companyName: data.companyName,
+          onboardingStatus: {
+            completed: true,
+            completedAt: new Date().toISOString(),
+            steps: {
+              role: data.roleType,
+              artistCount: (data.artists ?? []).length,
+              connectedCount: (data.connectedSlugs ?? []).length,
+              pulseEnabled: data.pulseEnabled,
+            },
+          },
           onboardingData: data,
         }),
       }).catch(console.error);
 
-      // Refresh artists list in sidebar
+      // Refresh the artist sidebar
       if (typeof getArtists === "function") {
         await getArtists().catch(console.error);
       }
@@ -86,16 +106,14 @@ export default function OnboardingModal() {
 
   const handleComplete = useCallback(async () => {
     await complete();
-    // Kick off a proactive first chat after a short delay
-    setTimeout(() => {
-      const artistNames = (data.artists ?? []).map(a => a.name);
-      if (artistNames.length > 0) {
-        const q = encodeURIComponent(
-          `Give me a quick status report and top 3 priorities for ${artistNames[0]} this week`,
-        );
-        window.location.href = `/?q=${q}`;
-      }
-    }, 300);
+    // Auto-fire a proactive first chat
+    const artistNames = (data.artists ?? []).map(a => a.name);
+    if (artistNames.length > 0) {
+      const q = encodeURIComponent(
+        `Give me a complete status report for ${artistNames[0]} — fan breakdown, streaming performance, top opportunities, and my 3 highest-priority actions this week.`,
+      );
+      setTimeout(() => { window.location.href = `/?q=${q}`; }, 200);
+    }
   }, [complete, data.artists]);
 
   return (
@@ -105,31 +123,35 @@ export default function OnboardingModal() {
         onInteractOutside={e => e.preventDefault()}
         onEscapeKeyDown={e => e.preventDefault()}
       >
-        {/* Header bar */}
-        {STEP_TITLES[step] && (
-          <div className="flex items-center justify-between border-b px-6 py-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Welcome to Recoupable</span>
+        {/* Header */}
+        {PROGRESS_STEPS.includes(step as Step) && (
+          <>
+            <div className="flex items-center justify-between border-b px-6 py-3.5">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-foreground">Recoupable</span>
+              </div>
+              <span className="text-xs text-muted-foreground">{getStepLabel(step as Step)}</span>
             </div>
-            <span className="text-xs text-muted-foreground">{STEP_TITLES[step]}</span>
-          </div>
-        )}
-
-        {/* Progress bar */}
-        {["role", "context", "artists"].includes(step) && (
-          <div className="h-1 w-full bg-muted">
-            <div
-              className="h-1 bg-primary transition-all duration-500"
-              style={{
-                width:
-                  step === "role" ? "33%" : step === "context" ? "66%" : "100%",
-              }}
-            />
-          </div>
+            {/* Progress bar */}
+            <div className="h-1 w-full bg-muted">
+              <div
+                className="h-1 bg-primary transition-all duration-500"
+                style={{ width: `${getProgress(step as Step)}%` }}
+              />
+            </div>
+          </>
         )}
 
         {/* Step content */}
-        <div className="px-6 py-6">
+        <div className={
+          step === "welcome" || step === "complete"
+            ? "px-6 py-8"
+            : "px-6 py-6"
+        }>
+          {step === "welcome" && (
+            <OnboardingWelcomeStep onDone={nextStep} />
+          )}
+
           {step === "role" && (
             <OnboardingRoleStep
               selected={data.roleType}
@@ -156,10 +178,29 @@ export default function OnboardingModal() {
             />
           )}
 
-          {step === "researching" && (
-            <OnboardingResearchingStep
+          {step === "connections" && (
+            <OnboardingConnectionsStep
+              connected={data.connectedSlugs ?? []}
+              onConnect={slug =>
+                updateData({ connectedSlugs: [...(data.connectedSlugs ?? []), slug] })
+              }
+              onNext={nextStep}
+            />
+          )}
+
+          {step === "pulse" && (
+            <OnboardingPulseStep
+              enabled={data.pulseEnabled ?? false}
+              onToggle={v => updateData({ pulseEnabled: v })}
+              onNext={nextStep}
+            />
+          )}
+
+          {step === "tasks" && (
+            <OnboardingTasksStep
+              roleType={data.roleType}
               artistNames={(data.artists ?? []).map(a => a.name)}
-              onComplete={nextStep}
+              onNext={nextStep}
             />
           )}
 
@@ -167,6 +208,8 @@ export default function OnboardingModal() {
             <OnboardingCompleteStep
               artistNames={(data.artists ?? []).map(a => a.name)}
               name={data.name}
+              connectedCount={(data.connectedSlugs ?? []).length}
+              pulseEnabled={data.pulseEnabled ?? false}
               onComplete={handleComplete}
             />
           )}
