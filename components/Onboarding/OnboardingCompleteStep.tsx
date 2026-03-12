@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
+import { OnboardingConfetti } from "./OnboardingConfetti";
 
 interface Props {
   artistNames: string[];
@@ -10,41 +11,6 @@ interface Props {
   connectedCount: number;
   pulseEnabled: boolean;
   onComplete: () => void;
-}
-
-function useConfetti() {
-  const triggered = useRef(false);
-
-  useEffect(() => {
-    if (triggered.current) return;
-    triggered.current = true;
-
-    // Dynamically import canvas-confetti if available, otherwise use CSS fallback
-    import("canvas-confetti").then(({ default: confetti }) => {
-      confetti({
-        particleCount: 120,
-        spread: 80,
-        origin: { y: 0.55 },
-        colors: ["#6366f1", "#8b5cf6", "#a855f7", "#ec4899", "#f97316"],
-      });
-      setTimeout(() => {
-        confetti({
-          particleCount: 60,
-          spread: 100,
-          origin: { y: 0.5, x: 0.2 },
-          angle: 60,
-        });
-        confetti({
-          particleCount: 60,
-          spread: 100,
-          origin: { y: 0.5, x: 0.8 },
-          angle: 120,
-        });
-      }, 300);
-    }).catch(() => {
-      // canvas-confetti not available — silently skip
-    });
-  }, []);
 }
 
 /**
@@ -57,7 +23,6 @@ export function OnboardingCompleteStep({
   pulseEnabled,
   onComplete,
 }: Props) {
-  useConfetti();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -87,7 +52,9 @@ export function OnboardingCompleteStep({
   return (
     <AnimatePresence>
       {visible && (
-        <motion.div
+        <>
+          <OnboardingConfetti />
+          <motion.div
           className="flex flex-col items-center gap-7 text-center"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -147,7 +114,8 @@ export function OnboardingCompleteStep({
               You don&apos;t have to tell them.
             </p>
           </motion.div>
-        </motion.div>
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
