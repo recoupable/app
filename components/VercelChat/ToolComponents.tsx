@@ -336,9 +336,16 @@ export function getToolCallComponent(part: ToolUIPart) {
 export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
   const { toolCallId, output, type } = part;
   const isMcp = type === "dynamic-tool";
-  const result = isMcp
-    ? JSON.parse((output as CallToolResult).content[0].text)
-    : output;
+  let result;
+  if (isMcp) {
+    try {
+      result = JSON.parse((output as CallToolResult).content[0].text);
+    } catch {
+      result = (output as CallToolResult).content[0].text;
+    }
+  } else {
+    result = output;
+  }
   const toolName = getToolOrDynamicToolName(part);
   const isSearchWebTool = toolName === "search_web";
   const isDeepResearchTool = toolName === "web_deep_research";

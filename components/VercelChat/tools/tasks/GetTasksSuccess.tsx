@@ -3,12 +3,23 @@ import { ListTodo, CheckCircle2 } from "lucide-react";
 import { ScheduledAction } from "@/components/VercelChat/types";
 import TaskCard from "./TaskCard";
 import TaskDetailsDialog from "@/components/VercelChat/dialogs/tasks/TaskDetailsDialog";
+import TaskError from "./TaskError";
 
 export interface GetTasksSuccessProps {
   result: ScheduledAction[];
 }
 
 const GetTasksSuccess: React.FC<GetTasksSuccessProps> = ({ result: tasks }) => {
+  if (!Array.isArray(tasks)) {
+    return (
+      <TaskError
+        message="Failed to retrieve tasks"
+        error={typeof tasks === "object" && tasks !== null ? JSON.stringify(tasks) : String(tasks ?? "Unknown error")}
+        title="Task Retrieval Error"
+      />
+    );
+  }
+
   return (
     <div className="bg-card border border-border rounded-lg shadow-sm max-w-2xl">
       {/* Header */}
