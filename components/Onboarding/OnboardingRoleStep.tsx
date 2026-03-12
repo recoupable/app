@@ -3,15 +3,7 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
-
-const ROLES = [
-  { id: "artist_manager", label: "Artist Manager", icon: "🎯", description: "I manage one or more artists" },
-  { id: "label", label: "Record Label", icon: "🏷️", description: "I run a label or imprint" },
-  { id: "artist", label: "Artist", icon: "🎤", description: "I'm the artist" },
-  { id: "publisher", label: "Publisher", icon: "📝", description: "I handle publishing & sync" },
-  { id: "dsp", label: "DSP / Platform", icon: "📱", description: "I work at a streaming platform" },
-  { id: "other", label: "Other", icon: "✨", description: "Something else entirely" },
-];
+import { ONBOARDING_ROLES } from "./onboardingRoleConfig";
 
 interface Props {
   selected: string | undefined;
@@ -33,7 +25,7 @@ export function OnboardingRoleStep({ selected, onSelect, onNext }: Props) {
       </motion.div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {ROLES.map((role, i) => (
+        {ONBOARDING_ROLES.map((role, i) => (
           <motion.button
             key={role.id}
             type="button"

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, ExternalLink } from "lucide-react";
+import { OnboardingNavButtons } from "./OnboardingNavButtons";
 import { cn } from "@/lib/utils";
 import { useAccessToken } from "@/hooks/useAccessToken";
 import { authorizeConnectorApi } from "@/lib/composio/api/authorizeConnectorApi";
@@ -123,12 +124,11 @@ export function OnboardingConnectionsStep({ connected, onConnect, onNext, onBack
       </div>
 
       <div className="flex flex-col gap-2">
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={onBack} className="w-24">← Back</Button>
-          <Button onClick={onNext} className="flex-1">
-            {connected.length > 0 ? `Continue with ${connected.length} connected →` : "Skip for now →"}
-          </Button>
-        </div>
+        <OnboardingNavButtons
+          onBack={onBack}
+          onNext={onNext}
+          nextLabel={connected.length > 0 ? `Continue with ${connected.length} connected →` : "Skip for now →"}
+        />
         <p className="text-xs text-center text-muted-foreground">
           More connectors available in Settings → Connectors
         </p>

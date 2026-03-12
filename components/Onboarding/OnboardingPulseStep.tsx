@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { OnboardingNavButtons } from "./OnboardingNavButtons";
 
 const PULSE_BENEFITS = [
   { icon: "📈", text: "Daily streaming performance summaries" },
@@ -72,16 +73,11 @@ export function OnboardingPulseStep({ enabled, onToggle, onNext, onBack }: Props
         ))}
       </div>
 
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={onBack} className="w-24">← Back</Button>
-        <Button
-          onClick={onNext}
-          className="flex-1"
-          variant={enabled ? "default" : "outline"}
-        >
-          {enabled ? "Pulse is on — continue →" : "Skip for now →"}
-        </Button>
-      </div>
+      <OnboardingNavButtons
+        onBack={onBack}
+        onNext={onNext}
+        nextLabel={enabled ? "Pulse is on — continue →" : "Skip for now →"}
+      />
     </div>
   );
 }

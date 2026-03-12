@@ -3,6 +3,7 @@
 import { useCallback, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useOnboarding } from "./useOnboarding";
+import { useOnboardingPersist } from "./useOnboardingPersist";
 import { OnboardingWelcomeStep } from "./OnboardingWelcomeStep";
 import { OnboardingRoleStep } from "./OnboardingRoleStep";
 import { OnboardingContextStep } from "./OnboardingContextStep";
@@ -12,11 +13,6 @@ import { OnboardingPulseStep } from "./OnboardingPulseStep";
 import { OnboardingTasksStep } from "./OnboardingTasksStep";
 import { OnboardingCompleteStep } from "./OnboardingCompleteStep";
 import { OnboardingStepDots } from "./OnboardingStepDots";
-import { useUserProvider } from "@/providers/UserProvder";
-import { useArtistProvider } from "@/providers/ArtistProvider";
-import saveArtist from "@/lib/saveArtist";
-import { updatePulse } from "@/lib/pulse/updatePulse";
-import { useAccessToken } from "@/hooks/useAccessToken";
 
 type Step =
   | "welcome"
@@ -31,69 +27,18 @@ type Step =
 const PROGRESS_STEPS: Step[] = ["role", "context", "artists", "connections", "pulse", "tasks"];
 
 /**
- * Full onboarding wizard — non-dismissable modal that fires once for new users.
- * Flow: welcome → role → context → artists → connections → pulse → tasks → complete
- *
- * Features:
- * - Back navigation on all steps after welcome
- * - Spotify artist search with avatars
- * - Pre-filled name from Privy
- * - Confetti on complete
- * - Framer Motion transitions
- * - Pulse & connectors activated inline
+ * Onboarding wizard orchestrator.
+ * Delegates persistence to useOnboardingPersist and step state to useOnboarding.
  */
 export default function OnboardingModal() {
   const { isOpen, step, data, updateData, nextStep, prevStep, complete } = useOnboarding();
-  const { userData } = useUserProvider();
-  const { getArtists } = useArtistProvider();
-  const accessToken = useAccessToken();
+  const { persist } = useOnboardingPersist();
 
-  // When tasks step is reached: persist everything and set up artists + pulse
+  // Persist everything when the tasks (penultimate) step is reached
   useEffect(() => {
-    if (step !== "tasks" || !userData?.account_id) return;
-
-    const run = async () => {
-      const artistPromises = (data.artists ?? []).map(a =>
-        saveArtist({
-          name: a.name,
-          spotifyUrl: a.spotifyUrl,
-          accountId: userData.account_id,
-        }).catch(console.error),
-      );
-      await Promise.allSettled(artistPromises);
-
-      if (data.pulseEnabled && accessToken) {
-        await updatePulse({ accessToken, active: true }).catch(console.error);
-      }
-
-      await fetch("/api/account/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          accountId: userData.account_id,
-          roleType: data.roleType,
-          name: data.name,
-          companyName: data.companyName,
-          onboardingStatus: {
-            completed: true,
-            completedAt: new Date().toISOString(),
-            steps: {
-              role: data.roleType,
-              artistCount: (data.artists ?? []).length,
-              connectedCount: (data.connectedSlugs ?? []).length,
-              pulseEnabled: data.pulseEnabled,
-            },
-          },
-          onboardingData: data,
-        }),
-      }).catch(console.error);
-
-      if (typeof getArtists === "function") {
-        await getArtists().catch(console.error);
-      }
-    };
-
-    run();
+    if (step === "tasks") {
+      persist(data);
+    }
   }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleComplete = useCallback(async () => {
@@ -116,7 +61,6 @@ export default function OnboardingModal() {
         onInteractOutside={e => e.preventDefault()}
         onEscapeKeyDown={e => e.preventDefault()}
       >
-        {/* Header + step dots */}
         {isProgressStep && (
           <div className="flex flex-col gap-3 border-b px-6 pt-4 pb-3">
             <div className="flex items-center justify-between">
@@ -129,15 +73,8 @@ export default function OnboardingModal() {
           </div>
         )}
 
-        {/* Step content */}
-        <div className={
-          step === "welcome" || step === "complete"
-            ? "px-6 py-8"
-            : "px-6 py-6"
-        }>
-          {step === "welcome" && (
-            <OnboardingWelcomeStep onDone={nextStep} />
-          )}
+        <div className={step === "welcome" || step === "complete" ? "px-6 py-8" : "px-6 py-6"}>
+          {step === "welcome" && <OnboardingWelcomeStep onDone={nextStep} />}
 
           {step === "role" && (
             <OnboardingRoleStep

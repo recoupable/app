@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { OnboardingNavButtons } from "./OnboardingNavButtons";
 
 type RoleTaskMap = Record<string, { icon: string; title: string; desc: string }[]>;
 
@@ -110,10 +111,11 @@ export function OnboardingTasksStep({ roleType, artistNames, onNext, onBack }: P
         ))}
       </div>
 
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={onBack} className="w-24">← Back</Button>
-        <Button onClick={onNext} className="flex-1">See your dashboard →</Button>
-      </div>
+      <OnboardingNavButtons
+        onBack={onBack}
+        onNext={onNext}
+        nextLabel="See your dashboard →"
+      />
     </div>
   );
 }

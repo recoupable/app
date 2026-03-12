@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUserProvider } from "@/providers/UserProvder";
+import { OnboardingNavButtons } from "./OnboardingNavButtons";
+import { getRoleConfig } from "./onboardingRoleConfig";
 
 interface Props {
   name: string | undefined;
@@ -15,15 +17,6 @@ interface Props {
   onNext: () => void;
   onBack: () => void;
 }
-
-const ROLE_COMPANY_LABEL: Record<string, string> = {
-  artist_manager: "Management company",
-  label: "Label name",
-  artist: "Your artist name or team",
-  publisher: "Publishing company",
-  dsp: "Company / Platform",
-  other: "Company or organization",
-};
 
 /**
  * Context step — pre-fills name from Privy, adapts company label to role.
@@ -54,7 +47,7 @@ export function OnboardingContextStep({
     }
   }, [userData?.name, email]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const companyLabel = ROLE_COMPANY_LABEL[roleType ?? ""] ?? "Company";
+  const { companyLabel } = getRoleConfig(roleType);
 
   return (
     <div className="flex flex-col gap-6">
@@ -89,14 +82,11 @@ export function OnboardingContextStep({
         </div>
       </div>
 
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={onBack} className="w-24">
-          ← Back
-        </Button>
-        <Button onClick={onNext} disabled={!name?.trim()} className="flex-1">
-          Continue →
-        </Button>
-      </div>
+      <OnboardingNavButtons
+        onBack={onBack}
+        onNext={onNext}
+        nextDisabled={!name?.trim()}
+      />
     </div>
   );
 }
