@@ -4,6 +4,7 @@ import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { Chat } from "../VercelChat/chat";
 import { useEffect } from "react";
 import { UIMessage } from "ai";
+import OnboardingModal from "@/components/Onboarding/OnboardingModal";
 
 const HomePage = ({
   id,
@@ -22,6 +23,7 @@ const HomePage = ({
 
   return (
     <div className="flex flex-col size-full items-center">
+      <OnboardingModal />
       <Chat id={id} initialMessages={initialMessages} />
     </div>
   );
