@@ -59,7 +59,7 @@ export default function OnboardingModal() {
                 {PROGRESS_STEPS.indexOf(step as OnboardingStep) + 1} of {PROGRESS_STEPS.length}
               </span>
             </div>
-            <OnboardingStepDots current={step as Step} />
+            <OnboardingStepDots current={step as OnboardingStep} />
           </div>
         )}
 
