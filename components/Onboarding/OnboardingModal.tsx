@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useOnboarding } from "./useOnboarding";
+import { useOnboarding, type OnboardingStep } from "./useOnboarding";
 import { useOnboardingPersist } from "./useOnboardingPersist";
 import { OnboardingWelcomeStep } from "./OnboardingWelcomeStep";
 import { OnboardingRoleStep } from "./OnboardingRoleStep";
@@ -14,17 +14,7 @@ import { OnboardingTasksStep } from "./OnboardingTasksStep";
 import { OnboardingCompleteStep } from "./OnboardingCompleteStep";
 import { OnboardingStepDots } from "./OnboardingStepDots";
 
-type Step =
-  | "welcome"
-  | "role"
-  | "context"
-  | "artists"
-  | "connections"
-  | "pulse"
-  | "tasks"
-  | "complete";
-
-const PROGRESS_STEPS: Step[] = ["role", "context", "artists", "connections", "pulse", "tasks"];
+const PROGRESS_STEPS: OnboardingStep[] = ["role", "context", "artists", "connections", "pulse", "tasks"];
 
 /**
  * Onboarding wizard orchestrator.
@@ -52,7 +42,7 @@ export default function OnboardingModal() {
     }
   }, [complete, data.artists]);
 
-  const isProgressStep = PROGRESS_STEPS.includes(step as Step);
+  const isProgressStep = PROGRESS_STEPS.includes(step as OnboardingStep);
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
@@ -66,7 +56,7 @@ export default function OnboardingModal() {
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-foreground">Recoupable</span>
               <span className="text-xs text-muted-foreground">
-                {PROGRESS_STEPS.indexOf(step as Step) + 1} of {PROGRESS_STEPS.length}
+                {PROGRESS_STEPS.indexOf(step as OnboardingStep) + 1} of {PROGRESS_STEPS.length}
               </span>
             </div>
             <OnboardingStepDots current={step as Step} />

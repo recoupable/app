@@ -1,9 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X, Music2, Search, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { OnboardingNavButtons } from "./OnboardingNavButtons";
 import { getRoleConfig } from "./onboardingRoleConfig";
 import { useSpotifyArtistSearch, type SpotifyArtist } from "./useSpotifyArtistSearch";

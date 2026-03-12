@@ -1,14 +1,5 @@
 import { cn } from "@/lib/utils";
-
-type OnboardingStep =
-  | "welcome"
-  | "role"
-  | "context"
-  | "artists"
-  | "connections"
-  | "pulse"
-  | "tasks"
-  | "complete";
+import type { OnboardingStep } from "./useOnboarding";
 
 const STEPS: { id: OnboardingStep; label: string }[] = [
   { id: "role", label: "Role" },
