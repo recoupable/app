@@ -14,12 +14,13 @@ export type HeaderValidationResult = {
  *
  * If no auth headers are present, returns an empty result and does nothing.
  * On error, returns a Response to be sent directly from the route handler.
+ *
+ * @param request
  */
 export async function validateHeaders(
-  request: NextRequest
+  request: NextRequest,
 ): Promise<HeaderValidationResult | Response> {
-  const hasAuthHeader =
-    request.headers.has("authorization") || request.headers.has("x-api-key");
+  const hasAuthHeader = request.headers.has("authorization") || request.headers.has("x-api-key");
 
   if (!hasAuthHeader) {
     return {};

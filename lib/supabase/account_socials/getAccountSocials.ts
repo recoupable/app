@@ -10,7 +10,10 @@ interface Params {
   socialId?: string | string[];
 }
 
-const getAccountSocials = async ({ accountId, socialId }: Params): Promise<AccountSocialWithSocial[]> => {
+const getAccountSocials = async ({
+  accountId,
+  socialId,
+}: Params): Promise<AccountSocialWithSocial[]> => {
   let query = supabase.from("account_socials").select("*, social:socials(*)");
 
   if (accountId) {
@@ -30,4 +33,3 @@ const getAccountSocials = async ({ accountId, socialId }: Params): Promise<Accou
 };
 
 export default getAccountSocials;
-

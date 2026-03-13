@@ -5,7 +5,7 @@ const rawArweaveKey = process.env.ARWEAVE_KEY;
 
 if (!rawArweaveKey) {
   throw new Error(
-    "ARWEAVE_KEY environment variable is missing. Please set it to a base64-encoded JSON key."
+    "ARWEAVE_KEY environment variable is missing. Please set it to a base64-encoded JSON key.",
   );
 }
 
@@ -17,7 +17,7 @@ const ARWEAVE_KEY: JWKInterface = (() => {
     throw new Error(
       `Failed to decode ARWEAVE_KEY. Ensure it is base64-encoded JSON. ${
         error instanceof Error ? error.message : error
-      }`
+      }`,
     );
   }
 })();
@@ -32,7 +32,7 @@ const arweave = Arweave.init({
 
 const uploadToArweave = async (
   imageData: { base64Data: string; mimeType: string },
-  getProgress: (progress: number) => void = () => {}
+  getProgress: (progress: number) => void = () => {},
 ): Promise<string> => {
   const buffer = Buffer.from(imageData.base64Data, "base64");
 
@@ -40,7 +40,7 @@ const uploadToArweave = async (
     {
       data: buffer,
     },
-    ARWEAVE_KEY
+    ARWEAVE_KEY,
   );
   transaction.addTag("Content-Type", imageData.mimeType);
   await arweave.transactions.sign(transaction, ARWEAVE_KEY);
@@ -48,7 +48,7 @@ const uploadToArweave = async (
 
   while (!uploader.isComplete) {
     console.log(
-      `${uploader.pctComplete}% complete, ${uploader.uploadedChunks}/${uploader.totalChunks}`
+      `${uploader.pctComplete}% complete, ${uploader.uploadedChunks}/${uploader.totalChunks}`,
     );
     getProgress(uploader.pctComplete);
     await uploader.uploadChunk();

@@ -11,6 +11,9 @@ interface UseSandboxFileContentReturn {
   select: (path: string) => void;
 }
 
+/**
+ *
+ */
 export default function useSandboxFileContent(): UseSandboxFileContentReturn {
   const { getAccessToken } = usePrivy();
   const [selectedPath, setSelectedPath] = useState<string>();

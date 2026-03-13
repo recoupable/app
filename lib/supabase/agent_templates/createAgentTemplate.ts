@@ -1,6 +1,17 @@
 import supabase from "@/lib/supabase/serverClient";
 import { createAgentTemplateShares } from "./createAgentTemplateShares";
 
+/**
+ *
+ * @param params
+ * @param params.title
+ * @param params.description
+ * @param params.prompt
+ * @param params.tags
+ * @param params.isPrivate
+ * @param params.shareEmails
+ * @param params.userId
+ */
 export async function createAgentTemplate(params: {
   title: string;
   description: string;
@@ -20,7 +31,9 @@ export async function createAgentTemplate(params: {
       is_private: params.isPrivate,
       creator: params.userId ?? null,
     })
-    .select("id, title, description, prompt, tags, creator, is_private, created_at, favorites_count")
+    .select(
+      "id, title, description, prompt, tags, creator, is_private, created_at, favorites_count",
+    )
     .single();
   if (error) throw error;
 

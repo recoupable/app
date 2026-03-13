@@ -17,11 +17,11 @@ export interface GetTasksResponse {
 
 /**
  * Fetches tasks from the Recoup API
+ *
+ * @param params
  * @see https://docs.recoupable.com/tasks/get
  */
-export async function getTasks(
-  params?: GetTasksParams
-): Promise<ScheduledAction[]> {
+export async function getTasks(params?: GetTasksParams): Promise<ScheduledAction[]> {
   try {
     const url = new URL(TASKS_API_URL);
 

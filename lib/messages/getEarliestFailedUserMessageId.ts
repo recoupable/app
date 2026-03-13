@@ -1,8 +1,6 @@
 import { isToolUIPart, UIMessage } from "ai";
 
-const getEarliestFailedUserMessageId = (
-  messages: UIMessage[]
-): string | null => {
+const getEarliestFailedUserMessageId = (messages: UIMessage[]): string | null => {
   if (!messages || messages.length === 0) {
     return null;
   }
@@ -21,15 +19,11 @@ const getEarliestFailedUserMessageId = (
 
       const isLastMessage = i === messages.length - 1;
       const isNextMessageUser = messages[i + 1]?.role === "user";
-      const hasNoAssistantMessages = !messages.some(
-        (msg) => msg.role === "assistant"
-      );
+      const hasNoAssistantMessages = !messages.some(msg => msg.role === "assistant");
       if (isLastMessage || isNextMessageUser) {
         if (hasNoAssistantMessages) {
           // Return the earliest user message if no assistant messages exist
-          const earliestUserMessage = messages.find(
-            (msg) => msg.role === "user"
-          );
+          const earliestUserMessage = messages.find(msg => msg.role === "user");
           return earliestUserMessage?.id || null;
         }
       }
@@ -38,22 +32,16 @@ const getEarliestFailedUserMessageId = (
 
     // For assistant messages, check if it's successful
     if (currentMessage.role === "assistant") {
-      const isContentEmpty = !currentMessage.parts
-        .filter((part) => part.type === "text")
-        .join("");
+      const isContentEmpty = !currentMessage.parts.filter(part => part.type === "text").join("");
       if (isContentEmpty) {
         return earliestUserMessageSinceLastSuccess;
       }
 
       // Check if all tool invocations in parts have state: "result"
-      const toolParts = currentMessage.parts?.filter((part) =>
-        isToolUIPart(part)
-      );
+      const toolParts = currentMessage.parts?.filter(part => isToolUIPart(part));
 
       if (toolParts && toolParts.length > 0) {
-        const allToolsSuccessful = toolParts.every(
-          (part) => part.state === "output-available"
-        );
+        const allToolsSuccessful = toolParts.every(part => part.state === "output-available");
         if (!allToolsSuccessful) {
           return earliestUserMessageSinceLastSuccess;
         }

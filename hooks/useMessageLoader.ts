@@ -4,6 +4,7 @@ import getClientMessages from "@/lib/supabase/getClientMessages";
 
 /**
  * Hook for loading existing messages from a room
+ *
  * @param roomId - The room ID to load messages from (undefined to skip loading)
  * @param userId - The current user ID (messages won't load if user is not authenticated)
  * @param setMessages - Callback function to set the loaded messages
@@ -12,7 +13,7 @@ import getClientMessages from "@/lib/supabase/getClientMessages";
 export function useMessageLoader(
   roomId: string | undefined,
   userId: string | undefined,
-  setMessages: (messages: UIMessage[]) => void
+  setMessages: (messages: UIMessage[]) => void,
 ) {
   const [isLoading, setIsLoading] = useState(!!roomId);
   const [error, setError] = useState<Error | null>(null);
@@ -39,9 +40,7 @@ export function useMessageLoader(
         }
       } catch (err) {
         console.error("Error loading messages:", err);
-        setError(
-          err instanceof Error ? err : new Error("Failed to load messages")
-        );
+        setError(err instanceof Error ? err : new Error("Failed to load messages"));
       } finally {
         setIsLoading(false);
       }

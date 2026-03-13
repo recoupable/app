@@ -17,10 +17,10 @@ interface OrganizationsResponse {
 /**
  * Fetch account's organizations from the API.
  * The API resolves the account from the Bearer token — no query params needed.
+ *
+ * @param accessToken
  */
-const fetchAccountOrganizations = async (
-  accessToken: string,
-): Promise<AccountOrganization[]> => {
+const fetchAccountOrganizations = async (accessToken: string): Promise<AccountOrganization[]> => {
   const response = await fetch(`${NEW_API_BASE_URL}/api/organizations`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,

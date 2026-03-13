@@ -15,9 +15,7 @@ interface InsertMemoryEmailParams {
  * @param params.message_id - The message ID from the chat
  * @returns The inserted memory_email record
  */
-export async function insertMemoryEmail(
-  params: InsertMemoryEmailParams
-): Promise<void> {
+export async function insertMemoryEmail(params: InsertMemoryEmailParams): Promise<void> {
   const { error } = await supabase.from("memory_emails").insert(params);
 
   if (error) {

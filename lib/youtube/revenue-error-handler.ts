@@ -5,8 +5,7 @@ import { YouTubeRevenueResult } from "@/types/youtube";
 const isApiError = (error: unknown): error is { code: number } =>
   error !== null && typeof error === "object" && "code" in error;
 
-const isForbiddenError = (error: unknown): boolean =>
-  isApiError(error) && error.code === 403;
+const isForbiddenError = (error: unknown): boolean => isApiError(error) && error.code === 403;
 
 const isUnauthorizedClientError = (error: unknown): boolean =>
   error instanceof Error && error.message.includes("unauthorized_client");
@@ -22,13 +21,13 @@ const getErrorMessage = (error: unknown): string =>
 export const handleRevenueError = (error: unknown): YouTubeRevenueResult => {
   if (isForbiddenError(error)) {
     return YouTubeErrorBuilder.createToolError(
-      "Access denied. Channel may not be monetized or lacks Analytics permissions."
+      "Access denied. Channel may not be monetized or lacks Analytics permissions.",
     );
   }
 
   if (isUnauthorizedClientError(error)) {
     return YouTubeErrorBuilder.createToolError(
-      "Unauthorized client. Please re-authenticate your YouTube account."
+      "Unauthorized client. Please re-authenticate your YouTube account.",
     );
   }
 

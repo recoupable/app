@@ -13,6 +13,13 @@ type UseDragAndDropConfig = {
 /**
  * Hook to handle drag-and-drop file upload using react-dropzone
  * Provides drag state and handlers for file upload
+ *
+ * @param root0
+ * @param root0.onDrop
+ * @param root0.maxFiles
+ * @param root0.maxSizeMB
+ * @param root0.allowedTypes
+ * @param root0.disabled
  */
 export function useDragAndDrop({
   onDrop,
@@ -26,15 +33,12 @@ export function useDragAndDrop({
   /**
    * Validate file extension against blocked list
    */
-  const isBlockedFile = useCallback(
-    (fileName: string): boolean => {
-      // Blocked file types for security
-      const blockedExtensions = [".exe", ".dll", ".bat", ".sh", ".cmd"];
-      const lowerName = fileName.toLowerCase();
-      return blockedExtensions.some((ext) => lowerName.endsWith(ext));
-    },
-    []
-  );
+  const isBlockedFile = useCallback((fileName: string): boolean => {
+    // Blocked file types for security
+    const blockedExtensions = [".exe", ".dll", ".bat", ".sh", ".cmd"];
+    const lowerName = fileName.toLowerCase();
+    return blockedExtensions.some(ext => lowerName.endsWith(ext));
+  }, []);
 
   /**
    * Handle accepted files
@@ -42,7 +46,7 @@ export function useDragAndDrop({
   const handleAcceptedFiles = useCallback(
     (acceptedFiles: File[]) => {
       // Filter out blocked file types (additional security check)
-      const safeFiles = acceptedFiles.filter((file) => {
+      const safeFiles = acceptedFiles.filter(file => {
         if (isBlockedFile(file.name)) {
           toast.error(`File type not allowed: ${file.name}`);
           return false;
@@ -54,7 +58,7 @@ export function useDragAndDrop({
         onDrop(safeFiles);
       }
     },
-    [onDrop, isBlockedFile]
+    [onDrop, isBlockedFile],
   );
 
   /**
@@ -62,10 +66,10 @@ export function useDragAndDrop({
    */
   const handleRejectedFiles = useCallback(
     (fileRejections: FileRejection[]) => {
-      fileRejections.forEach((rejection) => {
+      fileRejections.forEach(rejection => {
         const { file, errors } = rejection;
-        
-        errors.forEach((error) => {
+
+        errors.forEach(error => {
           if (error.code === "file-too-large") {
             toast.error(`File "${file.name}" exceeds ${maxSizeMB}MB limit`);
           } else if (error.code === "too-many-files") {
@@ -78,29 +82,28 @@ export function useDragAndDrop({
         });
       });
     },
-    [maxFiles, maxSizeMB]
+    [maxFiles, maxSizeMB],
   );
 
   // Configure react-dropzone
-  const {
-    getRootProps,
-    getInputProps,
-    isDragActive,
-    isDragReject,
-  } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
     onDrop: handleAcceptedFiles,
     onDropRejected: handleRejectedFiles,
     maxFiles,
     maxSize: maxSizeBytes,
-    accept: allowedTypes.length > 0 
-      ? allowedTypes.reduce((acc, ext) => {
-          // Convert extensions to MIME types for react-dropzone
-          acc[ext] = [];
-          return acc;
-        }, {} as Record<string, string[]>)
-      : undefined,
+    accept:
+      allowedTypes.length > 0
+        ? allowedTypes.reduce(
+            (acc, ext) => {
+              // Convert extensions to MIME types for react-dropzone
+              acc[ext] = [];
+              return acc;
+            },
+            {} as Record<string, string[]>,
+          )
+        : undefined,
     disabled,
-    noClick: true,  // Prevent click to upload (we have a separate upload button)
+    noClick: true, // Prevent click to upload (we have a separate upload button)
     noKeyboard: true,
   });
 
@@ -111,4 +114,3 @@ export function useDragAndDrop({
     isDragReject,
   };
 }
-

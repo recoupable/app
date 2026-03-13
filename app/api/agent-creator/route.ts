@@ -4,6 +4,10 @@ import { NextRequest } from "next/server";
 
 export const runtime = "edge";
 
+/**
+ *
+ * @param req
+ */
 export async function GET(req: NextRequest) {
   const creatorId = req.nextUrl.searchParams.get("creatorId");
 
@@ -18,9 +22,7 @@ export async function GET(req: NextRequest) {
       return Response.json({ message: "Creator not found" }, { status: 404 });
     }
 
-    const info = Array.isArray(account.account_info)
-      ? account.account_info[0] || null
-      : null;
+    const info = Array.isArray(account.account_info) ? account.account_info[0] || null : null;
     const email = Array.isArray(account.account_emails)
       ? account.account_emails[0]?.email || null
       : null;

@@ -27,12 +27,8 @@ Note:
       .string()
       .optional()
       .describe("Optional parent directory path (e.g., 'projects', 'documents')"),
-    active_account_id: z
-      .string()
-      .describe("Pull active_account_id from the system prompt"),
-    active_artist_id: z
-      .string()
-      .describe("Pull active_artist_id from the system prompt"),
+    active_account_id: z.string().describe("Pull active_account_id from the system prompt"),
+    active_artist_id: z.string().describe("Pull active_artist_id from the system prompt"),
   }),
   execute: async ({ folderName, path, active_account_id, active_artist_id }) => {
     try {
@@ -58,7 +54,7 @@ Note:
       let sanitizedPath: string | undefined;
       if (path) {
         sanitizedPath = path.trim();
-        
+
         if (!isValidPath(sanitizedPath)) {
           return {
             success: false,
@@ -70,11 +66,7 @@ Note:
 
       const fullPath = sanitizedPath ? `${sanitizedPath}/${trimmedFolderName}` : trimmedFolderName;
 
-      await ensureDirectoryExists(
-        active_account_id,
-        active_artist_id,
-        fullPath
-      );
+      await ensureDirectoryExists(active_account_id, active_artist_id, fullPath);
 
       return {
         success: true,
@@ -89,4 +81,3 @@ Note:
 });
 
 export default createFolder;
-

@@ -13,4 +13,3 @@ const browserTools = {
 };
 
 export default browserTools;
-

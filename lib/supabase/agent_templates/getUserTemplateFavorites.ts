@@ -4,6 +4,10 @@ interface TemplateFavorite {
   template_id: string;
 }
 
+/**
+ *
+ * @param userId
+ */
 export async function getUserTemplateFavorites(userId: string): Promise<Set<string>> {
   const { data, error } = await supabase
     .from("agent_template_favorites")
@@ -12,7 +16,5 @@ export async function getUserTemplateFavorites(userId: string): Promise<Set<stri
 
   if (error) throw error;
 
-  return new Set<string>(
-    (data || []).map((f: TemplateFavorite) => f.template_id)
-  );
+  return new Set<string>((data || []).map((f: TemplateFavorite) => f.template_id));
 }

@@ -4,14 +4,13 @@ import { RECOUP_FROM_EMAIL } from "../consts";
 
 /**
  * Sends a Recoup Apify webhook email to a list of emails, summarizing the dataset and using a strong CTA.
+ *
  * @param dataset - Array of dataset objects (from Apify)
+ * @param d
  * @param emails - Array of email addresses to send to
  * @returns The result of sendEmail
  */
-export default async function sendApifyWebhookEmail(
-  d: Record<string, unknown>,
-  emails: string[]
-) {
+export default async function sendApifyWebhookEmail(d: Record<string, unknown>, emails: string[]) {
   if (!emails?.length) return null;
   const prompt = `You have a new Apify dataset update. Here is the data:
 
@@ -24,7 +23,7 @@ Biography: ${d.biography}
 External URL: ${d.externalUrls}
 Followers: ${d.followersCount}
 Following: ${d.followsCount}
-Latest Posts: ${((d.latestPosts as unknown[]) || []).map((p) => JSON.stringify(p)).join(", ")}
+Latest Posts: ${((d.latestPosts as unknown[]) || []).map(p => JSON.stringify(p)).join(", ")}
 `;
 
   const { text } = await generateText({

@@ -13,7 +13,12 @@ describe("fetchConnectorsApi", () => {
   describe("successful responses", () => {
     it("fetches connectors without account_id when none provided", async () => {
       const mockConnectors = [
-        { slug: "googlesheets", name: "Google Sheets", isConnected: true, connectedAccountId: "abc" },
+        {
+          slug: "googlesheets",
+          name: "Google Sheets",
+          isConnected: true,
+          connectedAccountId: "abc",
+        },
       ];
 
       mockFetch.mockResolvedValueOnce({
@@ -63,17 +68,13 @@ describe("fetchConnectorsApi", () => {
         status: 401,
       });
 
-      await expect(fetchConnectorsApi("test-token")).rejects.toThrow(
-        "Failed to fetch connectors",
-      );
+      await expect(fetchConnectorsApi("test-token")).rejects.toThrow("Failed to fetch connectors");
     });
 
     it("throws when fetch fails", async () => {
       mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
-      await expect(fetchConnectorsApi("test-token")).rejects.toThrow(
-        "Network error",
-      );
+      await expect(fetchConnectorsApi("test-token")).rejects.toThrow("Network error");
     });
   });
 });

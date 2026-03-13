@@ -3,11 +3,15 @@ import supabase from "@/lib/supabase/serverClient";
 /**
  * Ensure a directory exists in the database, creating it if needed
  * This makes directories visible in the UI
+ *
+ * @param ownerAccountId
+ * @param artistAccountId
+ * @param path
  */
 export async function ensureDirectoryExists(
   ownerAccountId: string,
   artistAccountId: string,
-  path: string
+  path: string,
 ): Promise<void> {
   // Skip if path is empty or root
   if (!path || path === "root") return;

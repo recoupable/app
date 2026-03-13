@@ -14,9 +14,11 @@ export interface GetSandboxesResult {
   filetree: FileTreeEntry[];
 }
 
-export async function getSandboxes(
-  accessToken: string
-): Promise<GetSandboxesResult> {
+/**
+ *
+ * @param accessToken
+ */
+export async function getSandboxes(accessToken: string): Promise<GetSandboxesResult> {
   const response = await fetch(`${NEW_API_BASE_URL}/api/sandboxes`, {
     method: "GET",
     headers: {

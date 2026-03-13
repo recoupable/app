@@ -7,9 +7,7 @@ import supabase from "@/lib/supabase/serverClient";
  * @param domain - Email domain (e.g., "rostrum.com")
  * @returns Organization ID if found, null otherwise
  */
-export async function getOrgByDomain(
-  domain: string
-): Promise<string | null> {
+export async function getOrgByDomain(domain: string): Promise<string | null> {
   if (!domain) return null;
 
   try {
@@ -31,4 +29,3 @@ export async function getOrgByDomain(
 }
 
 export default getOrgByDomain;
-

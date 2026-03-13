@@ -7,8 +7,7 @@ export const getChatDisplayInfo = (item: Conversation | ArtistAgent) => {
   const displayName = isChatRoom ? item.topic : capitalize(item.type);
 
   return {
-    displayName:
-      displayName || `${capitalize(isChatRoom ? "Chat" : item.type)} Analysis`,
+    displayName: displayName || `${capitalize(isChatRoom ? "Chat" : item.type)} Analysis`,
     isChatRoom,
   };
 };

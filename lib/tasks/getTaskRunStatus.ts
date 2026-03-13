@@ -20,11 +20,11 @@ export interface TaskRunStatus {
 
 /**
  * Fetches the current status of a Trigger.dev task run from the Recoup API.
+ *
+ * @param runId
+ * @param accessToken
  */
-export async function getTaskRunStatus(
-  runId: string,
-  accessToken: string,
-): Promise<TaskRunStatus> {
+export async function getTaskRunStatus(runId: string, accessToken: string): Promise<TaskRunStatus> {
   const url = new URL(`${TASKS_API_URL}/runs`);
   url.searchParams.set("runId", runId);
 

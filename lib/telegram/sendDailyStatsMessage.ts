@@ -3,6 +3,12 @@ import { sendMessage } from "./sendMessage";
 
 /**
  * Sends a formatted daily stats message to Telegram.
+ *
+ * @param root0
+ * @param root0.newRoomsCount
+ * @param root0.roomsDelta
+ * @param root0.newMemoriesCount
+ * @param root0.memoriesDelta
  */
 export async function sendDailyStatsMessage({
   newRoomsCount,

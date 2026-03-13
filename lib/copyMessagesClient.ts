@@ -1,12 +1,13 @@
 /**
  * Client function to copy messages between rooms
- * @param sourceRoomId ID of the source room to copy messages from
- * @param targetRoomId ID of the target room to copy messages to
+ *
+ * @param sourceRoomId - ID of the source room to copy messages from
+ * @param targetRoomId - ID of the target room to copy messages to
  * @returns Promise resolving to a boolean indicating success
  */
 export async function copyMessagesClient(
   sourceRoomId: string,
-  targetRoomId: string
+  targetRoomId: string,
 ): Promise<boolean> {
   try {
     const response = await fetch("/api/memories/copy", {

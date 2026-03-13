@@ -6,9 +6,11 @@ import type { SandboxStreamProgress } from "../sandboxStreamTypes";
  * the UI should show the polling component instead of the streaming component.
  */
 
-function getPromptSandboxComponentType(
-  result: SandboxStreamProgress,
-): "polling" | "streaming" {
+/**
+ *
+ * @param result
+ */
+function getPromptSandboxComponentType(result: SandboxStreamProgress): "polling" | "streaming" {
   if (result.runId) return "polling";
   return "streaming";
 }

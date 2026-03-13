@@ -16,9 +16,9 @@ export const POST = async (req: NextRequest) => {
           type: z
             .enum(["youtube", "tiktok", "instagram", "spotify", "other"])
             .describe(
-              "The type of suggestion. This will be used to determine the type of suggestion to display."
+              "The type of suggestion. This will be used to determine the type of suggestion to display.",
             ),
-        })
+        }),
       ),
     }),
     prompt: `Generate 4 suggestions for the following prompt: ${content}`,

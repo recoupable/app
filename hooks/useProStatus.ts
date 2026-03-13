@@ -4,6 +4,8 @@ import { ProStatusResponse } from "@/app/api/subscription/status/route";
 
 /**
  * Fetch pro status from the API
+ *
+ * @param accountId
  */
 const fetchProStatus = async (accountId: string): Promise<ProStatusResponse> => {
   const response = await fetch(`/api/subscription/status?accountId=${accountId}`);
@@ -28,4 +30,3 @@ const useProStatus = (): UseQueryResult<ProStatusResponse> => {
 };
 
 export default useProStatus;
-

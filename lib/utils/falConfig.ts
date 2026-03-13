@@ -13,9 +13,13 @@ export function getFalCredentials(): string | undefined {
 
 /**
  * Configures the Fal client with credentials
+ *
  * @param fal - The Fal client instance to configure
+ * @param fal.config
  */
-export function configureFalClient(fal: { config: (options: { credentials?: string }) => void }): void {
+export function configureFalClient(fal: {
+  config: (options: { credentials?: string }) => void;
+}): void {
   fal.config({
     credentials: getFalCredentials(),
   });

@@ -28,6 +28,11 @@ export interface PostsError {
 
 /**
  * Fetches posts for a specific artist from the API
+ *
+ * @param root0
+ * @param root0.artistAccountId
+ * @param root0.page
+ * @param root0.limit
  */
 async function fetchPosts({
   artistAccountId,

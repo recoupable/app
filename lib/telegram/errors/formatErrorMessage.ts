@@ -3,17 +3,12 @@ import { ErrorContext } from "./sendErrorNotification";
 
 /**
  * Formats error message for Telegram notification and escapes for Telegram Markdown.
+ *
  * @param params - Error context object
  * @returns Escaped, formatted error message string
  */
 export function formatErrorMessage(params: ErrorContext): string {
-  const {
-    error,
-    email = "unknown",
-    roomId = "new chat",
-    path,
-    messages,
-  } = params;
+  const { error, email = "unknown", roomId = "new chat", path, messages } = params;
   const timestamp = new Date().toISOString();
 
   let message = `❌ Error Alert\n`;
@@ -38,9 +33,7 @@ export function formatErrorMessage(params: ErrorContext): string {
 
   if (messages && messages.length > 0) {
     const lastMessage = messages[messages.length - 1];
-    const lastMessageText = lastMessage?.parts
-      .filter((part) => part.type === "text")
-      .join("");
+    const lastMessageText = lastMessage?.parts.filter(part => part.type === "text").join("");
     if (lastMessageText) {
       message += `\nLast Message:\n${lastMessageText}`;
     }

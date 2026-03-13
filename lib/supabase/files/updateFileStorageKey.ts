@@ -2,14 +2,12 @@ import supabase from "@/lib/supabase/serverClient";
 
 /**
  * Update the storage_key of a file record (used for move operations)
- * @param fileId UUID of the file record to update
- * @param newStorageKey New storage key path
+ *
+ * @param fileId - UUID of the file record to update
+ * @param newStorageKey - New storage key path
  * @throws Error if update fails
  */
-export async function updateFileStorageKey(
-  fileId: string,
-  newStorageKey: string
-): Promise<void> {
+export async function updateFileStorageKey(fileId: string, newStorageKey: string): Promise<void> {
   const { error } = await supabase
     .from("files")
     .update({
@@ -22,4 +20,3 @@ export async function updateFileStorageKey(
     throw new Error(`Failed to update file storage key: ${error.message}`);
   }
 }
-

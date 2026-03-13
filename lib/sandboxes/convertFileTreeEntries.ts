@@ -8,6 +8,10 @@ export interface FileTreeEntry {
   size?: number;
 }
 
+/**
+ *
+ * @param entries
+ */
 export function convertFileTreeEntries(entries: FileTreeEntry[]): FileNode[] {
   const root: FileNode[] = [];
   const pathMap = new Map<string, FileNode>();

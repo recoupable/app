@@ -19,10 +19,8 @@ export const chatRequestSchema = z
     excludeTools: z.array(z.string()).optional(),
   })
   .superRefine((data, ctx) => {
-    const hasMessages =
-      Array.isArray(data.messages) && data.messages.length > 0;
-    const hasPrompt =
-      typeof data.prompt === "string" && data.prompt.trim().length > 0;
+    const hasMessages = Array.isArray(data.messages) && data.messages.length > 0;
+    const hasPrompt = typeof data.prompt === "string" && data.prompt.trim().length > 0;
 
     if ((hasMessages && hasPrompt) || (!hasMessages && !hasPrompt)) {
       ctx.addIssue({
@@ -51,9 +49,11 @@ export type ChatRequestBody = BaseChatRequestBody & {
  * Mirrors the behavior of other API validators: returns
  * - Response (400/401/500) when invalid (body or headers)
  * - Parsed & augmented body when valid (including header-derived accountId)
+ *
+ * @param request
  */
 export async function validateChatRequest(
-  request: NextRequest
+  request: NextRequest,
 ): Promise<Response | ChatRequestBody> {
   const json = await request.json();
   const validationResult = chatRequestSchema.safeParse(json);
@@ -63,7 +63,7 @@ export async function validateChatRequest(
       {
         status: "error",
         message: "Invalid input",
-        errors: validationResult.error.issues.map((err) => ({
+        errors: validationResult.error.issues.map(err => ({
           field: err.path.join("."),
           message: err.message,
         })),
@@ -71,12 +71,11 @@ export async function validateChatRequest(
       {
         status: 400,
         headers: getCorsHeaders(),
-      }
+      },
     );
   }
 
-  const validatedBody: BaseChatRequestBody & { accessToken?: string } =
-    validationResult.data;
+  const validatedBody: BaseChatRequestBody & { accessToken?: string } = validationResult.data;
 
   // If auth headers are present, resolve accountId via GET /api/accounts/id
   const headerValidationResult = await validateHeaders(request);
@@ -91,11 +90,9 @@ export async function validateChatRequest(
   }
 
   const hasAccountId =
-    typeof validatedBody.accountId === "string" &&
-    validatedBody.accountId.trim().length > 0;
+    typeof validatedBody.accountId === "string" && validatedBody.accountId.trim().length > 0;
   const hasAccessToken =
-    typeof validatedBody.accessToken === "string" &&
-    validatedBody.accessToken.trim().length > 0;
+    typeof validatedBody.accessToken === "string" && validatedBody.accessToken.trim().length > 0;
 
   if (!hasAccountId || !hasAccessToken) {
     return NextResponse.json(
@@ -106,18 +103,16 @@ export async function validateChatRequest(
       {
         status: 401,
         headers: getCorsHeaders(),
-      }
+      },
     );
   }
 
   // Normalize chat content:
   // - If messages are provided, keep them as-is
   // - If only prompt is provided, convert it into a single user UIMessage
-  const hasMessages =
-    Array.isArray(validatedBody.messages) && validatedBody.messages.length > 0;
+  const hasMessages = Array.isArray(validatedBody.messages) && validatedBody.messages.length > 0;
   const hasPrompt =
-    typeof validatedBody.prompt === "string" &&
-    validatedBody.prompt.trim().length > 0;
+    typeof validatedBody.prompt === "string" && validatedBody.prompt.trim().length > 0;
 
   if (!hasMessages && hasPrompt) {
     validatedBody.messages = getMessages(validatedBody.prompt);

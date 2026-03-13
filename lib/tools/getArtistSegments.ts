@@ -65,10 +65,7 @@ const getArtistSegments = tool({
       return {
         success: false,
         status: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch artist segments",
+        message: error instanceof Error ? error.message : "Failed to fetch artist segments",
         segments: [],
         pagination: {
           total_count: 0,

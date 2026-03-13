@@ -1,9 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  updateFileContent,
-  type UpdateFileParams,
-} from "@/lib/files/updateFileContent";
+import { updateFileContent, type UpdateFileParams } from "@/lib/files/updateFileContent";
 
 /**
  * TanStack Query mutation hook for updating file content
@@ -14,7 +11,7 @@ export function useUpdateFile() {
 
   return useMutation({
     mutationFn: (params: UpdateFileParams) => updateFileContent(params),
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Invalidate the file content cache to refetch updated content
       queryClient.invalidateQueries({
         queryKey: ["file-content", data.storageKey],
@@ -28,4 +25,3 @@ export function useUpdateFile() {
     },
   });
 }
-

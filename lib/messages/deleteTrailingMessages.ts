@@ -1,6 +1,11 @@
 import { deleteMemoriesByRoomIdAfterTimestamp } from "../supabase/deleteMemoriesByChatIdAfterTimestamp";
 import { getMemoryById } from "../supabase/getMemoryById";
 
+/**
+ *
+ * @param root0
+ * @param root0.id
+ */
 export async function deleteTrailingMessages({ id }: { id: string }) {
   const memory = await getMemoryById({ id });
 
