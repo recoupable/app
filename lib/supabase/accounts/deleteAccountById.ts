@@ -5,16 +5,13 @@ import supabase from "@/lib/supabase/serverClient";
  * This will cascade delete related records due to foreign key constraints
  * including: account_info, account_socials, rooms, and other dependent records
  *
- * @param accountId The ID of the account to delete
+ * @param accountId - The ID of the account to delete
  * @returns Object with success status, metadata, and any error
  */
 export async function deleteAccountById(accountId: string) {
   try {
     // Delete the account directly
-    const { error } = await supabase
-      .from("accounts")
-      .delete()
-      .eq("id", accountId);
+    const { error } = await supabase.from("accounts").delete().eq("id", accountId);
 
     if (error) {
       console.error("Error deleting account:", error);

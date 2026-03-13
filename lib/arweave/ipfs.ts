@@ -2,6 +2,10 @@ import { CID } from "multiformats/cid";
 
 export type IPFSUrl = `ipfs://${string}`;
 
+/**
+ *
+ * @param str
+ */
 export function isCID(str: string | null | undefined): boolean {
   if (!str) return false;
 
@@ -15,6 +19,10 @@ export function isCID(str: string | null | undefined): boolean {
   }
 }
 
+/**
+ *
+ * @param url
+ */
 export function normalizeIPFSUrl(url: string | null | undefined): IPFSUrl | null {
   if (!url || typeof url !== "string") return null;
 
@@ -47,10 +55,18 @@ export function normalizeIPFSUrl(url: string | null | undefined): IPFSUrl | null
   return null;
 }
 
+/**
+ *
+ * @param url
+ */
 function isNormalizedIPFSURL(url: string | null | undefined): boolean {
   return url && typeof url === "string" ? url.startsWith("ipfs://") : false;
 }
 
+/**
+ *
+ * @param url
+ */
 function isGatewayIPFSUrl(url: string | null | undefined): boolean {
   if (url && typeof url === "string") {
     try {
@@ -64,10 +80,18 @@ function isGatewayIPFSUrl(url: string | null | undefined): boolean {
   return false;
 }
 
+/**
+ *
+ * @param url
+ */
 function isIPFSUrl(url: string | null | undefined): boolean {
   return url ? isNormalizedIPFSURL(url) || isGatewayIPFSUrl(url) : false;
 }
 
+/**
+ *
+ * @param url
+ */
 export function isNormalizeableIPFSUrl(url: string | null | undefined): boolean {
   return url ? isIPFSUrl(url) || isCID(url) : false;
 }

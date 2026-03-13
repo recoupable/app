@@ -8,6 +8,8 @@ interface UseAddArtistToOrganizationOptions {
 /**
  * Hook to handle adding an artist to an organization.
  * Manages loading state and API call.
+ *
+ * @param options
  */
 const useAddArtistToOrganization = (options?: UseAddArtistToOrganizationOptions) => {
   const [addingToOrgId, setAddingToOrgId] = useState<string | null>(null);
@@ -34,7 +36,7 @@ const useAddArtistToOrganization = (options?: UseAddArtistToOrganizationOptions)
         setAddingToOrgId(null);
       }
     },
-    [options]
+    [options],
   );
 
   return {
@@ -45,4 +47,3 @@ const useAddArtistToOrganization = (options?: UseAddArtistToOrganizationOptions)
 };
 
 export default useAddArtistToOrganization;
-

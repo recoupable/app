@@ -7,14 +7,17 @@ import { BROWSER_TIMEOUTS } from "./constants";
 /**
  * Perform initial page setup: navigate, wait, scroll, dismiss modal
  * Returns whether a modal was dismissed
+ *
+ * @param page
+ * @param url
  */
 export async function performPageSetup(page: Page, url: string): Promise<boolean> {
   const targetUrl = normalizeInstagramUrl(url);
-  await page.goto(targetUrl, { 
-    waitUntil: "domcontentloaded", 
-    timeout: BROWSER_TIMEOUTS.PAGE_NAVIGATION 
+  await page.goto(targetUrl, {
+    waitUntil: "domcontentloaded",
+    timeout: BROWSER_TIMEOUTS.PAGE_NAVIGATION,
   });
-  
+
   // Wait for initial page load
   await page.waitForTimeout(BROWSER_TIMEOUTS.INITIAL_PAGE_LOAD);
 
@@ -22,4 +25,3 @@ export async function performPageSetup(page: Page, url: string): Promise<boolean
 
   return await dismissLoginModal(page);
 }
-

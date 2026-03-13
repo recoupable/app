@@ -17,14 +17,8 @@ const DEFAULT_SIMPLE_MODE: SimpleModeSettings = {
   dayOfMonth: "1",
 };
 
-const useCronEditor = ({
-  cronExpression,
-  onCronExpressionChange,
-}: UseCronEditorArgs) => {
-  const parsedParts = useMemo(
-    () => parseCronParts(cronExpression),
-    [cronExpression]
-  );
+const useCronEditor = ({ cronExpression, onCronExpressionChange }: UseCronEditorArgs) => {
+  const parsedParts = useMemo(() => parseCronParts(cronExpression), [cronExpression]);
   const [fieldValues, setFieldValues] = useState<string[]>(parsedParts);
   const [mode, setMode] = useState<"simple" | "advanced">("simple");
   const [simpleMode, setSimpleMode] = useState<SimpleModeSettings>(() => {
@@ -40,12 +34,10 @@ const useCronEditor = ({
   }, [parsedParts]);
 
   const handleFieldChange = (index: number) => (value: string) => {
-    setFieldValues((prev) => {
+    setFieldValues(prev => {
       const updated = [...prev];
       updated[index] = value;
-      const normalizedParts = updated.map((part) =>
-        part.trim() === "" ? "*" : part.trim()
-      );
+      const normalizedParts = updated.map(part => (part.trim() === "" ? "*" : part.trim()));
       onCronExpressionChange(normalizedParts.join(" "));
       return updated;
     });
@@ -59,15 +51,11 @@ const useCronEditor = ({
     }
   };
 
-  const handleSimpleModeChange = (
-    field: keyof SimpleModeSettings,
-    value: string
-  ) => {
-    setSimpleMode((prev) => {
+  const handleSimpleModeChange = (field: keyof SimpleModeSettings, value: string) => {
+    setSimpleMode(prev => {
       const updated = { ...prev, [field]: value };
 
-      const [hour, minute] =
-        updated.frequency === "hourly" ? ["*", "0"] : updated.time.split(":");
+      const [hour, minute] = updated.frequency === "hourly" ? ["*", "0"] : updated.time.split(":");
 
       let cron = "* * * * *";
 
@@ -95,9 +83,7 @@ const useCronEditor = ({
   };
 
   const normalizedCron = useMemo(() => {
-    return fieldValues
-      .map((part) => (part.trim() === "" ? "*" : part.trim()))
-      .join(" ");
+    return fieldValues.map(part => (part.trim() === "" ? "*" : part.trim())).join(" ");
   }, [fieldValues]);
 
   const humanReadable = useMemo(() => {

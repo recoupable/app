@@ -4,6 +4,10 @@ import { createSignedUrlForKey } from "@/lib/supabase/storage/createSignedUrl";
 import { getFileByStorageKey } from "@/lib/supabase/files/getFileByStorageKey";
 import { checkFileAccess } from "@/lib/files/checkFileAccess";
 
+/**
+ *
+ * @param req
+ */
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -12,7 +16,7 @@ export async function GET(req: Request) {
     const expiresParam = searchParams.get("expires");
     const DEFAULT_EXPIRES_SEC = 300; // 5 minutes
     let expires = DEFAULT_EXPIRES_SEC;
-    
+
     // Validate expires parameter
     if (expiresParam !== null && expiresParam !== "") {
       const parsed = Number(expiresParam);
@@ -21,7 +25,7 @@ export async function GET(req: Request) {
       }
       expires = parsed;
     }
-    
+
     // Validate storage key format
     if (!isValidStorageKey(key)) {
       return NextResponse.json({ error: "Invalid key" }, { status: 400 });
@@ -35,11 +39,14 @@ export async function GET(req: Request) {
     // Get file metadata to check permissions
     const file = await getFileByStorageKey(key);
     if (!file) {
-      return NextResponse.json({ 
-        error: "File not found in database", 
-        details: `No file record found with storage key: ${key}`,
-        key 
-      }, { status: 404 });
+      return NextResponse.json(
+        {
+          error: "File not found in database",
+          details: `No file record found with storage key: ${key}`,
+          key,
+        },
+        { status: 404 },
+      );
     }
 
     // Check if user has access to this file
@@ -58,5 +65,3 @@ export async function GET(req: Request) {
 }
 
 export const dynamic = "force-dynamic";
-
-

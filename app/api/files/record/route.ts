@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import supabase from "@/lib/supabase/serverClient";
 
+/**
+ *
+ * @param req
+ */
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -44,5 +48,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-

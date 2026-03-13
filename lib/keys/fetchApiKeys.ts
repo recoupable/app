@@ -5,13 +5,14 @@ export type ApiKey = Tables<"account_api_keys">;
 
 /**
  * Fetch API keys for the authenticated account or organization
+ *
  * @param accessToken - The access token for authentication
  * @param organizationId - Optional organization ID to fetch keys for
  * @returns Promise with the list of API keys
  */
 export async function fetchApiKeys(
   accessToken: string,
-  organizationId?: string | null
+  organizationId?: string | null,
 ): Promise<ApiKey[]> {
   const url = new URL(`${NEW_API_BASE_URL}/api/keys`);
   if (organizationId) {

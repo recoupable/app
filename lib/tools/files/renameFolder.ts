@@ -27,30 +27,16 @@ Important:
 - Special characters and path separators are not allowed
 `,
   inputSchema: z.object({
-    folderName: z
-      .string()
-      .describe("Current name of the folder (e.g., 'Albums', 'old-folder')"),
-    newFolderName: z
-      .string()
-      .describe("New name for the folder (e.g., 'Music', 'new-folder')"),
+    folderName: z.string().describe("Current name of the folder (e.g., 'Albums', 'old-folder')"),
+    newFolderName: z.string().describe("New name for the folder (e.g., 'Music', 'new-folder')"),
     path: z
       .string()
       .optional()
       .describe("Optional parent directory path (e.g., 'projects', 'documents')"),
-    active_account_id: z
-      .string()
-      .describe("Pull active_account_id from the system prompt"),
-    active_artist_id: z
-      .string()
-      .describe("Pull active_artist_id from the system prompt"),
+    active_account_id: z.string().describe("Pull active_account_id from the system prompt"),
+    active_artist_id: z.string().describe("Pull active_artist_id from the system prompt"),
   }),
-  execute: async ({
-    folderName,
-    newFolderName,
-    path,
-    active_account_id,
-    active_artist_id,
-  }) => {
+  execute: async ({ folderName, newFolderName, path, active_account_id, active_artist_id }) => {
     try {
       if (path && !isValidPath(path)) {
         return {
@@ -64,7 +50,7 @@ Important:
         folderName,
         active_account_id,
         active_artist_id,
-        path
+        path,
       );
 
       if (!folderRecord) {
@@ -103,7 +89,7 @@ Important:
         newFolderName,
         active_account_id,
         active_artist_id,
-        path
+        path,
       );
 
       if (existingFolder) {
@@ -118,10 +104,10 @@ Important:
         active_account_id,
         active_artist_id,
         `${newFolderName}/`,
-        path
+        path,
       );
       const oldStorageKey = folderRecord.storage_key;
-      
+
       const escapedKey = escapeLikePattern(oldStorageKey);
       const { data: children, error: childrenError } = await supabase
         .from("files")
@@ -135,23 +121,22 @@ Important:
 
       if (children && children.length > 0) {
         for (const child of children) {
-          const newChildStorageKey = child.storage_key.replace(
-            oldStorageKey,
-            newStorageKey
-          );
-          
+          const newChildStorageKey = child.storage_key.replace(oldStorageKey, newStorageKey);
+
           // Only move actual files in storage, not directory records
-          const isChildDirectory = child.storage_key.endsWith('/');
-          
+          const isChildDirectory = child.storage_key.endsWith("/");
+
           if (!isChildDirectory) {
             // Copy file to new location in storage
             try {
               await copyFileByKey(child.storage_key, newChildStorageKey);
             } catch (copyError) {
-              throw new Error(`Failed to copy file in storage: ${copyError instanceof Error ? copyError.message : 'Unknown error'}`);
+              throw new Error(
+                `Failed to copy file in storage: ${copyError instanceof Error ? copyError.message : "Unknown error"}`,
+              );
             }
           }
-          
+
           // Update database record with new storage_key
           const { error: updateError } = await supabase
             .from("files")
@@ -164,7 +149,7 @@ Important:
           if (updateError) {
             throw new Error(`Failed to update child database record: ${updateError.message}`);
           }
-          
+
           // Delete old file from storage
           if (!isChildDirectory) {
             try {
@@ -186,7 +171,7 @@ Important:
         childrenUpdated: children?.length || 0,
         path: path || "root",
         storageKey: newStorageKey,
-        message: `Successfully renamed folder '${folderName}' to '${newFolderName}'${children?.length ? ` (updated ${children.length} items inside)` : ''}.`,
+        message: `Successfully renamed folder '${folderName}' to '${newFolderName}'${children?.length ? ` (updated ${children.length} items inside)` : ""}.`,
       };
     } catch (error) {
       return handleToolError(error, "rename folder", folderName);
@@ -195,4 +180,3 @@ Important:
 });
 
 export default renameFolder;
-

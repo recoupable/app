@@ -18,4 +18,3 @@ export const BROWSER_AGENT_CONFIG = {
   MAX_STEPS: 100, // Maximum steps for autonomous agent execution
   DEFAULT_MODEL: "gemini-2.5-computer-use-preview-10-2025", // Default AI model for agent
 } as const;
-

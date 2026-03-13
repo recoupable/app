@@ -6,6 +6,11 @@ interface GetFileContentsResponse {
   error?: string;
 }
 
+/**
+ *
+ * @param accessToken
+ * @param path
+ */
 export async function getFileContents(
   accessToken: string,
   path: string,

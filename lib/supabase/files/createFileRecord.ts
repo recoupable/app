@@ -16,10 +16,10 @@ type CreateFileRecordParams = {
 
 /**
  * Create a file record in the database (server-side)
+ *
+ * @param params
  */
-export async function createFileRecord(
-  params: CreateFileRecordParams
-): Promise<FileRecord> {
+export async function createFileRecord(params: CreateFileRecordParams): Promise<FileRecord> {
   const {
     ownerAccountId,
     artistAccountId,

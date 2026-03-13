@@ -37,28 +37,25 @@ Important:
   inputSchema: z.object({
     fileName: z
       .string()
-      .describe("Name of the file to create. Choose extension based on content: .json for JSON data, .csv for tabular data, .md for text/documentation (preferred over .txt), or omit extension to default to .md. Examples: 'research', 'data.json', 'results.csv'"),
-    content: z
-      .string()
-      .describe("The text content to write to the file"),
+      .describe(
+        "Name of the file to create. Choose extension based on content: .json for JSON data, .csv for tabular data, .md for text/documentation (preferred over .txt), or omit extension to default to .md. Examples: 'research', 'data.json', 'results.csv'",
+      ),
+    content: z.string().describe("The text content to write to the file"),
     mimeType: z
       .string()
       .optional()
-      .describe("MIME type of the file (e.g., 'text/plain', 'text/markdown', 'application/json'). Auto-detected if not provided."),
+      .describe(
+        "MIME type of the file (e.g., 'text/plain', 'text/markdown', 'application/json'). Auto-detected if not provided.",
+      ),
     path: z
       .string()
       .optional()
-      .describe("Optional subdirectory path where file should be created (e.g., 'research', 'reports')"),
-    description: z
-      .string()
-      .optional()
-      .describe("Optional description of the file content"),
-    active_account_id: z
-      .string()
-      .describe("Pull active_account_id from the system prompt"),
-    active_artist_id: z
-      .string()
-      .describe("Pull active_artist_id from the system prompt"),
+      .describe(
+        "Optional subdirectory path where file should be created (e.g., 'research', 'reports')",
+      ),
+    description: z.string().optional().describe("Optional description of the file content"),
+    active_account_id: z.string().describe("Pull active_account_id from the system prompt"),
+    active_artist_id: z.string().describe("Pull active_artist_id from the system prompt"),
   }),
   execute: async ({
     fileName,
@@ -70,14 +67,13 @@ Important:
     active_artist_id,
   }) => {
     const normalizedFileName = normalizeFileName(fileName);
-    
-    try {
 
+    try {
       const existingFile = await findFileByName(
         normalizedFileName,
         active_account_id,
         active_artist_id,
-        path
+        path,
       );
 
       if (existingFile) {
@@ -96,7 +92,7 @@ Important:
         active_account_id,
         active_artist_id,
         normalizedFileName,
-        path
+        path,
       );
 
       let detectedMimeType = mimeType;

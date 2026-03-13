@@ -11,7 +11,13 @@ import { AnalyticsReportsResult } from "@/types/youtube";
 
 /**
  * Query YouTube Analytics reports for specified metrics and date range
+ *
  * @param params - { accessToken, refreshToken, startDate, endDate, metrics }
+ * @param params.accessToken
+ * @param params.refreshToken
+ * @param params.startDate
+ * @param params.endDate
+ * @param params.metrics
  * @returns Analytics data with daily breakdown and totals
  */
 export async function queryAnalyticsReports({
@@ -37,14 +43,14 @@ export async function queryAnalyticsReports({
 
   if (!channelResponse.data.items || channelResponse.data.items.length === 0) {
     throw new Error(
-      "No YouTube channel found for this account. Please ensure you have a YouTube channel."
+      "No YouTube channel found for this account. Please ensure you have a YouTube channel.",
     );
   }
 
   const channelId = channelResponse.data.items[0].id;
   if (!channelId) {
     throw new Error(
-      "Unable to retrieve channel ID. Please ensure your YouTube account is properly set up."
+      "Unable to retrieve channel ID. Please ensure your YouTube account is properly set up.",
     );
   }
 
@@ -66,7 +72,7 @@ export async function queryAnalyticsReports({
 
   if (rows.length === 0) {
     throw new Error(
-      "No revenue data found. This could mean your channel is not monetized or you don't have the required Analytics scope permissions. Please ensure your channel is eligible for monetization and you've granted Analytics permissions."
+      "No revenue data found. This could mean your channel is not monetized or you don't have the required Analytics scope permissions. Please ensure your channel is eligible for monetization and you've granted Analytics permissions.",
     );
   }
 

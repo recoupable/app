@@ -1,5 +1,9 @@
 "use client";
 
+/**
+ *
+ * @param storageKey
+ */
 export async function createSignedUrlClient(storageKey: string): Promise<string> {
   try {
     const res = await fetch("/api/storage/signed-url", {
@@ -21,9 +25,15 @@ export async function createSignedUrlClient(storageKey: string): Promise<string>
   }
 }
 
-export async function createBatchSignedUrlsClient(storageKeys: string[]): Promise<Record<string, string>> {
+/**
+ *
+ * @param storageKeys
+ */
+export async function createBatchSignedUrlsClient(
+  storageKeys: string[],
+): Promise<Record<string, string>> {
   if (storageKeys.length === 0) return {};
-  
+
   try {
     const res = await fetch("/api/storage/signed-url", {
       method: "POST",

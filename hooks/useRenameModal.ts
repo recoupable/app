@@ -8,10 +8,8 @@ import { useConversationsProvider } from "@/providers/ConversationsProvider";
 type ChatItem = Conversation | ArtistAgent;
 
 const isChatRoom = (item: ChatItem): item is Conversation => "id" in item;
-const getChatName = (item: ChatItem): string =>
-  isChatRoom(item) ? item.topic : item.type;
-const getChatId = (item: ChatItem): string =>
-  isChatRoom(item) ? item.id : item.agentId;
+const getChatName = (item: ChatItem): string => (isChatRoom(item) ? item.topic : item.type);
+const getChatId = (item: ChatItem): string => (isChatRoom(item) ? item.id : item.agentId);
 
 const validateName = (value: string): string => {
   const trimmed = value.trim();
@@ -30,11 +28,14 @@ type UseRenameModalParams = {
   onClose: () => void;
 };
 
-export function useRenameModal({
-  isOpen,
-  chatRoom,
-  onClose,
-}: UseRenameModalParams) {
+/**
+ *
+ * @param root0
+ * @param root0.isOpen
+ * @param root0.chatRoom
+ * @param root0.onClose
+ */
+export function useRenameModal({ isOpen, chatRoom, onClose }: UseRenameModalParams) {
   const accessToken = useAccessToken();
   const { refetchConversations } = useConversationsProvider();
 
@@ -70,7 +71,7 @@ export function useRenameModal({
       setName(value);
       if (touched) setError(validateName(value));
     },
-    [touched]
+    [touched],
   );
 
   const handleBlur = useCallback(() => {
@@ -108,15 +109,11 @@ export function useRenameModal({
         await refetchConversations();
         onClose();
       } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to rename chat. Please try again."
-        );
+        setError(err instanceof Error ? err.message : "Failed to rename chat. Please try again.");
         setIsSubmitting(false);
       }
     },
-    [name, accessToken, chatRoom, refetchConversations, onClose]
+    [name, accessToken, chatRoom, refetchConversations, onClose],
   );
 
   const handleModalClose = useCallback(() => {

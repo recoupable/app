@@ -9,6 +9,10 @@ import { getSharedEmailsForTemplates } from "@/lib/supabase/agent_templates/getS
 
 export const runtime = "edge";
 
+/**
+ *
+ * @param request
+ */
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -29,16 +33,20 @@ export async function GET(request: Request) {
     // Add shared emails to templates
     const templatesWithEmails = templates.map(template => ({
       ...template,
-      shared_emails: template.is_private ? (sharedEmails[template.id] || []) : []
+      shared_emails: template.is_private ? sharedEmails[template.id] || [] : [],
     }));
 
     return NextResponse.json(templatesWithEmails);
   } catch (error) {
-    console.error('Error fetching agent templates:', error);
-    return NextResponse.json({ error: 'Failed to fetch templates' }, { status: 500 });
+    console.error("Error fetching agent templates:", error);
+    return NextResponse.json({ error: "Failed to fetch templates" }, { status: 500 });
   }
 }
 
+/**
+ *
+ * @param request
+ */
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -76,6 +84,10 @@ export async function POST(request: Request) {
   }
 }
 
+/**
+ *
+ * @param request
+ */
 export async function DELETE(request: Request) {
   try {
     const { id, userId } = (await request.json()) as { id: string; userId: string };
@@ -96,6 +108,10 @@ export async function DELETE(request: Request) {
   }
 }
 
+/**
+ *
+ * @param request
+ */
 export async function PATCH(request: Request) {
   try {
     const body = await request.json();
@@ -150,4 +166,4 @@ export async function PATCH(request: Request) {
 }
 
 export const dynamic = "force-dynamic";
-export const revalidate = 0; 
+export const revalidate = 0;

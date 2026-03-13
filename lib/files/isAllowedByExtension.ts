@@ -4,7 +4,7 @@ import { getFileExtension } from "./getFileExtension";
 const allowedExtensions = new Set(
   Object.values(CHAT_INPUT_SUPPORTED_FILE)
     .flat()
-    .map((extension: string) => extension.toLowerCase())
+    .map((extension: string) => extension.toLowerCase()),
 );
 
 /**

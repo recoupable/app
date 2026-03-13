@@ -10,7 +10,7 @@ import supabase from "@/lib/supabase/serverClient";
  */
 export async function addAccountToOrganization(
   accountId: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<string | null> {
   if (!accountId || !organizationId) return null;
 
@@ -29,4 +29,3 @@ export async function addAccountToOrganization(
 }
 
 export default addAccountToOrganization;
-

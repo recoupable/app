@@ -27,10 +27,7 @@ const getSocialFans = tool({
       return {
         success: false,
         status: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch social fans",
+        message: error instanceof Error ? error.message : "Failed to fetch social fans",
         data: [],
         count: 0,
       };

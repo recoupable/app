@@ -3,6 +3,8 @@ import { createSignedUrlForKey } from "./createSignedUrl";
 /**
  * Server-side function to fetch file content from storage
  * Uses Supabase storage directly (no API calls needed)
+ *
+ * @param storageKey
  */
 export async function fetchFileContentServer(storageKey: string): Promise<string> {
   // Get signed URL directly from Supabase

@@ -2,12 +2,11 @@ import { selectPostComments, PostComment } from "@/lib/supabase/post_comments/se
 
 /**
  * Gets existing post comments for the provided post URLs
+ *
  * @param postUrls - Array of Instagram post URLs to check for existing comments
  * @returns Promise with array of existing post comments and helper arrays
  */
-export default async function getExistingPostComments(
-  postUrls: string[]
-): Promise<{
+export default async function getExistingPostComments(postUrls: string[]): Promise<{
   existingComments: PostComment[];
   urlsWithComments: string[];
   urlsWithoutComments: string[];
@@ -26,16 +25,14 @@ export default async function getExistingPostComments(
 
     // Extract URLs that have existing comments
     const urlsWithComments = existingComments
-      .map((comment) => comment.post?.post_url)
+      .map(comment => comment.post?.post_url)
       .filter((url): url is string => Boolean(url));
 
     // Remove duplicates
     const uniqueUrlsWithComments = Array.from(new Set(urlsWithComments));
 
     // Find URLs that don't have comments
-    const urlsWithoutComments = postUrls.filter(
-      (url) => !uniqueUrlsWithComments.includes(url)
-    );
+    const urlsWithoutComments = postUrls.filter(url => !uniqueUrlsWithComments.includes(url));
 
     return {
       existingComments,

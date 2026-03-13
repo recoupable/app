@@ -1,7 +1,8 @@
 /**
  * Validates file name for rename operations
  * Prevents security issues and invalid characters
- * @param fileName File name to validate
+ *
+ * @param fileName - File name to validate
  * @returns true if valid, false otherwise
  */
 export function isValidFileName(fileName: string): boolean {
@@ -53,4 +54,3 @@ export function isValidFileName(fileName: string): boolean {
 }
 
 export default isValidFileName;
-

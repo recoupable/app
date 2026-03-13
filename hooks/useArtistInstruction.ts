@@ -1,5 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 
+/**
+ *
+ * @param artistId
+ */
 export function useArtistInstruction(artistId?: string) {
   return useQuery<string | undefined>({
     queryKey: ["artist-instruction", artistId],
@@ -16,5 +20,3 @@ export function useArtistInstruction(artistId?: string) {
 }
 
 export default useArtistInstruction;
-
-

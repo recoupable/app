@@ -1,11 +1,14 @@
 import { Database } from "./database.types";
 
-type SocialBase = Omit<Database["public"]["Tables"]["socials"]["Row"], "followerCount" | "followingCount">;
+type SocialBase = Omit<
+  Database["public"]["Tables"]["socials"]["Row"],
+  "followerCount" | "followingCount"
+>;
 
 export type Social = SocialBase & {
   social_id: string;
   follower_count: number;
-  following_count: number; 
+  following_count: number;
 };
 
 export interface ArtistSocialsResultType {
@@ -13,9 +16,9 @@ export interface ArtistSocialsResultType {
   socials: Array<Social>;
   success: boolean;
   pagination: {
-  page: number;
-  limit: number;
-  total_count: number;
-  total_pages: number;
+    page: number;
+    limit: number;
+    total_count: number;
+    total_pages: number;
   };
 }

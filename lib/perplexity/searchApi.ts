@@ -21,9 +21,11 @@ export interface SearchParams {
   search_domain_filter?: string[];
 }
 
-export async function searchPerplexity(
-  params: SearchParams
-): Promise<SearchResponse> {
+/**
+ *
+ * @param params
+ */
+export async function searchPerplexity(params: SearchParams): Promise<SearchResponse> {
   const apiKey = getPerplexityApiKey();
   const url = `${PERPLEXITY_BASE_URL}/search`;
 
@@ -32,8 +34,8 @@ export async function searchPerplexity(
     max_results: params.max_results || 10,
     max_tokens_per_page: params.max_tokens_per_page || 1024,
     ...(params.country && { country: params.country }),
-    ...(params.search_domain_filter && { 
-      search_domain_filter: params.search_domain_filter 
+    ...(params.search_domain_filter && {
+      search_domain_filter: params.search_domain_filter,
     }),
   };
 
@@ -47,7 +49,7 @@ export async function searchPerplexity(
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(
-        `Perplexity Search API error: ${response.status} ${response.statusText}\n${errorText}`
+        `Perplexity Search API error: ${response.status} ${response.statusText}\n${errorText}`,
       );
     }
 
@@ -56,4 +58,3 @@ export async function searchPerplexity(
     throw new Error(`Failed to search Perplexity API: ${error}`);
   }
 }
-

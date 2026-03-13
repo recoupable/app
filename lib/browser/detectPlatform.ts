@@ -1,5 +1,7 @@
 /**
  * Detect platform/social network from URL
+ *
+ * @param url
  */
 export function detectPlatform(url?: string): string {
   if (!url) return "browser";
@@ -15,4 +17,3 @@ export function detectPlatform(url?: string): string {
 
   return "browser";
 }
-

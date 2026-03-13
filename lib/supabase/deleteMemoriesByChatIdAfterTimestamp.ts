@@ -1,5 +1,11 @@
 import supabase from "./serverClient";
 
+/**
+ *
+ * @param root0
+ * @param root0.roomId
+ * @param root0.timestamp
+ */
 export async function deleteMemoriesByRoomIdAfterTimestamp({
   roomId,
   timestamp,
@@ -21,9 +27,7 @@ export async function deleteMemoriesByRoomIdAfterTimestamp({
 
     return count || 0;
   } catch (error) {
-    console.error(
-      "Failed to delete memories by room_id after timestamp from database"
-    );
+    console.error("Failed to delete memories by room_id after timestamp from database");
     throw error;
   }
 }

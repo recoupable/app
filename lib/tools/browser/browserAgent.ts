@@ -9,32 +9,29 @@ import { BROWSER_AGENT_CONFIG, BROWSER_TIMEOUTS } from "@/lib/browser/constants"
 const browserAgent = tool({
   description: `Autonomous multi-step website navigation. Use when task requires multiple actions: "go to [site] and [do something]", "find [X] on [site]", "navigate and tell me". Example: "Go to fatbeats.com and find Instagram handle". Takes longer (up to 20 steps).`,
   inputSchema: z.object({
-    startUrl: z
-      .string()
-      .url()
-      .describe("The URL where the agent should start the task"),
+    startUrl: z.string().url().describe("The URL where the agent should start the task"),
     task: z
       .string()
       .describe(
-        "Natural language description of the complete workflow to execute (e.g., 'search for laptops under $1000 and extract the top 5 results')"
+        "Natural language description of the complete workflow to execute (e.g., 'search for laptops under $1000 and extract the top 5 results')",
       ),
     model: z
       .string()
       .optional()
       .describe(
-        "AI model to use for the agent (defaults to gemini-2.5-computer-use-preview-10-2025)"
+        "AI model to use for the agent (defaults to gemini-2.5-computer-use-preview-10-2025)",
       ),
   }),
   execute: async function* ({ startUrl, task, model }) {
     const { stagehand, liveViewUrl, sessionUrl } = await initStagehand();
-    
+
     try {
       // Yield initial status with LIVE browser link IMMEDIATELY
       yield {
-        status: 'initializing',
-        message: liveViewUrl 
+        status: "initializing",
+        message: liveViewUrl
           ? `🎥 **WATCH LIVE:** ${liveViewUrl}\n\n🤖 Initializing autonomous agent...\n\n💡 Click the link above to watch AI control the browser in real-time!`
-          : 'Initializing autonomous agent...',
+          : "Initializing autonomous agent...",
         liveViewUrl,
         sessionUrl,
       };
@@ -53,19 +50,19 @@ const browserAgent = tool({
       const targetUrl = normalizeInstagramUrl(startUrl);
 
       yield {
-        status: 'navigating',
+        status: "navigating",
         message: `Navigating to ${targetUrl}...\n\n🎥 **WATCH LIVE:** ${liveViewUrl || sessionUrl}`,
         liveViewUrl,
         sessionUrl,
       };
 
-      await stagehand.page.goto(targetUrl, { 
-        waitUntil: "domcontentloaded", 
-        timeout: BROWSER_TIMEOUTS.PAGE_NAVIGATION 
+      await stagehand.page.goto(targetUrl, {
+        waitUntil: "domcontentloaded",
+        timeout: BROWSER_TIMEOUTS.PAGE_NAVIGATION,
       });
 
       yield {
-        status: 'executing',
+        status: "executing",
         message: `🤖 Agent is working autonomously...\n\n**Task:** ${task}\n\n🎥 **WATCH LIVE:** ${liveViewUrl || sessionUrl}\n\n💡 Watch the AI click, type, and navigate the browser above!`,
         liveViewUrl,
         sessionUrl,
@@ -92,12 +89,12 @@ const browserAgent = tool({
         platformName,
       };
     } catch (error) {
-      console.error('[browser_agent] Browser agent error:', error);
-      
+      console.error("[browser_agent] Browser agent error:", error);
+
       try {
         await stagehand.close();
       } catch (closeError) {
-        console.error('[browser_agent] Failed to close stagehand:', closeError);
+        console.error("[browser_agent] Failed to close stagehand:", closeError);
       }
 
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -111,4 +108,3 @@ const browserAgent = tool({
 });
 
 export default browserAgent;
-

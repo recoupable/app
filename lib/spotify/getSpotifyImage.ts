@@ -1,4 +1,8 @@
 // Utility function to get the first image URL from a Spotify item
+/**
+ *
+ * @param item
+ */
 export function getSpotifyImage(item: unknown): string | undefined {
   if (typeof item === "object" && item !== null) {
     const obj = item as {

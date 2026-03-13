@@ -2,13 +2,14 @@ import supabase from "@/lib/supabase/serverClient";
 
 /**
  * Link a workspace to an owner account
+ *
  * @param accountId - The owner's account ID
  * @param workspaceId - The workspace account ID
  * @returns The created record or null if failed
  */
 export async function insertAccountWorkspaceId(
   accountId: string,
-  workspaceId: string
+  workspaceId: string,
 ): Promise<{ id: string } | null> {
   if (!accountId || !workspaceId) return null;
 
@@ -35,4 +36,3 @@ export async function insertAccountWorkspaceId(
 }
 
 export default insertAccountWorkspaceId;
-

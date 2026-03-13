@@ -7,13 +7,12 @@ type AccountResponse = {
 
 /**
  * Retrieves an account by phone number
- * @param phone The phone number to search for
+ *
+ * @param phone - The phone number to search for
  * @returns The account data if found
  * @throws Error if phone number is not provided or if there's a database error
  */
-export async function getAccountByPhone(
-  phone: string,
-): Promise<AccountResponse> {
+export async function getAccountByPhone(phone: string): Promise<AccountResponse> {
   if (!phone) {
     throw new Error("Phone number is required");
   }

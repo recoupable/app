@@ -7,9 +7,11 @@ export interface ArtistAgent {
   updated_at: string;
 }
 
-export async function getArtistAgents(
-  artistSocialIds: string[],
-): Promise<ArtistAgent[]> {
+/**
+ *
+ * @param artistSocialIds
+ */
+export async function getArtistAgents(artistSocialIds: string[]): Promise<ArtistAgent[]> {
   const { data, error } = await supabase
     .from("agent_status")
     .select("*, agent:agents(*)")
@@ -22,7 +24,7 @@ export async function getArtistAgents(
 
   if (!data) return [];
 
-  const agentIds = [...new Set(data.map((ele) => ele.agent.id))];
+  const agentIds = [...new Set(data.map(ele => ele.agent.id))];
 
   const { data: agents } = await supabase
     .from("agents")
@@ -31,7 +33,7 @@ export async function getArtistAgents(
 
   if (!agents) return [];
 
-  const transformedAgents = agents.map((agent) => ({
+  const transformedAgents = agents.map(agent => ({
     type: new String(
       agent.agent_status.length > 1
         ? "wrapped"
@@ -44,7 +46,7 @@ export async function getArtistAgents(
   // eslint-disable-next-line
   const aggregatedAgents: any = {};
 
-  transformedAgents.forEach((agent) => {
+  transformedAgents.forEach(agent => {
     const type = agent.type.toLowerCase();
     aggregatedAgents[type] = agent;
   });

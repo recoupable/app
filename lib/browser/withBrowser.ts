@@ -1,8 +1,12 @@
 import type { Page } from "@browserbasehq/stagehand";
 import { initStagehand } from "./initStagehand";
 
+/**
+ *
+ * @param operation
+ */
 export async function withBrowser<T>(
-  operation: (page: Page, liveViewUrl?: string, sessionUrl?: string) => Promise<T>
+  operation: (page: Page, liveViewUrl?: string, sessionUrl?: string) => Promise<T>,
 ): Promise<T> {
   const { stagehand, liveViewUrl, sessionUrl } = await initStagehand();
 
@@ -14,9 +18,8 @@ export async function withBrowser<T>(
     try {
       await stagehand.close();
     } catch (closeError) {
-      console.warn('[withBrowser] Failed to close stagehand during error cleanup:', closeError);
+      console.warn("[withBrowser] Failed to close stagehand during error cleanup:", closeError);
     }
     throw error;
   }
 }
-

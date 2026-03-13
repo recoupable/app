@@ -1,10 +1,6 @@
 import { inProcessProtocolAbi } from "@/abi/inProcessProtocolAbi";
 import { getSetupNewTokenCall } from "@/app/lib/in_process/getSetupNewTokenCall";
-import {
-  IN_PROCESS_PROTOCOL_ADDRESS,
-  IS_PROD,
-  PAYMASTER_URL,
-} from "@/lib/consts";
+import { IN_PROCESS_PROTOCOL_ADDRESS, IS_PROD, PAYMASTER_URL } from "@/lib/consts";
 import { CdpClient } from "@coinbase/cdp-sdk";
 import { encodeFunctionData } from "viem";
 
@@ -14,10 +10,13 @@ interface CreateCollectionParams {
   uri: string;
 }
 
-async function createCollection({
-  collectionName,
-  uri,
-}: CreateCollectionParams) {
+/**
+ *
+ * @param root0
+ * @param root0.collectionName
+ * @param root0.uri
+ */
+async function createCollection({ collectionName, uri }: CreateCollectionParams) {
   // Initialize CDP client with your credentials
   const cdp = new CdpClient({
     apiKeyId: process.env.CDP_API_KEY_ID,

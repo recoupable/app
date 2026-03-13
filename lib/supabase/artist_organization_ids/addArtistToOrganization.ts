@@ -10,7 +10,7 @@ import supabase from "@/lib/supabase/serverClient";
  */
 export async function addArtistToOrganization(
   artistId: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<string | null> {
   if (!artistId || !organizationId) return null;
 
@@ -21,7 +21,7 @@ export async function addArtistToOrganization(
       .from("artist_organization_ids")
       .upsert(
         { artist_id: artistId, organization_id: organizationId },
-        { onConflict: "artist_id,organization_id", ignoreDuplicates: false }
+        { onConflict: "artist_id,organization_id", ignoreDuplicates: false },
       )
       .select("id")
       .single();
@@ -37,4 +37,3 @@ export async function addArtistToOrganization(
 }
 
 export default addArtistToOrganization;
-

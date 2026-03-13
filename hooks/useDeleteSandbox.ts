@@ -8,6 +8,9 @@ interface UseDeleteSandboxReturn {
   isDeleting: boolean;
 }
 
+/**
+ *
+ */
 export default function useDeleteSandbox(): UseDeleteSandboxReturn {
   const { getAccessToken } = usePrivy();
   const queryClient = useQueryClient();

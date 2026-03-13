@@ -35,4 +35,3 @@ export interface StreamedResponse {
   searchResults: SearchResult[];
   citations: string[];
 }
-

@@ -1,12 +1,11 @@
 const SUCCESS_STATUSES = new Set(["COMPLETED"]);
-const ERROR_STATUSES = new Set([
-  "FAILED",
-  "CRASHED",
-  "SYSTEM_FAILURE",
-  "INTERRUPTED",
-]);
+const ERROR_STATUSES = new Set(["FAILED", "CRASHED", "SYSTEM_FAILURE", "INTERRUPTED"]);
 const ACTIVE_STATUSES = new Set(["EXECUTING", "REATTEMPTING"]);
 
+/**
+ *
+ * @param status
+ */
 export function getStatusColor(status: string): string {
   if (SUCCESS_STATUSES.has(status)) {
     return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";

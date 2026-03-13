@@ -46,9 +46,7 @@ const useOrgSettings = (orgId: string | null) => {
     }
 
     // Find the organization from the list (same as button does)
-    const selectedOrg = organizations.find(
-      (org) => org.organization_id === orgId
-    );
+    const selectedOrg = organizations.find(org => org.organization_id === orgId);
 
     if (!selectedOrg) {
       setIsLoading(false);
@@ -63,9 +61,7 @@ const useOrgSettings = (orgId: string | null) => {
     const fetchOrgDetails = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(
-          `${NEW_API_BASE_URL}/api/accounts/${orgId}`
-        );
+        const response = await fetch(`${NEW_API_BASE_URL}/api/accounts/${orgId}`);
         if (response.ok) {
           const data = await response.json();
           // Response structure: { status: "success", account: {...} }
@@ -84,21 +80,18 @@ const useOrgSettings = (orgId: string | null) => {
     fetchOrgDetails();
   }, [orgId, organizations]);
 
-  const handleImageSelected = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+  const handleImageSelected = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-      setImageUploading(true);
-      try {
-        const { uri } = await uploadFile(file);
-        setImage(uri);
-      } finally {
-        setImageUploading(false);
-      }
-    },
-    []
-  );
+    setImageUploading(true);
+    try {
+      const { uri } = await uploadFile(file);
+      setImage(uri);
+    } finally {
+      setImageUploading(false);
+    }
+  }, []);
 
   const removeImage = useCallback(() => {
     setImage("");
@@ -107,33 +100,30 @@ const useOrgSettings = (orgId: string | null) => {
     }
   }, []);
 
-  const handleKnowledgesSelected = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = e.target.files;
-      if (!files) return;
+  const handleKnowledgesSelected = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
 
-      setKnowledgeUploading(true);
-      const newKnowledges: KnowledgeItem[] = [];
-      try {
-        for (const file of files) {
-          const name = file.name;
-          const type = getFileMimeType(file);
-          const { uri } = await uploadFile(file);
-          newKnowledges.push({ name, url: uri, type });
-        }
-        setKnowledges((prev) => [...prev, ...newKnowledges]);
-      } finally {
-        setKnowledgeUploading(false);
-        if (knowledgeRef.current) {
-          knowledgeRef.current.value = "";
-        }
+    setKnowledgeUploading(true);
+    const newKnowledges: KnowledgeItem[] = [];
+    try {
+      for (const file of files) {
+        const name = file.name;
+        const type = getFileMimeType(file);
+        const { uri } = await uploadFile(file);
+        newKnowledges.push({ name, url: uri, type });
       }
-    },
-    []
-  );
+      setKnowledges(prev => [...prev, ...newKnowledges]);
+    } finally {
+      setKnowledgeUploading(false);
+      if (knowledgeRef.current) {
+        knowledgeRef.current.value = "";
+      }
+    }
+  }, []);
 
   const handleDeleteKnowledge = useCallback((index: number) => {
-    setKnowledges((prev) => prev.filter((_, i) => i !== index));
+    setKnowledges(prev => prev.filter((_, i) => i !== index));
   }, []);
 
   const save = useCallback(async () => {

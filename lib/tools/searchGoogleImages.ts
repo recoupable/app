@@ -23,29 +23,26 @@ const getSearchGoogleImagesTool = () => {
       query: z
         .string()
         .describe(
-          "The search query (e.g., 'Mac Miller concert', 'Wiz Khalifa album cover'). Be specific for best results."
+          "The search query (e.g., 'Mac Miller concert', 'Wiz Khalifa album cover'). Be specific for best results.",
         ),
-      limit: z
-        .number()
-        .optional()
-        .describe("Number of images to return (1-100, default: 8)."),
+      limit: z.number().optional().describe("Number of images to return (1-100, default: 8)."),
       imageSize: z
         .enum(["l", "m", "i"])
         .optional()
         .describe(
-          "Image size: 'l' (large, recommended), 'm' (medium), 'i' (icon/small). Leave unset if unsure."
+          "Image size: 'l' (large, recommended), 'm' (medium), 'i' (icon/small). Leave unset if unsure.",
         ),
       imageType: z
         .enum(["photo", "clipart", "lineart", "animated"])
         .optional()
         .describe(
-          "Type of image: 'photo' (default, recommended), 'clipart', 'lineart', 'animated'. Leave unset if unsure."
+          "Type of image: 'photo' (default, recommended), 'clipart', 'lineart', 'animated'. Leave unset if unsure.",
         ),
       aspectRatio: z
         .enum(["square", "wide", "tall", "panoramic"])
         .optional()
         .describe(
-          "Aspect ratio filter. WARNING: May not always be supported. Only use if specifically requested. Leave unset for general searches."
+          "Aspect ratio filter. WARNING: May not always be supported. Only use if specifically requested. Leave unset for general searches.",
         ),
     }),
     execute: async function* ({
@@ -67,7 +64,7 @@ const getSearchGoogleImagesTool = () => {
       } satisfies SearchProgress;
 
       // Small delay to ensure UI renders the searching state
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       try {
         // Perform the search
@@ -84,7 +81,7 @@ const getSearchGoogleImagesTool = () => {
           success: true,
           query,
           total_results: response.images_results.length,
-          images: response.images_results.map((img) => ({
+          images: response.images_results.map(img => ({
             position: img.position,
             thumbnail: img.thumbnail,
             original: img.original,
