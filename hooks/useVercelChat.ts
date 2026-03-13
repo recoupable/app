@@ -17,6 +17,7 @@ import { DEFAULT_MODEL } from "@/lib/consts";
 import { usePaymentProvider } from "@/providers/PaymentProvider";
 import useArtistFilesForMentions from "@/hooks/useArtistFilesForMentions";
 import type { KnowledgeBaseEntry } from "@/lib/supabase/getArtistKnowledge";
+import { usePrivy } from "@privy-io/react-auth";
 import { useChatTransport } from "./useChatTransport";
 import { useAccessToken } from "./useAccessToken";
 import { TextAttachment } from "@/types/textAttachment";
@@ -60,6 +61,7 @@ export function useVercelChat({
     availableModels[0]?.id ?? "",
   );
   const { refetchCredits } = usePaymentProvider();
+  const { getAccessToken } = usePrivy();
   const { transport, headers } = useChatTransport();
   const accessToken = useAccessToken();
 
@@ -195,7 +197,7 @@ export function useVercelChat({
       },
     });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Combine all attachments
@@ -234,7 +236,16 @@ export function useVercelChat({
       files: nonAudioAttachments.length > 0 ? nonAudioAttachments : undefined,
     };
 
-    sendMessage(payload, chatRequestOptions);
+    // Get a fresh token at send time so expired tokens are never used
+    const freshToken = await getAccessToken();
+    const requestOptions = freshToken
+      ? {
+          ...chatRequestOptions,
+          headers: { Authorization: `Bearer ${freshToken}` },
+        }
+      : chatRequestOptions;
+
+    sendMessage(payload, requestOptions);
     setInput("");
   };
 
@@ -298,7 +309,7 @@ export function useVercelChat({
     const messageContent = input;
 
     // Submit the message
-    handleSubmit(event);
+    await handleSubmit(event);
 
     if (!roomId) {
       // Optimistically append a temporary conversation so it appears in Recent Chats
@@ -311,9 +322,16 @@ export function useVercelChat({
   const handleSendQueryMessages = useCallback(
     async (initialMessage: UIMessage) => {
       silentlyUpdateUrl();
-      sendMessage(initialMessage, chatRequestOptions);
+      const freshToken = await getAccessToken();
+      const requestOptions = freshToken
+        ? {
+            ...chatRequestOptions,
+            headers: { Authorization: `Bearer ${freshToken}` },
+          }
+        : chatRequestOptions;
+      sendMessage(initialMessage, requestOptions);
     },
-    [silentlyUpdateUrl, sendMessage, chatRequestOptions],
+    [silentlyUpdateUrl, sendMessage, chatRequestOptions, getAccessToken],
   );
 
   useEffect(() => {
