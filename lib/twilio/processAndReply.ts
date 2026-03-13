@@ -8,9 +8,7 @@ import { SMS_FALLBACK_MESSAGE } from "./constants";
  *
  * @param smsData - Parsed SMS message data
  */
-export const processAndReply = async (
-  smsData: ParsedSmsMessage
-): Promise<void> => {
+export const processAndReply = async (smsData: ParsedSmsMessage): Promise<void> => {
   try {
     // Send fallback message
     await sendSmsMessage(smsData.from, SMS_FALLBACK_MESSAGE);

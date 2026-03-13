@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { NEW_API_BASE_URL } from "@/lib/consts";
 
 /**
+ * @param req
  * @deprecated This endpoint is deprecated. Use recoup-api directly at POST /api/workspaces
  *
  * Create a blank workspace for an account.
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
     const message = error instanceof Error ? error.message : "Failed to create workspace";
     return Response.json(
       { status: "error", error: message },
-      { status: 500, headers: deprecationHeaders }
+      { status: 500, headers: deprecationHeaders },
     );
   }
 }

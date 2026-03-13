@@ -114,13 +114,10 @@ describe("proxyToApiChat", () => {
     });
 
     it("should handle error responses from recoup-api", async () => {
-      const mockErrorResponse = new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      const mockErrorResponse = new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
       mockFetch.mockResolvedValueOnce(mockErrorResponse);
 
       const request = new NextRequest("https://chat.recoupable.com/api/chat", {
@@ -169,21 +166,18 @@ describe("proxyToApiChat", () => {
         {
           status: 200,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
       mockFetch.mockResolvedValueOnce(mockResponse);
 
-      const request = new NextRequest(
-        "https://chat.recoupable.com/api/chat/generate",
-        {
-          method: "POST",
-          headers: {
-            Authorization: "Bearer test-token",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ prompt: "Say hello" }),
-        }
-      );
+      const request = new NextRequest("https://chat.recoupable.com/api/chat/generate", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer test-token",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: "Say hello" }),
+      });
 
       await proxyToApiChat(request, { streaming: false });
 
@@ -202,22 +196,19 @@ describe("proxyToApiChat", () => {
         {
           status: 200,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
       mockFetch.mockResolvedValueOnce(mockResponse);
 
-      const request = new NextRequest(
-        "https://chat.recoupable.com/api/chat/generate",
-        {
-          method: "POST",
-          headers: {
-            Authorization: "Bearer test-token",
-            "x-api-key": "test-key",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ prompt: "Say hello" }),
-        }
-      );
+      const request = new NextRequest("https://chat.recoupable.com/api/chat/generate", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer test-token",
+          "x-api-key": "test-key",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: "Say hello" }),
+      });
 
       await proxyToApiChat(request, { streaming: false });
 
@@ -238,17 +229,14 @@ describe("proxyToApiChat", () => {
       });
       mockFetch.mockResolvedValueOnce(mockResponse);
 
-      const request = new NextRequest(
-        "https://chat.recoupable.com/api/chat/generate",
-        {
-          method: "POST",
-          headers: {
-            Authorization: "Bearer test-token",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ prompt: "Say hello" }),
-        }
-      );
+      const request = new NextRequest("https://chat.recoupable.com/api/chat/generate", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer test-token",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: "Say hello" }),
+      });
 
       const response = await proxyToApiChat(request, { streaming: false });
 
@@ -304,26 +292,20 @@ describe("proxyToApiChat", () => {
     });
 
     it("should include Deprecation header in non-streaming response", async () => {
-      const mockResponse = new Response(
-        JSON.stringify({ text: "Hello!", finishReason: "stop" }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      const mockResponse = new Response(JSON.stringify({ text: "Hello!", finishReason: "stop" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
       mockFetch.mockResolvedValueOnce(mockResponse);
 
-      const request = new NextRequest(
-        "https://chat.recoupable.com/api/chat/generate",
-        {
-          method: "POST",
-          headers: {
-            Authorization: "Bearer test-token",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ prompt: "Say hello" }),
-        }
-      );
+      const request = new NextRequest("https://chat.recoupable.com/api/chat/generate", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer test-token",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: "Say hello" }),
+      });
 
       const response = await proxyToApiChat(request, { streaming: false });
 
@@ -373,7 +355,7 @@ describe("proxyToApiChat", () => {
       const response = await proxyToApiChat(request, { streaming: true });
 
       const linkHeader = response.headers.get("Link");
-      expect(linkHeader).toContain("rel=\"deprecation\"");
+      expect(linkHeader).toContain('rel="deprecation"');
       expect(linkHeader).toContain("recoup-api");
     });
 

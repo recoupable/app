@@ -14,6 +14,8 @@ export interface JsonObject {
 
 /**
  * Finds and validates JSON objects containing fan data within a text string
+ *
+ * @param text
  */
 export const findJsonObjects = (text: string): JsonObject[] => {
   const results: JsonObject[] = [];

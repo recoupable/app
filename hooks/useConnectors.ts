@@ -31,6 +31,8 @@ interface UseConnectorsConfig {
 /**
  * Hook for managing connectors.
  * Works for both user-level and artist-level connectors via optional config.
+ *
+ * @param config
  */
 export function useConnectors(config?: UseConnectorsConfig) {
   const { accountId, allowedSlugs, callbackUrl } = config ?? {};
@@ -59,9 +61,7 @@ export function useConnectors(config?: UseConnectorsConfig) {
     try {
       const allConnectors = await fetchConnectorsApi(accessToken, accountId);
       const allowed = new Set(slugFilter);
-      const visible = allConnectors.filter((c) =>
-        allowed.has(c.slug.toLowerCase()),
-      );
+      const visible = allConnectors.filter(c => allowed.has(c.slug.toLowerCase()));
       setConnectors(visible);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");

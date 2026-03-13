@@ -14,13 +14,12 @@ export type FileWithPermissions = {
 
 /**
  * Get a file record by ID with all fields needed for permission checks
- * @param fileId UUID of the file to retrieve
+ *
+ * @param fileId - UUID of the file to retrieve
  * @returns File record with permission fields or null if not found
  * @throws Error if database operation fails (but not if file doesn't exist)
  */
-export async function getFileById(
-  fileId: string
-): Promise<FileWithPermissions | null> {
+export async function getFileById(fileId: string): Promise<FileWithPermissions | null> {
   const { data, error } = await supabase
     .from("files")
     .select("id, owner_account_id, artist_account_id, is_directory, storage_key")
@@ -37,4 +36,3 @@ export async function getFileById(
 
   return data;
 }
-

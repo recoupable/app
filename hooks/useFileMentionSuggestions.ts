@@ -11,6 +11,10 @@ export interface GroupedSuggestion extends SuggestionDataItem {
   storage_key: string;
 }
 
+/**
+ *
+ * @param value
+ */
 export default function useFileMentionSuggestions(value: string) {
   const { files: artistFiles = [] } = useArtistFilesForMentions();
 
@@ -22,34 +26,34 @@ export default function useFileMentionSuggestions(value: string) {
     (query: string): GroupedSuggestion[] => {
       const q = (query || "").toLowerCase();
       const items: GroupedSuggestion[] = artistFiles
-        .filter((f) => !f.is_directory)
-        .map((f) => {
+        .filter(f => !f.is_directory)
+        .map(f => {
           const rel = f.relative_path || f.file_name;
           const lastSlash = rel.lastIndexOf("/");
           const group = lastSlash > 0 ? rel.slice(0, lastSlash) : "Home";
           const name = lastSlash > -1 ? rel.slice(lastSlash + 1) : rel;
-          return { 
-            id: f.id, 
-            display: name, 
+          return {
+            id: f.id,
+            display: name,
             group,
             mime_type: f.mime_type,
-            storage_key: f.storage_key
+            storage_key: f.storage_key,
           } as GroupedSuggestion;
         })
-        .filter((it) => !mentionedIds.has(String(it.id)))
+        .filter(it => !mentionedIds.has(String(it.id)))
         .filter(
-          (it) =>
+          it =>
             (it.display || String(it.id)).toLowerCase().includes(q) ||
-            it.group.toLowerCase().includes(q)
+            it.group.toLowerCase().includes(q),
         )
         .sort((a, b) =>
           a.group === b.group
             ? (a.display ?? "").localeCompare(b.display ?? "")
-            : a.group.localeCompare(b.group)
+            : a.group.localeCompare(b.group),
         );
       return items.slice(0, 20);
     },
-    [artistFiles, mentionedIds]
+    [artistFiles, mentionedIds],
   );
 
   const provideSuggestions = useCallback(
@@ -58,10 +62,8 @@ export default function useFileMentionSuggestions(value: string) {
       setLastResults(grouped);
       callback(grouped);
     },
-    [buildGroupedResults]
+    [buildGroupedResults],
   );
 
   return { provideSuggestions, lastResults };
 }
-
-

@@ -14,10 +14,7 @@ const createMcpOutput = (data: { id?: string }) => ({
 });
 
 // Helper to create a send_email dynamic-tool part
-const createSendEmailPart = (
-  state: string,
-  output?: ReturnType<typeof createMcpOutput>
-) =>
+const createSendEmailPart = (state: string, output?: ReturnType<typeof createMcpOutput>) =>
   ({
     type: "dynamic-tool",
     toolName: "send_email",

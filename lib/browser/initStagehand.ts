@@ -1,5 +1,8 @@
 import { Stagehand } from "@browserbasehq/stagehand";
 
+/**
+ *
+ */
 export async function initStagehand(): Promise<{
   stagehand: Stagehand;
   sessionUrl?: string;
@@ -11,7 +14,7 @@ export async function initStagehand(): Promise<{
 
   if (!apiKey || !projectId) {
     throw new Error(
-      "Missing Browserbase credentials. Please set BROWSERBASE_API_KEY and BROWSERBASE_PROJECT_ID environment variables."
+      "Missing Browserbase credentials. Please set BROWSERBASE_API_KEY and BROWSERBASE_PROJECT_ID environment variables.",
     );
   }
 
@@ -34,4 +37,3 @@ export async function initStagehand(): Promise<{
     debugUrl: initResult.debugUrl,
   };
 }
-

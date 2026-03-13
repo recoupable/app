@@ -19,9 +19,7 @@ const createReleaseReport = tool({
   Plan thoroughly before every tool call and reflect on the outcome after each tool call.
   `,
   inputSchema: z.object({
-    songTitle: z
-      .string()
-      .describe("The title of the song to create a release report for"),
+    songTitle: z.string().describe("The title of the song to create a release report for"),
   }),
   execute: async ({ songTitle }) => {
     return {

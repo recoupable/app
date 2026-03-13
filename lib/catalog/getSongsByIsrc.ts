@@ -17,9 +17,11 @@ export interface SongsByIsrcResponse {
   error?: string;
 }
 
-export async function getSongsByIsrc(
-  isrc: string
-): Promise<SongsByIsrcResponse> {
+/**
+ *
+ * @param isrc
+ */
+export async function getSongsByIsrc(isrc: string): Promise<SongsByIsrcResponse> {
   try {
     if (!isrc || isrc.trim() === "") {
       throw new Error("ISRC code is required");
@@ -29,15 +31,12 @@ export async function getSongsByIsrc(
       isrc: isrc.trim(),
     });
 
-    const response = await fetch(
-      `https://api.recoupable.com/api/songs?${params}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(`https://api.recoupable.com/api/songs?${params}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
       const errorText = await response.text();

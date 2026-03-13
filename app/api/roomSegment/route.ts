@@ -1,5 +1,9 @@
 import { getSegmentIdForRoomId } from "@/lib/supabase/getSegmentIdForRoomId";
 
+/**
+ *
+ * @param req
+ */
 export async function GET(req: Request) {
   try {
     const roomId = new URL(req.url).searchParams.get("roomId");
@@ -13,7 +17,7 @@ export async function GET(req: Request) {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
     }
 
@@ -35,7 +39,7 @@ export async function GET(req: Request) {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
   }
 }

@@ -10,6 +10,13 @@ type UseKeyboardSaveParams = {
 
 /**
  * Hook to handle Cmd+S / Ctrl+S keyboard shortcut for saving
+ *
+ * @param root0
+ * @param root0.isOpen
+ * @param root0.isEditing
+ * @param root0.hasUnsavedChanges
+ * @param root0.isSaving
+ * @param root0.onSave
  */
 export function useKeyboardSave({
   isOpen,
@@ -34,4 +41,3 @@ export function useKeyboardSave({
     }
   }, [isOpen, isEditing, hasUnsavedChanges, isSaving, onSave]);
 }
-

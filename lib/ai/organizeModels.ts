@@ -1,9 +1,6 @@
 import { GatewayLanguageModelEntry } from "@ai-sdk/gateway";
 import { isFreeModel } from "./isFreeModel";
-import { 
-  FEATURED_MODELS, 
-  isFeaturedModel
-} from "./featuredModels";
+import { FEATURED_MODELS, isFeaturedModel } from "./featuredModels";
 
 export interface OrganizedModels {
   featuredModels: GatewayLanguageModelEntry[];
@@ -12,6 +9,7 @@ export interface OrganizedModels {
 
 /**
  * Organizes available models into featured models and other models
+ *
  * @param availableModels - All available models from AI Gateway
  * @returns Organized model groups
  */
@@ -29,7 +27,7 @@ export const organizeModels = (availableModels: GatewayLanguageModelEntry[]): Or
       featuredModels.push({
         ...actualModel,
         // Override display name if specified in config
-        name: featuredConfig.displayName || actualModel.name
+        name: featuredConfig.displayName || actualModel.name,
       });
     }
   });
@@ -45,17 +43,17 @@ export const organizeModels = (availableModels: GatewayLanguageModelEntry[]): Or
   otherModels.sort((a, b) => {
     const aIsFree = isFreeModel(a);
     const bIsFree = isFreeModel(b);
-    
+
     // Pro models (not free) come first
     if (aIsFree && !bIsFree) return 1;
     if (!aIsFree && bIsFree) return -1;
-    
+
     // Within the same tier, sort alphabetically
     return a.name.localeCompare(b.name);
   });
 
   return {
     featuredModels,
-    otherModels
+    otherModels,
   };
 };

@@ -5,6 +5,12 @@ interface UseImageDownloaderOptions {
   enabled?: boolean;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.imageUrl
+ * @param root0.enabled
+ */
 export function useImageDownloader({ imageUrl, enabled = true }: UseImageDownloaderOptions) {
   const [imageBlob, setImageBlob] = useState<Blob | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -26,41 +32,45 @@ export function useImageDownloader({ imageUrl, enabled = true }: UseImageDownloa
         setIsPrefetching(false);
       }
     };
-    
+
     prefetchImage();
   }, [imageUrl, enabled]);
 
   const handleDownload = async () => {
     if (!imageUrl) return;
-    
+
     setIsDownloading(true);
-    
+
     try {
       // Use prefetched blob if available, otherwise fetch it
-      const blob = imageBlob || await (async () => {
-        const response = await fetch(imageUrl as string);
-        return response.blob();
-      })();
-      
+      const blob =
+        imageBlob ||
+        (await (async () => {
+          const response = await fetch(imageUrl as string);
+          return response.blob();
+        })());
+
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      
+
       // Format: "Recoup Image May 15, 2025, 09_59_47 PM"
       const now = new Date();
-      const formattedDate = now.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
+      const formattedDate = now.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
       });
-      const formattedTime = now.toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit', 
-        hour12: true 
-      }).replace(/:/g, '_');
+      const formattedTime = now
+        .toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        })
+        .replace(/:/g, "_");
       link.download = `Recoup Image ${formattedDate}, ${formattedTime}`;
-      
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -77,6 +87,6 @@ export function useImageDownloader({ imageUrl, enabled = true }: UseImageDownloa
     isDownloading,
     isPrefetching,
     isReady: !!imageBlob,
-    handleDownload
+    handleDownload,
   };
-} 
+}

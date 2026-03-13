@@ -25,6 +25,13 @@ interface UseAgentCardReturn {
   handleToggleFavorite: (agentId: string, nextFavourite: boolean) => void;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.agent
+ * @param root0.onClick
+ * @param root0.onToggleFavorite
+ */
 export function useAgentCard({
   agent,
   onClick,
@@ -42,8 +49,7 @@ export function useAgentCard({
   ];
 
   // Filter and prioritize action tags
-  const displayedActionTags =
-    agent.tags?.filter((tag) => actionTags.includes(tag)) || [];
+  const displayedActionTags = agent.tags?.filter(tag => actionTags.includes(tag)) || [];
   const pillTag = displayedActionTags[0] ?? agent.tags?.[0] ?? "General";
 
   // Check if this agent is shared with the current user
@@ -52,7 +58,7 @@ export function useAgentCard({
       !!userData?.id &&
       userData.id !== agent.creator &&
       !!email &&
-      agent.shared_emails?.includes(email)
+      agent.shared_emails?.includes(email),
   );
 
   const handleCardKeyDown = useCallback(
@@ -73,14 +79,14 @@ export function useAgentCard({
         onClick(agent);
       }
     },
-    [onClick, agent]
+    [onClick, agent],
   );
 
   const handleCardClick = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const target = event.target as HTMLElement;
       const interactiveAncestor = target.closest(
-        "button, [role='button'], input, textarea, select, a"
+        "button, [role='button'], input, textarea, select, a",
       );
 
       // Ignore clicks on interactive elements, but allow the card itself (role=button)
@@ -93,14 +99,14 @@ export function useAgentCard({
 
       onClick(agent);
     },
-    [onClick, agent]
+    [onClick, agent],
   );
 
   const handleToggleFavorite = useCallback(
     (agentId: string, nextFavourite: boolean) => {
       onToggleFavorite?.(agentId, nextFavourite);
     },
-    [onToggleFavorite]
+    [onToggleFavorite],
   );
 
   return {

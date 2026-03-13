@@ -3,11 +3,12 @@ import { ApifyScraperResult } from "@/lib/apify/types";
 
 /**
  * Runs the Instagram profiles scraper for the provided handles
+ *
  * @param handles - Array of Instagram handles to fetch profile data for
  * @returns Promise with runId, datasetId, and error information
  */
 export default async function runInstagramProfilesScraper(
-  handles: string[]
+  handles: string[],
 ): Promise<ApifyScraperResult> {
   try {
     if (!handles || handles.length === 0) {
@@ -20,7 +21,7 @@ export default async function runInstagramProfilesScraper(
 
     // Construct URL with handles as query parameters
     const url = new URL("https://api.recoupable.com/api/instagram/profiles");
-    handles.forEach((handle) => {
+    handles.forEach(handle => {
       url.searchParams.append("handles", handle);
     });
 
@@ -43,10 +44,7 @@ export default async function runInstagramProfilesScraper(
     return {
       runId: "",
       datasetId: "",
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to scrape Instagram profiles",
+      error: error instanceof Error ? error.message : "Failed to scrape Instagram profiles",
     };
   }
 }

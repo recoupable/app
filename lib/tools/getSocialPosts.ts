@@ -65,10 +65,7 @@ const getSocialPosts = tool({
       return {
         success: false,
         status: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch social posts",
+        message: error instanceof Error ? error.message : "Failed to fetch social posts",
         posts: [],
         pagination: {
           total_count: 0,

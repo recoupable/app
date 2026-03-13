@@ -1,3 +1,7 @@
+/**
+ *
+ * @param error
+ */
 export function handleChatError(error: unknown) {
   console.error("[Chat] Error processing request:", {
     error,
@@ -14,6 +18,6 @@ export function handleChatError(error: unknown) {
       headers: {
         "Content-Type": "application/json",
       },
-    }
+    },
   );
 }

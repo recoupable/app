@@ -3,6 +3,8 @@ import type { Page } from "@browserbasehq/stagehand";
 /**
  * Attempt to automatically dismiss login modals/popups
  * Returns true if a modal was dismissed, false otherwise
+ *
+ * @param page
  */
 export async function dismissLoginModal(page: Page): Promise<boolean> {
   try {
@@ -15,4 +17,3 @@ export async function dismissLoginModal(page: Page): Promise<boolean> {
     return false;
   }
 }
-

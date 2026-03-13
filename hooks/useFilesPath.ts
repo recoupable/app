@@ -3,6 +3,10 @@
 import { useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
+/**
+ *
+ * @param base
+ */
 export default function useFilesPath(base: string) {
   const params = useSearchParams();
   const router = useRouter();
@@ -41,5 +45,3 @@ export default function useFilesPath(base: string) {
 
   return { path: normalized, goTo, join, parent };
 }
-
-

@@ -10,6 +10,8 @@ export interface ProStatusResponse {
 /**
  * GET /api/subscription/status?accountId=xxx
  * Returns whether the account has pro status (via account or org subscription)
+ *
+ * @param req
  */
 export async function GET(req: NextRequest): Promise<Response> {
   const accountId = req.nextUrl.searchParams.get("accountId");
@@ -26,8 +28,7 @@ export async function GET(req: NextRequest): Promise<Response> {
     ]);
 
     const isPro =
-      isActiveSubscription(accountSubscription) ||
-      isActiveSubscription(orgSubscription);
+      isActiveSubscription(accountSubscription) || isActiveSubscription(orgSubscription);
 
     return Response.json({ isPro }, { status: 200 });
   } catch (error) {

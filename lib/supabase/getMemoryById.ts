@@ -1,17 +1,14 @@
 import supabase from "./serverClient";
 import { Tables } from "../../types/database.types";
 
-export async function getMemoryById({
-  id,
-}: {
-  id: string;
-}): Promise<Tables<"memories"> | null> {
+/**
+ *
+ * @param root0
+ * @param root0.id
+ */
+export async function getMemoryById({ id }: { id: string }): Promise<Tables<"memories"> | null> {
   try {
-    const { data, error } = await supabase
-      .from("memories")
-      .select("*")
-      .eq("id", id)
-      .single();
+    const { data, error } = await supabase.from("memories").select("*").eq("id", id).single();
 
     if (error) {
       console.error("Failed to get memory by id:", error.message);

@@ -2,16 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import getAccountEmails from "@/lib/supabase/account_emails/getAccountEmails";
 import { checkAccountArtistAccess } from "@/lib/supabase/account_artist_ids/checkAccountArtistAccess";
 
+/**
+ *
+ * @param req
+ */
 export async function GET(req: NextRequest) {
   const accountIds = req.nextUrl.searchParams.getAll("accountIds");
   const currentAccountId = req.nextUrl.searchParams.get("currentAccountId");
   const artistAccountId = req.nextUrl.searchParams.get("artistAccountId");
 
   if (!currentAccountId || !artistAccountId) {
-    return NextResponse.json(
-      { error: "Missing authentication parameters" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Missing authentication parameters" }, { status: 400 });
   }
 
   if (!accountIds || accountIds.length === 0) {
@@ -20,10 +21,7 @@ export async function GET(req: NextRequest) {
 
   try {
     // Verify current user has access to this artist
-    const hasAccess = await checkAccountArtistAccess(
-      currentAccountId,
-      artistAccountId
-    );
+    const hasAccess = await checkAccountArtistAccess(currentAccountId, artistAccountId);
 
     if (!hasAccess) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -34,12 +32,8 @@ export async function GET(req: NextRequest) {
     const emails = await getAccountEmails(accountIds);
     return NextResponse.json(emails);
   } catch {
-    return NextResponse.json(
-      { error: "Failed to fetch account emails" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch account emails" }, { status: 500 });
   }
 }
 
 export const dynamic = "force-dynamic";
-

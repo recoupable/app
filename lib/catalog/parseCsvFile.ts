@@ -14,11 +14,11 @@ type ParsedRow = Partial<TablesInsert<"songs">> & {
  * catalog_id is provided as a parameter
  *
  * Handles quoted fields, escaped quotes, and multiline cells correctly
+ *
+ * @param text
+ * @param catalogId
  */
-export function parseCsvFile(
-  text: string,
-  catalogId: string
-): CatalogSongInput[] {
+export function parseCsvFile(text: string, catalogId: string): CatalogSongInput[] {
   // Parse CSV using papaparse with optimized configuration
   const parseResult = Papa.parse<ParsedRow>(text, {
     header: true, // Automatically parse as objects with field names as keys
@@ -29,12 +29,10 @@ export function parseCsvFile(
 
   // Check for critical parsing errors
   const criticalErrors = parseResult.errors.filter(
-    (e) => e.type === "Delimiter" || e.type === "FieldMismatch"
+    e => e.type === "Delimiter" || e.type === "FieldMismatch",
   );
   if (criticalErrors.length > 0) {
-    throw new Error(
-      `CSV parsing errors: ${criticalErrors.map((e) => e.message).join(", ")}`
-    );
+    throw new Error(`CSV parsing errors: ${criticalErrors.map(e => e.message).join(", ")}`);
   }
 
   const rows = parseResult.data;

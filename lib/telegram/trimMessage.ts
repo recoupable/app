@@ -3,7 +3,8 @@ const MAX_MESSAGE_LENGTH = 4000; // Using slightly less than 4096 to be safe
 
 /**
  * Trims a message to fit within Telegram's character limit
- * @param text The text message to trim
+ *
+ * @param text - The text message to trim
  * @returns Trimmed text that fits within Telegram's message limits
  */
 export const trimMessage = (text: string): string => {

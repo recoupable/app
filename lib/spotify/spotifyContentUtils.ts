@@ -20,6 +20,7 @@ export type SpotifyContent =
 
 /**
  * Generates appropriate subtitle text for different Spotify content types
+ *
  * @param content - Any Spotify content object (track, artist, album, etc.)
  * @returns Formatted subtitle string based on content type
  */

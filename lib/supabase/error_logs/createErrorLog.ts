@@ -15,10 +15,10 @@ type ErrorLogInsert = Database["public"]["Tables"]["error_logs"]["Insert"];
  * Creates an error log entry in Supabase error_logs table
  * Maps ErrorContext data to appropriate database columns
  * Handles account lookup and graceful error handling
+ *
+ * @param params
  */
-export async function createErrorLog(
-  params: CreateErrorLogParams
-): Promise<void> {
+export async function createErrorLog(params: CreateErrorLogParams): Promise<void> {
   try {
     // Look up account_id from email if provided
     let account_id: string | null = null;
@@ -36,7 +36,7 @@ export async function createErrorLog(
     const last_message =
       params.messages && params.messages.length > 0
         ? params.messages[params.messages.length - 1]?.parts
-            .filter((part) => part.type === "text")
+            .filter(part => part.type === "text")
             .join("")
         : null;
 
@@ -47,7 +47,7 @@ export async function createErrorLog(
     const tool_name = extractToolNameFromError(
       params.error.message || "",
       params.error.stack || "",
-      params.error.name || ""
+      params.error.name || "",
     );
 
     // Insert error log record

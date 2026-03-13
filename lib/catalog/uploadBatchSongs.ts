@@ -5,7 +5,7 @@ const BATCH_SIZE = 1000;
 
 export const uploadBatchSongs = async (
   songs: CatalogSongInput[],
-  onProgress?: (current: number, total: number) => void
+  onProgress?: (current: number, total: number) => void,
 ) => {
   let allSongs: CatalogSong[] = [];
   const batches = [];

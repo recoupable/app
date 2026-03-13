@@ -7,14 +7,11 @@ import deleteAccountById from "@/lib/supabase/accounts/deleteAccountById";
  * Delete an artist association from an account
  * If no other accounts have this artist, also delete the artist account and related data
  *
- * @param artistAccountId The ID of the artist account to delete
- * @param ownerAccountId The ID of the owner account
+ * @param artistAccountId - The ID of the artist account to delete
+ * @param ownerAccountId - The ID of the owner account
  * @returns Object with success status, message, and artist name if successful
  */
-export async function deleteArtistFromAccount(
-  artistAccountId: string,
-  ownerAccountId: string
-) {
+export async function deleteArtistFromAccount(artistAccountId: string, ownerAccountId: string) {
   try {
     // First get the artist data using getArtistById utility
     const artistData = await getArtistById(artistAccountId);
@@ -23,10 +20,7 @@ export async function deleteArtistFromAccount(
     const artistName = artistData?.name || "Unknown artist";
 
     // Delete the account_artist_ids record using utility
-    const deleteResult = await deleteAccountArtistId(
-      artistAccountId,
-      ownerAccountId
-    );
+    const deleteResult = await deleteAccountArtistId(artistAccountId, ownerAccountId);
 
     if (!deleteResult.success) {
       return {

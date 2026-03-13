@@ -1,5 +1,9 @@
 import type { FileNode } from "./parseFileTree";
 
+/**
+ *
+ * @param nodes
+ */
 export function sortFileTree(nodes: FileNode[]): void {
   nodes.sort((a, b) => {
     if (a.type !== b.type) {

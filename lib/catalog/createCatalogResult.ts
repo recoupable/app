@@ -3,11 +3,11 @@ import { CatalogSongsResponse } from "./getCatalogSongs";
 
 /**
  * Creates a CatalogSongsResult from paginated catalog data
+ *
+ * @param pages
  */
-export const createCatalogResult = (
-  pages: CatalogSongsResponse[]
-): CatalogSongsResult => {
-  const allSongs = pages.flatMap((page) => page.songs);
+export const createCatalogResult = (pages: CatalogSongsResponse[]): CatalogSongsResult => {
+  const allSongs = pages.flatMap(page => page.songs);
   const totalCount = pages[0].pagination.total_count;
 
   return {

@@ -1,8 +1,4 @@
-import {
-  getToolOrDynamicToolName,
-  isToolOrDynamicToolUIPart,
-  UIMessage,
-} from "ai";
+import { getToolOrDynamicToolName, isToolOrDynamicToolUIPart, UIMessage } from "ai";
 
 interface SendEmailResult {
   emailId: string;
@@ -16,9 +12,7 @@ interface SendEmailResult {
  * @param responseMessages - The assistant messages from the chat response
  * @returns Array of send email results with emailId and messageId
  */
-export function extractSendEmailResults(
-  responseMessages: UIMessage[]
-): SendEmailResult[] {
+export function extractSendEmailResults(responseMessages: UIMessage[]): SendEmailResult[] {
   const results: SendEmailResult[] = [];
 
   for (const message of responseMessages) {

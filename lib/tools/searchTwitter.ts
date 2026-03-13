@@ -20,11 +20,7 @@ const SEARCH_OPERATORS = {
 // Zod schema for parameter validation
 const schema = z.object({
   query: z.string().min(1, "Search query is required"),
-  maxTweets: z
-    .number()
-    .min(1)
-    .max(1000)
-    .describe("Maximum number of tweets to return (1-1000)"),
+  maxTweets: z.number().min(1).max(1000).describe("Maximum number of tweets to return (1-1000)"),
   searchMode: z
     .enum(SEARCH_MODES)
     .optional()
@@ -94,11 +90,7 @@ You can combine these operators to create powerful search queries. For example:
 
 Note: The tool will automatically use get_artist_socials to find the correct Twitter handle before searching.`,
   inputSchema: schema,
-  execute: async ({
-    query,
-    maxTweets,
-    searchMode,
-  }): Promise<SearchTwitterResponse> => {
+  execute: async ({ query, maxTweets, searchMode }): Promise<SearchTwitterResponse> => {
     try {
       const url = new URL("https://api.recoupable.com/api/x/search");
       url.searchParams.append("query", query);
@@ -124,8 +116,7 @@ Note: The tool will automatically use get_artist_socials to find the correct Twi
       return {
         status: "error",
         tweets: [],
-        message:
-          error instanceof Error ? error.message : "Failed to search Twitter",
+        message: error instanceof Error ? error.message : "Failed to search Twitter",
       };
     }
   },

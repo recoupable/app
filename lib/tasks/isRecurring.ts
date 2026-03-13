@@ -1,5 +1,7 @@
 /**
  * Checks if a cron expression represents a recurring schedule (daily, weekly, or monthly)
+ *
+ * @param cronExpression
  */
 export const isRecurring = (cronExpression: string): boolean => {
   try {

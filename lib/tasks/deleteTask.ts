@@ -10,6 +10,8 @@ const SCHEDULE_NOT_FOUND_MSG = "Schedule not found";
 /**
  * Check if error indicates schedule not found in external scheduler
  * Paused tasks are removed from the scheduler, making this error expected
+ *
+ * @param errorText
  */
 function isScheduleNotFoundError(errorText: string): boolean {
   return errorText.includes(SCHEDULE_NOT_FOUND_MSG);
@@ -17,6 +19,8 @@ function isScheduleNotFoundError(errorText: string): boolean {
 
 /**
  * Delete task record from database when scheduler deletion isn't possible
+ *
+ * @param taskId
  */
 async function deleteTaskFromDatabase(taskId: string): Promise<void> {
   await fetch("/api/scheduled-actions/delete", {
@@ -28,6 +32,8 @@ async function deleteTaskFromDatabase(taskId: string): Promise<void> {
 
 /**
  * Deletes a task via the Recoup API and database
+ *
+ * @param params
  * @see https://docs.recoupable.com/tasks/delete
  */
 export async function deleteTask(params: DeleteTaskParams): Promise<void> {

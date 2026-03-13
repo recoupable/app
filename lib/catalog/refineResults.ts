@@ -6,10 +6,13 @@ const MAX_RESULTS = 1000;
 /**
  * Recursively filters song selection until results are under MAX_RESULTS
  * Single Responsibility: Ensure result count stays within LLM context limits
+ *
+ * @param songs
+ * @param criteria
  */
 export async function refineResults(
   songs: CatalogSong[],
-  criteria: string
+  criteria: string,
 ): Promise<CatalogSong[]> {
   if (songs.length <= MAX_RESULTS) return songs;
 

@@ -4,18 +4,19 @@ import type { YouTubeTokensRow, YouTubeTokensInsert } from "@/types/youtube";
 /**
  * Insert or update YouTube tokens for an account
  * Uses upsert to handle both new tokens and token refreshes
+ *
  * @param tokens - YouTube tokens data to insert/update
  * @returns Inserted/updated YouTube tokens or null if operation failed
  */
 const insertYouTubeTokens = async (
-  tokens: YouTubeTokensInsert
+  tokens: YouTubeTokensInsert,
 ): Promise<YouTubeTokensRow | null> => {
   try {
     const { data, error } = await supabase
       .from("youtube_tokens")
-      .upsert(tokens, { 
+      .upsert(tokens, {
         onConflict: "artist_account_id",
-        ignoreDuplicates: false 
+        ignoreDuplicates: false,
       })
       .select("*")
       .single();
@@ -32,4 +33,4 @@ const insertYouTubeTokens = async (
   }
 };
 
-export default insertYouTubeTokens; 
+export default insertYouTubeTokens;
