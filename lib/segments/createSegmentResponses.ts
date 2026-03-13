@@ -11,7 +11,7 @@ interface CreateArtistSegmentsSuccessData {
 export const successResponse = (
   message: string,
   data: CreateArtistSegmentsSuccessData,
-  count: number
+  count: number,
 ) => ({
   success: true,
   status: "success",

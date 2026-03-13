@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { listFilesByArtist } from "@/lib/supabase/files/listFilesByArtist";
 
+/**
+ *
+ * @param req
+ */
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -10,7 +14,10 @@ export async function GET(req: Request) {
     const recursive = searchParams.get("recursive") === "true";
 
     if (!ownerAccountId || !artistAccountId) {
-      return NextResponse.json({ error: "Missing ownerAccountId or artistAccountId" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing ownerAccountId or artistAccountId" },
+        { status: 400 },
+      );
     }
 
     // Use shared helper function (properly filters team files and immediate children)

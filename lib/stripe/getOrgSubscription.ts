@@ -9,9 +9,7 @@ import Stripe from "stripe";
  * @param accountId - The account ID
  * @returns The org's Stripe subscription if found, null otherwise
  */
-export async function getOrgSubscription(
-  accountId: string
-): Promise<Stripe.Subscription | null> {
+export async function getOrgSubscription(accountId: string): Promise<Stripe.Subscription | null> {
   if (!accountId) return null;
 
   const accountOrgs = await getAccountOrganizations(accountId);
@@ -19,16 +17,13 @@ export async function getOrgSubscription(
 
   // Check all orgs in parallel for faster UX
   const orgIds = accountOrgs
-    .map((org) => org.organization_id)
+    .map(org => org.organization_id)
     .filter((id): id is string => id !== null);
-  
-  const subscriptions = await Promise.all(
-    orgIds.map((orgId) => getActiveSubscriptionDetails(orgId))
-  );
+
+  const subscriptions = await Promise.all(orgIds.map(orgId => getActiveSubscriptionDetails(orgId)));
 
   // Return first active subscription found
-  return subscriptions.find((sub) => sub !== null) ?? null;
+  return subscriptions.find(sub => sub !== null) ?? null;
 }
 
 export default getOrgSubscription;
-

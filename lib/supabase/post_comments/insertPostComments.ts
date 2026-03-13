@@ -4,14 +4,12 @@ import { Tables } from "@/types/database.types";
 type PostComment = Tables<"post_comments">;
 type PostCommentInsert = Partial<PostComment>;
 
-export const insertPostComments = async (
-  comments: PostCommentInsert[]
-): Promise<PostComment[]> => {
+export const insertPostComments = async (comments: PostCommentInsert[]): Promise<PostComment[]> => {
   const { data, error } = await serverClient
     .from("post_comments")
-    .upsert(comments, { 
+    .upsert(comments, {
       onConflict: "post_id,social_id,comment,commented_at",
-      ignoreDuplicates: true 
+      ignoreDuplicates: true,
     })
     .select();
 

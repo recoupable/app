@@ -24,4 +24,4 @@ export const sortArtistsAlphabetically = (artists: ArtistRecord[]) => {
 // Type guards
 export const isArtistSelected = (artist: ArtistRecord | null): artist is ArtistRecord => {
   return artist !== null;
-}; 
+};

@@ -27,39 +27,28 @@ Important:
 - Target file cannot already exist
 `,
   inputSchema: z.object({
-    fileName: z
-      .string()
-      .describe("Name of the file to move (e.g., 'research.md')"),
+    fileName: z.string().describe("Name of the file to move (e.g., 'research.md')"),
     sourcePath: z
       .string()
       .optional()
-      .describe("Current directory path (e.g., 'old-folder'). Leave empty if file is in root directory."),
+      .describe(
+        "Current directory path (e.g., 'old-folder'). Leave empty if file is in root directory.",
+      ),
     targetPath: z
       .string()
       .describe("Destination directory path (e.g., 'reports', 'research/2024'). Cannot be empty."),
-    active_account_id: z
-      .string()
-      .describe("Pull active_account_id from the system prompt"),
-    active_artist_id: z
-      .string()
-      .describe("Pull active_artist_id from the system prompt"),
+    active_account_id: z.string().describe("Pull active_account_id from the system prompt"),
+    active_artist_id: z.string().describe("Pull active_artist_id from the system prompt"),
   }),
-  execute: async ({
-    fileName,
-    sourcePath,
-    targetPath,
-    active_account_id,
-    active_artist_id,
-  }) => {
+  execute: async ({ fileName, sourcePath, targetPath, active_account_id, active_artist_id }) => {
     const normalizedFileName = normalizeFileName(fileName);
-    
+
     try {
-      
       const fileRecord = await findFileByName(
         normalizedFileName,
         active_account_id,
         active_artist_id,
-        sourcePath
+        sourcePath,
       );
 
       if (!fileRecord) {
@@ -82,15 +71,12 @@ Important:
         return {
           success: false,
           error: "Target path cannot be empty.",
-          message: "Please specify a destination directory. Use rename_file_or_folder if you want to keep the file in the same location.",
+          message:
+            "Please specify a destination directory. Use rename_file_or_folder if you want to keep the file in the same location.",
         };
       }
 
-      const fullTargetPath = generateStoragePath(
-        active_account_id,
-        active_artist_id,
-        targetPath
-      );
+      const fullTargetPath = generateStoragePath(active_account_id, active_artist_id, targetPath);
 
       if (!isValidStorageKey(fullTargetPath)) {
         return {
@@ -117,7 +103,7 @@ Important:
         normalizedFileName,
         active_account_id,
         active_artist_id,
-        targetPath
+        targetPath,
       );
 
       if (existingFile) {
@@ -132,14 +118,10 @@ Important:
         active_account_id,
         active_artist_id,
         normalizedFileName,
-        targetPath
+        targetPath,
       );
 
-      await copyFileByKey(
-        fileRecord.storage_key,
-        newStorageKey,
-        fileRecord.mime_type || undefined
-      );
+      await copyFileByKey(fileRecord.storage_key, newStorageKey, fileRecord.mime_type || undefined);
 
       await updateFileStorageKey(fileRecord.id, newStorageKey);
       await deleteFileByKey(fileRecord.storage_key);
@@ -159,4 +141,3 @@ Important:
 });
 
 export default moveFile;
-

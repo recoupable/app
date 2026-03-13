@@ -13,8 +13,12 @@ export interface GetSpotifyPlayButtonClickedResult {
   total: number;
 }
 
+/**
+ *
+ * @param params
+ */
 export async function getSpotifyPlayButtonClicked(
-  params: GetSpotifyPlayButtonClickedParams
+  params: GetSpotifyPlayButtonClickedParams,
 ): Promise<GetSpotifyPlayButtonClickedResult> {
   const { campaignId } = params;
 

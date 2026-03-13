@@ -1,9 +1,6 @@
 import { FileUIPart } from "ai";
 
-const createMessageFileAttachment = (file: {
-  url: string;
-  type: string;
-}): FileUIPart | null => {
+const createMessageFileAttachment = (file: { url: string; type: string }): FileUIPart | null => {
   if (file.type === "application/pdf") {
     return {
       type: "file" as const,

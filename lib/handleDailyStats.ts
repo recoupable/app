@@ -29,9 +29,7 @@ export async function handleDailyStats(): Promise<DailyStats> {
   const newRoomsCount = rooms.length;
   const prevRoomsCount = prevRooms.length;
   const roomsDelta =
-    prevRoomsCount === 0
-      ? 0
-      : ((newRoomsCount - prevRoomsCount) / prevRoomsCount) * 100;
+    prevRoomsCount === 0 ? 0 : ((newRoomsCount - prevRoomsCount) / prevRoomsCount) * 100;
   const newMemoriesCount = memories.length;
   const prevMemoriesCount = prevMemories.length;
   const memoriesDelta =

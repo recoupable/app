@@ -24,22 +24,22 @@ const browserExtract = tool({
     schema: z
       .record(z.string())
       .describe(
-        "Schema object defining the structure of data to extract (keys are field names, values are types: 'string', 'number', 'boolean', 'array')"
+        "Schema object defining the structure of data to extract (keys are field names, values are types: 'string', 'number', 'boolean', 'array')",
       ),
     instruction: z
       .string()
       .optional()
       .describe(
-        "Optional instruction to guide the extraction (e.g., 'extract product information from the main listing')"
+        "Optional instruction to guide the extraction (e.g., 'extract product information from the main listing')",
       ),
   }),
   execute: async ({ url, schema, instruction }) => {
     try {
       return await withBrowser(async (page, liveViewUrl, sessionUrl) => {
         const targetUrl = normalizeInstagramUrl(url);
-        await page.goto(targetUrl, { 
-          waitUntil: "domcontentloaded", 
-          timeout: BROWSER_TIMEOUTS.PAGE_NAVIGATION 
+        await page.goto(targetUrl, {
+          waitUntil: "domcontentloaded",
+          timeout: BROWSER_TIMEOUTS.PAGE_NAVIGATION,
         });
 
         const screenshotUrl = await captureScreenshot(page, url);
@@ -71,4 +71,3 @@ const browserExtract = tool({
 });
 
 export default browserExtract;
-

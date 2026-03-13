@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import type { KnowledgeBaseEntry } from "@/lib/supabase/getArtistKnowledge";
 
+/**
+ *
+ * @param artistId
+ */
 export function useArtistKnowledge(artistId?: string) {
   return useQuery<KnowledgeBaseEntry[]>({
     queryKey: ["artist-knowledge", artistId],
@@ -19,5 +23,3 @@ export function useArtistKnowledge(artistId?: string) {
 }
 
 export default useArtistKnowledge;
-
-

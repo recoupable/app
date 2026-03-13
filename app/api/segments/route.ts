@@ -1,6 +1,10 @@
 import { getArtistSegments } from "@/lib/supabase/getArtistSegments";
 import { NextRequest } from "next/server";
 
+/**
+ *
+ * @param req
+ */
 export async function GET(req: NextRequest) {
   const artistId = req.nextUrl.searchParams.get("artistId");
 
@@ -13,10 +17,7 @@ export async function GET(req: NextRequest) {
     return Response.json(segments, { status: 200 });
   } catch (error) {
     console.error("Error fetching segments:", error);
-    return Response.json(
-      { error: "Failed to fetch segments" },
-      { status: 500 }
-    );
+    return Response.json({ error: "Failed to fetch segments" }, { status: 500 });
   }
 }
 

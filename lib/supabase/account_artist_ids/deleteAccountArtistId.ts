@@ -3,14 +3,11 @@ import supabase from "@/lib/supabase/serverClient";
 /**
  * Delete an association between an account and an artist
  *
- * @param artistId The ID of the artist
- * @param accountId The ID of the account
+ * @param artistId - The ID of the artist
+ * @param accountId - The ID of the account
  * @returns Object with success status, deleted links data, and any error
  */
-export async function deleteAccountArtistId(
-  artistId: string,
-  accountId: string
-) {
+export async function deleteAccountArtistId(artistId: string, accountId: string) {
   try {
     const { data, error } = await supabase
       .from("account_artist_ids")

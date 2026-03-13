@@ -6,14 +6,12 @@ type FileRecord = Tables<"files">;
 /**
  * Get all files for an artist account
  * Simple database query with no filtering logic
- * 
+ *
  * @param artistAccountId - The artist's account ID
  * @returns Array of file records ordered by creation date (newest first)
  * @throws Error if database query fails
  */
-export async function getFilesByArtistId(
-  artistAccountId: string
-): Promise<FileRecord[]> {
+export async function getFilesByArtistId(artistAccountId: string): Promise<FileRecord[]> {
   const { data, error } = await supabase
     .from("files")
     .select()
@@ -26,4 +24,3 @@ export async function getFilesByArtistId(
 
   return data || [];
 }
-

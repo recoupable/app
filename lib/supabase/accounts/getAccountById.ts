@@ -7,14 +7,10 @@ export type AccountWithInfoAndEmail = Tables<"accounts"> & {
   account_wallets: Array<Tables<"account_wallets">>;
 };
 
-const getAccountById = async (
-  id: string
-): Promise<AccountWithInfoAndEmail | null> => {
+const getAccountById = async (id: string): Promise<AccountWithInfoAndEmail | null> => {
   const { data, error } = await supabase
     .from("accounts")
-    .select(
-      "*, account_emails(email), account_info(*), account_wallets(wallet)"
-    )
+    .select("*, account_emails(email), account_info(*), account_wallets(wallet)")
     .eq("id", id)
     .single();
 

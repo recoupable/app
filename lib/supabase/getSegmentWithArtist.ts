@@ -20,9 +20,7 @@ const createNotFoundError = (segmentId: string): PostgrestError => ({
   name: "PostgrestError",
 });
 
-export const getSegmentWithArtist = async (
-  segmentId: string
-): Promise<GetSegmentResult> => {
+export const getSegmentWithArtist = async (segmentId: string): Promise<GetSegmentResult> => {
   try {
     const { data: segmentData, error: segmentError } = await supabase
       .from("segments")
@@ -32,7 +30,7 @@ export const getSegmentWithArtist = async (
         artist_segments (
           artist_account_id
         )
-      `
+      `,
       )
       .eq("id", segmentId)
       .single();
@@ -51,8 +49,7 @@ export const getSegmentWithArtist = async (
       };
     }
 
-    const artistAccountId =
-      segmentData.artist_segments?.[0]?.artist_account_id || null;
+    const artistAccountId = segmentData.artist_segments?.[0]?.artist_account_id || null;
 
     return {
       segment: segmentData,

@@ -13,8 +13,7 @@ interface UseRecentChatsParams {
 }
 
 export const useRecentChats = ({ toggleModal }: UseRecentChatsParams) => {
-  const { conversations, isLoading, isFetching, refetchConversations } =
-    useConversationsProvider();
+  const { conversations, isLoading, isFetching, refetchConversations } = useConversationsProvider();
   const { handleClick } = useClickChat();
   const isMobile = useMobileDetection();
   const params = useParams();
@@ -26,7 +25,7 @@ export const useRecentChats = ({ toggleModal }: UseRecentChatsParams) => {
       ? params.roomId
       : typeof params?.agentId === "string"
         ? params.agentId
-        : null
+        : null,
   );
 
   useEffect(() => {
@@ -39,8 +38,7 @@ export const useRecentChats = ({ toggleModal }: UseRecentChatsParams) => {
       }
 
       const roomId = typeof params?.roomId === "string" ? params.roomId : null;
-      const agentId =
-        typeof params?.agentId === "string" ? params.agentId : null;
+      const agentId = typeof params?.agentId === "string" ? params.agentId : null;
       setActiveChatId(roomId || agentId || null);
     };
 
@@ -53,9 +51,7 @@ export const useRecentChats = ({ toggleModal }: UseRecentChatsParams) => {
     chatRooms?: Array<Conversation | ArtistAgent>;
   }>({ type: null, chatRoom: null });
 
-  const [selectedChatIds, setSelectedChatIds] = useState<Set<string>>(
-    new Set()
-  );
+  const [selectedChatIds, setSelectedChatIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string | null>(null);
   const [isShiftPressed, setIsShiftPressed] = useState(false);
 
@@ -91,10 +87,7 @@ export const useRecentChats = ({ toggleModal }: UseRecentChatsParams) => {
     onClose: () => setOpenMenuId(null),
   });
 
-  const openModal = (
-    type: "rename" | "delete",
-    chatRoom: Conversation | ArtistAgent
-  ) => {
+  const openModal = (type: "rename" | "delete", chatRoom: Conversation | ArtistAgent) => {
     setModalState({ type, chatRoom });
     setOpenMenuId(null);
   };
@@ -109,15 +102,12 @@ export const useRecentChats = ({ toggleModal }: UseRecentChatsParams) => {
       await refetchConversations();
       setSelectedChatIds(new Set());
     } catch (error) {
-      console.error(
-        `Error refreshing conversations after ${modalState.type}:`,
-        error
-      );
+      console.error(`Error refreshing conversations after ${modalState.type}:`, error);
     }
   };
 
   const handleChatSelection = (chatId: string, isShiftKey: boolean) => {
-    setSelectedChatIds((prev) => {
+    setSelectedChatIds(prev => {
       const newSelection = new Set(prev);
 
       if (isShiftKey && lastClickedId) {
@@ -146,9 +136,7 @@ export const useRecentChats = ({ toggleModal }: UseRecentChatsParams) => {
   };
 
   const handleBulkDelete = () => {
-    const chatsToDelete = conversations.filter((chat) =>
-      selectedChatIds.has(getChatRoomId(chat))
-    );
+    const chatsToDelete = conversations.filter(chat => selectedChatIds.has(getChatRoomId(chat)));
 
     if (chatsToDelete.length === 0) {
       return;
@@ -169,7 +157,7 @@ export const useRecentChats = ({ toggleModal }: UseRecentChatsParams) => {
   };
 
   const toggleMenu = (roomId: string) => {
-    setOpenMenuId((current) => (current === roomId ? null : roomId));
+    setOpenMenuId(current => (current === roomId ? null : roomId));
   };
 
   const isSelectionMode = selectedChatIds.size > 0;

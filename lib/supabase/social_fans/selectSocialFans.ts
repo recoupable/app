@@ -31,7 +31,7 @@ interface SelectSocialFansParams {
 }
 
 export const selectSocialFans = async (
-  params?: SelectSocialFansParams
+  params?: SelectSocialFansParams,
 ): Promise<SocialFanWithDetails[]> => {
   let query = serverClient.from("social_fans").select(`
       *,
@@ -71,10 +71,7 @@ export const selectSocialFans = async (
   }
 
   // Only allow ordering by top-level columns
-  if (
-    params?.orderBy &&
-    SOCIAL_FANS_ORDERABLE_COLUMNS.includes(params.orderBy)
-  ) {
+  if (params?.orderBy && SOCIAL_FANS_ORDERABLE_COLUMNS.includes(params.orderBy)) {
     query = query.order(params.orderBy, {
       ascending: params.orderDirection !== "desc",
       nullsFirst: false,

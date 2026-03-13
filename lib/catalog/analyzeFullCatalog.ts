@@ -11,6 +11,10 @@ export interface AnalyzeFullCatalogOptions {
 /**
  * Fetches all songs from a catalog and filters them using AI in parallel batches
  * Following Open-Closed Principle: open for extension (custom filtering logic), closed for modification
+ *
+ * @param root0
+ * @param root0.catalogId
+ * @param root0.criteria
  */
 export async function analyzeFullCatalog({
   catalogId,
@@ -27,10 +31,8 @@ export async function analyzeFullCatalog({
 
   // Fetch all pages in parallel
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
-  const pagePromises = pageNumbers.map(async (pageNum) =>
-    pageNum === 1
-      ? firstPage.songs
-      : (await getCatalogSongs(catalogId, BATCH_SIZE, pageNum)).songs
+  const pagePromises = pageNumbers.map(async pageNum =>
+    pageNum === 1 ? firstPage.songs : (await getCatalogSongs(catalogId, BATCH_SIZE, pageNum)).songs,
   );
 
   const allPages = await Promise.all(pagePromises);

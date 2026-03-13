@@ -49,8 +49,7 @@ export const ROUTING_STATUS_DATA_TYPE = "data-agent-routing-status" as const;
 
 export const TITLE = "Recoupable";
 
-export const META_DESCRIPTION =
-  "Recoup helps artists build their own record label.";
+export const META_DESCRIPTION = "Recoup helps artists build their own record label.";
 
 export const DEFAULT_CREDITS = 333;
 export const PRO_CREDITS = 1000;
@@ -207,10 +206,7 @@ export const MERMAID_INSTRUCTIONS_PROMPT = `
   \`\`\`
 `;
 
-export const SUGGESTIONS = [
-  "Create an artist.",
-  "Analyze my artists' TikTok account.",
-];
+export const SUGGESTIONS = ["Create an artist.", "Analyze my artists' TikTok account."];
 
 export const HTML_RESPONSE_FORMAT_INSTRUCTIONS = `
   Please provide a wide range of HTML formats with embedded HTML tags such as <div>, <p>, <ul>, <li>, and <span>, along with CSS styles including font size, margin, and padding. 
@@ -1878,10 +1874,4 @@ Analyze the fan data to create highly specific niche-based segments that artists
 // EVALS
 export const EVAL_ACCOUNT_ID = "fb678396-a68f-4294-ae50-b8cacf9ce77b";
 export const EVAL_ACCESS_TOKEN = process.env.EVAL_ACCESS_TOKEN || "";
-export const EVAL_ARTISTS = [
-  "Gliiico",
-  "Mac Miller",
-  "Wiz Khalifa",
-  "Mod Sun",
-  "Julius Black",
-];
+export const EVAL_ARTISTS = ["Gliiico", "Mac Miller", "Wiz Khalifa", "Mod Sun", "Julius Black"];

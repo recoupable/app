@@ -4,6 +4,9 @@ import { NEW_API_BASE_URL } from "@/lib/consts";
 import { useAccessToken } from "./useAccessToken";
 import { useApiOverride } from "./useApiOverride";
 
+/**
+ *
+ */
 export function useChatTransport() {
   const accessToken = useAccessToken();
   const apiOverride = useApiOverride();

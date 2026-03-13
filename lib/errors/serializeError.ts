@@ -10,6 +10,8 @@ export interface SerializedError {
 /**
  * Extracts serializable properties from error objects
  * Ensures errors can be properly JSON serialized
+ *
+ * @param error
  */
 export function serializeError(error: unknown): SerializedError {
   if (error instanceof Error) {

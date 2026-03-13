@@ -4,11 +4,15 @@ import supabase from "./serverClient";
 
 /**
  * Copies messages from source room to target room
+ *
+ * @param sourceRoomId
+ * @param targetRoomId
+ * @param clearExisting
  */
 async function copyMessages(
   sourceRoomId: string,
   targetRoomId: string,
-  clearExisting: boolean
+  clearExisting: boolean,
 ): Promise<void> {
   try {
     // Get messages from source room
@@ -26,7 +30,7 @@ async function copyMessages(
     }
 
     // Prepare new messages
-    const newMessages = messages.map((msg) => ({
+    const newMessages = messages.map(msg => ({
       id: generateUUID(),
       room_id: targetRoomId,
       content: msg.content,

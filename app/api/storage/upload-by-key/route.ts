@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { isValidStorageKey } from "@/utils/isValidStorageKey";
 import { uploadFileByKey } from "@/lib/supabase/storage/uploadFileByKey";
 
+/**
+ *
+ * @param req
+ */
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
@@ -27,5 +31,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-

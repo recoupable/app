@@ -18,18 +18,18 @@ When to use:
     path: z
       .string()
       .optional()
-      .describe("Optional subdirectory path to list files from (e.g., 'research', 'reports'). Defaults to root directory."),
+      .describe(
+        "Optional subdirectory path to list files from (e.g., 'research', 'reports'). Defaults to root directory.",
+      ),
     textFilesOnly: z
       .boolean()
       .optional()
       .default(false)
-      .describe("If true, only return text-based files (md, txt, json, etc). If false, return all files."),
-    active_account_id: z
-      .string()
-      .describe("Pull active_account_id from the system prompt"),
-    active_artist_id: z
-      .string()
-      .describe("Pull active_artist_id from the system prompt"),
+      .describe(
+        "If true, only return text-based files (md, txt, json, etc). If false, return all files.",
+      ),
+    active_account_id: z.string().describe("Pull active_account_id from the system prompt"),
+    active_artist_id: z.string().describe("Pull active_artist_id from the system prompt"),
   }),
   execute: async ({ path, textFilesOnly, active_account_id, active_artist_id }) => {
     try {
@@ -38,14 +38,12 @@ When to use:
 
       // Filter to text files only if requested
       if (textFilesOnly && files.length > 0) {
-        files = files.filter((file) => {
+        files = files.filter(file => {
           // Keep directories (for navigation)
           if (file.is_directory) return true;
 
           // Check if file has a text extension
-          return TEXT_EXTENSIONS.some((ext) =>
-            file.file_name.toLowerCase().endsWith(ext)
-          );
+          return TEXT_EXTENSIONS.some(ext => file.file_name.toLowerCase().endsWith(ext));
         });
       }
 

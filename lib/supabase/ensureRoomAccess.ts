@@ -5,13 +5,14 @@ import copyRoomMessages from "./copyMessages";
 
 /**
  * Ensures the user has access to a room by creating a copy of a shared room
- * @param sourceRoomId The ID of the original room being shared
- * @param accountId The ID of the user to grant access to
+ *
+ * @param sourceRoomId - The ID of the original room being shared
+ * @param accountId - The ID of the user to grant access to
  * @returns The ID of the user's room (new or existing)
  */
 export async function ensureRoomAccess(
   sourceRoomId: string,
-  accountId: string
+  accountId: string,
 ): Promise<string | null> {
   try {
     // Check for existing room

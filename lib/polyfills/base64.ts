@@ -13,5 +13,3 @@ if (typeof g.btoa === "undefined") {
 }
 
 export {}; // side-effect only
-
-

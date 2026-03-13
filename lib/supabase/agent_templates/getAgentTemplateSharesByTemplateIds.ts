@@ -8,11 +8,12 @@ interface AgentTemplateShare {
 
 /**
  * Get all agent template shares for specific template IDs
- * @param templateIds Array of template IDs to get shares for
+ *
+ * @param templateIds - Array of template IDs to get shares for
  * @returns Array of share records
  */
 export async function getAgentTemplateSharesByTemplateIds(
-  templateIds: string[]
+  templateIds: string[],
 ): Promise<AgentTemplateShare[]> {
   if (!Array.isArray(templateIds) || templateIds.length === 0) return [];
 

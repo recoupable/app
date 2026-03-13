@@ -6,10 +6,13 @@ import { DEFAULT_MODEL } from "@/lib/consts";
 /**
  * Analyzes a single batch of catalog songs using AI to filter by criteria
  * Single Responsibility: Process one batch of songs with AI filtering
+ *
+ * @param songs
+ * @param criteria
  */
 export async function analyzeCatalogBatch(
   songs: CatalogSong[],
-  criteria: string
+  criteria: string,
 ): Promise<CatalogSong[]> {
   // Use AI to select relevant songs from this batch
   const { object } = await generateObject({
@@ -23,20 +26,18 @@ export async function analyzeCatalogBatch(
           
 Songs:
 ${JSON.stringify(
-  songs.map((s) => ({
+  songs.map(s => ({
     isrc: s.isrc,
     name: s.name,
-    artist: s.artists.map((a) => a.name).join(", "),
+    artist: s.artists.map(a => a.name).join(", "),
   })),
   null,
-  2
+  2,
 )}
 
 Return only the ISRCs of songs that match the criteria.`,
   });
 
   // Filter songs based on AI selection
-  return songs.filter((song) =>
-    (object.selected_song_isrcs as string[]).includes(song.isrc)
-  );
+  return songs.filter(song => (object.selected_song_isrcs as string[]).includes(song.isrc));
 }
