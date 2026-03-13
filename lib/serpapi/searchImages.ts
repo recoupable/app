@@ -1,20 +1,12 @@
 import { getSerpApiKey, SERPAPI_BASE_URL } from "./config";
-import type { 
-  SerpApiResponse, 
-  SearchImagesOptions 
-} from "./types";
+import type { SerpApiResponse, SearchImagesOptions } from "./types";
 
-export async function searchGoogleImages(
-  options: SearchImagesOptions
-): Promise<SerpApiResponse> {
-  const {
-    query,
-    limit = 10,
-    page = 0,
-    imageSize,
-    imageType,
-    aspectRatio
-  } = options;
+/**
+ *
+ * @param options
+ */
+export async function searchGoogleImages(options: SearchImagesOptions): Promise<SerpApiResponse> {
+  const { query, limit = 10, page = 0, imageSize, imageType, aspectRatio } = options;
 
   const apiKey = getSerpApiKey();
 
@@ -57,9 +49,7 @@ export async function searchGoogleImages(
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(
-        `SerpAPI request failed: ${response.status} - ${errorText}`
-      );
+      throw new Error(`SerpAPI request failed: ${response.status} - ${errorText}`);
     }
 
     const data: SerpApiResponse = await response.json();
@@ -73,16 +63,15 @@ export async function searchGoogleImages(
   } catch (error) {
     // Clear timeout in case of error
     clearTimeout(timeoutId);
-    
+
     // Handle timeout specifically
     if (error instanceof Error && error.name === "AbortError") {
       throw new Error(
-        "Google Images search timed out after 10 seconds. Please try again with a more specific query."
+        "Google Images search timed out after 10 seconds. Please try again with a more specific query.",
       );
     }
-    
+
     // Re-throw other errors
     throw error;
   }
 }
-

@@ -6,16 +6,13 @@ export type AccountRow = Tables<"accounts">;
 
 /**
  * Create a new account in the database
- * @param name Name of the account to create
+ *
+ * @param name - Name of the account to create
  * @returns Created account data or null if creation failed
  */
 export async function createAccount(name: string): Promise<AccountRow | null> {
   try {
-    const { data, error } = await supabase
-      .from("accounts")
-      .insert({ name })
-      .select("*")
-      .single();
+    const { data, error } = await supabase.from("accounts").insert({ name }).select("*").single();
 
     if (error) {
       console.error("Error creating account:", error);

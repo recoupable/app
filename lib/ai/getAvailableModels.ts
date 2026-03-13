@@ -6,16 +6,13 @@ import { getFalModels } from "./getFalModels";
  * Returns the list of available LLMs from both Vercel AI Gateway and Fal AI.
  * Combines models from both providers and filters out embed models.
  */
-export const getAvailableModels = async (): Promise<
-  GatewayLanguageModelEntry[]
-> => {
+export const getAvailableModels = async (): Promise<GatewayLanguageModelEntry[]> => {
   try {
-
     // Fetch models from Vercel AI Gateway
     let gatewayModels: GatewayLanguageModelEntry[] = [];
     try {
       const apiResponse = await gateway.getAvailableModels();
-      gatewayModels = apiResponse.models.filter((m) => !isEmbedModel(m));
+      gatewayModels = apiResponse.models.filter(m => !isEmbedModel(m));
       // Successfully fetched gateway models
     } catch {
       // Error fetching gateway models - continuing with fallback

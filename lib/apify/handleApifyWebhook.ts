@@ -5,12 +5,11 @@ import handleInstagramCommentsScraper from "@/lib/apify/comments/handleInstagram
 
 /**
  * Handles the Apify webhook payload: routes to appropriate handler based on actorId.
+ *
  * @param parsed - The parsed and validated Apify webhook payload
  * @returns An object with posts, socials, accountSocials, accountArtistIds, accountEmails, and sentEmails
  */
-export default async function handleApifyWebhook(
-  parsed: z.infer<typeof apifyPayloadSchema>
-) {
+export default async function handleApifyWebhook(parsed: z.infer<typeof apifyPayloadSchema>) {
   const fallbackResponse = {
     posts: [],
     social: null,

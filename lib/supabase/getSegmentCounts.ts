@@ -3,10 +3,10 @@ import supabase from "./serverClient";
 
 /**
  * Get fan counts for a list of segment IDs
+ *
+ * @param segmentIds
  */
-export async function getSegmentCounts(
-  segmentIds: string[]
-): Promise<SegmentCount[]> {
+export async function getSegmentCounts(segmentIds: string[]): Promise<SegmentCount[]> {
   try {
     const { data: fanSegments, error: countsError } = await supabase
       .from("fan_segments")
@@ -18,10 +18,9 @@ export async function getSegmentCounts(
       return [];
     }
 
-    const counts = segmentIds.map((segmentId) => ({
+    const counts = segmentIds.map(segmentId => ({
       segment_id: segmentId,
-      count:
-        fanSegments?.filter((fs) => fs.segment_id === segmentId).length || 0,
+      count: fanSegments?.filter(fs => fs.segment_id === segmentId).length || 0,
     }));
 
     return counts;

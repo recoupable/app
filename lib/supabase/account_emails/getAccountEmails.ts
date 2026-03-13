@@ -3,9 +3,7 @@ import { Tables } from "@/types/database.types";
 
 type AccountEmail = Tables<"account_emails">;
 
-export const getAccountEmails = async (
-  accountIds: string | string[]
-): Promise<AccountEmail[]> => {
+export const getAccountEmails = async (accountIds: string | string[]): Promise<AccountEmail[]> => {
   const ids = Array.isArray(accountIds) ? accountIds : [accountIds];
   if (ids.length === 0) return [];
 

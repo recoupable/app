@@ -8,10 +8,10 @@ type FilePermission = {
 
 /**
  * Get file metadata by storage key for permission validation
+ *
+ * @param storageKey
  */
-export async function getFileByStorageKey(
-  storageKey: string
-): Promise<FilePermission | null> {
+export async function getFileByStorageKey(storageKey: string): Promise<FilePermission | null> {
   const { data, error } = await supabase
     .from("files")
     .select("id, owner_account_id, artist_account_id")
@@ -24,4 +24,3 @@ export async function getFileByStorageKey(
 
   return data;
 }
-

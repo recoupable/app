@@ -8,9 +8,7 @@ interface UseScheduledActionsParams {
   artistAccountId?: string;
 }
 
-export const useScheduledActions = ({
-  artistAccountId,
-}: UseScheduledActionsParams) => {
+export const useScheduledActions = ({ artistAccountId }: UseScheduledActionsParams) => {
   return useQuery<ScheduledAction[]>({
     queryKey: ["scheduled-actions", { artistAccountId }],
     queryFn: () =>

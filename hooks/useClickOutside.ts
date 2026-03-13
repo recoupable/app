@@ -2,6 +2,7 @@ import { useEffect, RefObject } from "react";
 
 /**
  * Hook that calls a handler when clicking outside the referenced element.
+ *
  * @param ref - React ref to the element to detect clicks outside of
  * @param handler - Callback function to call when clicking outside
  * @param enabled - Whether the listener is active (default: true)
@@ -9,7 +10,7 @@ import { useEffect, RefObject } from "react";
 const useClickOutside = (
   ref: RefObject<HTMLElement>,
   handler: () => void,
-  enabled: boolean = true
+  enabled: boolean = true,
 ) => {
   useEffect(() => {
     if (!enabled) return;
@@ -26,4 +27,3 @@ const useClickOutside = (
 };
 
 export default useClickOutside;
-

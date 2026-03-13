@@ -1,6 +1,10 @@
 import createSession from "@/lib/stripe/createSession";
 import { NextRequest } from "next/server";
 
+/**
+ *
+ * @param req
+ */
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const accountId = body.accountId;

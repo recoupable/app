@@ -1,3 +1,7 @@
+/**
+ *
+ * @param durationMs
+ */
 export function formatDuration(durationMs: number | null): string {
   if (durationMs === null) return "";
   if (durationMs < 1000) return `${durationMs}ms`;

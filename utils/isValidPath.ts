@@ -1,11 +1,12 @@
 /**
  * Validates a directory path to prevent traversal attacks and security issues
  * More strict than storage key validation - for user-provided directory paths
- * @param path Directory path to validate
+ *
+ * @param path - Directory path to validate
  * @returns true if path is safe to use, false otherwise
  */
 export function isValidPath(path: string): boolean {
-  if (!path || typeof path !== 'string') {
+  if (!path || typeof path !== "string") {
     return false;
   }
 
@@ -15,17 +16,17 @@ export function isValidPath(path: string): boolean {
   }
 
   // Reject directory traversal patterns
-  if (path.includes('..')) {
+  if (path.includes("..")) {
     return false;
   }
 
   // Reject current directory references
-  if (path.includes('./') || path === '.') {
+  if (path.includes("./") || path === ".") {
     return false;
   }
 
   // Reject backslashes (Windows path separators)
-  if (path.includes('\\')) {
+  if (path.includes("\\")) {
     return false;
   }
 
@@ -36,7 +37,7 @@ export function isValidPath(path: string): boolean {
 
   // Reject absolute paths (should not start with /)
   // (This is redundant with normalization but adds defense in depth)
-  if (path.startsWith('/')) {
+  if (path.startsWith("/")) {
     return false;
   }
 
@@ -44,4 +45,3 @@ export function isValidPath(path: string): boolean {
 }
 
 export default isValidPath;
-

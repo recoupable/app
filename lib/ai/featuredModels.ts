@@ -81,6 +81,8 @@ export const FEATURED_MODELS: FeaturedModelConfig[] = [
 
 /**
  * Check if a model ID is in the featured list
+ *
+ * @param modelId
  */
 export const isFeaturedModel = (modelId: string): boolean => {
   return FEATURED_MODELS.some(model => model.id === modelId);
@@ -88,6 +90,8 @@ export const isFeaturedModel = (modelId: string): boolean => {
 
 /**
  * Get featured model config by ID
+ *
+ * @param modelId
  */
 export const getFeaturedModelConfig = (modelId: string): FeaturedModelConfig | undefined => {
   return FEATURED_MODELS.find(model => model.id === modelId);

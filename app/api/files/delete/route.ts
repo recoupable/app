@@ -6,6 +6,10 @@ import { deleteFilesInDirectory } from "@/lib/supabase/files/deleteFilesInDirect
 import { deleteFileRecord } from "@/lib/supabase/files/deleteFileRecord";
 import { deleteFileByKey } from "@/lib/supabase/storage/deleteFileByKey";
 
+/**
+ *
+ * @param req
+ */
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -17,7 +21,7 @@ export async function POST(req: Request) {
     if (!id || !storageKey || !ownerAccountId) {
       return NextResponse.json(
         { error: "Missing id, storageKey or ownerAccountId" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -30,10 +34,7 @@ export async function POST(req: Request) {
     // Verify user has access to this file
     const hasAccess = await checkFileAccess(ownerAccountId, file);
     if (!hasAccess) {
-      return NextResponse.json(
-        { error: "You don't have access to this file" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "You don't have access to this file" }, { status: 403 });
     }
 
     // Handle directory deletion (recursive)
@@ -43,7 +44,7 @@ export async function POST(req: Request) {
 
       // Delete child files from storage bucket
       if (childFiles.length > 0) {
-        const childStorageKeys = childFiles.map((f) => f.storage_key);
+        const childStorageKeys = childFiles.map(f => f.storage_key);
         await deleteFileByKey(childStorageKeys);
       }
 
@@ -63,5 +64,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-

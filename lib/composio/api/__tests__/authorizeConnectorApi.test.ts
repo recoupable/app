@@ -97,9 +97,9 @@ describe("authorizeConnectorApi", () => {
         status: 400,
       });
 
-      await expect(
-        authorizeConnectorApi("test-token", { connector: "tiktok" }),
-      ).rejects.toThrow("Failed to authorize connector");
+      await expect(authorizeConnectorApi("test-token", { connector: "tiktok" })).rejects.toThrow(
+        "Failed to authorize connector",
+      );
     });
   });
 });

@@ -5,6 +5,9 @@ import { CHAT_INPUT_SUPPORTED_FILE } from "@/lib/chat/config";
 import { isAllowedByExtension } from "@/lib/files/isAllowedByExtension";
 import { getFileExtension } from "@/lib/files/getFileExtension";
 
+/**
+ *
+ */
 export function usePureFileAttachments() {
   const { setAttachments, addTextAttachment } = useVercelChatContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -83,8 +86,8 @@ export function usePureFileAttachments() {
                 mediaType: data.fileType,
                 url: data.url,
               } as FileUIPart)
-            : attachment
-        )
+            : attachment,
+        ),
       );
 
       // Revoke the temporary object URL to avoid memory leaks
@@ -92,9 +95,7 @@ export function usePureFileAttachments() {
     } catch (error) {
       console.error("Error uploading file:", error);
       // Remove the failed attachment
-      setAttachments((prev: FileUIPart[]) =>
-        prev.filter((a: FileUIPart) => a.url !== tempUrl)
-      );
+      setAttachments((prev: FileUIPart[]) => prev.filter((a: FileUIPart) => a.url !== tempUrl));
       // Revoke the temporary object URL
       URL.revokeObjectURL(tempUrl);
     }

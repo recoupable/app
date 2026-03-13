@@ -3,6 +3,9 @@ import { getCorsHeaders } from "@/lib/chat/getCorsHeaders";
 import { proxyToApiChat } from "@/lib/chat/proxyToApiChat";
 
 // Handle OPTIONS preflight requests
+/**
+ *
+ */
 export async function OPTIONS() {
   return new Response(null, {
     status: 200,

@@ -6,12 +6,11 @@ import { useState, useEffect } from "react";
  * Returns a live elapsed duration (ms) counting up from a task's `startedAt`
  * timestamp. Stops ticking once `durationMs` becomes available (task finished).
  *
+ * @param startedAt
+ * @param durationMs
  * @see https://developers.recoupable.com/api-reference/tasks/runs#response-runs-items-started-at-one-of-0
  */
-export function useElapsedMs(
-  startedAt: string | null,
-  durationMs: number | null,
-): number | null {
+export function useElapsedMs(startedAt: string | null, durationMs: number | null): number | null {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {

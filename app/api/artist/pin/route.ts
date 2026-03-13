@@ -3,6 +3,10 @@ import { toggleArtistPin } from "@/lib/supabase/account_artist_ids/toggleArtistP
 
 export const runtime = "edge";
 
+/**
+ *
+ * @param req
+ */
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { accountId, artistId, pinned } = body;
@@ -10,7 +14,7 @@ export async function POST(req: NextRequest) {
   if (!accountId || !artistId || typeof pinned !== "boolean") {
     return Response.json(
       { message: "Missing required fields: accountId, artistId, pinned" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 

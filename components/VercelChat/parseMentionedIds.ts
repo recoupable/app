@@ -3,7 +3,7 @@ export const parseMentionedIds = (value: string | undefined): Set<string> => {
   const text = value || "";
   const regex = /@\[[^\]]+\]\(([^)]+)\)/g;
   let m: RegExpExecArray | null;
-  // eslint-disable-next-line no-cond-assign
+
   while ((m = regex.exec(text))) {
     if (m[1]) ids.add(m[1]);
   }

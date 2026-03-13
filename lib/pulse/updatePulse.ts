@@ -5,6 +5,12 @@ export type UpdatePulseParams = {
   active: boolean;
 };
 
+/**
+ *
+ * @param root0
+ * @param root0.accessToken
+ * @param root0.active
+ */
 export async function updatePulse({
   accessToken,
   active,

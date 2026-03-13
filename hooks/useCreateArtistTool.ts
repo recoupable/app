@@ -7,6 +7,8 @@ import copyMessagesClient from "@/lib/copyMessagesClient";
 /**
  * Hook for managing the create artist tool result
  * Handles refreshing artists, copying messages, and navigation
+ *
+ * @param result
  */
 export function useCreateArtistTool(result: CreateArtistResult) {
   const { status, id } = useVercelChatContext();
@@ -21,10 +23,7 @@ export function useCreateArtistTool(result: CreateArtistResult) {
 
     // Skip if no artist data or already processing
     const shouldSkip =
-      !result.artist ||
-      !result.artist.account_id ||
-      isProcessing ||
-      !isFinishedStreaming;
+      !result.artist || !result.artist.account_id || isProcessing || !isFinishedStreaming;
     if (shouldSkip) {
       return;
     }
@@ -38,10 +37,7 @@ export function useCreateArtistTool(result: CreateArtistResult) {
 
         if (needsRedirect) {
           // Copy messages from current room to the newly created room
-          const success = await copyMessagesClient(
-            id as string,
-            result.newRoomId as string
-          );
+          const success = await copyMessagesClient(id as string, result.newRoomId as string);
 
           // Refresh conversations to show the new chat
           await refetchConversations();

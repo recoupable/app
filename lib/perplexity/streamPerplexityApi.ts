@@ -3,11 +3,11 @@ import { getPerplexityApiKey, getPerplexityHeaders, PERPLEXITY_BASE_URL } from "
 
 const streamPerplexityApi = async (
   messages: PerplexityMessage[],
-  model: string = "sonar-pro"
+  model: string = "sonar-pro",
 ): Promise<Response> => {
   const apiKey = getPerplexityApiKey();
   const url = `${PERPLEXITY_BASE_URL}/chat/completions`;
-  
+
   const body = {
     model,
     messages,
@@ -24,7 +24,7 @@ const streamPerplexityApi = async (
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(
-        `Perplexity API error: ${response.status} ${response.statusText}\n${errorText}`
+        `Perplexity API error: ${response.status} ${response.statusText}\n${errorText}`,
       );
     }
 
@@ -35,4 +35,3 @@ const streamPerplexityApi = async (
 };
 
 export default streamPerplexityApi;
-

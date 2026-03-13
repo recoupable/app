@@ -3,6 +3,8 @@ import { ReportData } from "@/components/Chat/ChatReport/types";
 
 /**
  * Checks if a report is complete by verifying both report and next_steps are available
+ *
+ * @param data
  */
 const isReportComplete = (data: ReportData | undefined): boolean => {
   return Boolean(data?.report && data?.next_steps);
@@ -21,7 +23,7 @@ export const useReportData = (reportId: string) => {
   return useQuery({
     queryKey: ["report", reportId],
     queryFn: () => fetchReport(reportId),
-    refetchInterval: (query) => {
+    refetchInterval: query => {
       const data = query.state.data;
       return isReportComplete(data) ? false : 3000;
     },

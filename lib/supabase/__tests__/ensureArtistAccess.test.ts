@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+// Import after mocks
+import { ensureArtistAccess } from "../ensureArtistAccess";
+
 // Create chainable mock for Supabase queries
 const createChainableMock = () => {
   const chain: {
@@ -21,9 +24,7 @@ const createChainableMock = () => {
   chain.select.mockReturnValue(chain);
   chain.eq.mockReturnValue(chain);
   chain.single.mockImplementation(() => Promise.resolve(chain.resolvedData));
-  chain.maybeSingle.mockImplementation(() =>
-    Promise.resolve(chain.resolvedData)
-  );
+  chain.maybeSingle.mockImplementation(() => Promise.resolve(chain.resolvedData));
   chain.insert.mockImplementation(() => Promise.resolve(chain.resolvedData));
 
   return chain;
@@ -43,9 +44,6 @@ vi.mock("../serverClient", () => ({
     }),
   },
 }));
-
-// Import after mocks
-import { ensureArtistAccess } from "../ensureArtistAccess";
 
 describe("ensureArtistAccess", () => {
   const mockArtistId = "artist-123";
@@ -135,14 +133,14 @@ describe("ensureArtistAccess", () => {
       // Track when each operation starts and completes
       accountsChain.single.mockImplementation(async () => {
         executionOrder.push("artistCheck:start");
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 10));
         executionOrder.push("artistCheck:end");
         return { data: { id: mockArtistId }, error: null };
       });
 
       accountArtistIdsChain.maybeSingle.mockImplementation(async () => {
         executionOrder.push("accessCheck:start");
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 10));
         executionOrder.push("accessCheck:end");
         return { data: { artist_id: mockArtistId }, error: null }; // User already has access
       });
@@ -165,8 +163,7 @@ describe("ensureArtistAccess", () => {
 
       // At least one start should come before the other's end (proves parallelism)
       const bothStartedBeforeAnyEnds =
-        Math.max(artistStartIndex, accessStartIndex) <
-        Math.min(artistEndIndex, accessEndIndex);
+        Math.max(artistStartIndex, accessStartIndex) < Math.min(artistEndIndex, accessEndIndex);
       expect(bothStartedBeforeAnyEnds).toBe(true);
     });
 

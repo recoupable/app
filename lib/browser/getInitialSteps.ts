@@ -6,6 +6,8 @@ interface ProgressStep {
 
 /**
  * Get initial progress steps for browser tool skeleton based on tool type
+ *
+ * @param toolName
  */
 export function getInitialSteps(toolName: string): ProgressStep[] {
   if (toolName === "browser_extract") {
@@ -40,7 +42,7 @@ export function getInitialSteps(toolName: string): ProgressStep[] {
       { label: "Completing workflow", completed: false, active: false },
     ];
   }
-  
+
   return [
     { label: "Starting browser automation", completed: false, active: true },
     { label: "Processing request", completed: false, active: false },
@@ -48,4 +50,3 @@ export function getInitialSteps(toolName: string): ProgressStep[] {
 }
 
 export type { ProgressStep };
-

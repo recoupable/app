@@ -24,18 +24,13 @@ const deleteArtist = tool({
     artist_account_id: z
       .string()
       .describe(
-        "The ID of the artist to delete. If not provided, use the active artist_account_id."
+        "The ID of the artist to delete. If not provided, use the active artist_account_id.",
       ),
     account_id: z
       .string()
-      .describe(
-        "The ID of the account that owns the artist. If not provided, use the account_id."
-      ),
+      .describe("The ID of the account that owns the artist. If not provided, use the account_id."),
   }),
-  execute: async ({
-    artist_account_id,
-    account_id,
-  }): Promise<DeleteArtistResult> => {
+  execute: async ({ artist_account_id, account_id }): Promise<DeleteArtistResult> => {
     try {
       // If no artist_account_id was provided, attempt to get the active artist
       // This would be handled by the AI when calling the tool
@@ -48,10 +43,7 @@ const deleteArtist = tool({
       }
 
       // Call the API to delete the artist
-      const response = await deleteArtistFromAccount(
-        artist_account_id,
-        account_id
-      );
+      const response = await deleteArtistFromAccount(artist_account_id, account_id);
 
       if (!response.success) {
         return {
@@ -68,9 +60,7 @@ const deleteArtist = tool({
       };
     } catch (error) {
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to delete artist for unknown reason";
+        error instanceof Error ? error.message : "Failed to delete artist for unknown reason";
 
       return {
         success: false,

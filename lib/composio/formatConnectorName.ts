@@ -12,6 +12,11 @@ const CONNECTOR_DISPLAY_NAMES: Record<string, string> = {
   tiktok: "TikTok",
 };
 
+/**
+ *
+ * @param name
+ * @param slug
+ */
 export function formatConnectorName(name: string, slug?: string): string {
   const key = (slug || name).toLowerCase();
 
@@ -22,6 +27,6 @@ export function formatConnectorName(name: string, slug?: string): string {
   // Fallback: capitalize and add spaces before capitals
   return name
     .replace(/([A-Z])/g, " $1")
-    .replace(/^./, (str) => str.toUpperCase())
+    .replace(/^./, str => str.toUpperCase())
     .trim();
 }
