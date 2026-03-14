@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
 import { checkAndResetCredits } from "@/lib/credits/checkAndResetCredits";
 
+/**
+ *
+ * @param req
+ */
 export async function GET(req: NextRequest) {
   const accountId = req.nextUrl.searchParams.get("accountId");
 

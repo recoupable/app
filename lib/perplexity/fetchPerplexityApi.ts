@@ -3,11 +3,11 @@ import { getPerplexityApiKey, getPerplexityHeaders, PERPLEXITY_BASE_URL } from "
 
 const fetchPerplexityApi = async (
   messages: Array<{ role: string; content: string }>,
-  model: string = "sonar-pro"
+  model: string = "sonar-pro",
 ): Promise<Response> => {
   const apiKey = getPerplexityApiKey();
   const url = `${PERPLEXITY_BASE_URL}/chat/completions`;
-  
+
   const body = {
     model,
     messages,

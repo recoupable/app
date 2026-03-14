@@ -11,20 +11,21 @@
 export function extractToolNameFromError(
   errorMessage: string,
   stackTrace: string,
-  errorType: string
+  errorType: string,
 ): string | null {
   // Rate limit errors
-  if (errorType === 'AI_RetryError' && (
-    errorMessage.includes('rate limit') || 
-    errorMessage.includes('Rate limit') ||
-    errorMessage.includes('input tokens per minute')
-  )) {
-    return 'Rate Limit';
+  if (
+    errorType === "AI_RetryError" &&
+    (errorMessage.includes("rate limit") ||
+      errorMessage.includes("Rate limit") ||
+      errorMessage.includes("input tokens per minute"))
+  ) {
+    return "Rate Limit";
   }
 
   // Object serialization errors
-  if (errorMessage.includes('[object Object]') || errorMessage.includes('object Object')) {
-    return 'ObjectObject';
+  if (errorMessage.includes("[object Object]") || errorMessage.includes("object Object")) {
+    return "ObjectObject";
   }
 
   // Tool execution errors - extract actual tool name
@@ -33,12 +34,12 @@ export function extractToolNameFromError(
 
   // Check for specific tool patterns in error messages or stack traces
   const toolPatterns = [
-    { pattern: /get_spotify_artist_top_tracks/, name: 'get_spotify_artist_top_tracks' },
-    { pattern: /search_web/, name: 'search_web' },
-    { pattern: /searchTwitter/, name: 'searchTwitter' },
-    { pattern: /contactTeam/, name: 'contactTeam' },
-    { pattern: /createArtist/, name: 'createArtist' },
-    { pattern: /sendEmail/, name: 'sendEmail' },
+    { pattern: /get_spotify_artist_top_tracks/, name: "get_spotify_artist_top_tracks" },
+    { pattern: /search_web/, name: "search_web" },
+    { pattern: /searchTwitter/, name: "searchTwitter" },
+    { pattern: /contactTeam/, name: "contactTeam" },
+    { pattern: /createArtist/, name: "createArtist" },
+    { pattern: /sendEmail/, name: "sendEmail" },
     // Add more as needed
   ];
 
@@ -50,9 +51,9 @@ export function extractToolNameFromError(
 
   // Stack trace patterns for tool detection
   const stackToolPatterns = [
-    /\/tools\/([^\/\s]+)/,  // /tools/toolName
-    /Tool\.([^\.\s]+)/,      // Tool.toolName
-    /tool[._]([^\.\s]+)/i,   // tool.name or tool_name
+    /\/tools\/([^\/\s]+)/, // /tools/toolName
+    /Tool\.([^\.\s]+)/, // Tool.toolName
+    /tool[._]([^\.\s]+)/i, // tool.name or tool_name
   ];
 
   for (const pattern of stackToolPatterns) {
@@ -63,10 +64,10 @@ export function extractToolNameFromError(
   }
 
   // Generic error type mapping
-  if (errorType === 'TypeError') return 'TypeError';
-  if (errorType === 'ReferenceError') return 'ReferenceError';
-  if (errorType === 'SyntaxError') return 'SyntaxError';
-  
+  if (errorType === "TypeError") return "TypeError";
+  if (errorType === "ReferenceError") return "ReferenceError";
+  if (errorType === "SyntaxError") return "SyntaxError";
+
   return null;
 }
 
@@ -74,4 +75,4 @@ export function extractToolNameFromError(
  * Example usage:
  *   extractToolNameFromError('Error executing tool get_spotify_artist_top_tracks: ...', '', 'AI_ToolExecutionError');
  *   // => 'get_spotify_artist_top_tracks'
- */ 
+ */

@@ -10,8 +10,7 @@ export const getFalModels = (): GatewayLanguageModelEntry[] => {
     {
       id: "fal-ai/nano-banana/edit",
       name: "Nano Banana",
-      description:
-        "Google's state-of-the-art image generation and editing model",
+      description: "Google's state-of-the-art image generation and editing model",
       pricing: {
         input: "0.0000", // Free for testing
         output: "0.0000",
@@ -39,8 +38,7 @@ export const getFalModels = (): GatewayLanguageModelEntry[] => {
     {
       id: "fal-ai/flux-pro/kontext",
       name: "FLUX Pro Kontext",
-      description:
-        "FLUX.1 Kontext [pro] handles both text and reference images",
+      description: "FLUX.1 Kontext [pro] handles both text and reference images",
       pricing: {
         input: "0.0002",
         output: "0.002",
@@ -54,8 +52,7 @@ export const getFalModels = (): GatewayLanguageModelEntry[] => {
     {
       id: "fal-ai/ideogram/character",
       name: "Ideogram Character",
-      description:
-        "Generate consistent character appearances across multiple images",
+      description: "Generate consistent character appearances across multiple images",
       pricing: {
         input: "0.0001",
         output: "0.001",

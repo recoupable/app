@@ -2,29 +2,35 @@ import { CONTENT_LIMITS } from "./constants";
 
 /**
  * Build formatted response text with rate limit warnings, content, and actions
+ *
+ * @param visibleContent
+ * @param actionsText
+ * @param modalDismissed
+ * @param platformName
+ * @param isRateLimited
  */
 export function buildResponseText(
   visibleContent: string,
   actionsText: string,
   modalDismissed: boolean,
   platformName: string,
-  isRateLimited: boolean
+  isRateLimited: boolean,
 ): string {
   let responseText = "";
-  
+
   // Add rate limit warning if detected
   if (isRateLimited) {
     responseText += "⚠️ RATE LIMIT DETECTED\n";
-    responseText += `${platformName || 'The website'} is limiting automated requests. Try:\n`;
+    responseText += `${platformName || "The website"} is limiting automated requests. Try:\n`;
     responseText += "1. Wait a few minutes before trying again\n";
     responseText += "2. Reduce request frequency\n";
     responseText += "3. Add delays between requests\n\n";
   }
-  
+
   if (modalDismissed) {
     responseText += "✅ Login modal detected and dismissed\n\n";
   }
-  
+
   responseText += "📄 VISIBLE PAGE CONTENT:\n";
   responseText += "════════════════════════════════════════\n";
   responseText += visibleContent.trim().slice(0, CONTENT_LIMITS.MAX_VISIBLE_CONTENT_LENGTH);
@@ -37,4 +43,3 @@ export function buildResponseText(
 
   return responseText;
 }
-

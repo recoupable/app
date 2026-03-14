@@ -5,12 +5,19 @@ const IPFS_GATEWAY = "https://magic.decentralized-content.com";
 
 const ARWEAVE_GATEWAY = "https://arweave.net";
 
+/**
+ *
+ * @param normalizedArweaveUrl
+ */
 export function arweaveGatewayUrl(normalizedArweaveUrl: string | null) {
-  if (!normalizedArweaveUrl || typeof normalizedArweaveUrl !== "string")
-    return null;
+  if (!normalizedArweaveUrl || typeof normalizedArweaveUrl !== "string") return null;
   return normalizedArweaveUrl.replace("ar://", `${ARWEAVE_GATEWAY}/`);
 }
 
+/**
+ *
+ * @param url
+ */
 export function ipfsGatewayUrl(url: string | null) {
   if (!url || typeof url !== "string") return null;
   const normalizedIPFSUrl = normalizeIPFSUrl(url);
@@ -20,6 +27,10 @@ export function ipfsGatewayUrl(url: string | null) {
   return null;
 }
 
+/**
+ *
+ * @param uri
+ */
 export function getFetchableUrl(uri: string | null | undefined): string | null {
   if (!uri || typeof uri !== "string") return null;
 

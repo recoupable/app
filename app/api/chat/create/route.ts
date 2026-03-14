@@ -4,6 +4,10 @@ import { generateChatTitle } from "@/lib/chat/generateChatTitle";
 import { sendNewConversationNotification } from "@/lib/telegram/sendNewConversationNotification";
 import { CreateChatRequest } from "@/types/Chat";
 
+/**
+ *
+ * @param request
+ */
 export async function POST(request: NextRequest) {
   try {
     const body: CreateChatRequest = await request.json();
@@ -18,7 +22,7 @@ export async function POST(request: NextRequest) {
         },
         {
           status: 400,
-        }
+        },
       );
     }
 
@@ -42,7 +46,7 @@ export async function POST(request: NextRequest) {
         },
         {
           status: 500,
-        }
+        },
       );
     }
 
@@ -67,7 +71,7 @@ export async function POST(request: NextRequest) {
       },
       {
         status: 200,
-      }
+      },
     );
   } catch (error) {
     console.error("Error creating chat:", error);
@@ -78,7 +82,7 @@ export async function POST(request: NextRequest) {
       },
       {
         status: 500,
-      }
+      },
     );
   }
 }

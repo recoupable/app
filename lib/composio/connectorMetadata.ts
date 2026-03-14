@@ -20,6 +20,8 @@ export const connectorMetadata: Record<string, ConnectorMeta> = {
 /**
  * Get metadata for a connector by slug.
  * Returns default values if not found.
+ *
+ * @param slug
  */
 export function getConnectorMeta(slug: string): ConnectorMeta {
   return (

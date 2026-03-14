@@ -6,14 +6,9 @@ type AccountInfo = Tables<"account_info">;
 type AccountEmail = Tables<"account_emails">;
 type AccountWallet = Tables<"account_wallets">;
 
-export type AccountWithDetails = AccountInfo &
-  AccountEmail &
-  AccountWallet &
-  Account;
+export type AccountWithDetails = AccountInfo & AccountEmail & AccountWallet & Account;
 
-export const getAccountWithDetails = async (
-  accountId: string
-): Promise<AccountWithDetails> => {
+export const getAccountWithDetails = async (accountId: string): Promise<AccountWithDetails> => {
   const { data: account } = await supabase
     .from("accounts")
     .select("*, account_info(*), account_emails(*), account_wallets(*)")

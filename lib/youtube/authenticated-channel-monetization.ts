@@ -1,8 +1,5 @@
 import { YouTubeTokensRow, MonetizationCheckResult } from "@/types/youtube";
-import {
-  YouTubeErrorBuilder,
-  YouTubeErrorMessages,
-} from "@/lib/youtube/error-builder";
+import { YouTubeErrorBuilder, YouTubeErrorMessages } from "@/lib/youtube/error-builder";
 import { checkChannelMonetizationById } from "./channel-monetization-by-id";
 import { createYouTubeAPIClient } from "./oauth-client";
 
@@ -14,26 +11,20 @@ import { createYouTubeAPIClient } from "./oauth-client";
  * @returns Promise with monetization status or error details
  */
 export async function checkAuthenticatedChannelMonetization(
-  tokens: YouTubeTokensRow
+  tokens: YouTubeTokensRow,
 ): Promise<MonetizationCheckResult> {
   try {
-    const youtube = createYouTubeAPIClient(
-      tokens.access_token,
-      tokens.refresh_token ?? undefined
-    );
+    const youtube = createYouTubeAPIClient(tokens.access_token, tokens.refresh_token ?? undefined);
 
     const channelResponse = await youtube.channels.list({
       part: ["id"],
       mine: true,
     });
 
-    if (
-      !channelResponse.data.items ||
-      channelResponse.data.items.length === 0
-    ) {
+    if (!channelResponse.data.items || channelResponse.data.items.length === 0) {
       return YouTubeErrorBuilder.createUtilityError(
         "CHANNEL_NOT_FOUND",
-        YouTubeErrorMessages.NO_CHANNELS
+        YouTubeErrorMessages.NO_CHANNELS,
       );
     }
 
@@ -41,20 +32,17 @@ export async function checkAuthenticatedChannelMonetization(
     if (!channelId) {
       return YouTubeErrorBuilder.createUtilityError(
         "CHANNEL_NOT_FOUND",
-        YouTubeErrorMessages.NO_CHANNELS
+        YouTubeErrorMessages.NO_CHANNELS,
       );
     }
 
     // Now check monetization for this channel
     return await checkChannelMonetizationById(tokens, channelId);
   } catch (error: unknown) {
-    console.error(
-      "Error fetching user's channel for monetization check:",
-      error
-    );
+    console.error("Error fetching user's channel for monetization check:", error);
     return YouTubeErrorBuilder.createUtilityError(
       "API_ERROR",
-      error instanceof Error ? error.message : YouTubeErrorMessages.API_ERROR
+      error instanceof Error ? error.message : YouTubeErrorMessages.API_ERROR,
     );
   }
 }

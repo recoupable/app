@@ -7,9 +7,7 @@ interface SelectFanSegmentsParams {
   segment_id: string;
 }
 
-export const selectFanSegments = async (
-  params: SelectFanSegmentsParams
-): Promise<Social[]> => {
+export const selectFanSegments = async (params: SelectFanSegmentsParams): Promise<Social[]> => {
   try {
     const { data, error } = await serverClient
       .from("fan_segments")

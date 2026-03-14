@@ -6,21 +6,17 @@ interface UseObserverTargetOptions {
   threshold?: number;
 }
 
-const useObserverTarget = ({
-  onIntersect,
-  enabled,
-  threshold = 0.1,
-}: UseObserverTargetOptions) => {
+const useObserverTarget = ({ onIntersect, enabled, threshold = 0.1 }: UseObserverTargetOptions) => {
   const observerTarget = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         if (entries[0].isIntersecting && enabled) {
           onIntersect();
         }
       },
-      { threshold }
+      { threshold },
     );
 
     const currentTarget = observerTarget.current;

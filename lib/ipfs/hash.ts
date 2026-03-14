@@ -1,5 +1,9 @@
 import * as crypto from "crypto";
 
+/**
+ *
+ * @param files
+ */
 export function hashFiles(files: File[]): string {
   const hash = crypto.createHash("sha256");
   for (const file of files) {

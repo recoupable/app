@@ -11,7 +11,7 @@ export const useMiniApp = (): MiniApp => {
   const [isMiniApp, setIsMiniApp] = useState(false);
 
   useEffect(() => {
-    sdk.isInMiniApp().then((isMiniApp) => {
+    sdk.isInMiniApp().then(isMiniApp => {
       setIsMiniApp(isMiniApp);
       setIsLoading(false);
     });

@@ -1,7 +1,7 @@
 /**
  * Format date for scheduled actions with time (e.g. "Jan 15, 2:30 PM")
- * 
- * @param dateString ISO date string or null
+ *
+ * @param dateString - ISO date string or null
  * @returns Formatted date string or "Never" if null
  */
 export const formatScheduledActionDate = (dateString: string | null): string => {

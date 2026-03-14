@@ -1,13 +1,14 @@
 import { createYouTubeAPIClient } from "@/lib/youtube/oauth-client";
 import { YouTubeChannelData } from "@/types/youtube";
-import {
-  YouTubeErrorBuilder,
-  YouTubeErrorMessages,
-} from "@/lib/youtube/error-builder";
+import { YouTubeErrorBuilder, YouTubeErrorMessages } from "@/lib/youtube/error-builder";
 
 /**
  * Fetches YouTube channel information using authenticated tokens
+ *
  * @param params - { accessToken, refreshToken, includeBranding }
+ * @param params.accessToken
+ * @param params.refreshToken
+ * @param params.includeBranding
  * @returns Promise with array of channel data or error details
  */
 export async function fetchYouTubeChannelInfo({
@@ -41,7 +42,7 @@ export async function fetchYouTubeChannelInfo({
     if (!response.data.items || response.data.items.length === 0) {
       return YouTubeErrorBuilder.createUtilityError(
         "NO_CHANNELS",
-        YouTubeErrorMessages.NO_CHANNELS
+        YouTubeErrorMessages.NO_CHANNELS,
       );
     }
 
@@ -67,8 +68,7 @@ export async function fetchYouTubeChannelInfo({
         subscriberCount: channelData.statistics?.subscriberCount || "0",
         videoCount: channelData.statistics?.videoCount || "0",
         viewCount: channelData.statistics?.viewCount || "0",
-        hiddenSubscriberCount:
-          channelData.statistics?.hiddenSubscriberCount === true,
+        hiddenSubscriberCount: channelData.statistics?.hiddenSubscriberCount === true,
       },
       customUrl: channelData.snippet?.customUrl || null,
       country: channelData.snippet?.country || null,
@@ -76,8 +76,7 @@ export async function fetchYouTubeChannelInfo({
       ...(includeBranding && {
         branding: {
           keywords: channelData.brandingSettings?.channel?.keywords || null,
-          defaultLanguage:
-            channelData.brandingSettings?.channel?.defaultLanguage || null,
+          defaultLanguage: channelData.brandingSettings?.channel?.defaultLanguage || null,
         },
       }),
     }));
@@ -90,21 +89,13 @@ export async function fetchYouTubeChannelInfo({
     console.error("Error fetching YouTube channel info:", error);
 
     // If token is invalid/expired, return appropriate error
-    if (
-      error &&
-      typeof error === "object" &&
-      "code" in error &&
-      error.code === 401
-    ) {
-      return YouTubeErrorBuilder.createUtilityError(
-        "API_ERROR",
-        YouTubeErrorMessages.AUTH_FAILED
-      );
+    if (error && typeof error === "object" && "code" in error && error.code === 401) {
+      return YouTubeErrorBuilder.createUtilityError("API_ERROR", YouTubeErrorMessages.AUTH_FAILED);
     }
 
     return YouTubeErrorBuilder.createUtilityError(
       "API_ERROR",
-      error instanceof Error ? error.message : YouTubeErrorMessages.API_ERROR
+      error instanceof Error ? error.message : YouTubeErrorMessages.API_ERROR,
     );
   }
 }

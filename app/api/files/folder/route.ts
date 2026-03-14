@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import supabase from "@/lib/supabase/serverClient";
 import isValidFolderName from "@/utils/isValidFolderName";
 
+/**
+ *
+ * @param req
+ */
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -11,13 +15,21 @@ export async function POST(req: Request) {
     const name = String(body.name || "");
 
     if (!ownerAccountId || !artistAccountId) {
-      return NextResponse.json({ error: "Missing ownerAccountId or artistAccountId" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing ownerAccountId or artistAccountId" },
+        { status: 400 },
+      );
     }
     if (!isValidFolderName(name)) {
       return NextResponse.json({ error: "Invalid folder name" }, { status: 400 });
     }
 
-    const base = parentPath && parentPath.endsWith("/") ? parentPath : parentPath ? parentPath + "/" : `files/${ownerAccountId}/${artistAccountId}/`;
+    const base =
+      parentPath && parentPath.endsWith("/")
+        ? parentPath
+        : parentPath
+          ? parentPath + "/"
+          : `files/${ownerAccountId}/${artistAccountId}/`;
     const key = `${base}${name}/`;
 
     // conflict check
@@ -58,5 +70,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-

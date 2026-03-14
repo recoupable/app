@@ -25,11 +25,18 @@ export interface CatalogSongsResponse {
   error?: string;
 }
 
+/**
+ *
+ * @param catalogId
+ * @param pageSize
+ * @param page
+ * @param artistName
+ */
 export async function getCatalogSongs(
   catalogId: string,
   pageSize: number = 100,
   page: number = 1,
-  artistName?: string
+  artistName?: string,
 ): Promise<CatalogSongsResponse> {
   try {
     const params = new URLSearchParams({
@@ -42,15 +49,12 @@ export async function getCatalogSongs(
       params.append("artistName", artistName);
     }
 
-    const response = await fetch(
-      `${NEW_API_BASE_URL}/api/catalogs/songs?${params}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(`${NEW_API_BASE_URL}/api/catalogs/songs?${params}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
       const errorText = await response.text();

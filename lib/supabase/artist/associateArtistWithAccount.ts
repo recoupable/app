@@ -2,14 +2,12 @@ import supabase from "@/lib/supabase/serverClient";
 
 /**
  * Associate an artist with a user account
- * @param account_id ID of the user account
- * @param artist_id ID of the artist account
+ *
+ * @param account_id - ID of the user account
+ * @param artist_id - ID of the artist account
  * @returns True if successful, false if failed
  */
-export async function associateArtistWithAccount(
-  account_id: string,
-  artist_id: string
-) {
+export async function associateArtistWithAccount(account_id: string, artist_id: string) {
   try {
     const { error } = await supabase.from("account_artist_ids").insert({
       account_id,

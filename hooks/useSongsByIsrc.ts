@@ -1,8 +1,5 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import {
-  getSongsByIsrc,
-  SongsByIsrcResponse,
-} from "@/lib/catalog/getSongsByIsrc";
+import { getSongsByIsrc, SongsByIsrcResponse } from "@/lib/catalog/getSongsByIsrc";
 
 interface UseSongsByIsrcOptions {
   isrc: string;

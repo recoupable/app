@@ -14,12 +14,10 @@ interface CreateRoomParams {
 /**
  * Creates a new room in the database
  *
- * @param params Parameters for room creation
+ * @param params - Parameters for room creation
  * @returns The ID of the newly created room or null if creation failed
  */
-export async function createNewRoom(
-  params: CreateRoomParams
-): Promise<string | null> {
+export async function createNewRoom(params: CreateRoomParams): Promise<string | null> {
   try {
     const { account_id, artist_id } = params;
 

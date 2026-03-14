@@ -13,5 +13,4 @@ export const TEXT_EXTENSIONS = [
   ".yml",
 ] as const;
 
-export type TextExtension = typeof TEXT_EXTENSIONS[number];
-
+export type TextExtension = (typeof TEXT_EXTENSIONS)[number];

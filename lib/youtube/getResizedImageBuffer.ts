@@ -1,7 +1,11 @@
 import sharp from "sharp";
 
+/**
+ *
+ * @param thumbnail_url
+ */
 export async function getResizedImageBuffer(
-  thumbnail_url: string
+  thumbnail_url: string,
 ): Promise<{ buffer?: Buffer; error?: string }> {
   try {
     const res = await fetch(thumbnail_url);
@@ -12,11 +16,7 @@ export async function getResizedImageBuffer(
     }
     const arrayBuffer = await res.arrayBuffer();
     const uint8 = new Uint8Array(arrayBuffer);
-    let buffer = Buffer.from(
-      uint8.buffer,
-      uint8.byteOffset,
-      uint8.byteLength
-    ) as Buffer;
+    let buffer = Buffer.from(uint8.buffer, uint8.byteOffset, uint8.byteLength) as Buffer;
     const MAX_SIZE = 2_097_152; // 2MB in bytes
 
     // If image is too large, resize and compress
@@ -37,8 +37,7 @@ export async function getResizedImageBuffer(
     return { buffer };
   } catch (error) {
     return {
-      error:
-        error instanceof Error ? error.message : "Failed to process image.",
+      error: error instanceof Error ? error.message : "Failed to process image.",
     };
   }
 }

@@ -27,32 +27,22 @@ Important:
 - Special characters and path separators are not allowed
 `,
   inputSchema: z.object({
-    fileName: z
-      .string()
-      .describe("Current name of the file (e.g., 'old-research.md')"),
+    fileName: z.string().describe("Current name of the file (e.g., 'old-research.md')"),
     newFileName: z
       .string()
-      .describe("New name for the file (e.g., 'updated-research'). Do not include extension - it will be preserved automatically."),
+      .describe(
+        "New name for the file (e.g., 'updated-research'). Do not include extension - it will be preserved automatically.",
+      ),
     path: z
       .string()
       .optional()
       .describe("Optional subdirectory path where file is located (e.g., 'research', 'reports')"),
-    active_account_id: z
-      .string()
-      .describe("Pull active_account_id from the system prompt"),
-    active_artist_id: z
-      .string()
-      .describe("Pull active_artist_id from the system prompt"),
+    active_account_id: z.string().describe("Pull active_account_id from the system prompt"),
+    active_artist_id: z.string().describe("Pull active_artist_id from the system prompt"),
   }),
-  execute: async ({
-    fileName,
-    newFileName,
-    path,
-    active_account_id,
-    active_artist_id,
-  }) => {
+  execute: async ({ fileName, newFileName, path, active_account_id, active_artist_id }) => {
     const normalizedFileName = normalizeFileName(fileName);
-    
+
     try {
       if (path && !isValidPath(path)) {
         return {
@@ -61,12 +51,12 @@ Important:
           message: `Path '${path}' is invalid.`,
         };
       }
-      
+
       const fileRecord = await findFileByName(
         normalizedFileName,
         active_account_id,
         active_artist_id,
-        path
+        path,
       );
 
       if (!fileRecord) {
@@ -86,9 +76,8 @@ Important:
       }
 
       const extension = getFileExtension(normalizedFileName);
-      const finalNewFileName = extension && !newFileName.endsWith(extension)
-        ? newFileName + extension
-        : newFileName;
+      const finalNewFileName =
+        extension && !newFileName.endsWith(extension) ? newFileName + extension : newFileName;
 
       if (!isValidFileName(finalNewFileName)) {
         return {
@@ -102,7 +91,7 @@ Important:
         finalNewFileName,
         active_account_id,
         active_artist_id,
-        path
+        path,
       );
 
       if (existingFile) {
@@ -117,14 +106,10 @@ Important:
         active_account_id,
         active_artist_id,
         finalNewFileName,
-        path
+        path,
       );
 
-      await copyFileByKey(
-        fileRecord.storage_key,
-        newStorageKey,
-        fileRecord.mime_type || undefined
-      );
+      await copyFileByKey(fileRecord.storage_key, newStorageKey, fileRecord.mime_type || undefined);
 
       await updateFileName(fileRecord.id, finalNewFileName, newStorageKey);
       await deleteFileByKey(fileRecord.storage_key);
@@ -144,4 +129,3 @@ Important:
 });
 
 export default renameFile;
-

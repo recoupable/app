@@ -5,8 +5,13 @@ import { getFetchableUrl } from "../arweave/gateway";
 
 /**
  * Sends a Recoup Apify webhook email to a list of emails, summarizing the dataset and using a strong CTA.
+ *
  * @param dataset - Array of dataset objects (from Apify)
+ * @param dataset.rawTextFile
  * @param emails - Array of email addresses to send to
+ * @param dataset.arweaveFile
+ * @param dataset.emails
+ * @param dataset.conversationId
  * @returns The result of sendEmail
  */
 export default async function generateTxtFileEmail({

@@ -9,10 +9,16 @@ export type AgentTemplateUpdates = {
   is_private?: boolean;
 };
 
+/**
+ *
+ * @param id
+ * @param updates
+ * @param shareEmails
+ */
 export async function updateAgentTemplate(
   id: string,
   updates: AgentTemplateUpdates,
-  shareEmails?: string[]
+  shareEmails?: string[],
 ) {
   const { data, error } = await supabase
     .from("agent_templates")
@@ -22,7 +28,7 @@ export async function updateAgentTemplate(
     })
     .eq("id", id)
     .select(
-      "id, title, description, prompt, tags, creator, is_private, created_at, favorites_count, updated_at"
+      "id, title, description, prompt, tags, creator, is_private, created_at, favorites_count, updated_at",
     )
     .single();
   if (error) throw error;

@@ -2,6 +2,7 @@ import { NEW_API_BASE_URL } from "@/lib/consts";
 
 /**
  * Create a new API key for the authenticated account or organization
+ *
  * @param keyName - The name for the API key
  * @param accessToken - The access token for authentication
  * @param organizationId - Optional organization ID to create the key for
@@ -10,7 +11,7 @@ import { NEW_API_BASE_URL } from "@/lib/consts";
 export async function createApiKey(
   keyName: string,
   accessToken: string,
-  organizationId?: string | null
+  organizationId?: string | null,
 ): Promise<string> {
   const body: { key_name: string; organizationId?: string } = {
     key_name: keyName,

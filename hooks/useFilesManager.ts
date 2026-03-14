@@ -13,6 +13,11 @@ export interface ListedFileRow {
   is_directory?: boolean;
 }
 
+/**
+ *
+ * @param activePath
+ * @param recursive
+ */
 export default function useFilesManager(activePath?: string, recursive: boolean = false) {
   const { userData } = useUserProvider();
   const { selectedArtist } = useArtistProvider();
@@ -38,7 +43,7 @@ export default function useFilesManager(activePath?: string, recursive: boolean 
           if (relativePath) relativePath += "/";
         }
       }
-      
+
       const p = relativePath ? `&path=${encodeURIComponent(relativePath)}` : "";
       const r = recursive ? "&recursive=true" : "";
       const url = `/api/files/list?ownerAccountId=${ownerAccountId}&artistAccountId=${artistAccountId}${p}${r}`;
@@ -54,21 +59,25 @@ export default function useFilesManager(activePath?: string, recursive: boolean 
     const items = data?.files || [];
     if (items.length === 0) return;
     const basePath = activePath
-      ? activePath.endsWith("/") ? activePath : activePath + "/"
+      ? activePath.endsWith("/")
+        ? activePath
+        : activePath + "/"
       : `files/${ownerAccountId}/${artistAccountId}/`;
-    items.filter((f) => f.is_directory).forEach((dir) => {
-      const childPath = `${basePath}${dir.file_name}/`;
-      qc.prefetchQuery({
-        queryKey: ["files", ownerAccountId, artistAccountId, childPath],
-        queryFn: async () => {
-          const url = `/api/files/list?ownerAccountId=${ownerAccountId}&artistAccountId=${artistAccountId}&path=${encodeURIComponent(childPath)}`;
-          const res = await fetch(url, { cache: "no-store" });
-          if (!res.ok) throw new Error("Failed to load files");
-          return res.json();
-        },
-        staleTime: 30000,
+    items
+      .filter(f => f.is_directory)
+      .forEach(dir => {
+        const childPath = `${basePath}${dir.file_name}/`;
+        qc.prefetchQuery({
+          queryKey: ["files", ownerAccountId, artistAccountId, childPath],
+          queryFn: async () => {
+            const url = `/api/files/list?ownerAccountId=${ownerAccountId}&artistAccountId=${artistAccountId}&path=${encodeURIComponent(childPath)}`;
+            const res = await fetch(url, { cache: "no-store" });
+            if (!res.ok) throw new Error("Failed to load files");
+            return res.json();
+          },
+          staleTime: 30000,
+        });
       });
-    });
   }, [data?.files, activePath, ownerAccountId, artistAccountId, qc]);
 
   const createFolderMutation = useMutation({
@@ -76,7 +85,12 @@ export default function useFilesManager(activePath?: string, recursive: boolean 
       const res = await fetch("/api/files/folder", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ownerAccountId, artistAccountId, name, parentPath: activePath || `files/${ownerAccountId}/${artistAccountId}/` }),
+        body: JSON.stringify({
+          ownerAccountId,
+          artistAccountId,
+          name,
+          parentPath: activePath || `files/${ownerAccountId}/${artistAccountId}/`,
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to create folder");
@@ -87,6 +101,10 @@ export default function useFilesManager(activePath?: string, recursive: boolean 
     },
   });
 
+  /**
+   *
+   * @param selectedFile
+   */
   async function handleUpload(selectedFile?: File) {
     const targetFile = selectedFile || file;
     if (!targetFile) return;
@@ -98,7 +116,9 @@ export default function useFilesManager(activePath?: string, recursive: boolean 
 
     const safeName = targetFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
     const basePath = activePath
-      ? (activePath.endsWith("/") ? activePath : activePath + "/")
+      ? activePath.endsWith("/")
+        ? activePath
+        : activePath + "/"
       : `files/${ownerAccountId}/${artistAccountId}/`;
     const key = `${basePath}${safeName}`;
 
@@ -173,5 +193,3 @@ export default function useFilesManager(activePath?: string, recursive: boolean 
     },
   };
 }
-
-

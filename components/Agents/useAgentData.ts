@@ -6,6 +6,9 @@ import fetchAgentTemplates from "@/lib/agent-templates/fetchAgentTemplates";
 
 export type Agent = AgentTemplateRow;
 
+/**
+ *
+ */
 export function useAgentData() {
   const { userData } = useUserProvider();
   const queryClient = useQueryClient();
@@ -38,8 +41,8 @@ export function useAgentData() {
       new Set(
         data
           .flatMap((agent: Agent) => agent.tags || [])
-          .filter((tag: string) => !!tag && !actionTags.includes(tag))
-      )
+          .filter((tag: string) => !!tag && !actionTags.includes(tag)),
+      ),
     );
     const allTags = ["Recommended", ...uniqueTags];
     setTags(Array.from(new Set(allTags)));
@@ -52,12 +55,10 @@ export function useAgentData() {
 
   // Get all agents except the special card, filtered by the selected tag and public/private
   const filteredAgents = agents.filter(
-    (agent) =>
+    agent =>
       agent.title !== "Audience Segmentation" &&
-      (selectedTag === "Recommended"
-        ? true
-        : agent.tags?.includes(selectedTag)) &&
-      (isPrivate ? agent.is_private === true : agent.is_private !== true)
+      (selectedTag === "Recommended" ? true : agent.tags?.includes(selectedTag)) &&
+      (isPrivate ? agent.is_private === true : agent.is_private !== true),
   );
   // Hide the "Audience Segmentation" card from UI - keep all other logic intact
   const gridAgents = filteredAgents;

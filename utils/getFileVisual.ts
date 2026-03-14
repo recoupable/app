@@ -1,5 +1,24 @@
-export type FileVisual = { icon: "plain" | "txt" | "yml" | "md" | "image" | "pdf" | "word" | "csv" | "json" | "audio" | "video"; color: string };
+export type FileVisual = {
+  icon:
+    | "plain"
+    | "txt"
+    | "yml"
+    | "md"
+    | "image"
+    | "pdf"
+    | "word"
+    | "csv"
+    | "json"
+    | "audio"
+    | "video";
+  color: string;
+};
 
+/**
+ *
+ * @param fileName
+ * @param mime
+ */
 export default function getFileVisual(fileName: string, mime?: string | null): FileVisual {
   const lower = fileName.toLowerCase();
   const type = mime || "";
@@ -36,5 +55,3 @@ export default function getFileVisual(fileName: string, mime?: string | null): F
   }
   return { icon: "plain", color: "text-muted-foreground" };
 }
-
-

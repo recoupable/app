@@ -1,11 +1,11 @@
 /**
  * Custom hook for auto-collapse behavior
- * 
+ *
  * Single Responsibility: Manages auto-open/close state based on streaming status
  * Used by components that need to automatically collapse when content finishes loading
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
 interface UseAutoCollapseOptions {
   isStreaming: boolean;
@@ -13,6 +13,13 @@ interface UseAutoCollapseOptions {
   hasContent: boolean;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.isStreaming
+ * @param root0.defaultOpen
+ * @param root0.hasContent
+ */
 export function useAutoCollapse({
   isStreaming,
   defaultOpen = true,
@@ -39,4 +46,3 @@ export function useAutoCollapse({
 
   return { isOpen, setIsOpen };
 }
-

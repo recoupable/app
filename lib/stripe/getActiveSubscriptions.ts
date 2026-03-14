@@ -11,8 +11,7 @@ export const getActiveSubscriptions = async (accountId: string) => {
     });
 
     const activeSubscriptions = subscriptions?.data?.filter(
-      (subscription: Stripe.Subscription) =>
-        subscription.metadata?.accountId === accountId
+      (subscription: Stripe.Subscription) => subscription.metadata?.accountId === accountId,
     );
 
     return activeSubscriptions || [];

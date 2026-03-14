@@ -19,10 +19,10 @@ export default function useAttachments() {
       }
 
       setAttachments((prevAttachments: FileUIPart[]) =>
-        prevAttachments.filter((_, index) => index !== indexToRemove)
+        prevAttachments.filter((_, index) => index !== indexToRemove),
       );
     },
-    [attachments]
+    [attachments],
   );
 
   // Clear all attachments
@@ -39,8 +39,7 @@ export default function useAttachments() {
 
   // Filter for pending attachments (currently being uploaded)
   const pendingAttachments = attachments.filter(
-    (attachment: FileUIPart) =>
-      attachment.url?.startsWith("blob:") || !attachment.url
+    (attachment: FileUIPart) => attachment.url?.startsWith("blob:") || !attachment.url,
   );
 
   // Check if there are any pending uploads

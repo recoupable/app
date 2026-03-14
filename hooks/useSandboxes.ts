@@ -15,6 +15,9 @@ interface UseSandboxesReturn {
   refetch: () => void;
 }
 
+/**
+ *
+ */
 export default function useSandboxes(): UseSandboxesReturn {
   const { getAccessToken, authenticated } = usePrivy();
 

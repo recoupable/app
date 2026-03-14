@@ -17,7 +17,7 @@ export const generateMermaidDiagram = tool({
         "Detailed description of the desired diagram, including entities, relationships, flow, or structure. " +
           "Specify the type of diagram if known (e.g., flowchart, sequence diagram). " +
           "Example: 'Flowchart for user login: Start -> Enter Credentials -> Validate -> Success/Failure'. " +
-          "Example: 'Sequence diagram for API call: User -> Frontend -> API -> Database'"
+          "Example: 'Sequence diagram for API call: User -> Frontend -> API -> Database'",
       ),
   }),
   execute: async ({ context }) => {
@@ -28,12 +28,8 @@ export const generateMermaidDiagram = tool({
             `,
     });
 
-    const extractedMermaid = result.text.match(
-      /```mermaid\\n?([\\s\\S]*?)\\n?```/
-    );
-    const mermaidContent = extractedMermaid
-      ? extractedMermaid[0]
-      : result.text.trim();
+    const extractedMermaid = result.text.match(/```mermaid\\n?([\\s\\S]*?)\\n?```/);
+    const mermaidContent = extractedMermaid ? extractedMermaid[0] : result.text.trim();
 
     return {
       content: [{ type: "text", text: mermaidContent }],

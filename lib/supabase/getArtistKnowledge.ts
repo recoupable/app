@@ -6,6 +6,10 @@ export interface KnowledgeBaseEntry {
   type: string;
 }
 
+/**
+ *
+ * @param artistId
+ */
 export async function getArtistKnowledge(artistId: string): Promise<KnowledgeBaseEntry[]> {
   const { data, error } = await supabase
     .from("account_info")

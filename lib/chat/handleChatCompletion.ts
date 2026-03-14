@@ -12,9 +12,14 @@ import { ChatRequestBody } from "./validateChatRequest";
 import { UIMessage } from "ai";
 import { handleSendEmailToolOutputs } from "@/lib/emails/handleSendEmailToolOutputs";
 
+/**
+ *
+ * @param body
+ * @param responseMessages
+ */
 export async function handleChatCompletion(
   body: ChatRequestBody,
-  responseMessages: UIMessage[]
+  responseMessages: UIMessage[],
 ): Promise<void> {
   try {
     const { messages, roomId = "", accountId, artistId } = body;
@@ -31,8 +36,7 @@ export async function handleChatCompletion(
 
     // Create room and send notification if this is a new conversation
     if (!room) {
-      const latestMessageText =
-        lastMessage.parts.find((part) => part.type === "text")?.text || "";
+      const latestMessageText = lastMessage.parts.find(part => part.type === "text")?.text || "";
       const conversationName = await generateChatTitle(latestMessageText);
 
       await Promise.all([
@@ -63,9 +67,7 @@ export async function handleChatCompletion(
     await createMemories({
       id: responseMessages[responseMessages.length - 1].id,
       room_id: roomId,
-      content: filterMessageContentForMemories(
-        responseMessages[responseMessages.length - 1]
-      ),
+      content: filterMessageContentForMemories(responseMessages[responseMessages.length - 1]),
     });
 
     await handleSendEmailToolOutputs(responseMessages);

@@ -17,9 +17,12 @@ export type GetPulseParams = {
   accessToken: string;
 };
 
-export async function getPulse({
-  accessToken,
-}: GetPulseParams): Promise<PulseResponse> {
+/**
+ *
+ * @param root0
+ * @param root0.accessToken
+ */
+export async function getPulse({ accessToken }: GetPulseParams): Promise<PulseResponse> {
   const response = await fetch(PULSE_API_URL, {
     method: "GET",
     headers: {
