@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useOnboarding, type OnboardingStep } from "./useOnboarding";
 import { useOnboardingPersist } from "./useOnboardingPersist";
@@ -24,15 +24,9 @@ export default function OnboardingModal() {
   const { isOpen, step, data, updateData, nextStep, prevStep, complete } = useOnboarding();
   const { persist } = useOnboardingPersist();
 
-  // Persist everything when the tasks (penultimate) step is reached
-  useEffect(() => {
-    if (step === "tasks") {
-      persist(data);
-    }
-  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const handleComplete = useCallback(async () => {
-    await complete();
+    await persist(data);
+    complete();
     const artistNames = (data.artists ?? []).map(a => a.name);
     if (artistNames.length > 0) {
       const q = encodeURIComponent(
@@ -40,7 +34,7 @@ export default function OnboardingModal() {
       );
       setTimeout(() => { window.location.href = `/?q=${q}`; }, 200);
     }
-  }, [complete, data.artists]);
+  }, [complete, persist, data]);
 
   const isProgressStep = PROGRESS_STEPS.includes(step as OnboardingStep);
 

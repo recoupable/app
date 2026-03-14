@@ -6,7 +6,7 @@ import updateAccountInfo from "@/lib/supabase/account_info/updateAccountInfo";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { instruction, name, organization, accountId, image, jobTitle, roleType, companyName, knowledges } = body;
+  const { instruction, name, organization, accountId, image, jobTitle, roleType, companyName, knowledges, onboardingStatus, onboardingData } = body;
 
   try {
     const found = await getAccountById(accountId);
@@ -26,6 +26,8 @@ export async function POST(req: NextRequest) {
         role_type: roleType,
         company_name: companyName,
         knowledges,
+        ...(onboardingStatus !== undefined && { onboarding_status: onboardingStatus }),
+        ...(onboardingData !== undefined && { onboarding_data: onboardingData }),
       });
     } else {
       await updateAccountInfo(accountId, {
@@ -36,6 +38,8 @@ export async function POST(req: NextRequest) {
         role_type: roleType,
         company_name: companyName,
         knowledges,
+        ...(onboardingStatus !== undefined && { onboarding_status: onboardingStatus }),
+        ...(onboardingData !== undefined && { onboarding_data: onboardingData }),
       });
     }
 
