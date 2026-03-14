@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
+import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useOnboarding, type OnboardingStep } from "./useOnboarding";
 import { useOnboardingPersist } from "./useOnboardingPersist";
@@ -28,10 +29,14 @@ export default function OnboardingModal() {
     try {
       await persist(data);
     } catch {
+      toast.error("Failed to save your preferences. Please try again.");
       return;
     }
     complete();
     const artistNames = (data.artists ?? []).map(a => a.name);
+    // Users with artists are redirected to a pre-filled status-report query for their
+    // first artist so they get immediate value. Users without artists close the modal
+    // and land on the default dashboard to explore freely.
     if (artistNames.length > 0) {
       const q = encodeURIComponent(
         `Give me a complete status report for ${artistNames[0]} — fan breakdown, streaming performance, top opportunities, and my 3 highest-priority actions this week.`,
@@ -98,9 +103,9 @@ export default function OnboardingModal() {
             <OnboardingConnectionsStep
               connected={data.connectedSlugs ?? []}
               onConnect={slug =>
-                updateData({
-                  connectedSlugs: Array.from(new Set([...(data.connectedSlugs ?? []), slug])),
-                })
+                updateData(prev => ({
+                  connectedSlugs: Array.from(new Set([...(prev.connectedSlugs ?? []), slug])),
+                }))
               }
               onNext={nextStep}
               onBack={prevStep}

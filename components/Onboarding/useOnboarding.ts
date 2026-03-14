@@ -60,9 +60,15 @@ export function useOnboarding() {
     }
   }, [userData]);
 
-  const updateData = useCallback((patch: Partial<OnboardingData>) => {
-    setData(prev => ({ ...prev, ...patch }));
-  }, []);
+  const updateData = useCallback(
+    (patch: Partial<OnboardingData> | ((prev: Partial<OnboardingData>) => Partial<OnboardingData>)) => {
+      setData(prev => {
+        const next = typeof patch === "function" ? patch(prev) : patch;
+        return { ...prev, ...next };
+      });
+    },
+    [],
+  );
 
   const nextStep = useCallback(() => {
     setStep(prev => {

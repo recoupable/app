@@ -58,14 +58,24 @@ export function OnboardingConnectionsStep({ connected, onConnect, onNext, onBack
         callbackUrl: window.location.href,
       });
       if (url) {
-        onConnect(slug);
-        window.open(url, "_blank", "noopener,noreferrer");
+        const popup = window.open(url, "_blank", "noopener,noreferrer");
+        if (popup) {
+          // Poll until the OAuth popup closes, then record the connection.
+          // This prevents marking a connector as connected if the user cancels OAuth.
+          const checkClosed = setInterval(() => {
+            if (popup.closed) {
+              clearInterval(checkClosed);
+              onConnect(slug);
+              setConnecting(null);
+            }
+          }, 500);
+          return; // setConnecting(null) is handled by the interval above
+        }
       }
     } catch {
       // silently continue
-    } finally {
-      setConnecting(null);
     }
+    setConnecting(null);
   };
 
   return (
