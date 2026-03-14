@@ -10,7 +10,7 @@ interface Props {
   name: string | undefined;
   connectedCount: number;
   pulseEnabled: boolean;
-  onComplete: () => void;
+  onComplete: () => void | Promise<void>;
 }
 
 /**
@@ -24,6 +24,7 @@ export function OnboardingCompleteStep({
   onComplete,
 }: Props) {
   const [visible, setVisible] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 100);
@@ -106,8 +107,16 @@ export function OnboardingCompleteStep({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
           >
-            <Button onClick={onComplete} className="w-full text-base py-5">
-              Open my dashboard 🎯
+            <Button
+              onClick={async () => {
+                if (isCompleting) return;
+                setIsCompleting(true);
+                await onComplete();
+              }}
+              disabled={isCompleting}
+              className="w-full text-base py-5"
+            >
+              {isCompleting ? "Opening…" : "Open my dashboard 🎯"}
             </Button>
             <p className="text-xs text-muted-foreground">
               Your peers in music will want to know what you&apos;re using.

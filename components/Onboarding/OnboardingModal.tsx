@@ -25,7 +25,11 @@ export default function OnboardingModal() {
   const { persist } = useOnboardingPersist();
 
   const handleComplete = useCallback(async () => {
-    await persist(data);
+    try {
+      await persist(data);
+    } catch {
+      return;
+    }
     complete();
     const artistNames = (data.artists ?? []).map(a => a.name);
     if (artistNames.length > 0) {
@@ -94,7 +98,9 @@ export default function OnboardingModal() {
             <OnboardingConnectionsStep
               connected={data.connectedSlugs ?? []}
               onConnect={slug =>
-                updateData({ connectedSlugs: [...(data.connectedSlugs ?? []), slug] })
+                updateData({
+                  connectedSlugs: Array.from(new Set([...(data.connectedSlugs ?? []), slug])),
+                })
               }
               onNext={nextStep}
               onBack={prevStep}

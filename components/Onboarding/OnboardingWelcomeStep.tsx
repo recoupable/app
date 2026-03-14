@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useUserProvider } from "@/providers/UserProvder";
 
@@ -29,6 +29,7 @@ export function OnboardingWelcomeStep({ onDone }: Props) {
   const { email, userData } = useUserProvider();
   const [lineIdx, setLineIdx] = useState(0);
   const [done, setDone] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Infer first name from email or account name
   const firstName =
@@ -47,13 +48,16 @@ export function OnboardingWelcomeStep({ onDone }: Props) {
         if (next >= RESEARCH_LINES.length) {
           clearInterval(interval);
           setDone(true);
-          setTimeout(onDone, 700);
+          timeoutRef.current = setTimeout(onDone, 700);
           return prev;
         }
         return next;
       });
     }, 520);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, [onDone]);
 
   return (

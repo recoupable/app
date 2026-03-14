@@ -40,7 +40,7 @@ export function useOnboardingPersist() {
       }
 
       // Persist account info + onboarding status
-      await fetch("/api/account/update", {
+      const response = await fetch("/api/account/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -60,7 +60,10 @@ export function useOnboardingPersist() {
           },
           onboardingData: data,
         }),
-      }).catch(console.error);
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to persist onboarding data: ${response.status}`);
+      }
 
       // Refresh artist sidebar
       if (typeof getArtists === "function") {

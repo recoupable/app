@@ -14,6 +14,7 @@ interface Particle {
   delay: number;
   duration: number;
   rotateEnd: number;
+  borderRadius: string;
 }
 
 function makeParticles(): Particle[] {
@@ -25,6 +26,7 @@ function makeParticles(): Particle[] {
     delay: Math.random() * 0.5,
     duration: 1.2 + Math.random() * 0.8,
     rotateEnd: (Math.random() - 0.5) * 720,
+    borderRadius: Math.random() > 0.5 ? "50%" : "2px",
   }));
 }
 
@@ -57,7 +59,7 @@ export function OnboardingConfetti() {
             top: "-10px",
             width: p.size,
             height: p.size,
-            borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+            borderRadius: p.borderRadius,
             backgroundColor: p.color,
           }}
           initial={{ y: 0, opacity: 1, rotate: 0, scale: 1 }}
