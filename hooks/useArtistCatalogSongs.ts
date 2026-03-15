@@ -16,12 +16,9 @@ const useArtistCatalogSongs = ({
   const { selectedArtist } = useArtistProvider();
   const activeArtistName = selectedArtist?.name ?? undefined;
 
-  const [shouldUseArtistFilter, setShouldUseArtistFilter] =
-    useState(!!activeArtistName);
+  const [shouldUseArtistFilter, setShouldUseArtistFilter] = useState(!!activeArtistName);
 
-  const effectiveArtistName = shouldUseArtistFilter
-    ? activeArtistName
-    : undefined;
+  const effectiveArtistName = shouldUseArtistFilter ? activeArtistName : undefined;
 
   const queryResult = useCatalogSongs({
     catalogId,

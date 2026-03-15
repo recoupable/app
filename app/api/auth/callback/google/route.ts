@@ -1,13 +1,13 @@
 /**
  * YouTube OAuth2 Callback Route
- * 
+ *
  * Handles Google OAuth redirect after YouTube authentication.
- * 
+ *
  * PROCESS:
  * - Exchanges authorization code for access/refresh tokens
  * - Saves tokens to database linked to artist_account_id from state parameter
  * - Redirects back to original page with success/error status
- * 
+ *
  * STATE: Contains JSON with { path, artist_account_id } for context preservation
  */
 
@@ -17,6 +17,10 @@ import { createYouTubeOAuthClient } from "@/lib/youtube/oauth-client";
 
 const oauth2Client = createYouTubeOAuthClient();
 
+/**
+ *
+ * @param request
+ */
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get("code");
@@ -47,8 +51,8 @@ export async function GET(request: NextRequest) {
           (redirectPath.includes("?") ? "&" : "?") +
           "youtube_auth_error=" +
           encodeURIComponent(error as string),
-        request.url
-      )
+        request.url,
+      ),
     );
   }
 
@@ -59,8 +63,8 @@ export async function GET(request: NextRequest) {
         redirectPath +
           (redirectPath.includes("?") ? "&" : "?") +
           "youtube_auth_error=No+code+provided",
-        request.url
-      )
+        request.url,
+      ),
     );
   }
 
@@ -85,8 +89,8 @@ export async function GET(request: NextRequest) {
           redirectPath +
             (redirectPath.includes("?") ? "&" : "?") +
             "youtube_auth_error=No+account+specified",
-          request.url
-        )
+          request.url,
+        ),
       );
     }
 
@@ -107,31 +111,25 @@ export async function GET(request: NextRequest) {
       throw new Error("Failed to save YouTube tokens to database");
     }
 
-    console.log(
-      "YouTube tokens saved to database successfully for account:",
-      artist_account_id
-    );
+    console.log("YouTube tokens saved to database successfully for account:", artist_account_id);
     console.log("YouTube authentication successful, redirecting...");
     return NextResponse.redirect(
       new URL(
-        redirectPath +
-          (redirectPath.includes("?") ? "&" : "?") +
-          "youtube_auth=success",
-        request.url
-      )
+        redirectPath + (redirectPath.includes("?") ? "&" : "?") + "youtube_auth=success",
+        request.url,
+      ),
     );
   } catch (err) {
     console.error("Error in YouTube auth callback:", err);
-    const errorMessage =
-      err instanceof Error ? err.message : "Error+getting+tokens";
+    const errorMessage = err instanceof Error ? err.message : "Error+getting+tokens";
     return NextResponse.redirect(
       new URL(
         redirectPath +
           (redirectPath.includes("?") ? "&" : "?") +
           "youtube_auth_error=" +
           encodeURIComponent(errorMessage),
-        request.url
-      )
+        request.url,
+      ),
     );
   }
 }

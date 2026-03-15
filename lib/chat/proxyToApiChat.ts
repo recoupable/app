@@ -9,6 +9,9 @@ export type ProxyOptions = {
 
 const SUNSET_DAYS = 90;
 
+/**
+ *
+ */
 function getDeprecationHeaders(): Record<string, string> {
   const sunsetDate = new Date();
   sunsetDate.setDate(sunsetDate.getDate() + SUNSET_DAYS);
@@ -35,7 +38,7 @@ function getDeprecationHeaders(): Record<string, string> {
  */
 export async function proxyToApiChat(
   request: NextRequest,
-  options: ProxyOptions
+  options: ProxyOptions,
 ): Promise<Response> {
   const endpoint = options.streaming ? "/api/chat" : "/api/chat/generate";
   const url = `${NEW_API_BASE_URL}${endpoint}`;

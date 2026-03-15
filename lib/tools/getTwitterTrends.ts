@@ -34,10 +34,7 @@ const getTwitterTrends = tool({
       return {
         status: "error",
         trends: [],
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch Twitter trends",
+        message: error instanceof Error ? error.message : "Failed to fetch Twitter trends",
       };
     }
   },

@@ -6,9 +6,7 @@ interface UseArtistImageResult {
   artistName: string | null;
 }
 
-export const useArtistImage = (
-  artistAccountId?: string | null
-): UseArtistImageResult => {
+export const useArtistImage = (artistAccountId?: string | null): UseArtistImageResult => {
   const { artists } = useArtistProvider();
 
   const artist = useMemo(() => {
@@ -16,9 +14,7 @@ export const useArtistImage = (
       return null;
     }
 
-    const match = artists.find(
-      (candidate) => candidate.account_id === artistAccountId
-    );
+    const match = artists.find(candidate => candidate.account_id === artistAccountId);
     if (match) {
       return match;
     }

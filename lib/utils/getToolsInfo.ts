@@ -1,3 +1,7 @@
+/**
+ *
+ * @param toolName
+ */
 function getToolInfo(toolName: string): { message: string } {
   // Spotify related tools
   if (toolName.includes("spotify")) {
@@ -24,10 +28,7 @@ function getToolInfo(toolName: string): { message: string } {
     };
   }
   // Social media content tools
-  else if (
-    toolName === "get_social_posts" ||
-    toolName === "get_post_comments"
-  ) {
+  else if (toolName === "get_social_posts" || toolName === "get_post_comments") {
     return {
       message: "Social content analyzed",
     };

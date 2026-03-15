@@ -6,6 +6,9 @@ import { toast } from "sonner";
 
 const QUERY_KEY = ["pulse"];
 
+/**
+ *
+ */
 export function usePulseToggle() {
   const accessToken = useAccessToken();
   const queryClient = useQueryClient();
@@ -17,15 +20,12 @@ export function usePulseToggle() {
   });
 
   const { mutate, isPending: isToggling } = useMutation({
-    mutationFn: (active: boolean) =>
-      updatePulse({ accessToken: accessToken!, active }),
-    onMutate: async (newActive) => {
+    mutationFn: (active: boolean) => updatePulse({ accessToken: accessToken!, active }),
+    onMutate: async newActive => {
       await queryClient.cancelQueries({ queryKey: QUERY_KEY });
       const previousData = queryClient.getQueryData(QUERY_KEY);
       queryClient.setQueryData(QUERY_KEY, (old: typeof data) =>
-        old
-          ? { ...old, pulses: [{ ...old.pulses[0], active: newActive }] }
-          : old
+        old ? { ...old, pulses: [{ ...old.pulses[0], active: newActive }] } : old,
       );
       return { previousData };
     },
@@ -33,10 +33,8 @@ export function usePulseToggle() {
       queryClient.setQueryData(QUERY_KEY, context?.previousData);
       toast.error("Failed to update pulse status");
     },
-    onSuccess: (data) => {
-      toast.success(
-        data.pulses[0].active ? "Pulse activated" : "Pulse deactivated"
-      );
+    onSuccess: data => {
+      toast.success(data.pulses[0].active ? "Pulse activated" : "Pulse deactivated");
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });

@@ -17,11 +17,11 @@ export interface UpdateTaskParams {
 
 /**
  * Updates an existing task via the Recoup API
+ *
+ * @param params
  * @see https://docs.recoupable.com/tasks/update
  */
-export async function updateTask(
-  params: UpdateTaskParams
-): Promise<ScheduledAction> {
+export async function updateTask(params: UpdateTaskParams): Promise<ScheduledAction> {
   try {
     const response = await fetch(TASKS_API_URL, {
       method: "PATCH",

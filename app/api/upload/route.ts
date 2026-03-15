@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import uploadToArweave from "@/lib/arweave/uploadToArweave";
 import { getFetchableUrl } from "@/lib/arweave/gateway";
 
+/**
+ *
+ * @param request
+ */
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -33,7 +37,7 @@ export async function POST(request: Request) {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

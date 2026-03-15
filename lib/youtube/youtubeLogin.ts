@@ -1,3 +1,7 @@
+/**
+ *
+ * @param artist_account_id
+ */
 export function youtubeLogin(artist_account_id?: string) {
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
   const redirectUri = `${process.env.NEXT_PUBLIC_URL}/api/auth/callback/google`;

@@ -15,9 +15,11 @@ export type UpdateFileResponse = {
   sizeBytes: number;
 };
 
-export async function updateFileContent(
-  params: UpdateFileParams
-): Promise<UpdateFileResponse> {
+/**
+ *
+ * @param params
+ */
+export async function updateFileContent(params: UpdateFileParams): Promise<UpdateFileResponse> {
   const response = await fetch("/api/files/update", {
     method: "POST",
     headers: {
@@ -33,4 +35,3 @@ export async function updateFileContent(
 
   return response.json();
 }
-

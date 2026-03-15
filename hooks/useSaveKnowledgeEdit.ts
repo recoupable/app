@@ -10,11 +10,7 @@ type UseSaveKnowledgeEditArgs = {
   editedText: string;
 };
 
-export const useSaveKnowledgeEdit = ({
-  name,
-  url,
-  editedText,
-}: UseSaveKnowledgeEditArgs) => {
+export const useSaveKnowledgeEdit = ({ name, url, editedText }: UseSaveKnowledgeEditArgs) => {
   const {
     knowledgeUploading,
     setKnowledgeUploading,
@@ -38,8 +34,8 @@ export const useSaveKnowledgeEdit = ({
       setKnowledgeUploading(true);
       const file = new File([editedText], name || "file.txt", { type: mime });
       const { uri } = await uploadFile(file);
-      const next = bases.map((b) => ({ ...b }));
-      const idx = next.findIndex((b) => b.url === url && b.name === name);
+      const next = bases.map(b => ({ ...b }));
+      const idx = next.findIndex(b => b.url === url && b.name === name);
       if (idx >= 0) {
         next[idx] = { name, url: uri, type: mime } as {
           name: string;

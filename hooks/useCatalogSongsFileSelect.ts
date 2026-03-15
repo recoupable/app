@@ -12,6 +12,10 @@ export interface UploadResult {
   message: string;
 }
 
+/**
+ *
+ * @param catalogId
+ */
 export function useCatalogSongsFileSelect(catalogId?: string) {
   const [uploadProgress, setUploadProgress] = useState({
     current: 0,
@@ -47,9 +51,7 @@ export function useCatalogSongsFileSelect(catalogId?: string) {
     },
   });
 
-  const handleFileSelect = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 

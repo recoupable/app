@@ -2,6 +2,7 @@ import supabase from "./serverClient";
 
 /**
  * Fetches report data for a specific room
+ *
  * @param roomId - The ID of the room to fetch reports for
  * @returns The report data if found, null otherwise
  */

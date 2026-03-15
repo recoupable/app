@@ -23,16 +23,12 @@ USAGE:
 
 This tool helps avoid detection as automated traffic by spacing out requests naturally.`,
   inputSchema: z.object({
-    seconds: z
-      .number()
-      .min(1)
-      .max(600)
-      .describe("Number of seconds to wait (1-600)"),
+    seconds: z.number().min(1).max(600).describe("Number of seconds to wait (1-600)"),
   }),
   execute: async ({ seconds }) => {
     try {
       await new Promise(resolve => setTimeout(resolve, seconds * 1000));
-      
+
       return {
         success: true,
         message: `Waited ${seconds} seconds successfully`,
@@ -47,4 +43,3 @@ This tool helps avoid detection as automated traffic by spacing out requests nat
 });
 
 export default waitTool;
-

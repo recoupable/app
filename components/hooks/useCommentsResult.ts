@@ -9,7 +9,7 @@ export const useCommentsResult = (comments: Comment[]) => {
 
   // Handle comment click
   const handleCommentClick = (comment: Comment) => {
-    const index = comments.findIndex((c) => c.id === comment.id);
+    const index = comments.findIndex(c => c.id === comment.id);
     setCurrentIndex(index !== -1 ? index : 0);
     setSelectedComment(comment);
     setDialogOpen(true);
@@ -26,10 +26,7 @@ export const useCommentsResult = (comments: Comment[]) => {
       const newIndex = currentIndex - 1;
       setCurrentIndex(newIndex);
       setSelectedComment(comments[newIndex]);
-    } else if (
-      direction === "next" &&
-      currentIndex < comments.length - 1
-    ) {
+    } else if (direction === "next" && currentIndex < comments.length - 1) {
       const newIndex = currentIndex + 1;
       setCurrentIndex(newIndex);
       setSelectedComment(comments[newIndex]);
@@ -43,6 +40,6 @@ export const useCommentsResult = (comments: Comment[]) => {
     totalComments: comments.length,
     handleCommentClick,
     handleCloseDialog,
-    handleNavigation
+    handleNavigation,
   };
-}; 
+};

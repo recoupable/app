@@ -3,17 +3,21 @@
 import { useEffect, useState } from "react";
 import { createSignedUrlClient } from "@/lib/supabase/storage/client";
 
+/**
+ *
+ * @param storageKey
+ */
 export default function useSignedUrl(storageKey?: string) {
   const [url, setUrl] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!storageKey) {
-        setUrl(undefined);
-        return;
+      setUrl(undefined);
+      return;
     }
 
     let isMounted = true;
-    createSignedUrlClient(storageKey).then((signed) => {
+    createSignedUrlClient(storageKey).then(signed => {
       if (isMounted) setUrl(signed);
     });
 
@@ -24,4 +28,3 @@ export default function useSignedUrl(storageKey?: string) {
 
   return url;
 }
-

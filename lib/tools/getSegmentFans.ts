@@ -45,10 +45,7 @@ const getSegmentFans = tool({
       return {
         success: false,
         status: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch segment fans",
+        message: error instanceof Error ? error.message : "Failed to fetch segment fans",
         fans: [],
         pagination: {
           total_count: 0,

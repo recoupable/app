@@ -39,7 +39,7 @@ describe("getConversations", () => {
             "Content-Type": "application/json",
             Authorization: "Bearer test-token",
           }),
-        })
+        }),
       );
       expect(result).toEqual(mockChats);
     });
@@ -111,7 +111,7 @@ describe("getConversations", () => {
           headers: expect.objectContaining({
             Authorization: "Bearer my-privy-token",
           }),
-        })
+        }),
       );
     });
   });

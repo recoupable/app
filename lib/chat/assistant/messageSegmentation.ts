@@ -7,10 +7,13 @@ export interface MessageSegment {
 
 /**
  * Splits a message into segments of text and fan data
+ *
+ * @param content
+ * @param jsonObjects
  */
 export const createMessageSegments = (
   content: string,
-  jsonObjects: JsonObject[]
+  jsonObjects: JsonObject[],
 ): MessageSegment[] => {
   if (jsonObjects.length === 0) {
     return [{ type: "text", content }];
@@ -19,7 +22,7 @@ export const createMessageSegments = (
   const segments: MessageSegment[] = [];
   let lastEnd = 0;
 
-  jsonObjects.forEach((obj) => {
+  jsonObjects.forEach(obj => {
     // Add text before the JSON if any
     if (obj.start > lastEnd) {
       const textContent = content.slice(lastEnd, obj.start).trim();

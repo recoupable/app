@@ -1,8 +1,4 @@
-export type SearchProgressStatus =
-  | "searching"
-  | "reviewing"
-  | "streaming"
-  | "complete";
+export type SearchProgressStatus = "searching" | "reviewing" | "streaming" | "complete";
 
 export type SearchProgress = {
   status: SearchProgressStatus;

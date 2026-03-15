@@ -5,6 +5,8 @@ import apifyPayloadSchema from "@/lib/apify/apifyPayloadSchema";
 /**
  * API endpoint for Apify webhooks.
  * Accepts a POST request with a JSON payload, optionally fetches a dataset, and always responds with 200.
+ *
+ * @param req
  */
 export async function POST(req: NextRequest) {
   try {
@@ -28,10 +30,10 @@ export async function POST(req: NextRequest) {
     });
   } catch {
     // Always respond with 200, even if parsing fails
-    return new Response(
-      JSON.stringify({ message: "Apify webhook received (invalid JSON)" }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ message: "Apify webhook received (invalid JSON)" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
 

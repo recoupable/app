@@ -1,11 +1,6 @@
 import { padTimePart } from "./padTimePart";
 
-export type SimpleModeFrequency =
-  | "hourly"
-  | "daily"
-  | "weekdays"
-  | "weekly"
-  | "monthly";
+export type SimpleModeFrequency = "hourly" | "daily" | "weekdays" | "weekly" | "monthly";
 
 export interface SimpleModeSettings {
   frequency: SimpleModeFrequency;
@@ -14,17 +9,10 @@ export interface SimpleModeSettings {
   dayOfMonth: string;
 }
 
-export const deriveSimpleModeFromParts = (
-  parts: string[]
-): SimpleModeSettings | null => {
+export const deriveSimpleModeFromParts = (parts: string[]): SimpleModeSettings | null => {
   const [minute, hour, dayOfMonth, , dayOfWeek] = parts;
 
-  if (
-    minute === "0" &&
-    hour === "*" &&
-    dayOfMonth === "*" &&
-    dayOfWeek === "*"
-  ) {
+  if (minute === "0" && hour === "*" && dayOfMonth === "*" && dayOfWeek === "*") {
     return {
       frequency: "hourly",
       time: "00:00",

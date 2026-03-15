@@ -2,11 +2,7 @@ import { YoutubeStatus } from "@/types/youtube";
 import useYoutubeChannel from "./useYoutubeChannel";
 
 const useYoutubeStatus = (artistAccountId?: string) => {
-  const {
-    data: channelResponse,
-    isLoading,
-    error,
-  } = useYoutubeChannel(artistAccountId || "");
+  const { data: channelResponse, isLoading, error } = useYoutubeChannel(artistAccountId || "");
 
   const data = artistAccountId
     ? {
@@ -14,9 +10,7 @@ const useYoutubeStatus = (artistAccountId?: string) => {
           if (error) return "error";
           if (isLoading) return "invalid";
           if (channelResponse) {
-            return channelResponse.tokenStatus === "valid"
-              ? "valid"
-              : "invalid";
+            return channelResponse.tokenStatus === "valid" ? "valid" : "invalid";
           }
           return "invalid";
         })(),

@@ -1,17 +1,17 @@
 /**
  * Reasoning Types
- * 
+ *
  * Shared type definitions for reasoning components.
  * Single responsibility: Type definitions for reasoning system.
  */
 
-import { type LucideIcon } from 'lucide-react';
+import { type LucideIcon } from "lucide-react";
 
 export interface ReasoningStep {
   icon: LucideIcon;
   label: string;
   description?: string;
-  status: 'complete' | 'active' | 'pending';
+  status: "complete" | "active" | "pending";
   content: string;
 }
 

@@ -3,13 +3,14 @@ import { ApifyScraperResult } from "@/lib/apify/types";
 
 /**
  * Runs the Instagram comments scraper for the provided post URLs
+ *
  * @param postUrls - Array of Instagram post URLs to fetch comments for
  * @param resultsLimit - Optional limit on the number of comments to fetch per post
  * @returns Promise with runId, datasetId, and error information
  */
 export default async function runInstagramCommentsScraper(
   postUrls: string[],
-  resultsLimit: number = 100
+  resultsLimit: number = 100,
 ): Promise<ApifyScraperResult> {
   try {
     if (!postUrls || postUrls.length === 0) {
@@ -22,7 +23,7 @@ export default async function runInstagramCommentsScraper(
 
     // Construct URL with postUrls as query parameters
     const url = new URL("https://api.recoupable.com/api/instagram/comments");
-    postUrls.forEach((postUrl) => {
+    postUrls.forEach(postUrl => {
       url.searchParams.append("postUrls", postUrl);
     });
 
@@ -48,10 +49,7 @@ export default async function runInstagramCommentsScraper(
     return {
       runId: "",
       datasetId: "",
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to scrape Instagram comments",
+      error: error instanceof Error ? error.message : "Failed to scrape Instagram comments",
     };
   }
 }

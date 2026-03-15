@@ -36,6 +36,12 @@ interface UseVercelChatProps {
  * A hook that provides all chat functionality for the Vercel Chat component
  * Combines useChat, and useMessageLoader
  * Accesses user and artist data directly from providers
+ *
+ * @param root0
+ * @param root0.id
+ * @param root0.initialMessages
+ * @param root0.attachments
+ * @param root0.textAttachments
  */
 export function useVercelChat({
   id,
@@ -55,10 +61,7 @@ export function useVercelChat({
   const { addOptimisticConversation } = useConversationsProvider();
   const { data: availableModels = [] } = useAvailableModels();
   const [input, setInput] = useState("");
-  const [model, setModel] = useLocalStorage(
-    "RECOUP_MODEL",
-    availableModels[0]?.id ?? "",
-  );
+  const [model, setModel] = useLocalStorage("RECOUP_MODEL", availableModels[0]?.id ?? "");
   const { refetchCredits } = usePaymentProvider();
   const { transport, headers } = useChatTransport();
   const accessToken = useAccessToken();
@@ -71,7 +74,7 @@ export function useVercelChat({
     const ids = new Set<string>();
     const regex = /@\[[^\]]+\]\(([^)]+)\)/g;
     let match: RegExpExecArray | null;
-    // eslint-disable-next-line no-cond-assign
+
     while ((match = regex.exec(input))) {
       if (match[1]) ids.add(match[1]);
     }
@@ -79,9 +82,7 @@ export function useVercelChat({
   }, [input]);
 
   // Resolve selected files to signed URLs for attachment
-  const [knowledgeFiles, setKnowledgeFiles] = useState<KnowledgeBaseEntry[]>(
-    [],
-  );
+  const [knowledgeFiles, setKnowledgeFiles] = useState<KnowledgeBaseEntry[]>([]);
   const [isLoadingSignedUrls, setIsLoadingSignedUrls] = useState(false);
   // Cache signed URLs by storage_key to avoid redundant refetches
   const signedUrlCacheRef = useRef<Map<string, KnowledgeBaseEntry>>(new Map());
@@ -89,27 +90,27 @@ export function useVercelChat({
     let cancelled = false;
     const run = async () => {
       if (!selectedFileIds.length) {
-        if (!cancelled) setKnowledgeFiles((prev) => (prev.length ? [] : prev));
-        if (!cancelled) setIsLoadingSignedUrls((prev) => (prev ? false : prev));
+        if (!cancelled) setKnowledgeFiles(prev => (prev.length ? [] : prev));
+        if (!cancelled) setIsLoadingSignedUrls(prev => (prev ? false : prev));
         return;
       }
       const idSet = new Set(selectedFileIds);
-      const selected = allArtistFiles.filter((f) => idSet.has(f.id));
+      const selected = allArtistFiles.filter(f => idSet.has(f.id));
       if (selected.length === 0) {
-        if (!cancelled) setKnowledgeFiles((prev) => (prev.length ? [] : prev));
-        if (!cancelled) setIsLoadingSignedUrls((prev) => (prev ? false : prev));
+        if (!cancelled) setKnowledgeFiles(prev => (prev.length ? [] : prev));
+        if (!cancelled) setIsLoadingSignedUrls(prev => (prev ? false : prev));
         return;
       }
       try {
         const cache = signedUrlCacheRef.current;
 
         // Determine which of the selected files need fetching
-        const toFetch = selected.filter((f) => !cache.has(f.storage_key));
+        const toFetch = selected.filter(f => !cache.has(f.storage_key));
 
         if (toFetch.length === 0) {
           // All selected entries are cached and valid
           const entries = selected
-            .map((f) => cache.get(f.storage_key))
+            .map(f => cache.get(f.storage_key))
             .filter((e): e is KnowledgeBaseEntry => Boolean(e));
           if (!cancelled) setKnowledgeFiles(entries);
           if (!cancelled) setIsLoadingSignedUrls(false);
@@ -119,7 +120,7 @@ export function useVercelChat({
         if (!cancelled) setIsLoadingSignedUrls(true);
 
         await Promise.all(
-          toFetch.map(async (f) => {
+          toFetch.map(async f => {
             const res = await fetch(
               `/api/files/get-signed-url?key=${encodeURIComponent(f.storage_key)}&accountId=${encodeURIComponent(userData?.account_id || "")}&expires=${SIGNED_URL_EXPIRES_SECONDS}`,
             );
@@ -136,15 +137,15 @@ export function useVercelChat({
 
         // Compose final entries in the order of selection
         const entries = selected
-          .map((f) => signedUrlCacheRef.current.get(f.storage_key))
+          .map(f => signedUrlCacheRef.current.get(f.storage_key))
           .filter((e): e is KnowledgeBaseEntry => Boolean(e));
 
         if (!cancelled) setKnowledgeFiles(entries);
         if (!cancelled) setIsLoadingSignedUrls(false);
       } catch (e) {
         console.error(e);
-        if (!cancelled) setKnowledgeFiles((prev) => (prev.length ? [] : prev));
-        if (!cancelled) setIsLoadingSignedUrls((prev) => (prev ? false : prev));
+        if (!cancelled) setKnowledgeFiles(prev => (prev.length ? [] : prev));
+        if (!cancelled) setIsLoadingSignedUrls(prev => (prev ? false : prev));
       }
     };
     run();
@@ -178,22 +179,21 @@ export function useVercelChat({
     [id, artistId, organizationId, model, headers],
   );
 
-  const { messages, status, stop, sendMessage, setMessages, regenerate } =
-    useChat({
-      id,
-      transport,
-      experimental_throttle: 100,
-      generateId: generateUUID,
-      onError: (e) => {
-        console.error("An error occurred, please try again!", e);
-        toast.error("An error occurred, please try again!");
-        setHasChatApiError(true);
-      },
-      onFinish: async () => {
-        // Update credits after AI response completes
-        await refetchCredits();
-      },
-    });
+  const { messages, status, stop, sendMessage, setMessages, regenerate } = useChat({
+    id,
+    transport,
+    experimental_throttle: 100,
+    generateId: generateUUID,
+    onError: e => {
+      console.error("An error occurred, please try again!", e);
+      toast.error("An error occurred, please try again!");
+      setHasChatApiError(true);
+    },
+    onFinish: async () => {
+      // Update credits after AI response completes
+      await refetchCredits();
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -201,16 +201,11 @@ export function useVercelChat({
     // Combine all attachments
     const combined: FileUIPart[] = [];
     if (attachments && attachments.length > 0) combined.push(...attachments);
-    if (selectedFileAttachments.length > 0)
-      combined.push(...selectedFileAttachments);
+    if (selectedFileAttachments.length > 0) combined.push(...selectedFileAttachments);
 
     // Separate audio files (can't be sent to AI as file parts)
-    const audioAttachments = combined.filter((f) =>
-      f.mediaType?.startsWith("audio/"),
-    );
-    const nonAudioAttachments = combined.filter(
-      (f) => !f.mediaType?.startsWith("audio/"),
-    );
+    const audioAttachments = combined.filter(f => f.mediaType?.startsWith("audio/"));
+    const nonAudioAttachments = combined.filter(f => !f.mediaType?.startsWith("audio/"));
 
     // Build message text with text file content and audio URLs prepended
     let messageText = input;
@@ -224,7 +219,7 @@ export function useVercelChat({
     // Prepend audio URLs
     if (audioAttachments.length > 0) {
       const audioContext = audioAttachments
-        .map((a) => `[Audio: ${a.filename || "audio"}]\nURL: ${a.url}`)
+        .map(a => `[Audio: ${a.filename || "audio"}]\nURL: ${a.url}`)
         .join("\n\n");
       messageText = audioContext + "\n\n" + messageText;
     }
@@ -260,17 +255,14 @@ export function useVercelChat({
   const isGeneratingResponse = ["streaming", "submitted"].includes(status);
 
   const deleteTrailingMessages = async () => {
-    const earliestFailedUserMessageId =
-      getEarliestFailedUserMessageId(messages);
+    const earliestFailedUserMessageId = getEarliestFailedUserMessageId(messages);
     if (earliestFailedUserMessageId) {
       const successfulDeletion = await clientDeleteTrailingMessages({
         id: earliestFailedUserMessageId,
       });
       if (successfulDeletion) {
-        setMessages((messages) => {
-          const index = messages.findIndex(
-            (m) => m.id === earliestFailedUserMessageId,
-          );
+        setMessages(messages => {
+          const index = messages.findIndex(m => m.id === earliestFailedUserMessageId);
           if (index !== -1) {
             return [...messages.slice(0, index)];
           }
@@ -323,28 +315,15 @@ export function useVercelChat({
     const hasInitialMessages = initialMessages && initialMessages.length > 0;
     const hasAccessToken = !!accessToken;
     // Wait for access token before sending initial message to avoid 401 errors
-    if (
-      !hasInitialMessages ||
-      !isReady ||
-      hasMessages ||
-      !isFullyLoggedIn ||
-      !hasAccessToken
-    )
+    if (!hasInitialMessages || !isReady || hasMessages || !isFullyLoggedIn || !hasAccessToken)
       return;
     handleSendQueryMessages(initialMessages[0]);
-  }, [
-    initialMessages,
-    status,
-    userId,
-    handleSendQueryMessages,
-    messages.length,
-    accessToken,
-  ]);
+  }, [initialMessages, status, userId, handleSendQueryMessages, messages.length, accessToken]);
 
   // Sync state when models first load and prioritize preferred model
   useEffect(() => {
     if (!availableModels.length || model) return;
-    const preferred = availableModels.find((m) => m.id === DEFAULT_MODEL);
+    const preferred = availableModels.find(m => m.id === DEFAULT_MODEL);
     const defaultId = preferred ? preferred.id : availableModels[0].id;
     setModel(defaultId);
   }, [availableModels, model, setModel]);

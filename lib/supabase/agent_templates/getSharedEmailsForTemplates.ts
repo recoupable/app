@@ -1,7 +1,13 @@
 import getAccountEmails from "@/lib/supabase/account_emails/getAccountEmails";
 import { getAgentTemplateSharesByTemplateIds } from "./getAgentTemplateSharesByTemplateIds";
 
-export async function getSharedEmailsForTemplates(templateIds: string[]): Promise<Record<string, string[]>> {
+/**
+ *
+ * @param templateIds
+ */
+export async function getSharedEmailsForTemplates(
+  templateIds: string[],
+): Promise<Record<string, string[]>> {
   if (!templateIds || templateIds.length === 0) return {};
 
   // Get all shares for these templates using existing utility

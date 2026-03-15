@@ -13,6 +13,10 @@ const STATUS_LABELS: Record<string, string> = {
   PENDING_VERSION: "Pending Version",
 };
 
+/**
+ *
+ * @param status
+ */
 export function getStatusLabel(status: string): string {
   return STATUS_LABELS[status] ?? status;
 }

@@ -7,16 +7,11 @@ interface UseTaskDetailsDialogParams {
   isDeleted?: boolean;
 }
 
-export const useTaskDetailsDialog = ({
-  task,
-  isDeleted = false,
-}: UseTaskDetailsDialogParams) => {
+export const useTaskDetailsDialog = ({ task, isDeleted = false }: UseTaskDetailsDialogParams) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
   const [editPrompt, setEditPrompt] = useState(task.prompt);
-  const [editCron, setEditCron] = useState(
-    task.schedule?.trim() || "0 9 * * *"
-  );
+  const [editCron, setEditCron] = useState(task.schedule?.trim() || "0 9 * * *");
   const [editModel, setEditModel] = useState(task.model || DEFAULT_MODEL);
 
   // Sync edit state when task prop changes

@@ -31,7 +31,3 @@ export interface SearchImagesOptions {
   imageType?: "photo" | "clipart" | "lineart" | "animated";
   aspectRatio?: "square" | "wide" | "tall" | "panoramic";
 }
-
-
-
-

@@ -3,9 +3,7 @@ import { Tables } from "@/types/database.types";
 
 type Segment = Tables<"segments">;
 
-export const deleteSegments = async (
-  artist_account_id: string
-): Promise<Segment[]> => {
+export const deleteSegments = async (artist_account_id: string): Promise<Segment[]> => {
   // First, get all segment_ids associated with the artist from artist_segments table
   const { data: artistSegments, error: artistSegmentsError } = await serverClient
     .from("artist_segments")

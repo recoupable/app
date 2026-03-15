@@ -1,6 +1,8 @@
 /**
  * Extract owner and artist account IDs from storage key
  * Storage key format: files/{ownerAccountId}/{artistAccountId}/path/to/file
+ *
+ * @param storageKey
  */
 export function extractAccountIds(storageKey: string) {
   const parts = storageKey.split("/");
@@ -9,4 +11,3 @@ export function extractAccountIds(storageKey: string) {
     artistAccountId: parts[2] || "",
   };
 }
-

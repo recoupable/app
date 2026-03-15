@@ -3,6 +3,10 @@ import { listAgentTemplatesForUser } from "./listAgentTemplatesForUser";
 import { getSharedTemplatesForUser } from "./getSharedTemplatesForUser";
 import { getUserTemplateFavorites } from "./getUserTemplateFavorites";
 
+/**
+ *
+ * @param userId
+ */
 export async function getUserAccessibleTemplates(userId?: string | null) {
   if (userId && userId !== "undefined") {
     // Get owned and public templates
@@ -15,7 +19,7 @@ export async function getUserAccessibleTemplates(userId?: string | null) {
     const allTemplates = [...ownedAndPublic];
     const templateIds = new Set(ownedAndPublic.map(t => t.id));
 
-    sharedTemplates.forEach((template) => {
+    sharedTemplates.forEach(template => {
       if (!templateIds.has(template.id)) {
         allTemplates.push(template);
         templateIds.add(template.id);
@@ -36,8 +40,6 @@ export async function getUserAccessibleTemplates(userId?: string | null) {
   const publicTemplates = await listAgentTemplatesForUser(null);
   return publicTemplates.map((template: AgentTemplateRow) => ({
     ...template,
-    is_favourite: false
+    is_favourite: false,
   }));
 }
-
-

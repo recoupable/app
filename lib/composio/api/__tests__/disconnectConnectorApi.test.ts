@@ -67,17 +67,17 @@ describe("disconnectConnectorApi", () => {
         status: 403,
       });
 
-      await expect(
-        disconnectConnectorApi("test-token", "conn-abc"),
-      ).rejects.toThrow("Failed to disconnect connector");
+      await expect(disconnectConnectorApi("test-token", "conn-abc")).rejects.toThrow(
+        "Failed to disconnect connector",
+      );
     });
 
     it("throws when fetch fails", async () => {
       mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
-      await expect(
-        disconnectConnectorApi("test-token", "conn-abc"),
-      ).rejects.toThrow("Network error");
+      await expect(disconnectConnectorApi("test-token", "conn-abc")).rejects.toThrow(
+        "Network error",
+      );
     });
   });
 });

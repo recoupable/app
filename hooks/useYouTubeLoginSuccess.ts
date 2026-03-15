@@ -29,14 +29,12 @@ export function useYouTubeLoginSuccess() {
 
     // Check if the FINAL tool call in the latest message is YouTube (meaning it failed)
     const parts = latestMessage.parts || [];
-    const toolParts = parts.filter((part) => isToolUIPart(part));
+    const toolParts = parts.filter(part => isToolUIPart(part));
     const lastToolPart = toolParts[toolParts.length - 1];
 
     // Type guard to check if it's a tool invocation with the right structure
     const isLastToolYouTube =
-      lastToolPart &&
-      isToolUIPart(lastToolPart) &&
-      getToolName(lastToolPart) === "youtube_login";
+      lastToolPart && isToolUIPart(lastToolPart) && getToolName(lastToolPart) === "youtube_login";
 
     if (!isLastToolYouTube) {
       return;
@@ -45,7 +43,7 @@ export function useYouTubeLoginSuccess() {
     hasCheckedOAuth.current = true;
 
     if (selectedArtist?.account_id) {
-      fetchYouTubeChannel(selectedArtist.account_id).then((youtubeChannel) => {
+      fetchYouTubeChannel(selectedArtist.account_id).then(youtubeChannel => {
         if (youtubeChannel.success) {
           const successMessage = {
             id: generateUUID(),

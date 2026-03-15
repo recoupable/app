@@ -5,10 +5,7 @@ interface CreateSegmentRoomParams {
   room_id: string;
 }
 
-export const createSegmentRoom = async ({
-  segment_id,
-  room_id,
-}: CreateSegmentRoomParams) => {
+export const createSegmentRoom = async ({ segment_id, room_id }: CreateSegmentRoomParams) => {
   const { data, error } = await supabase
     .from("segment_rooms")
     .insert({

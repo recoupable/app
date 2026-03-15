@@ -32,7 +32,7 @@ const useSidebarPin = () => {
     }
   }, [isPinned]);
 
-  const togglePin = () => setIsPinned((prev) => !prev);
+  const togglePin = () => setIsPinned(prev => !prev);
 
   return { isPinned, togglePin };
 };

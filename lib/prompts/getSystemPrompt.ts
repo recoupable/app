@@ -1,6 +1,18 @@
 import { SYSTEM_PROMPT } from "@/lib/consts";
 import getUserInfo from "../supabase/getUserInfo";
 
+/**
+ *
+ * @param root0
+ * @param root0.roomId
+ * @param root0.artistId
+ * @param root0.accountId
+ * @param root0.organizationId
+ * @param root0.email
+ * @param root0.knowledgeBaseText
+ * @param root0.artistInstruction
+ * @param root0.conversationName
+ */
 export async function getSystemPrompt({
   roomId,
   artistId,

@@ -24,39 +24,24 @@ Important:
 - Specify fileName and optionally path to locate the file
 `,
   inputSchema: z.object({
-    fileName: z
-      .string()
-      .describe("Name of the file to update (e.g., 'research.md', 'report.txt')"),
-    newContent: z
-      .string()
-      .describe("The new content that will replace the current file content"),
+    fileName: z.string().describe("Name of the file to update (e.g., 'research.md', 'report.txt')"),
+    newContent: z.string().describe("The new content that will replace the current file content"),
     path: z
       .string()
       .optional()
       .describe("Optional subdirectory path where file is located (e.g., 'research', 'reports')"),
-    active_account_id: z
-      .string()
-      .describe("Pull active_account_id from the system prompt"),
-    active_artist_id: z
-      .string()
-      .describe("Pull active_artist_id from the system prompt"),
+    active_account_id: z.string().describe("Pull active_account_id from the system prompt"),
+    active_artist_id: z.string().describe("Pull active_artist_id from the system prompt"),
   }),
-  execute: async ({
-    fileName,
-    newContent,
-    path,
-    active_account_id,
-    active_artist_id,
-  }) => {
+  execute: async ({ fileName, newContent, path, active_account_id, active_artist_id }) => {
     const normalizedFileName = normalizeFileName(fileName);
-    
+
     try {
-      
       const fileRecord = await findFileByName(
         normalizedFileName,
         active_account_id,
         active_artist_id,
-        path
+        path,
       );
 
       if (!fileRecord) {
@@ -79,7 +64,7 @@ Important:
 
       const normalizedCurrent = normalizeContent(currentContent);
       const normalizedNewPreUpload = normalizeContent(newContent);
-      
+
       if (normalizedCurrent === normalizedNewPreUpload) {
         return {
           success: false,
@@ -88,7 +73,7 @@ Important:
           message: `No update needed - '${normalizedFileName}' already contains this exact content.`,
         };
       }
-      
+
       const blob = new Blob([newContent], {
         type: fileRecord.mime_type || "text/plain",
       });
@@ -100,7 +85,7 @@ Important:
         contentType: fileRecord.mime_type || "text/plain",
         upsert: true,
       });
-      
+
       // Wait for Supabase Storage cache to update before verifying
       await new Promise(resolve => setTimeout(resolve, 300));
 
@@ -108,14 +93,15 @@ Important:
 
       const normalizedUpdated = normalizeContent(updatedContent);
       const normalizedNew = normalizeContent(newContent);
-      
+
       if (normalizedUpdated !== normalizedNew) {
         return {
           success: false,
           verified: false,
           error: "File content does not match what was uploaded.",
           message: `Update verification failed - '${normalizedFileName}' was modified but doesn't contain the expected content. Found ${updatedContent.length} bytes instead of expected ${newContent.length} bytes.`,
-          suggestion: "Read the current file content to see what it contains, then retry the update.",
+          suggestion:
+            "Read the current file content to see what it contains, then retry the update.",
         };
       }
 

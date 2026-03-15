@@ -2,6 +2,10 @@ import getPostComments from "@/lib/getPostComments";
 import supabase from "@/lib/supabase/serverClient";
 import { NextRequest, NextResponse } from "next/server";
 
+/**
+ *
+ * @param req
+ */
 export async function GET(req: NextRequest) {
   const agentId = req.nextUrl.searchParams.get("agentId");
   try {

@@ -15,9 +15,11 @@ export interface GeneratedTxtResponse {
   transactionHash: string | null;
 }
 
-export async function generateAndStoreTxtFile(
-  contents: string
-): Promise<GeneratedTxtResponse> {
+/**
+ *
+ * @param contents
+ */
+export async function generateAndStoreTxtFile(contents: string): Promise<GeneratedTxtResponse> {
   if (!contents) {
     throw new Error("Contents are required");
   }

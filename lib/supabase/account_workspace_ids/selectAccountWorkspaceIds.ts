@@ -5,9 +5,11 @@ export type AccountWorkspaceRow = Tables<"account_workspace_ids">;
 
 /**
  * Select account_workspace_ids row by workspace_id
+ *
+ * @param workspaceId
  */
 export async function selectAccountWorkspaceIds(
-  workspaceId: string
+  workspaceId: string,
 ): Promise<AccountWorkspaceRow | null> {
   if (!workspaceId) return null;
 
@@ -24,4 +26,3 @@ export async function selectAccountWorkspaceIds(
 }
 
 export default selectAccountWorkspaceIds;
-
