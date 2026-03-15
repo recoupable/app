@@ -3,7 +3,7 @@ import { GenerateSegmentsParams } from "./generateSegments";
 
 const getAnalysisPrompt = ({ fans, prompt }: GenerateSegmentsParams) => {
   const fanCount = fans.length;
-  const fanData = fans.map((fan) => {
+  const fanData = fans.map(fan => {
     const obj = {
       fan_social_id: fan.fan_social_id,
       username: fan.fan_social.username,
@@ -13,9 +13,7 @@ const getAnalysisPrompt = ({ fans, prompt }: GenerateSegmentsParams) => {
       comment: fan.latest_engagement_comment?.comment || null,
     };
     // Remove keys with null values
-    return Object.fromEntries(
-      Object.entries(obj).filter(([, value]) => value !== null)
-    );
+    return Object.fromEntries(Object.entries(obj).filter(([, value]) => value !== null));
   });
 
   const maxFans = 111;

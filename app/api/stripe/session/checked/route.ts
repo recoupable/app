@@ -1,6 +1,10 @@
 import stripeClient from "@/lib/stripe/client";
 import { NextRequest } from "next/server";
 
+/**
+ *
+ * @param req
+ */
 export async function GET(req: NextRequest) {
   const sessionId = req.nextUrl.searchParams.get("sessionId");
   const accountId = req.nextUrl.searchParams.get("accountId");

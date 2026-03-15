@@ -1,5 +1,6 @@
 /**
  * Converts a platform type to a display-friendly name.
+ *
  * @param platformType - The platform type (e.g., "SPOTIFY", "TWITTER")
  * @returns Display-friendly platform name (e.g., "Spotify", "Twitter")
  */

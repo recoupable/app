@@ -8,6 +8,7 @@ interface UseCopyReturn {
 
 /**
  * Hook for copying text to clipboard with visual feedback
+ *
  * @param resetDelay - Time in milliseconds before resetting the copied state (default: 2000)
  * @returns Object with copied state and copy function
  */

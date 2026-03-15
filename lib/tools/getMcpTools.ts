@@ -21,6 +21,9 @@ import filesTools from "./files";
 import browserTools from "./browser";
 import getCatalogSongs from "./catalogs/getCatalogSongs";
 
+/**
+ *
+ */
 export function getMcpTools(): ToolSet {
   const tools = {
     create_segments: createSegments,

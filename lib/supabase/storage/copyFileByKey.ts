@@ -5,15 +5,16 @@ import { uploadFileByKey } from "./uploadFileByKey";
 /**
  * Copy a file from one storage key to another by downloading and re-uploading
  * Used for rename and move operations since Supabase has no native copy/move
- * @param sourceKey Original storage key
- * @param targetKey New storage key
- * @param contentType Optional MIME type for the target file
+ *
+ * @param sourceKey - Original storage key
+ * @param targetKey - New storage key
+ * @param contentType - Optional MIME type for the target file
  * @throws Error if download or upload fails
  */
 export async function copyFileByKey(
   sourceKey: string,
   targetKey: string,
-  contentType?: string
+  contentType?: string,
 ): Promise<void> {
   // Download file from source
   const { data: fileData, error: downloadError } = await supabase.storage
@@ -22,7 +23,7 @@ export async function copyFileByKey(
 
   if (downloadError || !fileData) {
     throw new Error(
-      `Failed to download file from ${sourceKey}: ${downloadError?.message || "No data returned"}`
+      `Failed to download file from ${sourceKey}: ${downloadError?.message || "No data returned"}`,
     );
   }
 
@@ -32,4 +33,3 @@ export async function copyFileByKey(
     upsert: false, // Don't overwrite - we check for conflicts before calling this
   });
 }
-

@@ -5,10 +5,7 @@
  * @param safetyBufferMs - Safety buffer in milliseconds (default: 60000 = 1 minute)
  * @returns True if token is expired or about to expire
  */
-export function isTokenExpired(
-  expiresAt: string,
-  safetyBufferMs: number = 60000
-): boolean {
+export function isTokenExpired(expiresAt: string, safetyBufferMs: number = 60000): boolean {
   const now = Date.now();
   const expirationTime = new Date(expiresAt).getTime();
   return now > expirationTime - safetyBufferMs;

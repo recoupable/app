@@ -2,6 +2,10 @@ import supabase from "@/lib/supabase/serverClient";
 import { STEP_OF_AGENT } from "@/types/Funnel";
 import { NextRequest } from "next/server";
 
+/**
+ *
+ * @param req
+ */
 export async function GET(req: NextRequest) {
   const artistId = req.nextUrl.searchParams.get("artistId");
   try {

@@ -8,7 +8,7 @@ interface SelectCreditsUsageParams {
 }
 
 export const selectCreditsUsage = async (
-  params?: SelectCreditsUsageParams
+  params?: SelectCreditsUsageParams,
 ): Promise<CreditsUsage[]> => {
   let query = serverClient.from("credits_usage").select();
 

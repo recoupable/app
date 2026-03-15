@@ -37,40 +37,26 @@ Important:
       .boolean()
       .optional()
       .default(false)
-      .describe("If true, delete directory and all its contents. Required for non-empty directories."),
-    active_account_id: z
-      .string()
-      .describe("Pull active_account_id from the system prompt"),
-    active_artist_id: z
-      .string()
-      .describe("Pull active_artist_id from the system prompt"),
+      .describe(
+        "If true, delete directory and all its contents. Required for non-empty directories.",
+      ),
+    active_account_id: z.string().describe("Pull active_account_id from the system prompt"),
+    active_artist_id: z.string().describe("Pull active_artist_id from the system prompt"),
   }),
-  execute: async ({
-    fileName,
-    path,
-    recursive,
-    active_account_id,
-    active_artist_id,
-  }) => {
+  execute: async ({ fileName, path, recursive, active_account_id, active_artist_id }) => {
     const normalizedFileName = normalizeFileName(fileName);
-    
+
     try {
-      
       let fileRecord = await findFileByName(
         normalizedFileName,
         active_account_id,
         active_artist_id,
-        path
+        path,
       );
 
       // If not found with normalized name, try original (for directories)
       if (!fileRecord && normalizedFileName !== fileName) {
-        fileRecord = await findFileByName(
-          fileName,
-          active_account_id,
-          active_artist_id,
-          path
-        );
+        fileRecord = await findFileByName(fileName, active_account_id, active_artist_id, path);
       }
 
       if (!fileRecord) {
@@ -91,7 +77,7 @@ Important:
           const childFiles = await listFilesByArtist(
             active_account_id,
             active_artist_id,
-            path ? `${path}/${fileName}` : fileName
+            path ? `${path}/${fileName}` : fileName,
           );
 
           if (childFiles.length > 0) {
@@ -103,10 +89,7 @@ Important:
           }
         } else {
           // Recursive deletion: get all children WITHOUT deleting DB records yet
-          const childFiles = await getFilesInDirectory(
-            fileRecord.storage_key,
-            fileRecord.id
-          );
+          const childFiles = await getFilesInDirectory(fileRecord.storage_key, fileRecord.id);
 
           // Collect storage keys and file IDs for later deletion
           childFiles.forEach(child => {
@@ -130,7 +113,7 @@ Important:
       if (fileIdsToDelete.length > 0) {
         await deleteFileRecords(fileIdsToDelete);
       }
-      
+
       // Delete the main file/directory record
       await deleteFileRecord(fileRecord.id);
 
@@ -151,4 +134,3 @@ Important:
 });
 
 export default deleteFile;
-

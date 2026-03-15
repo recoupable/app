@@ -1,10 +1,7 @@
 import stripeClient from "./client";
 import { getActiveSubscriptionDetails } from "./getActiveSubscriptionDetails";
 
-const createBillingPortalSession = async (
-  accountId: string,
-  returnUrl: string
-) => {
+const createBillingPortalSession = async (accountId: string, returnUrl: string) => {
   try {
     const activeSubscription = await getActiveSubscriptionDetails(accountId);
 

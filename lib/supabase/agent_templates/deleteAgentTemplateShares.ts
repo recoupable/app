@@ -9,11 +9,12 @@ interface AgentTemplateShare {
 
 /**
  * Delete all agent template shares for a specific template
- * @param templateId The template ID to delete shares for
+ *
+ * @param templateId - The template ID to delete shares for
  * @returns Array of deleted share records
  */
 export async function deleteAgentTemplateSharesByTemplateId(
-  templateId: string
+  templateId: string,
 ): Promise<AgentTemplateShare[]> {
   const { data, error } = await supabase
     .from("agent_template_shares")

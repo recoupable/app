@@ -7,26 +7,19 @@ import type { Knowledge } from "@/lib/supabase/artist/updateArtistProfile";
  * @param knowledges - Array of knowledge base entries with name, url, and type properties
  * @returns Combined text content from all text-based knowledge files, or undefined if no valid files found
  */
-export async function getKnowledgeBaseText(
-  knowledges: unknown
-): Promise<string | undefined> {
+export async function getKnowledgeBaseText(knowledges: unknown): Promise<string | undefined> {
   if (!knowledges || !Array.isArray(knowledges) || knowledges.length === 0) {
     return undefined;
   }
 
-  const textTypes = new Set([
-    "text/plain",
-    "text/markdown",
-    "application/json",
-    "text/csv",
-  ]);
+  const textTypes = new Set(["text/plain", "text/markdown", "application/json", "text/csv"]);
 
   const knowledgeFiles = knowledges as Knowledge[];
 
   const texts = await Promise.all(
     knowledgeFiles
-      .filter((f) => f.type && textTypes.has(f.type) && f.url)
-      .map(async (f) => {
+      .filter(f => f.type && textTypes.has(f.type) && f.url)
+      .map(async f => {
         try {
           const res = await fetch(f.url!);
           if (!res.ok) return "";
@@ -35,7 +28,7 @@ export async function getKnowledgeBaseText(
         } catch {
           return "";
         }
-      })
+      }),
   );
 
   const combinedText = texts.filter(Boolean).join("\n\n");

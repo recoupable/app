@@ -7,17 +7,18 @@ import { addArtistToOrganization } from "./artist_organization_ids/addArtistToOr
 
 /**
  * Create a new account in the database and associate it with an owner account
- * @param name Name of the account to create
- * @param account_id ID of the owner account that will have access
- * @param isWorkspace If true, creates a workspace; if false, creates an artist (default)
- * @param organizationId Optional organization ID to link the new artist to
+ *
+ * @param name - Name of the account to create
+ * @param account_id - ID of the owner account that will have access
+ * @param isWorkspace - If true, creates a workspace; if false, creates an artist (default)
+ * @param organizationId - Optional organization ID to link the new artist to
  * @returns Created account object or null if creation failed
  */
 export async function createArtistInDb(
   name: string,
   account_id: string,
   isWorkspace: boolean = false,
-  organizationId?: string | null
+  organizationId?: string | null,
 ) {
   try {
     // Step 1: Create the account (no account_type needed)
@@ -52,16 +53,16 @@ export async function createArtistInDb(
     // This avoids fragile spread-order dependencies where account_info.id
     // could accidentally overwrite accounts.id
     const accountInfo = artist.account_info?.[0];
-    
+
     return {
       // Core account fields from accounts table
       id: artist.id,
-      account_id: artist.id,  // Alias used by ArtistRecord type
+      account_id: artist.id, // Alias used by ArtistRecord type
       name: artist.name,
-      isWorkspace,  // Return this so UI knows what type it is
+      isWorkspace, // Return this so UI knows what type it is
       created_at: artist.created_at,
       updated_at: artist.updated_at,
-      
+
       // Profile fields from account_info table (explicitly picked, not spread)
       image: accountInfo?.image ?? null,
       instruction: accountInfo?.instruction ?? null,
@@ -73,7 +74,7 @@ export async function createArtistInDb(
       role_type: accountInfo?.role_type ?? null,
       onboarding_status: accountInfo?.onboarding_status ?? null,
       onboarding_data: accountInfo?.onboarding_data ?? null,
-      
+
       // Related data arrays
       account_info: artist.account_info,
       account_socials: artist.account_socials,

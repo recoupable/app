@@ -1,9 +1,6 @@
 import supabase from "../serverClient";
 
-const deleteAccountSocial = async (
-  accountId: string,
-  socialId: string
-): Promise<void> => {
+const deleteAccountSocial = async (accountId: string, socialId: string): Promise<void> => {
   await supabase
     .from("account_socials")
     .delete()

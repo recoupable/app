@@ -7,7 +7,6 @@ export interface FileRow {
   size_bytes?: number | null;
 }
 
-
 // Shared types for File Access UI
 export type ArtistAccess = {
   artistId: string;
@@ -22,5 +21,3 @@ export type AccessArtistsResponse = {
   success: boolean;
   data?: { artists: ArtistAccess[]; count: number; fileId: string; accountId: string };
 };
-
-

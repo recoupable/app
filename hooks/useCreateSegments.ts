@@ -2,6 +2,9 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 
+/**
+ *
+ */
 export function useCreateSegments() {
   const { selectedArtist } = useArtistProvider();
   const artist_account_id = selectedArtist?.account_id;
@@ -26,9 +29,7 @@ export function useCreateSegments() {
       toast.success("Segments generated successfully!");
       if (onSuccess) onSuccess();
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to generate segments"
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to generate segments");
       console.error(error);
     } finally {
       setLoading(false);

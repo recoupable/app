@@ -4,12 +4,13 @@ import { insertAgentTemplateShares } from "./insertAgentTemplateShares";
 
 /**
  * Update agent template shares - replaces existing shares with new ones
+ *
  * @param templateId - The template ID to update shares for
  * @param emails - Array of email addresses to share with (replaces existing)
  */
 export async function updateAgentTemplateShares(
   templateId: string,
-  emails: string[]
+  emails: string[],
 ): Promise<void> {
   // First, delete existing shares
   await deleteAgentTemplateSharesByTemplateId(templateId);

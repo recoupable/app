@@ -17,5 +17,5 @@ export async function generateChatTitle(question: string): Promise<string> {
   });
 
   // In case model accidentally generates quotes again, remove them here
-  return response.text.replace(/^["']|["']$/g, '');
+  return response.text.replace(/^["']|["']$/g, "");
 }

@@ -4,6 +4,10 @@ import { getFileByStorageKey } from "@/lib/supabase/files/getFileByStorageKey";
 import { uploadFileByKey } from "@/lib/supabase/storage/uploadFileByKey";
 import { updateFileSizeBytes } from "@/lib/supabase/files/updateFileSizeBytes";
 
+/**
+ *
+ * @param req
+ */
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -11,23 +15,17 @@ export async function POST(req: Request) {
 
     // Validate required fields
     if (!storageKey || !isValidStorageKey(storageKey)) {
-      return NextResponse.json(
-        { error: "Invalid or missing storage key" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid or missing storage key" }, { status: 400 });
     }
 
     if (typeof content !== "string") {
-      return NextResponse.json(
-        { error: "Content must be a string" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Content must be a string" }, { status: 400 });
     }
 
     if (!ownerAccountId || !artistAccountId) {
       return NextResponse.json(
         { error: "Missing ownerAccountId or artistAccountId" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -35,10 +33,7 @@ export async function POST(req: Request) {
     const fileRecord = await getFileByStorageKey(storageKey);
 
     if (!fileRecord) {
-      return NextResponse.json(
-        { error: "File not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
     // Verify ownership
@@ -46,10 +41,7 @@ export async function POST(req: Request) {
       fileRecord.owner_account_id !== ownerAccountId ||
       fileRecord.artist_account_id !== artistAccountId
     ) {
-      return NextResponse.json(
-        { error: "Permission denied" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Permission denied" }, { status: 403 });
     }
 
     // Convert text content to Blob
@@ -73,13 +65,9 @@ export async function POST(req: Request) {
       // Don't fail the request if only metadata update fails
     }
 
-    return NextResponse.json(
-      { success: true, storageKey, sizeBytes },
-      { status: 200 }
-    );
+    return NextResponse.json({ success: true, storageKey, sizeBytes }, { status: 200 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-

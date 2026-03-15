@@ -62,4 +62,3 @@ const useCreateOrganization = () => {
 };
 
 export default useCreateOrganization;
-

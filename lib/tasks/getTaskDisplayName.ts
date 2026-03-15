@@ -6,6 +6,10 @@ const TASK_NAME_MAP: Record<string, string> = {
   "pro-artist-social-profiles-scrape": "Social Scrape",
 };
 
+/**
+ *
+ * @param taskIdentifier
+ */
 export function getTaskDisplayName(taskIdentifier: string): string {
   return TASK_NAME_MAP[taskIdentifier] ?? taskIdentifier;
 }

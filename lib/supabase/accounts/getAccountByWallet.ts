@@ -1,5 +1,9 @@
 import supabase from "@/lib/supabase/serverClient";
 
+/**
+ *
+ * @param wallet
+ */
 export async function getAccountByWallet(wallet: string) {
   const { data: walletFound, error: walletError } = await supabase
     .from("account_wallets")

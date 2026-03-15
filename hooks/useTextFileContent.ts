@@ -18,14 +18,14 @@ export const useTextFileContent = (url: string | null | undefined): TextFileStat
     setError(null);
     setContent("");
     fetch(url)
-      .then((res) => {
+      .then(res => {
         if (!res.ok) throw new Error("Failed to fetch file");
         return res.text();
       })
-      .then((text) => {
+      .then(text => {
         if (!cancelled) setContent(text);
       })
-      .catch((e) => {
+      .catch(e => {
         if (!cancelled) setError(e.message || "Error loading file");
       })
       .finally(() => {
@@ -41,5 +41,3 @@ export const useTextFileContent = (url: string | null | undefined): TextFileStat
 };
 
 export default useTextFileContent;
-
-

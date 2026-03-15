@@ -22,24 +22,21 @@ When to use:
     path: z
       .string()
       .optional()
-      .describe("Optional subdirectory path within the artist's storage (e.g., 'research', 'reports')"),
-    active_account_id: z
-      .string()
-      .describe("Pull active_account_id from the system prompt"),
-    active_artist_id: z
-      .string()
-      .describe("Pull active_artist_id from the system prompt"),
+      .describe(
+        "Optional subdirectory path within the artist's storage (e.g., 'research', 'reports')",
+      ),
+    active_account_id: z.string().describe("Pull active_account_id from the system prompt"),
+    active_artist_id: z.string().describe("Pull active_artist_id from the system prompt"),
   }),
   execute: async ({ fileName, path, active_account_id, active_artist_id }) => {
     const normalizedFileName = normalizeFileName(fileName);
-    
+
     try {
-      
       const fileRecord = await findFileByName(
         normalizedFileName,
         active_account_id,
         active_artist_id,
-        path
+        path,
       );
 
       if (!fileRecord) {

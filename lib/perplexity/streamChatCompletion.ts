@@ -1,13 +1,14 @@
 import streamPerplexityApi from "./streamPerplexityApi";
-import {
-  PerplexityMessage,
-  PerplexityStreamChunk,
-  StreamedResponse,
-} from "./types";
+import { PerplexityMessage, PerplexityStreamChunk, StreamedResponse } from "./types";
 
+/**
+ *
+ * @param messages
+ * @param model
+ */
 async function* streamChatCompletion(
   messages: PerplexityMessage[],
-  model: string = "sonar-pro"
+  model: string = "sonar-pro",
 ): AsyncGenerator<string, StreamedResponse, undefined> {
   const response = await streamPerplexityApi(messages, model);
 
@@ -30,7 +31,7 @@ async function* streamChatCompletion(
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
-      
+
       const lines = buffer.split("\n");
       buffer = lines.pop() || "";
 
@@ -74,4 +75,3 @@ async function* streamChatCompletion(
 }
 
 export default streamChatCompletion;
-

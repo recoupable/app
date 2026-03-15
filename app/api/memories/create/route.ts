@@ -1,5 +1,9 @@
 import supabase from "@/lib/supabase/serverClient";
 
+/**
+ *
+ * @param req
+ */
 export async function POST(req: Request) {
   const body = await req.json();
   const content = body.content;

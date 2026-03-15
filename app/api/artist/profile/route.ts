@@ -5,6 +5,10 @@ import updateArtistSocials from "@/lib/supabase/updateArtistSocials";
 import { addArtistToOrganization } from "@/lib/supabase/artist_organization_ids/addArtistToOrganization";
 import { NextRequest } from "next/server";
 
+/**
+ *
+ * @param req
+ */
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const image = body.image;
@@ -28,7 +32,7 @@ export async function POST(req: NextRequest) {
       name,
       instruction,
       label,
-      knowledges
+      knowledges,
     );
 
     await updateArtistSocials(artistAccountId as string, profileUrls);
@@ -49,7 +53,7 @@ export async function POST(req: NextRequest) {
       {
         artist: getFormattedArtist(account),
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error(error);
