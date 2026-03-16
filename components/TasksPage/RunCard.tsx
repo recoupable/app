@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TaskRunItem } from "@/lib/tasks/getTaskRuns";
 import { getTaskDisplayName } from "@/lib/tasks/getTaskDisplayName";
@@ -9,7 +6,7 @@ import { getStatusColor } from "@/lib/tasks/getStatusColor";
 import { getStatusLabel } from "@/lib/tasks/getStatusLabel";
 import { formatDuration } from "@/lib/tasks/formatDuration";
 import { formatTimestamp } from "@/lib/tasks/formatTimestamp";
-import { useCopy } from "@/hooks/useCopy";
+import CopyIconButton from "@/components/ui/copy-icon-button";
 
 interface RunCardProps {
   run: TaskRunItem;
@@ -17,7 +14,6 @@ interface RunCardProps {
 
 const RunCard: React.FC<RunCardProps> = ({ run }) => {
   const duration = formatDuration(run.durationMs);
-  const { copied, copy } = useCopy();
 
   return (
     <Link href={`/tasks/${run.id}`} className="group flex items-center justify-between py-4 px-4 hover:bg-muted dark:hover:bg-[#1a1a1a] transition-colors -mx-4 cursor-pointer">
@@ -27,17 +23,10 @@ const RunCard: React.FC<RunCardProps> = ({ run }) => {
             <h4 className="text-base font-medium text-foreground">
               {getTaskDisplayName(run.taskIdentifier)}
             </h4>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                copy(run.id);
-              }}
-              className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
-              aria-label="Copy run ID"
-            >
-              {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-            </button>
+            <CopyIconButton
+              value={run.id}
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+            />
           </div>
           <p className="text-sm text-muted-foreground">
             {formatTimestamp(run.createdAt)}
