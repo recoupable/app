@@ -37,6 +37,7 @@ interface SpotifySearchResponse {
 
 /**
  * Get Spotify follower count for an artist
+ *
  * @param artistName - The name of the artist to search for
  * @returns Promise<number> - The follower count of the first matching artist
  */
@@ -48,9 +49,7 @@ export async function getSpotifyFollowers(artistName: string): Promise<number> {
     const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error(
-        `API request failed: ${response.status} ${response.statusText}`
-      );
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
     }
 
     const data: SpotifySearchResponse = await response.json();
@@ -61,10 +60,7 @@ export async function getSpotifyFollowers(artistName: string): Promise<number> {
 
     return data.artists.items[0].followers.total;
   } catch (error) {
-    console.error(
-      `Error fetching Spotify followers for "${artistName}":`,
-      error
-    );
+    console.error(`Error fetching Spotify followers for "${artistName}":`, error);
     throw error;
   }
 }

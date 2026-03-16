@@ -2,7 +2,7 @@
  * Formats a follower count number to a human-readable string
  * Converts large numbers to K or M format (e.g. 1.2K, 3.5M)
  *
- * @param count Number to format or null
+ * @param count - Number to format or null
  * @returns Formatted string representation
  */
 const formatFollowerCount = (count: number | null): string => {

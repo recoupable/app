@@ -10,10 +10,7 @@ import addAccountToOrganization from "@/lib/supabase/account_organization_ids/ad
  * @param email - The account's email address
  * @returns The org ID if assigned, null otherwise
  */
-export async function assignAccountToOrg(
-  accountId: string,
-  email: string
-): Promise<string | null> {
+export async function assignAccountToOrg(accountId: string, email: string): Promise<string | null> {
   if (!accountId || !email) return null;
 
   const domain = extractDomain(email);
@@ -27,4 +24,3 @@ export async function assignAccountToOrg(
 }
 
 export default assignAccountToOrg;
-

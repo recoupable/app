@@ -13,10 +13,10 @@ export interface CatalogSongInput {
 
 /**
  * Adds songs to a catalog by ISRC in batch
+ *
+ * @param songs
  */
-export async function postCatalogSongs(
-  songs: CatalogSongInput[]
-): Promise<CatalogSongsResponse> {
+export async function postCatalogSongs(songs: CatalogSongInput[]): Promise<CatalogSongsResponse> {
   try {
     const response = await fetch(`${NEW_API_BASE_URL}/api/catalogs/songs`, {
       method: "POST",

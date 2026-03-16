@@ -2,6 +2,8 @@ import { ComposioResultEntry } from "./types";
 
 /**
  * Check if the result contains valid auth data.
+ *
+ * @param result
  */
 export function hasValidAuthData(result: unknown): result is {
   data?: { results?: Record<string, ComposioResultEntry> };

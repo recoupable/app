@@ -22,11 +22,7 @@ import { toast } from "sonner";
  */
 export function useArtistConnectorCallback(): string {
   const searchParams = useSearchParams();
-  const {
-    artists,
-    toggleUpdate,
-    setIsOpenSettingModal,
-  } = useArtistProvider();
+  const { artists, toggleUpdate, setIsOpenSettingModal } = useArtistProvider();
   const [defaultTab, setDefaultTab] = useState("general");
 
   useEffect(() => {
@@ -38,9 +34,7 @@ export function useArtistConnectorCallback(): string {
     // Wait until artists are loaded before finding the target
     if (!artists || artists.length === 0) return;
 
-    const artist = artists.find(
-      (a: { account_id: string }) => a.account_id === artistId,
-    );
+    const artist = artists.find((a: { account_id: string }) => a.account_id === artistId);
 
     if (!artist) return;
 

@@ -44,10 +44,7 @@ const getPostComments = tool({
       return {
         success: false,
         status: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch post comments",
+        message: error instanceof Error ? error.message : "Failed to fetch post comments",
         comments: [],
         pagination: {
           total_count: 0,

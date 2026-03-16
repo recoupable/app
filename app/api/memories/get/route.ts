@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
 import queryMemories from "@/lib/supabase/queryMemories";
 
+/**
+ *
+ * @param req
+ */
 export async function GET(req: NextRequest) {
   const roomId = req.nextUrl.searchParams.get("roomId");
 
@@ -10,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const { data, error } = await queryMemories(roomId, { ascending: true });
-    
+
     if (error) {
       throw error;
     }

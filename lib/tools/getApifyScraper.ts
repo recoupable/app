@@ -28,30 +28,24 @@ This tool uses the Apify API Client to fetch the current status of a scraper run
   execute: async ({ runId }): Promise<ApifyScraperResponse> => {
     try {
       const response = await fetch(
-        `https://api.recoupable.com/api/apify/scraper?runId=${encodeURIComponent(
-          runId
-        )}`,
+        `https://api.recoupable.com/api/apify/scraper?runId=${encodeURIComponent(runId)}`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(
-          `Failed to fetch Apify scraper results: ${response.statusText}`
-        );
+        throw new Error(`Failed to fetch Apify scraper results: ${response.statusText}`);
       }
 
       const data = await response.json();
       return apifyScraperResponseSchema.parse(data);
     } catch (error) {
       console.error("Error in getApifyScraper tool:", error);
-      throw error instanceof Error
-        ? error
-        : new Error("Failed to fetch Apify scraper results");
+      throw error instanceof Error ? error : new Error("Failed to fetch Apify scraper results");
     }
   },
 });

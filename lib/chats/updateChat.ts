@@ -18,6 +18,13 @@ export type UpdateChatResponse = {
   error?: string;
 };
 
+/**
+ *
+ * @param root0
+ * @param root0.accessToken
+ * @param root0.chatId
+ * @param root0.topic
+ */
 export async function updateChat({
   accessToken,
   chatId,

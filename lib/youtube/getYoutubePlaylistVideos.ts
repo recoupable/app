@@ -4,10 +4,15 @@ import { youtube_v3 } from "googleapis";
 /**
  * Fetches videos from a YouTube playlist using the YouTube API client,
  * then fetches full video details using the videos.list endpoint.
+ *
+ * @param access_token.access_token
  * @param access_token - OAuth access token
  * @param refresh_token - OAuth refresh token (optional)
  * @param playlist_id - The playlist ID
  * @param max_results - Maximum number of results to return (default 25)
+ * @param access_token.refresh_token
+ * @param access_token.playlist_id
+ * @param access_token.max_results
  * @returns An object with videos (full details), nextPageToken, totalResults, resultsPerPage
  */
 export async function getYoutubePlaylistVideos({
@@ -32,7 +37,7 @@ export async function getYoutubePlaylistVideos({
 
   const items = playlistResponse.data.items || [];
   const videoIds = items
-    .map((item) => item.contentDetails?.videoId)
+    .map(item => item.contentDetails?.videoId)
     .filter((id): id is string => Boolean(id));
 
   let videos: youtube_v3.Schema$Video[] = [];

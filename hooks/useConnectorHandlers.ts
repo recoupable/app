@@ -16,6 +16,12 @@ interface UseConnectorHandlersReturn {
 
 /**
  * Hook for managing connector connect/disconnect state and handlers.
+ *
+ * @param root0
+ * @param root0.slug
+ * @param root0.connectedAccountId
+ * @param root0.onConnect
+ * @param root0.onDisconnect
  */
 export function useConnectorHandlers({
   slug,

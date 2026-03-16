@@ -1,6 +1,10 @@
 import getFunnelAnalysis from "@/lib/chat/getFunnelAnalysis";
 import { NextRequest } from "next/server";
 
+/**
+ *
+ * @param req
+ */
 export async function GET(req: NextRequest) {
   const pilotId = req.nextUrl.searchParams.get("pilotId");
 

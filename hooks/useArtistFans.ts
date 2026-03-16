@@ -35,15 +35,19 @@ export interface FansError {
 
 /**
  * Fetches fans for a specific artist from the API with pagination
+ *
+ * @param artistAccountId
+ * @param page
+ * @param limit
  */
 async function fetchFans(
   artistAccountId: string,
   page: number = 1,
-  limit: number = 20
+  limit: number = 20,
 ): Promise<FansResponse> {
   try {
     const response = await fetch(
-      `https://api.recoupable.com/api/fans?artist_account_id=${artistAccountId}&page=${page}&limit=${limit}`
+      `https://api.recoupable.com/api/fans?artist_account_id=${artistAccountId}&page=${page}&limit=${limit}`,
     );
 
     if (!response.ok) {
@@ -73,17 +77,19 @@ async function fetchFans(
 /**
  * Hook to fetch and manage fans for an artist with automatic pagination
  * This hook will automatically fetch all pages with a controlled delay between requests
+ *
+ * @param artistAccountId
+ * @param limit
  */
 export function useArtistFans(
   artistAccountId?: string,
-  limit: number = 20
+  limit: number = 20,
 ): UseInfiniteQueryResult<InfiniteData<FansResponse, unknown>, Error> {
   const queryResult = useInfiniteQuery({
     queryKey: ["fans", artistAccountId, limit],
-    queryFn: ({ pageParam = 1 }) =>
-      fetchFans(artistAccountId!, pageParam, limit),
+    queryFn: ({ pageParam = 1 }) => fetchFans(artistAccountId!, pageParam, limit),
     initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: lastPage => {
       const { pagination } = lastPage;
       // If we're on the last page, return undefined to indicate no more pages
       if (pagination.page >= pagination.total_pages) {

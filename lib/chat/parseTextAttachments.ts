@@ -1,10 +1,7 @@
 import { TextAttachment } from "@/types/textAttachment";
 
 // Uses Pick to extract only the properties we need, following DRY principle
-export type ParsedTextAttachment = Pick<
-  TextAttachment,
-  "filename" | "type" | "lineCount"
->;
+export type ParsedTextAttachment = Pick<TextAttachment, "filename" | "type" | "lineCount">;
 
 export interface ParsedMessageContent {
   textAttachments: ParsedTextAttachment[];
@@ -17,6 +14,8 @@ const TEXT_ATTACHMENT_REGEX =
 /**
  * Parses message text to extract text file attachment sections.
  * Returns the extracted attachments and the remaining text content.
+ *
+ * @param text
  */
 export function parseTextAttachments(text: string): ParsedMessageContent {
   const textAttachments: ParsedTextAttachment[] = [];
@@ -43,7 +42,10 @@ export function parseTextAttachments(text: string): ParsedMessageContent {
   TEXT_ATTACHMENT_REGEX.lastIndex = 0;
 
   // Clean up extra whitespace from removed sections
-  remainingText = remainingText.replace(/^\n+/, "").replace(/\n{3,}/g, "\n\n").trim();
+  remainingText = remainingText
+    .replace(/^\n+/, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 
   return { textAttachments, remainingText };
 }

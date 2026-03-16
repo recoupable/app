@@ -6,9 +6,7 @@ import isActiveSubscription from "../stripe/isActiveSubscription";
 import { getActiveSubscriptionDetails } from "../stripe/getActiveSubscriptionDetails";
 import { getOrgSubscription } from "../stripe/getOrgSubscription";
 
-export const checkAndResetCredits = async (
-  accountId: string
-): Promise<CreditsUsage | null> => {
+export const checkAndResetCredits = async (accountId: string): Promise<CreditsUsage | null> => {
   const found = await selectCreditsUsage({ account_id: accountId });
   if (!found || found.length === 0) return null;
 
@@ -37,9 +35,7 @@ export const checkAndResetCredits = async (
     activeSubscription?.current_period_start ?? activeSubscription?.start_date;
   const isMonthlyRefill = lastUpdatedCredits < oneMonthAgo;
   const hasActiveSubscription = isPro && subscriptionStartUnix;
-  const subscriptionStart = hasActiveSubscription
-    ? new Date(subscriptionStartUnix * 1000)
-    : null;
+  const subscriptionStart = hasActiveSubscription ? new Date(subscriptionStartUnix * 1000) : null;
   const isSubscriptionStartedAfterLastUpdate =
     subscriptionStart && lastUpdatedCredits < subscriptionStart;
   const isRefill = isMonthlyRefill || isSubscriptionStartedAfterLastUpdate;

@@ -3,12 +3,11 @@ import type { YouTubeTokensRow } from "@/types/youtube";
 
 /**
  * Get YouTube tokens for a specific account
+ *
  * @param artist_account_id - The artist account ID to get tokens for
  * @returns YouTube tokens or null if not found
  */
-const getYouTubeTokens = async (
-  artist_account_id: string
-): Promise<YouTubeTokensRow | null> => {
+const getYouTubeTokens = async (artist_account_id: string): Promise<YouTubeTokensRow | null> => {
   try {
     const { data, error } = await supabase
       .from("youtube_tokens")
@@ -31,4 +30,4 @@ const getYouTubeTokens = async (
   }
 };
 
-export default getYouTubeTokens; 
+export default getYouTubeTokens;

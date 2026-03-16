@@ -20,11 +20,12 @@ import { getFetchableUrl } from "@/lib/arweave/gateway";
 
 /**
  * Handles Instagram profile scraper results: fetches dataset, saves posts, saves socials, and returns results.
+ *
  * @param parsed - The parsed and validated Apify webhook payload
  * @returns An object with posts, socials, accountSocials, accountArtistIds, accountEmails, and sentEmails
  */
 export default async function handleInstagramProfileScraperResults(
-  parsed: z.infer<typeof apifyPayloadSchema>
+  parsed: z.infer<typeof apifyPayloadSchema>,
 ) {
   const datasetId = parsed.resource.defaultDatasetId;
   let posts: Tables<"posts">[] = [];
@@ -41,11 +42,11 @@ export default async function handleInstagramProfileScraperResults(
     if (firstResult?.latestPosts) {
       // Save posts
       const { supabasePosts: sp } = await saveApifyInstagramPosts(
-        firstResult.latestPosts as ApifyInstagramPost[]
+        firstResult.latestPosts as ApifyInstagramPost[],
       );
       posts = sp;
       const arweaveResult = await uploadLinkToArweave(
-        firstResult.profilePicUrlHD || firstResult.profilePicUrl
+        firstResult.profilePicUrlHD || firstResult.profilePicUrl,
       );
       if (arweaveResult) {
         firstResult.profilePicUrl = getFetchableUrl(arweaveResult);
@@ -66,7 +67,7 @@ export default async function handleInstagramProfileScraperResults(
       console.log("social", social);
       if (social) {
         if (posts.length) {
-          const socialPostRows = posts.map((post) => ({
+          const socialPostRows = posts.map(post => ({
             post_id: post.id,
             updated_at: post.updated_at,
             social_id: social!.id,
@@ -77,11 +78,11 @@ export default async function handleInstagramProfileScraperResults(
         accountSocials = await getAccountSocials({ socialId: socialIds });
         console.log("accountSocials", accountSocials);
         accountArtistIds = await getAccountArtistIds({
-          artistIds: accountSocials.map((a) => a.account_id as string),
+          artistIds: accountSocials.map(a => a.account_id as string),
         });
         // Get emails for all unique account_ids
         const uniqueAccountIds = Array.from(
-          new Set(accountArtistIds.map((a) => a.account_id).filter(Boolean))
+          new Set(accountArtistIds.map(a => a.account_id).filter(Boolean)),
         );
         const emails = await getAccountEmails(uniqueAccountIds as string[]);
         console.log("emails", emails);
@@ -89,7 +90,7 @@ export default async function handleInstagramProfileScraperResults(
         // Send the Apify webhook email using the new utility
         sentEmails = await sendApifyWebhookEmail(
           firstResult,
-          emails.map((e) => e.email).filter(Boolean) as string[]
+          emails.map(e => e.email).filter(Boolean) as string[],
         );
 
         // Trigger comment scraping for the new posts

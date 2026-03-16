@@ -14,11 +14,12 @@ interface AgentTemplateShareInsert {
 
 /**
  * Insert multiple agent template shares
- * @param shares Array of share records to insert
+ *
+ * @param shares - Array of share records to insert
  * @returns Array of inserted share records
  */
 export async function insertAgentTemplateShares(
-  shares: AgentTemplateShareInsert[]
+  shares: AgentTemplateShareInsert[],
 ): Promise<AgentTemplateShare[]> {
   if (!Array.isArray(shares) || shares.length === 0) {
     return [];
@@ -28,7 +29,7 @@ export async function insertAgentTemplateShares(
     .from("agent_template_shares")
     .upsert(shares, {
       onConflict: "template_id,user_id",
-      ignoreDuplicates: true
+      ignoreDuplicates: true,
     })
     .select();
 

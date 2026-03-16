@@ -3,10 +3,7 @@ import {
   type UseInfiniteQueryResult,
   type InfiniteData,
 } from "@tanstack/react-query";
-import fetchPosts, {
-  type PostsResponse,
-  type PostsError,
-} from "@/lib/recoup/fetchPosts";
+import fetchPosts, { type PostsResponse, type PostsError } from "@/lib/recoup/fetchPosts";
 
 export type PostsInfiniteResponse = {
   pages: PostsResponse[];
@@ -15,10 +12,13 @@ export type PostsInfiniteResponse = {
 
 /**
  * Hook to fetch and manage posts for an artist with infinite scrolling
+ *
+ * @param artistAccountId
+ * @param limit
  */
 export function useArtistPosts(
   artistAccountId?: string,
-  limit: number = 20
+  limit: number = 20,
 ): UseInfiniteQueryResult<InfiniteData<PostsResponse>, PostsError> {
   return useInfiniteQuery<PostsResponse, PostsError>({
     queryKey: ["posts", artistAccountId, limit],

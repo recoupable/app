@@ -18,6 +18,9 @@ interface UseApiKeyReturn {
   deleteApiKey: (keyId: string) => Promise<void>;
 }
 
+/**
+ *
+ */
 export default function useApiKey(): UseApiKeyReturn {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
@@ -48,7 +51,7 @@ export default function useApiKey(): UseApiKeyReturn {
       }
       return createApiKey(keyName.trim(), accessToken, selectedOrgId);
     },
-    onSuccess: (key) => {
+    onSuccess: key => {
       setApiKey(key);
       setShowApiKeyModal(true);
       queryClient.invalidateQueries({ queryKey });

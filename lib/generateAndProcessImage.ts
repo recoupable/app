@@ -22,10 +22,16 @@ interface FileInput {
   type: string;
 }
 
+/**
+ *
+ * @param prompt
+ * @param accountId
+ * @param files
+ */
 export async function generateAndProcessImage(
   prompt: string,
   accountId: string,
-  files?: FileInput[]
+  files?: FileInput[],
 ): Promise<GeneratedImageResponse> {
   if (!prompt) {
     throw new Error("Prompt is required");
@@ -41,9 +47,7 @@ export async function generateAndProcessImage(
 
   // Format files parameter: files=url1:type1|url2:type2
   if (files && files.length > 0) {
-    const filesParam = files
-      .map((file) => `${file.url}:${file.type}`)
-      .join("|");
+    const filesParam = files.map(file => `${file.url}:${file.type}`).join("|");
     apiUrl.searchParams.set("files", filesParam);
   }
 

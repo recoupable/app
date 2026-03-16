@@ -11,5 +11,3 @@ export const isTextMimeType = (type?: string | null): boolean => {
 };
 
 export default isTextMimeType;
-
-

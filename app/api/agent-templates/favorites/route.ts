@@ -5,6 +5,10 @@ import type { ToggleFavoriteRequest, ToggleFavoriteResponse } from "@/types/Agen
 
 export const runtime = "edge";
 
+/**
+ *
+ * @param request
+ */
 export async function POST(request: Request) {
   try {
     const { templateId, userId, isFavourite }: ToggleFavoriteRequest = await request.json();
@@ -22,11 +26,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true } as ToggleFavoriteResponse);
   } catch (error) {
     console.error("Error toggling favourite:", error);
-    return NextResponse.json({ error: "Failed to toggle favourite" } as ToggleFavoriteResponse, { status: 500 });
+    return NextResponse.json({ error: "Failed to toggle favourite" } as ToggleFavoriteResponse, {
+      status: 500,
+    });
   }
 }
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-

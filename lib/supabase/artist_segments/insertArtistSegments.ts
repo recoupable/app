@@ -5,7 +5,7 @@ type ArtistSegment = Tables<"artist_segments">;
 type ArtistSegmentInsert = Partial<ArtistSegment>;
 
 export const insertArtistSegments = async (
-  artistSegments: ArtistSegmentInsert[]
+  artistSegments: ArtistSegmentInsert[],
 ): Promise<ArtistSegment[]> => {
   const { data, error } = await serverClient
     .from("artist_segments")

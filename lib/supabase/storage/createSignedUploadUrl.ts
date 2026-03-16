@@ -6,9 +6,12 @@ export type SignedUploadResult = {
   path: string;
 };
 
+/**
+ *
+ * @param key
+ */
 export async function createSignedUploadUrlForKey(key: string): Promise<SignedUploadResult> {
-  const { data, error } = await supabase
-    .storage
+  const { data, error } = await supabase.storage
     .from(SUPABASE_STORAGE_BUCKET)
     .createSignedUploadUrl(key);
 
@@ -18,5 +21,3 @@ export async function createSignedUploadUrlForKey(key: string): Promise<SignedUp
 
   return { signedUrl: data.signedUrl, path: data.path };
 }
-
-

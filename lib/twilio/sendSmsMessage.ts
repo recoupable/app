@@ -8,10 +8,7 @@ import twilioClient from "./client";
  * @param body - Message content
  * @returns Message SID or null on error
  */
-export const sendSmsMessage = async (
-  to: string,
-  body: string
-): Promise<string | null> => {
+export const sendSmsMessage = async (to: string, body: string): Promise<string | null> => {
   try {
     const fromNumber = process.env.TWILIO_PHONE_NUMBER;
 

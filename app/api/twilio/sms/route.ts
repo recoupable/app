@@ -7,6 +7,8 @@ import { processAndReply } from "@/lib/twilio/processAndReply";
  * Webhook endpoint to receive SMS messages from Twilio
  *
  * Strategy: Respond immediately (within 15s timeout), then process AI asynchronously
+ *
+ * @param request
  */
 export async function POST(request: NextRequest) {
   try {
@@ -14,12 +16,10 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const smsData = parseSmsWebhook(formData);
 
-    console.log(
-      `[${new Date().toISOString()}] SMS received from ${smsData.from}: ${smsData.body}`
-    );
+    console.log(`[${new Date().toISOString()}] SMS received from ${smsData.from}: ${smsData.body}`);
 
     // Process AI generation and send response asynchronously (don't await)
-    processAndReply(smsData).catch((error) => {
+    processAndReply(smsData).catch(error => {
       console.error("Error in async SMS processing:", error);
     });
 

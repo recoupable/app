@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import supabase from "@/lib/supabase/serverClient";
 import { SUPABASE_STORAGE_BUCKET } from "@/lib/consts";
 
+/**
+ *
+ * @param req
+ */
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -12,11 +16,10 @@ export async function POST(req: Request) {
     if (storageKey) {
       let cleanKey = storageKey;
       if (cleanKey.startsWith(`${SUPABASE_STORAGE_BUCKET}/`)) {
-          cleanKey = cleanKey.slice(SUPABASE_STORAGE_BUCKET.length + 1);
+        cleanKey = cleanKey.slice(SUPABASE_STORAGE_BUCKET.length + 1);
       }
 
-      const { data, error } = await supabase
-        .storage
+      const { data, error } = await supabase.storage
         .from(SUPABASE_STORAGE_BUCKET)
         .createSignedUrl(cleanKey, 60 * 60);
 
@@ -35,8 +38,7 @@ export async function POST(req: Request) {
         return key;
       });
 
-      const { data, error } = await supabase
-        .storage
+      const { data, error } = await supabase.storage
         .from(SUPABASE_STORAGE_BUCKET)
         .createSignedUrls(cleanKeys, 60 * 60);
 
@@ -49,8 +51,8 @@ export async function POST(req: Request) {
       const urlMap: Record<string, string> = {};
       data.forEach((item, index) => {
         if (item.signedUrl) {
-           // Map back using the original key from the request
-           urlMap[storageKeys[index]] = item.signedUrl;
+          // Map back using the original key from the request
+          urlMap[storageKeys[index]] = item.signedUrl;
         }
       });
 

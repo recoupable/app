@@ -18,22 +18,20 @@ const getWebDeepResearchTool = (model: string = "sonar-deep-research") => {
         z.object({
           role: z.string(),
           content: z.string(),
-        })
+        }),
       ),
     }),
     execute: async function* ({ messages }) {
       if (!Array.isArray(messages)) {
-        throw new Error(
-          "Invalid arguments for web_deep_research: 'messages' must be an array"
-        );
+        throw new Error("Invalid arguments for web_deep_research: 'messages' must be an array");
       }
 
       const query = messages[messages.length - 1]?.content || "research query";
 
       // Initial searching status
       yield {
-        status: 'searching' as const,
-        message: 'Conducting deep research...',
+        status: "searching" as const,
+        message: "Conducting deep research...",
         query,
       } satisfies SearchProgress;
 
@@ -45,16 +43,16 @@ const getWebDeepResearchTool = (model: string = "sonar-deep-research") => {
 
         // Manually iterate to capture both yielded values and return value
         let hasYieldedSources = false;
-        
+
         while (true) {
           const { value, done } = await stream.next();
-          
+
           if (done) {
             // value here is the return value (StreamedResponse)
             finalMetadata = value;
             break;
           }
-          
+
           // value here is a yielded content chunk
           accumulatedContent += value;
           chunkCount++;
@@ -62,8 +60,8 @@ const getWebDeepResearchTool = (model: string = "sonar-deep-research") => {
           // Yield streaming progress every CHUNK_BATCH_SIZE chunks
           if (chunkCount % CHUNK_BATCH_SIZE === 0) {
             yield {
-              status: 'streaming' as const,
-              message: 'Analyzing sources...',
+              status: "streaming" as const,
+              message: "Analyzing sources...",
               query,
               accumulatedContent,
             } satisfies SearchProgress;
@@ -73,12 +71,12 @@ const getWebDeepResearchTool = (model: string = "sonar-deep-research") => {
         // Extract metadata from final result
         const searchResults = finalMetadata?.searchResults || [];
         const finalCitations = finalMetadata?.citations || [];
-        
+
         // If we got search results, yield a reviewing status
         if (searchResults.length > 0 && !hasYieldedSources) {
           hasYieldedSources = true;
           yield {
-            status: 'reviewing' as const,
+            status: "reviewing" as const,
             message: `Reviewing sources · ${searchResults.length}`,
             query,
             searchResults,
@@ -93,8 +91,8 @@ const getWebDeepResearchTool = (model: string = "sonar-deep-research") => {
         // Yield final streaming update if we didn't just yield one
         if (chunkCount % CHUNK_BATCH_SIZE !== 0) {
           yield {
-            status: 'streaming' as const,
-            message: 'Analyzing sources...',
+            status: "streaming" as const,
+            message: "Analyzing sources...",
             query,
             accumulatedContent,
           } satisfies SearchProgress;
@@ -111,8 +109,8 @@ const getWebDeepResearchTool = (model: string = "sonar-deep-research") => {
 
         // Yield complete status
         yield {
-          status: 'complete' as const,
-          message: 'Research complete',
+          status: "complete" as const,
+          message: "Research complete",
           query,
           accumulatedContent: finalContent,
           citations: finalCitations,
@@ -131,4 +129,3 @@ const getWebDeepResearchTool = (model: string = "sonar-deep-research") => {
 };
 
 export default getWebDeepResearchTool;
-

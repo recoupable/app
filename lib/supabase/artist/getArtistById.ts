@@ -2,7 +2,8 @@ import supabase from "@/lib/supabase/serverClient";
 
 /**
  * Get full artist data including account_socials and account_info
- * @param id ID of the artist account
+ *
+ * @param id - ID of the artist account
  * @returns Artist data or null if not found
  */
 export async function getArtistById(id: string) {

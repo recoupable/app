@@ -42,19 +42,21 @@ export interface SegmentWithCount extends ArtistSegment {
 
 /**
  * Get all segments with their fan counts for an artist
+ *
+ * @param artistId
  */
 export async function getArtistSegments(artistId: string): Promise<Segment[]> {
   const segments = await getArtistSegmentNames(artistId);
   if (!segments.length) return [];
 
-  const segmentIds = segments.map((s) => s.segment_id);
+  const segmentIds = segments.map(s => s.segment_id);
   const counts = await getSegmentCounts(segmentIds);
 
-  const countMap = new Map(counts.map((c) => [c.segment_id, c.count]));
+  const countMap = new Map(counts.map(c => [c.segment_id, c.count]));
 
   // Get fans for each segment (limit to 5 for social proof)
   const segmentsWithFans = await Promise.all(
-    segments.map(async (segment) => {
+    segments.map(async segment => {
       const fans = await selectFanSegments({ segment_id: segment.segment_id });
       return {
         id: segment.segment_id,
@@ -63,7 +65,7 @@ export async function getArtistSegments(artistId: string): Promise<Segment[]> {
         icon: undefined,
         fans,
       };
-    })
+    }),
   );
 
   return segmentsWithFans;

@@ -1,10 +1,6 @@
 // YouTube API Response Types
 
-import type {
-  Tables,
-  TablesInsert,
-  TablesUpdate,
-} from "@/types/database.types";
+import type { Tables, TablesInsert, TablesUpdate } from "@/types/database.types";
 
 // Interface for detailed channel information from getYouTubeChannelInfo tool
 export interface YouTubeChannelInfoResult {

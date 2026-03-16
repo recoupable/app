@@ -25,12 +25,12 @@ const getCatalogSongsTool: Tool = {
     catalog_id: z
       .string()
       .describe(
-        "The unique identifier of the catalog to query songs for. Get this from the select_catalogs tool."
+        "The unique identifier of the catalog to query songs for. Get this from the select_catalogs tool.",
       ),
     criteria: z
       .string()
       .describe(
-        "The search criteria or theme to filter songs by (e.g., 'Halloween party songs', 'workout music', 'romantic ballads')"
+        "The search criteria or theme to filter songs by (e.g., 'Halloween party songs', 'workout music', 'romantic ballads')",
       ),
   }),
   execute: async ({ catalog_id, criteria }) => {
@@ -56,10 +56,7 @@ const getCatalogSongsTool: Tool = {
       console.error("Error fetching catalog songs:", error);
       return {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch catalog songs",
+        error: error instanceof Error ? error.message : "Failed to fetch catalog songs",
         songs: [],
         total_added: 0,
       };

@@ -4,12 +4,14 @@ export type ToggleFavoriteRequest = {
   isFavourite: boolean;
 };
 
-export type ToggleFavoriteResponse = {
-  success: true;
-  favorites_count: number | null;
-} | {
-  error: string;
-};
+export type ToggleFavoriteResponse =
+  | {
+      success: true;
+      favorites_count: number | null;
+    }
+  | {
+      error: string;
+    };
 
 export type AgentTemplateRow = {
   id: string;
@@ -27,5 +29,3 @@ export type AgentTemplateRow = {
   // emails the template is shared with (only for private templates)
   shared_emails?: string[];
 };
-
-

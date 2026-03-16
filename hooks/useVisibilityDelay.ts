@@ -8,12 +8,14 @@ type UseVisibilityDelayOptions = {
 
   /**
    * Delay in milliseconds before showing content
+   *
    * @default 300
    */
   delay?: number;
 
   /**
    * Dependencies to watch for changes
+   *
    * @default []
    */
   deps?: ReadonlyArray<unknown>;
@@ -22,6 +24,10 @@ type UseVisibilityDelayOptions = {
 /**
  * Hook to handle delayed visibility transitions
  *
+ * @param root0
+ * @param root0.shouldBeVisible
+ * @param root0.delay
+ * @param root0.deps
  * @example
  * const { isVisible } = useVisibilityDelay({
  *   shouldBeVisible: !!userData && !!artistData,
@@ -34,7 +40,7 @@ export function useVisibilityDelay({
   deps = [],
 }: UseVisibilityDelayOptions) {
   const [isVisible, setIsVisible] = useState(false);
-  
+
   useEffect(() => {
     // Only proceed if conditions are met
     if (!shouldBeVisible) {
