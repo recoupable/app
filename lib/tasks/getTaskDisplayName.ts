@@ -1,5 +1,5 @@
 const TASK_NAME_MAP: Record<string, string> = {
-  "run-sandbox-command": "Sandbox Command",
+  "run-sandbox-command": "Agent Sandbox",
   "customer-prompt-task": "Scheduled Prompt",
   "setup-sandbox": "Setup Sandbox",
   "send-pulses": "Send Pulses",
