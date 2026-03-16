@@ -3,6 +3,7 @@ const TASK_NAME_MAP: Record<string, string> = {
   "customer-prompt-task": "Scheduled Prompt",
   "setup-sandbox": "Setup Sandbox",
   "send-pulses": "Send Pulses",
+  "send-pulse-task": "Pulse",
   "pro-artist-social-profiles-scrape": "Social Scrape",
 };
 
