@@ -6,6 +6,7 @@ import { getStatusColor } from "@/lib/tasks/getStatusColor";
 import { getStatusLabel } from "@/lib/tasks/getStatusLabel";
 import { formatDuration } from "@/lib/tasks/formatDuration";
 import { formatTimestamp } from "@/lib/tasks/formatTimestamp";
+import AccountIdDisplay from "@/components/ArtistSetting/AccountIdDisplay";
 
 interface RunCardProps {
   run: TaskRunItem;
@@ -21,6 +22,9 @@ const RunCard: React.FC<RunCardProps> = ({ run }) => {
           <h4 className="text-base font-medium text-foreground">
             {getTaskDisplayName(run.taskIdentifier)}
           </h4>
+          <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+            <AccountIdDisplay accountId={run.id} label="Run ID" />
+          </div>
           <p className="text-sm text-muted-foreground">
             {formatTimestamp(run.createdAt)}
             {duration && ` \u00b7 ${duration}`}
