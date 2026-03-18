@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
 import { useUserProvider } from "@/providers/UserProvder";
-import { useOrganization } from "@/providers/OrganizationProvider";
 import { toast } from "sonner";
 import { createApiKey } from "@/lib/keys/createApiKey";
 import { fetchApiKeys, ApiKey } from "@/lib/keys/fetchApiKeys";
@@ -22,11 +21,10 @@ export default function useApiKey(): UseApiKeyReturn {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const { userData } = useUserProvider();
-  const { selectedOrgId } = useOrganization();
   const { getAccessToken } = usePrivy();
   const queryClient = useQueryClient();
 
-  const queryKey = ["apiKeys", userData?.account_id, selectedOrgId] as const;
+  const queryKey = ["apiKeys", userData?.account_id] as const;
 
   const { data: apiKeys = [], isLoading: loadingKeys } = useQuery<ApiKey[]>({
     queryKey,
@@ -35,7 +33,7 @@ export default function useApiKey(): UseApiKeyReturn {
       if (!accessToken) {
         throw new Error("Not authenticated");
       }
-      return fetchApiKeys(accessToken, selectedOrgId);
+      return fetchApiKeys(accessToken);
     },
     enabled: Boolean(userData?.account_id),
   });
@@ -46,7 +44,7 @@ export default function useApiKey(): UseApiKeyReturn {
       if (!accessToken) {
         throw new Error("Not authenticated");
       }
-      return createApiKey(keyName.trim(), accessToken, selectedOrgId);
+      return createApiKey(keyName.trim(), accessToken);
     },
     onSuccess: (key) => {
       setApiKey(key);
