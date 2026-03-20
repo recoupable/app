@@ -18,9 +18,7 @@ export const useScheduledActions = ({
     queryFn: () =>
       getTasks({
         ...(accountIdOverride ? { account_id: accountIdOverride } : {}),
-        ...(artistAccountId && !accountIdOverride
-          ? { artist_account_id: artistAccountId }
-          : {}),
+        ...(artistAccountId ? { artist_account_id: artistAccountId } : {}),
       }),
   });
 };
