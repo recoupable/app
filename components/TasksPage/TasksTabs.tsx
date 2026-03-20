@@ -15,16 +15,18 @@ const TasksTabs = () => {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const defaultTab = tabParam && VALID_TABS.includes(tabParam) ? tabParam : "schedules";
+  const accountIdOverride = searchParams.get("account_id") ?? undefined;
   const { selectedArtist } = useArtistProvider();
   const artistAccountId = selectedArtist?.account_id as string | undefined;
   const { data, isLoading, isError } = useScheduledActions({
     artistAccountId,
+    accountIdOverride,
   });
   const {
     data: taskRuns,
     isLoading: isRunsLoading,
     isError: isRunsError,
-  } = useTaskRuns();
+  } = useTaskRuns({ accountIdOverride });
 
   const tasks = data ?? [];
   const runs = taskRuns ?? [];
