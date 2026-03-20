@@ -40,7 +40,7 @@ const TasksTabs = () => {
       </TabsList>
 
       <TabsContent value="schedules">
-        <TasksList tasks={tasks} isLoading={isLoading} isError={isError} accountIdOverride={accountIdOverride} />
+        <TasksList tasks={tasks} isLoading={isLoading} isError={isError} />
       </TabsContent>
 
       <TabsContent value="recents">

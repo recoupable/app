@@ -14,13 +14,11 @@ interface TasksListProps {
   tasks: ScheduledAction[];
   isLoading: boolean;
   isError: boolean;
-  accountIdOverride?: string;
 }
 
-const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError, accountIdOverride }) => {
+const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError }) => {
   const { userData } = useUserProvider();
   const { selectedArtist } = useArtistProvider();
-  const isArtistSelected = !!selectedArtist;
 
   // Extract unique account IDs from tasks
   const accountIds = useMemo(
@@ -32,16 +30,18 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError, accoun
   const { data: accountEmails = [] } = useQuery<AccountEmail[]>({
     queryKey: ["task-owner-emails", accountIds],
     queryFn: async () => {
-      if (accountIds.length === 0 || !userData || !selectedArtist) return [];
+      if (accountIds.length === 0 || !userData) return [];
       const params = new URLSearchParams();
       accountIds.forEach(id => params.append("accountIds", id));
       params.append("currentAccountId", userData.id);
-      params.append("artistAccountId", selectedArtist.account_id);
+      if (selectedArtist) {
+        params.append("artistAccountId", selectedArtist.account_id);
+      }
       const response = await fetch(`/api/account-emails?${params}`);
       if (!response.ok) throw new Error("Failed to fetch emails");
       return response.json();
     },
-    enabled: accountIds.length > 0 && !!userData && !!selectedArtist,
+    enabled: accountIds.length > 0 && !!userData,
   });
 
   // Create lookup map for O(1) email access
@@ -59,7 +59,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError, accoun
     return <div className="text-sm text-red-600 dark:text-red-400">Failed to load tasks</div>;
   }
 
-  if (isLoading || (!isArtistSelected && !accountIdOverride) || !userData) {
+  if (isLoading || !userData) {
     return (
       <div className="space-y-4">
         <TaskSkeleton />
