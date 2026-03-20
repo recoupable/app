@@ -14,9 +14,10 @@ interface TasksListProps {
   tasks: ScheduledAction[];
   isLoading: boolean;
   isError: boolean;
+  accountIdOverride?: string;
 }
 
-const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError }) => {
+const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError, accountIdOverride }) => {
   const { userData } = useUserProvider();
   const { selectedArtist } = useArtistProvider();
   const isArtistSelected = !!selectedArtist;
@@ -58,7 +59,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError }) => {
     return <div className="text-sm text-red-600 dark:text-red-400">Failed to load tasks</div>;
   }
 
-  if (isLoading || !isArtistSelected || !userData) {
+  if (isLoading || (!isArtistSelected && !accountIdOverride) || !userData) {
     return (
       <div className="space-y-4">
         <TaskSkeleton />
