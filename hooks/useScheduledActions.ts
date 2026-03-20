@@ -16,10 +16,11 @@ export const useScheduledActions = ({
   return useQuery<ScheduledAction[]>({
     queryKey: ["scheduled-actions", { artistAccountId, accountIdOverride }],
     queryFn: () =>
-      getTasks({
-        ...(artistAccountId ? { artist_account_id: artistAccountId } : {}),
-        ...(accountIdOverride ? { account_id: accountIdOverride } : {}),
-      }),
+      getTasks(
+        accountIdOverride
+          ? { account_id: accountIdOverride }
+          : { ...(artistAccountId ? { artist_account_id: artistAccountId } : {}) },
+      ),
     enabled: Boolean(artistAccountId) || Boolean(accountIdOverride),
   });
 };
