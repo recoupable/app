@@ -1,7 +1,7 @@
 "use client";
 
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Tables } from "@/types/database.types";
+import { Task } from "@/lib/tasks/getTasks";
 import { cn } from "@/lib/utils";
 import TaskDetailsDialogHeader from "./TaskDetailsDialogHeader";
 import TaskDetailsDialogContent from "./TaskDetailsDialogContent";
@@ -10,7 +10,7 @@ import { useTaskDetailsDialog } from "./useTaskDetailsDialog";
 
 interface TaskDetailsDialogProps {
   children: React.ReactNode;
-  task: Tables<"scheduled_actions">;
+  task: Task;
   isDeleted?: boolean;
   onDelete?: () => void;
 }
@@ -20,7 +20,7 @@ const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
   task,
   isDeleted = false,
   onDelete,
-}) => {
+}: TaskDetailsDialogProps) => {
   const {
     isDialogOpen,
     setIsDialogOpen,

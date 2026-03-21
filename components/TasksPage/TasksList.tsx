@@ -1,4 +1,5 @@
 import { Tables } from "@/types/database.types";
+import { Task } from "@/lib/tasks/getTasks";
 import TaskCard from "@/components/VercelChat/tools/tasks/TaskCard";
 import TaskSkeleton from "./TaskSkeleton";
 import TaskDetailsDialog from "@/components/VercelChat/dialogs/tasks/TaskDetailsDialog";
@@ -7,11 +8,10 @@ import { useUserProvider } from "@/providers/UserProvder";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-type ScheduledAction = Tables<"scheduled_actions">;
 type AccountEmail = Tables<"account_emails">;
 
 interface TasksListProps {
-  tasks: ScheduledAction[];
+  tasks: Task[];
   isLoading: boolean;
   isError: boolean;
 }
@@ -81,7 +81,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError }) => {
 
   return (
     <div className="mt-4">
-      {tasks.map((task, index) => (
+      {tasks.map((task: Task, index) => (
         <TaskDetailsDialog key={task.id} task={task}>
           <div
             className={

@@ -1,8 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Tables } from "@/types/database.types";
-import { getTasks } from "@/lib/tasks/getTasks";
-
-type ScheduledAction = Tables<"scheduled_actions">;
+import { getTasks, Task } from "@/lib/tasks/getTasks";
 
 interface UseScheduledActionsParams {
   artistAccountId?: string;
@@ -13,7 +10,7 @@ export const useScheduledActions = ({
   artistAccountId,
   accountIdOverride,
 }: UseScheduledActionsParams) => {
-  return useQuery<ScheduledAction[]>({
+  return useQuery<Task[]>({
     queryKey: ["scheduled-actions", { artistAccountId, accountIdOverride }],
     queryFn: () =>
       getTasks({

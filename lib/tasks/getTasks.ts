@@ -1,7 +1,13 @@
 import { Tables } from "@/types/database.types";
+import { TaskRunItem } from "@/lib/tasks/getTaskRuns";
 import { TASKS_API_URL } from "@/lib/consts";
 
 type ScheduledAction = Tables<"scheduled_actions">;
+
+export type Task = ScheduledAction & {
+  recent_runs?: TaskRunItem[];
+  upcoming?: string[];
+};
 
 export interface GetTasksParams {
   id?: string;
@@ -11,7 +17,7 @@ export interface GetTasksParams {
 
 export interface GetTasksResponse {
   status: "success" | "error";
-  tasks: ScheduledAction[];
+  tasks: Task[];
   error?: string;
 }
 
@@ -21,7 +27,7 @@ export interface GetTasksResponse {
  */
 export async function getTasks(
   params?: GetTasksParams
-): Promise<ScheduledAction[]> {
+): Promise<Task[]> {
   try {
     const url = new URL(TASKS_API_URL);
 
@@ -55,7 +61,7 @@ export async function getTasks(
       throw new Error(data.error || "Unknown error occurred");
     }
 
-    return data.tasks;
+    return data.tasks as Task[];
   } catch (error) {
     console.error("Error fetching tasks:", error);
     throw error;

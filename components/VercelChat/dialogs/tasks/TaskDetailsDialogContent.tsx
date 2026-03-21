@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { Tables } from "@/types/database.types";
+import { Task } from "@/lib/tasks/getTasks";
 import { Textarea } from "@/components/ui/textarea";
 import {
   PromptInputModelSelect,
@@ -19,12 +19,14 @@ const CronEditor = dynamic(
 );
 import TaskLastRunSection from "./TaskLastRunSection";
 import TaskScheduleSection from "./TaskScheduleSection";
+import TaskRecentRunsSection from "./TaskRecentRunsSection";
+import TaskUpcomingRunsSection from "./TaskUpcomingRunsSection";
 import { getFeaturedModelConfig } from "@/lib/ai/featuredModels";
 import { organizeModels } from "@/lib/ai/organizeModels";
 import useAvailableModels from "@/hooks/useAvailableModels";
 
 interface TaskDetailsDialogContentProps {
-  task: Tables<"scheduled_actions">;
+  task: Task;
   editTitle: string;
   editPrompt: string;
   editCron: string;
@@ -142,6 +144,12 @@ const TaskDetailsDialogContent: React.FC<TaskDetailsDialogContentProps> = ({
 
       {/* Last Run Information - Read-only */}
       <TaskLastRunSection lastRun={task.last_run} isDeleted={isDeleted} />
+
+      {/* Recent Runs from Trigger.dev */}
+      <TaskRecentRunsSection recentRuns={task.recent_runs} isDeleted={isDeleted} />
+
+      {/* Upcoming Scheduled Runs from Trigger.dev */}
+      <TaskUpcomingRunsSection upcoming={task.upcoming} isDeleted={isDeleted} />
     </div>
   );
 };
