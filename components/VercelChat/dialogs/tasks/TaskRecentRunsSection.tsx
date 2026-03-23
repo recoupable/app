@@ -25,7 +25,12 @@ const TaskRecentRunsSection = ({
         {recentRuns.map((run) => {
           const duration = formatDuration(run.durationMs);
           return (
-            <div key={run.id} className="flex items-center justify-between gap-2 text-xs">
+            <button
+              key={run.id}
+              type="button"
+              onClick={() => window.open(`/tasks/${run.id}`, "_blank")}
+              className="flex items-center justify-between gap-2 text-xs w-full hover:bg-muted/50 rounded px-1 -mx-1 py-0.5 transition-colors cursor-pointer"
+            >
               <span className={cn("text-muted-foreground", { "text-red-600": isDeleted })}>
                 {run.startedAt ? formatTimestamp(run.startedAt) : formatTimestamp(run.createdAt)}
                 {duration && ` · ${duration}`}
@@ -33,7 +38,7 @@ const TaskRecentRunsSection = ({
               <span className={cn("px-1.5 py-0.5 rounded-full text-[10px] font-medium flex-shrink-0", getStatusColor(run.status))}>
                 {getStatusLabel(run.status)}
               </span>
-            </div>
+            </button>
           );
         })}
       </div>
