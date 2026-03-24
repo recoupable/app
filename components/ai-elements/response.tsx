@@ -1,14 +1,20 @@
 "use client";
 
+import { code } from "@streamdown/code";
+import { math } from "@streamdown/math";
+import { mermaid } from "@streamdown/mermaid";
 import { cn } from "@/lib/utils";
 import { type ComponentProps, memo } from "react";
 import { Streamdown } from "streamdown";
 
 type ResponseProps = ComponentProps<typeof Streamdown>;
 
+const defaultPlugins = { code, math, mermaid };
+
 export const Response = memo(
   ({ className, ...props }: ResponseProps) => (
     <Streamdown
+      plugins={defaultPlugins}
       className={cn(
         "size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
         "font-sans leading-relaxed",
