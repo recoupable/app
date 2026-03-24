@@ -25,6 +25,7 @@ const Menu = ({ isExpanded, isPinned = false, onTogglePin }: MenuProps) => {
   const isSegments = pathname.includes("/segments");
   const isTasks = pathname.includes("/tasks");
   const isFiles = pathname.includes("/files");
+  const isLaunch = pathname.includes("/launch");
 
   const goToItem = (link?: string) => {
     if (isPrepared()) {
@@ -35,6 +36,7 @@ const Menu = ({ isExpanded, isPinned = false, onTogglePin }: MenuProps) => {
   useEffect(() => {
     prefetch("/files");
     prefetch("/agents");
+    prefetch("/launch");
   }, [prefetch]);
 
   return (
@@ -49,6 +51,7 @@ const Menu = ({ isExpanded, isPinned = false, onTogglePin }: MenuProps) => {
         isTasks={isTasks}
         isSegments={isSegments}
         isFiles={isFiles}
+        isLaunch={isLaunch}
         onNavigate={goToItem}
       />
 
