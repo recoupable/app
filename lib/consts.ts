@@ -1,7 +1,10 @@
 import { Address } from "viem";
 
 export const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
-export const NEW_API_BASE_URL = IS_PROD
+const apiBaseUrlOverride = process.env.NEXT_PUBLIC_API_BASE_URL;
+export const NEW_API_BASE_URL = apiBaseUrlOverride
+  ? apiBaseUrlOverride
+  : IS_PROD
   ? "https://recoup-api.vercel.app"
   : "https://test-recoup-api.vercel.app";
 export const IN_PROCESS_PROTOCOL_ADDRESS = IS_PROD
