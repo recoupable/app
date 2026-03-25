@@ -26,6 +26,7 @@ export interface GetTasksResponse {
  * @see https://docs.recoupable.com/tasks/get
  */
 export async function getTasks(
+  accessToken: string,
   params?: GetTasksParams
 ): Promise<Task[]> {
   try {
@@ -46,6 +47,7 @@ export async function getTasks(
     const response = await fetch(url.toString(), {
       method: "GET",
       headers: {
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
     });
