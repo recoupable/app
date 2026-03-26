@@ -1,4 +1,5 @@
 import { useArtistProvider } from "@/providers/ArtistProvider";
+import { useUserProvider } from "@/providers/UserProvder";
 import ImageWithFallback from "@/components/ImageWithFallback";
 
 /**
@@ -7,9 +8,11 @@ import ImageWithFallback from "@/components/ImageWithFallback";
  */
 export function ChatGreeting({ isVisible }: { isVisible: boolean }) {
   const { selectedArtist } = useArtistProvider();
+  const { name } = useUserProvider();
   const artistName = selectedArtist?.name || "";
   const artistImage = selectedArtist?.image || "";
   const isArtistSelected = !!selectedArtist;
+  const displayName = (name || "").trim();
 
   const textStyle = `
     font-heading
@@ -35,14 +38,17 @@ export function ChatGreeting({ isVisible }: { isVisible: boolean }) {
         text-center w-full
       `}
     >
-      <span className="text-foreground font-medium inline-flex items-center gap-3 flex-wrap justify-center">
-        Ask me about{" "}
+      <span className="text-foreground font-normal inline-flex items-center gap-3 flex-wrap justify-center">
+        
+        How can I help you with{" "}
         {isArtistSelected && artistImage && (
           <span className="inline-block w-12 h-12 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-foreground shadow-md">
             <ImageWithFallback src={artistImage} />
           </span>
         )}
         {isArtistSelected ? artistName : "your roster"}
+        {!!displayName && <>{", "}{displayName}</>}
+        ?
       </span>
     </div>
   );
