@@ -46,7 +46,10 @@ export default function SandboxFileTree() {
     <div className="flex w-full flex-col gap-4 lg:flex-row">
       <div className="w-full lg:max-w-md lg:shrink-0">
         <h2 className="mb-2 text-lg font-medium">Repository Files</h2>
-        <FileTree selectedPath={fileContent.selectedPath} onSelect={fileContent.select}>
+        <FileTree
+          selectedPath={fileContent.selectedPath}
+          onSelect={fileContent.select}
+        >
           {filetree.map((node) => (
             <FileNodeComponent key={node.path} node={node} />
           ))}
@@ -56,6 +59,7 @@ export default function SandboxFileTree() {
         <SandboxFilePreview
           selectedPath={fileContent.selectedPath}
           content={fileContent.content}
+          imageUrl={fileContent.imageUrl}
           loading={fileContent.loading}
           error={fileContent.error}
         />

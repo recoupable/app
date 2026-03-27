@@ -10,6 +10,7 @@ type FilePreviewProps = {
   isTextFile: boolean;
   fileName?: string;
   storageKey?: string;
+  imageUrl?: string;
 };
 
 export default function FilePreview({
@@ -19,16 +20,21 @@ export default function FilePreview({
   isTextFile,
   fileName,
   storageKey,
+  imageUrl,
 }: FilePreviewProps) {
   const isImage = fileName ? isImagePath(fileName) : false;
+  const resolvedImageUrl = imageUrl
+    ? imageUrl
+    : isImage && storageKey
+      ? `/api/files/signed-url?key=${encodeURIComponent(storageKey)}`
+      : null;
 
-  if (isImage && storageKey) {
-    const signedUrl = `/api/files/signed-url?key=${encodeURIComponent(storageKey)}`;
+  if (isImage && resolvedImageUrl) {
     return (
       <div className="flex-1 border border-border rounded-lg bg-background overflow-hidden flex items-center justify-center min-h-[300px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={signedUrl}
+          src={resolvedImageUrl}
           alt={fileName || "Image preview"}
           className="max-w-full max-h-[70vh] object-contain"
         />
