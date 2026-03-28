@@ -1,7 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
-import isImagePath from "@/utils/isImagePath";
 
 type FilePreviewProps = {
   content: string | null;
@@ -9,7 +8,6 @@ type FilePreviewProps = {
   error: string | null;
   isTextFile: boolean;
   fileName?: string;
-  storageKey?: string;
   imageUrl?: string;
 };
 
@@ -19,7 +17,6 @@ export default function FilePreview({
   error,
   isTextFile,
   fileName,
-  storageKey,
   imageUrl,
 }: FilePreviewProps) {
   if (loading) {
@@ -41,19 +38,12 @@ export default function FilePreview({
     );
   }
 
-  const isImage = fileName ? isImagePath(fileName) : false;
-  const resolvedImageUrl = imageUrl
-    ? imageUrl
-    : isImage && storageKey
-      ? `/api/files/signed-url?key=${encodeURIComponent(storageKey)}`
-      : null;
-
-  if (isImage && resolvedImageUrl) {
+  if (imageUrl) {
     return (
       <div className="flex-1 border border-border rounded-lg bg-background overflow-hidden flex items-center justify-center min-h-[300px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={resolvedImageUrl}
+          src={imageUrl}
           alt={fileName || "Image preview"}
           className="max-w-full max-h-[70vh] object-contain"
         />

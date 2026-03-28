@@ -38,7 +38,6 @@ export default function FileInfoDialogContent({
           error={error}
           isTextFile={isTextFile}
           fileName={fileName}
-          storageKey={storageKey}
         />
       )}
     </div>
