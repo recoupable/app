@@ -1,5 +1,5 @@
 import { useArtistProvider } from "@/providers/ArtistProvider";
-import getMimeFromPath from "@/utils/getMimeFromPath";
+import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { uploadFile } from "@/lib/arweave/uploadFile";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
