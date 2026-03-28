@@ -13,26 +13,25 @@ type FileInfoDialogContentProps = {
   onContentChange: (value: string) => void;
 };
 
-export default function FileInfoDialogContent({
-  isEditing,
-  fileName,
+export default function FileInfoDialogContent({ 
+  isEditing, 
+  fileName, 
   storageKey,
   accountId,
   editedContent,
-  onContentChange,
+  onContentChange
 }: FileInfoDialogContentProps) {
-  const { content, loading, error, isTextFile } = useFileContent(
-    fileName,
-    storageKey,
-    accountId,
-  );
+  const { content, loading, error, isTextFile } = useFileContent(fileName, storageKey, accountId);
 
   return (
     <div className="flex-1 p-4 sm:p-6 bg-muted/20 flex flex-col">
       {isEditing ? (
-        <FileEditor content={editedContent} onChange={onContentChange} />
+        <FileEditor 
+          content={editedContent}
+          onChange={onContentChange}
+        />
       ) : (
-        <FilePreview
+        <FilePreview 
           content={content}
           loading={loading}
           error={error}
@@ -43,3 +42,4 @@ export default function FileInfoDialogContent({
     </div>
   );
 }
+
