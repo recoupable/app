@@ -1,4 +1,5 @@
 import { NEW_API_BASE_URL } from "@/lib/consts";
+import { getMimeFromPath } from "@/utils/getMimeFromPath";
 
 interface GetFileContentsResponse {
   status: "success" | "error";
@@ -10,19 +11,6 @@ interface GetFileContentsResponse {
 interface FileContentsResult {
   content: string | null;
   imageUrl: string | null;
-}
-
-function getMimeType(fileName: string): string {
-  const ext = fileName.toLowerCase().split(".").pop();
-  const mimeTypes: Record<string, string> = {
-    png: "image/png",
-    jpg: "image/jpeg",
-    jpeg: "image/jpeg",
-    gif: "image/gif",
-    webp: "image/webp",
-    svg: "image/svg+xml",
-  };
-  return mimeTypes[ext ?? ""] ?? "application/octet-stream";
 }
 
 /**
@@ -51,8 +39,7 @@ export async function getFileContents(
   }
 
   if (data.encoding === "base64") {
-    const fileName = path.split("/").pop() ?? "";
-    const mimeType = getMimeType(fileName);
+    const mimeType = getMimeFromPath(path);
     return {
       content: null,
       imageUrl: `data:${mimeType};base64,${data.content}`,

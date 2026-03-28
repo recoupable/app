@@ -7,6 +7,12 @@ const mimeByExt: Record<string, string> = {
   xml: "application/xml",
   yml: "application/x-yaml",
   yaml: "application/x-yaml",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  gif: "image/gif",
+  webp: "image/webp",
+  svg: "image/svg+xml",
 };
 
 export const getMimeFromPath = (path: string): string => {
