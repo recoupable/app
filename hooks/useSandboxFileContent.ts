@@ -2,8 +2,6 @@ import { useCallback, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
-import { getImageContent } from "@/lib/sandboxes/getImageContent";
-import isImagePath from "@/utils/isImagePath";
 
 interface UseSandboxFileContentReturn {
   selectedPath: string | undefined;
@@ -25,14 +23,7 @@ export default function useSandboxFileContent(): UseSandboxFileContentReturn {
         throw new Error("Please sign in to view file contents");
       }
 
-      const fileName = path.split("/").pop() ?? "";
-      if (isImagePath(fileName)) {
-        const dataUrl = await getImageContent(accessToken, path, fileName);
-        return { content: null, imageUrl: dataUrl };
-      }
-
-      const result = await getFileContents(accessToken, path);
-      return { content: result.content, imageUrl: null };
+      return getFileContents(accessToken, path);
     },
   });
 

@@ -22,6 +22,25 @@ export default function FilePreview({
   storageKey,
   imageUrl,
 }: FilePreviewProps) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[300px] border border-border rounded-lg bg-background">
+        <div className="flex flex-col items-center gap-2">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[300px] border border-border rounded-lg bg-background">
+        <p className="text-sm text-destructive">{error}</p>
+      </div>
+    );
+  }
+
   const isImage = fileName ? isImagePath(fileName) : false;
   const resolvedImageUrl = imageUrl
     ? imageUrl
@@ -48,22 +67,6 @@ export default function FilePreview({
         <p className="text-sm text-muted-foreground">
           Preview not available for this file type
         </p>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full min-h-[300px] border border-border rounded-lg bg-background">
-        <p className="text-sm text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-full min-h-[300px] border border-border rounded-lg bg-background">
-        <p className="text-sm text-destructive">{error}</p>
       </div>
     );
   }
