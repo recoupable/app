@@ -17,7 +17,7 @@ export async function getImageContent(
   fileName: string,
 ): Promise<string> {
   const response = await fetch(
-    `${NEW_API_BASE_URL}/api/sandboxes/file?path=${encodeURIComponent(path)}&format=base64`,
+    `${NEW_API_BASE_URL}/api/sandboxes/file?path=${encodeURIComponent(path)}`,
     {
       method: "GET",
       headers: {
