@@ -6,7 +6,19 @@ import updateAccountInfo from "@/lib/supabase/account_info/updateAccountInfo";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { instruction, name, organization, accountId, image, jobTitle, roleType, companyName, knowledges } = body;
+  const {
+    instruction,
+    name,
+    organization,
+    accountId,
+    image,
+    jobTitle,
+    roleType,
+    companyName,
+    knowledges,
+    onboarding_data,
+    onboarding_status,
+  } = body;
 
   try {
     const found = await getAccountById(accountId);
@@ -26,6 +38,8 @@ export async function POST(req: NextRequest) {
         role_type: roleType,
         company_name: companyName,
         knowledges,
+        onboarding_data,
+        onboarding_status,
       });
     } else {
       await updateAccountInfo(accountId, {
@@ -36,6 +50,8 @@ export async function POST(req: NextRequest) {
         role_type: roleType,
         company_name: companyName,
         knowledges,
+        onboarding_data,
+        onboarding_status,
       });
     }
 

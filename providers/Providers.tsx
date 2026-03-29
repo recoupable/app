@@ -13,14 +13,15 @@ import WagmiProvider from "./WagmiProvider";
 import { MiniAppProvider } from "./MiniAppProvider";
 import { ThemeProvider } from "./ThemeProvider";
 import { OrganizationProvider } from "./OrganizationProvider";
+import OnboardingGuard from "@/components/Onboarding/OnboardingGuard";
 
 const queryClient = new QueryClient();
 
 const Providers = ({ children }: { children: React.ReactNode }) => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider 
-      attribute="class" 
-      defaultTheme="system" 
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
       enableSystem={true}
       disableTransitionOnChange
     >
@@ -30,15 +31,17 @@ const Providers = ({ children }: { children: React.ReactNode }) => (
             <MiniAppProvider>
               <UserProvider>
                 <OrganizationProvider>
-                <FunnelReportProvider>
-                  <ArtistProvider>
-                    <SidebarExpansionProvider>
-                      <ConversationsProvider>
-                        <PaymentProvider>{children}</PaymentProvider>
-                      </ConversationsProvider>
-                    </SidebarExpansionProvider>
-                  </ArtistProvider>
-                </FunnelReportProvider>
+                  <FunnelReportProvider>
+                    <ArtistProvider>
+                      <OnboardingGuard>
+                        <SidebarExpansionProvider>
+                          <ConversationsProvider>
+                            <PaymentProvider>{children}</PaymentProvider>
+                          </ConversationsProvider>
+                        </SidebarExpansionProvider>
+                      </OnboardingGuard>
+                    </ArtistProvider>
+                  </FunnelReportProvider>
                 </OrganizationProvider>
               </UserProvider>
             </MiniAppProvider>
