@@ -13,6 +13,7 @@ import WagmiProvider from "./WagmiProvider";
 import { MiniAppProvider } from "./MiniAppProvider";
 import { ThemeProvider } from "./ThemeProvider";
 import { OrganizationProvider } from "./OrganizationProvider";
+import SandboxSetupOnLogin from "./SandboxSetupOnLogin";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const Providers = ({ children }: { children: React.ReactNode }) => (
             <MiniAppProvider>
               <UserProvider>
                 <OrganizationProvider>
+                <SandboxSetupOnLogin />
                 <FunnelReportProvider>
                   <ArtistProvider>
                     <SidebarExpansionProvider>

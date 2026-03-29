@@ -3,7 +3,7 @@ import { Address } from "viem";
 export const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
 export const NEW_API_BASE_URL = IS_PROD
   ? "https://recoup-api.vercel.app"
-  : "https://test-recoup-api.vercel.app";
+  : "http://localhost:3001";
 export const IN_PROCESS_PROTOCOL_ADDRESS = IS_PROD
   ? ("0x540C18B7f99b3b599c6FeB99964498931c211858" as Address)
   : ("0x6832A997D8616707C7b68721D6E9332E77da7F6C" as Address);

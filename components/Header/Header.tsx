@@ -1,7 +1,7 @@
 "use client";
 
 import { MenuIcon, PlusCircle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SideMenu from "../SideMenu";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import ImageWithFallback from "../ImageWithFallback";
@@ -10,8 +10,10 @@ import SideArtists from "../SideArtists";
 import type { ArtistRecord } from "@/types/Artist";
 
 const Header = () => {
+  const [mounted, setMounted] = useState(false);
   const [isOpenMobileMenu, setIsOpenMobileMenu] = useState(false);
   const [isOpenSideArtists, setIsOpenSideArtists] = useState(false);
+  useEffect(() => setMounted(true), []);
   const {
     selectedArtist,
     toggleSettingModal,
@@ -20,6 +22,7 @@ const Header = () => {
     sorted,
   } = useArtistProvider();
   const isMobile = useIsMobile();
+  const showMobileChrome = mounted && isMobile;
   const isArtistSelected = selectedArtist !== null;
 
   const handleClickPfp = () => {
@@ -38,7 +41,8 @@ const Header = () => {
 
   return (
     <>
-      <div className="z-[50] fixed bg-card  left-0 right-0 top-0 md:hidden flex p-4 items-center justify-between w-auto">
+      <div className="z-[50] fixed bg-card  left-0 right-0 top-0 md:hidden flex min-h-[56px] p-4 items-center justify-between w-auto">
+        {showMobileChrome ? (
         <button
           type="button"
           className="md:hidden flex items-center gap-2 z-[50]"
@@ -47,9 +51,10 @@ const Header = () => {
         >
           <MenuIcon className="dark:text-white" />
         </button>
+        ) : null}
 
-        {/* Show Add/Select Artist button when on mobile, logged in, and no artist selected */}
-        {isMobile && !isArtistSelected && (
+        {/* After mount + mobile only — avoids hydration mismatch (useMediaQuery false on server) */}
+        {showMobileChrome && !isArtistSelected && (
           <button
             type="button"
             onClick={
@@ -70,7 +75,7 @@ const Header = () => {
         )}
 
         {/* Show artist profile when artist is selected */}
-        {selectedArtist && isMobile && (
+        {selectedArtist && showMobileChrome && (
           <div className="relative z-[50]">
             <button
               type="button"
@@ -86,7 +91,7 @@ const Header = () => {
             </button>
           </div>
         )}
-        {isMobile && (
+        {showMobileChrome && (
           <>
             <SideMenu
               isVisible={isOpenMobileMenu}
