@@ -5,7 +5,6 @@ import {
   UIMessagePart,
   UIDataTypes,
   UITools,
-  getToolOrDynamicToolName,
 } from "ai";
 import { Dispatch, SetStateAction } from "react";
 import { cn } from "@/lib/utils";
@@ -18,47 +17,12 @@ import { Actions, Action } from "@/components/actions";
 import { RefreshCcwIcon, Pencil } from "lucide-react";
 import CopyAction from "./CopyAction";
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
+import { getOrderedMessageParts } from "./getOrderedMessageParts";
 
 interface MessagePartsProps {
   message: UIMessage;
   mode: "view" | "edit";
   setMode: Dispatch<SetStateAction<"view" | "edit">>;
-}
-
-const DEFERRED_SANDBOX_TOOL_NAMES = new Set([
-  "get_task_run_status",
-  "prompt_sandbox",
-]);
-
-function isDeferredSandboxResultPart(
-  part: UIMessagePart<UIDataTypes, UITools>,
-) {
-  if (!isToolOrDynamicToolUIPart(part)) {
-    return false;
-  }
-
-  return (
-    (part as ToolUIPart).state === "output-available" &&
-    DEFERRED_SANDBOX_TOOL_NAMES.has(getToolOrDynamicToolName(part))
-  );
-}
-
-function getOrderedMessageParts(
-  parts: UIMessagePart<UIDataTypes, UITools>[],
-) {
-  const regularParts: UIMessagePart<UIDataTypes, UITools>[] = [];
-  const deferredSandboxParts: UIMessagePart<UIDataTypes, UITools>[] = [];
-
-  for (const part of parts) {
-    if (isDeferredSandboxResultPart(part)) {
-      deferredSandboxParts.push(part);
-      continue;
-    }
-
-    regularParts.push(part);
-  }
-
-  return [...regularParts, ...deferredSandboxParts];
 }
 
 export function MessageParts({ message, mode, setMode }: MessagePartsProps) {
