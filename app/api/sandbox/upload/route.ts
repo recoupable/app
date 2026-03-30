@@ -26,7 +26,6 @@ export async function POST(request: Request): Promise<NextResponse> {
         return {
           maximumSizeInBytes: 100 * 1024 * 1024, // 100MB
           addRandomSuffix: true,
-          allowOverwrite: true,
         };
       },
       onUploadCompleted: async () => {},

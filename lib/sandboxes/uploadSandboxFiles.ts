@@ -47,20 +47,20 @@ export async function uploadSandboxFiles({
     }),
   );
 
-  const blobFiles = results
-    .filter(
-      (r): r is PromiseFulfilledResult<{ url: string; name: string }> =>
-        r.status === "fulfilled",
-    )
-    .map((r) => r.value);
+  const blobFiles: { url: string; name: string }[] = [];
+  const blobErrors: string[] = [];
+
+  results.forEach((r, i) => {
+    if (r.status === "fulfilled") {
+      blobFiles.push(r.value);
+    } else {
+      blobErrors.push(`${files[i].name}: ${r.reason?.message || "Upload failed"}`);
+    }
+  });
 
   if (blobFiles.length === 0) {
-    const firstError = results.find((r) => r.status === "rejected") as
-      | PromiseRejectedResult
-      | undefined;
     throw new Error(
-      firstError?.reason?.message ||
-        "Failed to upload files to temporary storage",
+      blobErrors[0] || "Failed to upload files to temporary storage",
     );
   }
 
@@ -83,8 +83,10 @@ export async function uploadSandboxFiles({
     throw new Error(data.error || "Failed to upload files");
   }
 
+  const allErrors = [...blobErrors, ...(data.errors || [])];
+
   return {
     uploaded: data.uploaded || [],
-    errors: data.errors,
+    ...(allErrors.length > 0 && { errors: allErrors }),
   };
 }
