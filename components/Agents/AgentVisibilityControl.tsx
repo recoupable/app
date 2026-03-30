@@ -19,7 +19,7 @@ const AgentVisibilityControl = ({ form }: AgentVisibilityControlProps) => {
       <Switch
         id="isPrivate"
         checked={isPrivate}
-        aria-label="Agent visibility"
+        aria-label={isPrivate ? "Private agent" : "Public agent"}
         onCheckedChange={(checked) =>
           form.setValue("isPrivate", checked, {
             shouldDirty: true,

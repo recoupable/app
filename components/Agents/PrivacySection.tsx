@@ -23,12 +23,7 @@ const PrivacySection = ({ form, existingSharedEmails = [], onExistingEmailsChang
       </div>
 
       {isPrivate && (
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Add email addresses for the people who should be able to view this private agent.
-          </p>
-
-          <EmailShareInput
+        <EmailShareInput
             emails={form.watch("shareEmails") ?? []}
             existingSharedEmails={existingSharedEmails}
             onEmailsChange={(emails) => {
@@ -36,7 +31,6 @@ const PrivacySection = ({ form, existingSharedEmails = [], onExistingEmailsChang
             }}
             onExistingEmailsChange={onExistingEmailsChange}
           />
-        </div>
       )}
     </div>
   );

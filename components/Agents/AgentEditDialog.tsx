@@ -10,11 +10,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import CreateAgentForm from "./CreateAgentForm";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useUserProvider } from "@/providers/UserProvder";
 import type { AgentTemplateRow } from "@/types/AgentTemplates";
 import { useState, useEffect } from "react";
-import { useAgentForm } from "./useAgentForm";
+import { type CreateAgentFormData } from "./schemas";
+import { useAgentForm } from "@/hooks/useAgentForm";
+import { useEditAgentTemplate } from "@/hooks/useEditAgentTemplate";
 
 interface AgentEditDialogProps {
   agent: AgentTemplateRow;
@@ -22,9 +22,9 @@ interface AgentEditDialogProps {
 
 const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
   const [open, setOpen] = useState(false);
-  const { userData } = useUserProvider();
-  const queryClient = useQueryClient();
-  const [currentSharedEmails, setCurrentSharedEmails] = useState<string[]>(agent.shared_emails || []);
+  const [currentSharedEmails, setCurrentSharedEmails] = useState<string[]>(
+    agent.shared_emails || []
+  );
   const form = useAgentForm({
     title: agent.title,
     description: agent.description,
@@ -33,54 +33,11 @@ const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
     isPrivate: agent.is_private,
     shareEmails: [],
   });
-
-  const editTemplate = useMutation({
-    mutationFn: async (values: {
-      title?: string;
-      description?: string;
-      prompt?: string;
-      tags?: string[];
-      isPrivate?: boolean;
-      shareEmails?: string[];
-    }) => {
-      // Combine existing emails (after removals) with new emails
-      const finalShareEmails = values.shareEmails && values.shareEmails.length > 0
-        ? [...currentSharedEmails, ...values.shareEmails]
-        : currentSharedEmails;
-
-      const res = await fetch("/api/agent-templates", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: agent.id,
-          userId: userData?.id,
-          title: values.title,
-          description: values.description,
-          prompt: values.prompt,
-          tags: values.tags,
-          isPrivate: values.isPrivate,
-          shareEmails: finalShareEmails,
-        }),
-      });
-      if (!res.ok) throw new Error("Failed to update template");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["agent-templates"] });
-      setOpen(false);
-    },
+  const editTemplate = useEditAgentTemplate({
+    agent,
+    currentSharedEmails,
+    onSuccess: () => setOpen(false),
   });
-
-  const onSubmit = (values: {
-    title: string;
-    description: string;
-    prompt: string;
-    tags: string[];
-    isPrivate: boolean;
-    shareEmails?: string[];
-  }) => {
-    editTemplate.mutate(values);
-  };
 
   const handleExistingEmailsChange = (emails: string[]) => {
     setCurrentSharedEmails(emails);
@@ -116,7 +73,7 @@ const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
         </DialogHeader>
         <CreateAgentForm
           form={form}
-          onSubmit={onSubmit}
+          onSubmit={(values: CreateAgentFormData) => editTemplate.mutate(values)}
           isSubmitting={editTemplate.isPending}
           existingSharedEmails={currentSharedEmails}
           onExistingEmailsChange={handleExistingEmailsChange}

@@ -1,7 +1,10 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createAgentSchema, type CreateAgentFormData } from "./schemas";
+import {
+  createAgentSchema,
+  type CreateAgentFormData,
+} from "@/components/Agents/schemas";
 
 export function useAgentForm(initialValues?: Partial<CreateAgentFormData>) {
   const form = useForm<CreateAgentFormData>({

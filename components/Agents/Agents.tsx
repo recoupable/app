@@ -1,6 +1,5 @@
 import { useRouter } from "next/navigation";
 import React from "react";
-import { cn } from "@/lib/utils";
 import AgentTags from "./AgentTags";
 import AgentCard from "./AgentCard";
 import { useAgentData } from "./useAgentData";
@@ -8,6 +7,7 @@ import { useAgentToggleFavorite } from "./useAgentToggleFavorite";
 import type { Agent } from "./useAgentData";
 import CreateAgentButton from "./CreateAgentButton";
 import AgentsSkeleton from "./AgentsSkeleton";
+import AgentsVisibilityFilter from "./AgentsVisibilityFilter";
 
 const Agents = () => {
   const { push } = useRouter();
@@ -35,36 +35,10 @@ const Agents = () => {
           Agents
         </h1>
         <div className="flex items-center gap-4">
-          <div className="inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground">
-            <button
-              type="button"
-              onClick={() => {
-                if (isPrivate) togglePrivate();
-              }}
-              className={cn(
-                "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all cursor-pointer",
-                !isPrivate
-                  ? "bg-background text-foreground shadow"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Public
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (!isPrivate) togglePrivate();
-              }}
-              className={cn(
-                "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all cursor-pointer",
-                isPrivate
-                  ? "bg-background text-foreground shadow"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Private
-            </button>
-          </div>
+          <AgentsVisibilityFilter
+            isPrivate={isPrivate}
+            togglePrivate={togglePrivate}
+          />
           <CreateAgentButton />
         </div>
       </div>
