@@ -86,7 +86,8 @@ const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
     setCurrentSharedEmails(emails);
   };
 
-  // Reset current shared emails when dialog opens or agent changes
+  // Reset form state when the dialog opens for a specific agent, but do not
+  // clobber in-progress edits on background refetches.
   useEffect(() => {
     if (open) {
       setCurrentSharedEmails(agent.shared_emails || []);
@@ -99,7 +100,7 @@ const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
         shareEmails: [],
       });
     }
-  }, [open, agent, form]);
+  }, [open, agent.id, form]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
