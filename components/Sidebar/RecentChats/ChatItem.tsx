@@ -107,7 +107,7 @@ const ChatItem = ({
             onSelect(event.shiftKey);
           }}
           className={cn(
-            "shrink-0 w-4 h-4 rounded border-2 transition-all duration-150 flex items-center justify-center",
+            "shrink-0 w-4 h-4 rounded border-2 transition-all duration-150 flex items-center justify-center cursor-pointer",
             isSelected
               ? "bg-primary border-primary"
               : "border-border hover:border-primary/50"
@@ -121,7 +121,7 @@ const ChatItem = ({
       )}
 
       <button
-        className="flex-grow text-left truncate min-w-0"
+        className="flex-grow text-left truncate min-w-0 cursor-pointer"
         type="button"
         onClick={handleClick}
       >
@@ -134,7 +134,7 @@ const ChatItem = ({
         <button
           ref={setButtonRef}
           className={cn(
-            `shrink-0 p-1 text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground transition-colors duration-150 ${
+            `shrink-0 p-1 text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground transition-colors duration-150 cursor-pointer ${
               showOptions ? "opacity-100" : "opacity-0"
             }`,
             {
@@ -167,7 +167,7 @@ const ChatItem = ({
         >
           <button
             type="button"
-            className="w-full text-left px-3 py-2 hover:bg-muted dark:hover:bg-dark-bg-tertiary text-sm dark:text-muted-foreground flex items-center gap-2 transition-colors"
+            className="w-full text-left px-3 py-2 hover:bg-muted dark:hover:bg-dark-bg-tertiary text-sm dark:text-muted-foreground flex items-center gap-2 transition-colors cursor-pointer"
             onClick={onRenameClick}
             role="menuitem"
           >
@@ -176,7 +176,7 @@ const ChatItem = ({
           </button>
           <button
             type="button"
-            className="w-full text-left px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/30 text-sm text-red-500 dark:text-red-400 flex items-center gap-2 transition-colors"
+            className="w-full text-left px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/30 text-sm text-red-500 dark:text-red-400 flex items-center gap-2 transition-colors cursor-pointer"
             onClick={onDeleteClick}
             role="menuitem"
           >
