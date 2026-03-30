@@ -63,7 +63,9 @@ function getOrderedMessageParts(
 
 export function MessageParts({ message, mode, setMode }: MessagePartsProps) {
   const { status, reload } = useVercelChatContext();
-  const orderedParts = getOrderedMessageParts(message.parts ?? []);
+  const originalParts = message.parts ?? [];
+  const orderedParts = getOrderedMessageParts(originalParts);
+  const lastOriginalPart = originalParts[originalParts.length - 1];
   const lastTextPartIndex = orderedParts.reduce(
     (lastIndex, part, partIndex) =>
       part.type === "text" ? partIndex : lastIndex,
@@ -83,9 +85,7 @@ export function MessageParts({ message, mode, setMode }: MessagePartsProps) {
                 key={key}
                 className="w-full"
                 content={part.text}
-                isStreaming={
-                  status === "streaming" && partIndex === orderedParts.length - 1
-                }
+                isStreaming={status === "streaming" && part === lastOriginalPart}
                 defaultOpen={true}
               />
             );
