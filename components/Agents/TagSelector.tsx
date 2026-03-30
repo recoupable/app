@@ -4,12 +4,29 @@ import { Badge } from "@/components/ui/badge";
 import { useAgentData } from "./useAgentData";
 import { CreateAgentFormData } from "./schemas";
 
+const FALLBACK_TAGS = [
+  "Create",
+  "Connect",
+  "Report",
+  "Plan",
+  "onboarding",
+  "role:manager",
+  "role:label",
+  "role:marketing",
+  "role:artist",
+  "role:pr",
+  "Research",
+];
+
 interface TagSelectorProps {
   form: UseFormReturn<CreateAgentFormData>;
 }
 
 const TagSelector = ({ form }: TagSelectorProps) => {
   const { tags } = useAgentData();
+  const availableTags = Array.from(
+    new Set([...tags.filter((t) => t !== "Recommended"), ...FALLBACK_TAGS])
+  );
   const selectedTags = form.watch("tags") ?? [];
 
   const toggleTag = (tag: string) => {
@@ -24,7 +41,7 @@ const TagSelector = ({ form }: TagSelectorProps) => {
     <div className="space-y-2">
       <Label htmlFor="tags">Category</Label>
       <div className="flex flex-wrap gap-2" id="tags">
-        {tags.filter((t) => t !== "Recommended").map((tag) => {
+        {availableTags.map((tag) => {
           const isSelected = selectedTags.includes(tag);
           return (
             <Badge

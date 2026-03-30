@@ -7,10 +7,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import CreateAgentForm from "./CreateAgentForm";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { type CreateAgentFormData } from "./schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUserProvider } from "@/providers/UserProvder";
+import { useAgentForm } from "./useAgentForm";
 
 interface CreateAgentDialogProps {
   children: React.ReactNode;
@@ -20,6 +21,7 @@ const CreateAgentDialog = ({ children }: CreateAgentDialogProps) => {
   const [open, setOpen] = useState(false);
   const { userData } = useUserProvider();
   const queryClient = useQueryClient();
+  const form = useAgentForm();
 
   const createTemplate = useMutation({
     mutationFn: async (values: CreateAgentFormData) => {
@@ -44,6 +46,12 @@ const CreateAgentDialog = ({ children }: CreateAgentDialogProps) => {
     createTemplate.mutate(values);
   };
 
+  useEffect(() => {
+    if (!open) {
+      form.reset();
+    }
+  }, [form, open]);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -56,7 +64,11 @@ const CreateAgentDialog = ({ children }: CreateAgentDialogProps) => {
             Create a new intelligent agent to help manage your roster tasks.
           </DialogDescription>
         </DialogHeader>
-        <CreateAgentForm onSubmit={onSubmit} isSubmitting={createTemplate.isPending} />
+        <CreateAgentForm
+          form={form}
+          onSubmit={onSubmit}
+          isSubmitting={createTemplate.isPending}
+        />
       </DialogContent>
     </Dialog>
   );

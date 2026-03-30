@@ -14,6 +14,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUserProvider } from "@/providers/UserProvder";
 import type { AgentTemplateRow } from "@/types/AgentTemplates";
 import { useState, useEffect } from "react";
+import { useAgentForm } from "./useAgentForm";
 
 interface AgentEditDialogProps {
   agent: AgentTemplateRow;
@@ -24,6 +25,14 @@ const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
   const { userData } = useUserProvider();
   const queryClient = useQueryClient();
   const [currentSharedEmails, setCurrentSharedEmails] = useState<string[]>(agent.shared_emails || []);
+  const form = useAgentForm({
+    title: agent.title,
+    description: agent.description,
+    prompt: agent.prompt,
+    tags: agent.tags ?? [],
+    isPrivate: agent.is_private,
+    shareEmails: [],
+  });
 
   const editTemplate = useMutation({
     mutationFn: async (values: {
@@ -81,8 +90,16 @@ const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
   useEffect(() => {
     if (open) {
       setCurrentSharedEmails(agent.shared_emails || []);
+      form.reset({
+        title: agent.title,
+        description: agent.description,
+        prompt: agent.prompt,
+        tags: agent.tags ?? [],
+        isPrivate: agent.is_private,
+        shareEmails: [],
+      });
     }
-  }, [open, agent.shared_emails]);
+  }, [open, agent, form]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -97,16 +114,9 @@ const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
           <DialogDescription>Update the agent template details.</DialogDescription>
         </DialogHeader>
         <CreateAgentForm
+          form={form}
           onSubmit={onSubmit}
           isSubmitting={editTemplate.isPending}
-          initialValues={{
-            title: agent.title,
-            description: agent.description,
-            prompt: agent.prompt,
-            tags: agent.tags ?? [],
-            isPrivate: agent.is_private,
-            shareEmails: [],
-          }}
           existingSharedEmails={currentSharedEmails}
           onExistingEmailsChange={handleExistingEmailsChange}
           submitLabel="Save changes"
@@ -117,5 +127,3 @@ const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
 };
 
 export default AgentEditDialog;
-
-

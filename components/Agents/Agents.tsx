@@ -1,12 +1,12 @@
 import { useRouter } from "next/navigation";
 import React from "react";
+import { cn } from "@/lib/utils";
 import AgentTags from "./AgentTags";
 import AgentCard from "./AgentCard";
 import { useAgentData } from "./useAgentData";
 import { useAgentToggleFavorite } from "./useAgentToggleFavorite";
 import type { Agent } from "./useAgentData";
 import CreateAgentButton from "./CreateAgentButton";
-import { Switch } from "@/components/ui/switch";
 import AgentsSkeleton from "./AgentsSkeleton";
 
 const Agents = () => {
@@ -35,11 +35,35 @@ const Agents = () => {
           Agents
         </h1>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground dark:text-muted-foreground">
-              {isPrivate ? "Private" : "Public"}
-            </span>
-            <Switch checked={isPrivate} onCheckedChange={() => togglePrivate()} />
+          <div className="inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground">
+            <button
+              type="button"
+              onClick={() => {
+                if (isPrivate) togglePrivate();
+              }}
+              className={cn(
+                "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all cursor-pointer",
+                !isPrivate
+                  ? "bg-background text-foreground shadow"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Public
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (!isPrivate) togglePrivate();
+              }}
+              className={cn(
+                "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all cursor-pointer",
+                isPrivate
+                  ? "bg-background text-foreground shadow"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Private
+            </button>
           </div>
           <CreateAgentButton />
         </div>
