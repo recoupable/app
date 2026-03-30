@@ -5,6 +5,7 @@ import {
   UIMessagePart,
   UIDataTypes,
   UITools,
+  getToolOrDynamicToolName,
 } from "ai";
 import { Dispatch, SetStateAction } from "react";
 import { cn } from "@/lib/utils";
@@ -24,11 +25,54 @@ interface MessagePartsProps {
   setMode: Dispatch<SetStateAction<"view" | "edit">>;
 }
 
+const DEFERRED_SANDBOX_TOOL_NAMES = new Set([
+  "get_task_run_status",
+  "prompt_sandbox",
+]);
+
+function isDeferredSandboxResultPart(
+  part: UIMessagePart<UIDataTypes, UITools>,
+) {
+  if (!isToolOrDynamicToolUIPart(part)) {
+    return false;
+  }
+
+  return (
+    (part as ToolUIPart).state === "output-available" &&
+    DEFERRED_SANDBOX_TOOL_NAMES.has(getToolOrDynamicToolName(part))
+  );
+}
+
+function getOrderedMessageParts(
+  parts: UIMessagePart<UIDataTypes, UITools>[],
+) {
+  const regularParts: UIMessagePart<UIDataTypes, UITools>[] = [];
+  const deferredSandboxParts: UIMessagePart<UIDataTypes, UITools>[] = [];
+
+  for (const part of parts) {
+    if (isDeferredSandboxResultPart(part)) {
+      deferredSandboxParts.push(part);
+      continue;
+    }
+
+    regularParts.push(part);
+  }
+
+  return [...regularParts, ...deferredSandboxParts];
+}
+
 export function MessageParts({ message, mode, setMode }: MessagePartsProps) {
   const { status, reload } = useVercelChatContext();
+  const orderedParts = getOrderedMessageParts(message.parts ?? []);
+  const lastTextPartIndex = orderedParts.reduce(
+    (lastIndex, part, partIndex) =>
+      part.type === "text" ? partIndex : lastIndex,
+    -1,
+  );
+
   return (
     <div className={cn("flex flex-col gap-4 w-full group")}>
-      {message.parts?.map(
+      {orderedParts.map(
         (part: UIMessagePart<UIDataTypes, UITools>, partIndex) => {
           const { type } = part;
           const key = `message-${message.id}-part-${partIndex}`;
@@ -40,8 +84,7 @@ export function MessageParts({ message, mode, setMode }: MessagePartsProps) {
                 className="w-full"
                 content={part.text}
                 isStreaming={
-                  status === "streaming" &&
-                  partIndex === message.parts.length - 1
+                  status === "streaming" && partIndex === orderedParts.length - 1
                 }
                 defaultOpen={true}
               />
@@ -56,7 +99,7 @@ export function MessageParts({ message, mode, setMode }: MessagePartsProps) {
             const isLastMessage =
               message.role === "assistant" &&
               status !== "streaming" &&
-              partIndex === message.parts.length - 1;
+              partIndex === lastTextPartIndex;
 
             if (mode === "view") {
               return (
