@@ -57,6 +57,9 @@ const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
         shareEmails: [],
       });
     }
+    // Reset only when the dialog opens for a different agent identity.
+    // Depending on all agent fields would wipe in-progress edits on background refetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, agent.id, form]);
 
   return (
