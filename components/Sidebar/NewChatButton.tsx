@@ -12,7 +12,7 @@ const NewChatButton = ({ isExpanded, email, onClick }: NewChatButtonProps) => (
     <button
       type="button"
       className={cn(
-        "inline-flex items-center h-10 rounded-lg whitespace-nowrap overflow-hidden transition-all duration-200 text-sm font-normal text-foreground hover:bg-muted",
+        "inline-flex items-center h-10 rounded-lg whitespace-nowrap overflow-hidden transition-all duration-200 text-sm font-normal text-foreground hover:bg-muted cursor-pointer",
         isExpanded ? "w-full justify-start gap-2 px-3" : "w-10 justify-center mx-auto gap-0"
       )}
       onClick={onClick}
