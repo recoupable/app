@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MentionsInput, Mention, OnChangeHandlerFunc, SuggestionDataItem } from "react-mentions";
 import { Card } from "@/components/ui/card";
-import { mentionsStyles } from "./mentionsStyles";
+import { getMentionsStyles } from "./mentionsStyles";
 import useFileMentionSuggestions, { GroupedSuggestion } from "@/hooks/useFileMentionSuggestions";
 import { useBatchSignedUrls } from "@/hooks/useBatchSignedUrls";
 import { SuggestionItem } from "./SuggestionItem";
@@ -13,13 +13,41 @@ interface FileMentionsInputProps {
 	onChange: (newValue: string) => void;
 	disabled: boolean;
 	model: string;
+	disableInternalScroll?: boolean;
 }
 
-export default function FileMentionsInput({ value, onChange, disabled, model }: FileMentionsInputProps) {
+export default function FileMentionsInput({
+	value,
+	onChange,
+	disabled,
+	model,
+	disableInternalScroll = false,
+}: FileMentionsInputProps) {
 	const [portalHost, setPortalHost] = useState<Element | undefined>(undefined);
+	const inputRef = useRef<HTMLTextAreaElement | null>(null);
+
 	useEffect(() => {
 		if (typeof window !== "undefined") setPortalHost(document.body);
 	}, []);
+
+	const adjustHeight = useCallback(() => {
+		const textarea = inputRef.current;
+		if (!textarea) {
+			return;
+		}
+
+		if (!disableInternalScroll) {
+			textarea.style.height = "";
+			return;
+		}
+
+		textarea.style.height = "44px";
+		textarea.style.height = `${textarea.scrollHeight}px`;
+	}, [disableInternalScroll]);
+
+	useEffect(() => {
+		adjustHeight();
+	}, [adjustHeight, value]);
 
 	const handleMentionsChange: OnChangeHandlerFunc = (_event, newValue) => {
 		onChange(newValue);
@@ -36,6 +64,7 @@ export default function FileMentionsInput({ value, onChange, disabled, model }: 
 			onChange={handleMentionsChange}
 			disabled={disabled}
 			className="w-full text-[14px] leading-[1.6] pb-2 md:pb-0 text-foreground [&_textarea]:placeholder:text-muted-foreground"
+			inputRef={inputRef}
 			suggestionsPortalHost={portalHost}
 			allowSuggestionsAboveCursor
 			customSuggestionsContainer={(children) => (
@@ -53,7 +82,7 @@ export default function FileMentionsInput({ value, onChange, disabled, model }: 
 					if (form) form.requestSubmit();
 				}
 			}}
-			style={mentionsStyles}
+			style={getMentionsStyles({ disableInternalScroll })}
 		>
 			<Mention
 				trigger="@"
