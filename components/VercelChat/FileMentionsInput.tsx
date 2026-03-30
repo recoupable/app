@@ -31,12 +31,13 @@ export default function FileMentionsInput({
 	}, []);
 
 	const adjustHeight = useCallback(() => {
-		if (!disableInternalScroll) {
+		const textarea = inputRef.current;
+		if (!textarea) {
 			return;
 		}
 
-		const textarea = inputRef.current;
-		if (!textarea) {
+		if (!disableInternalScroll) {
+			textarea.style.height = "";
 			return;
 		}
 
