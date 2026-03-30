@@ -79,7 +79,6 @@ export function ChatInput() {
             onChange={setInput}
             disabled={isDisabled || hasPendingUploads}
             model={model}
-            disableInternalScroll={messages.length === 0}
           />
           <PromptInputToolbar>
             <PromptInputTools>
