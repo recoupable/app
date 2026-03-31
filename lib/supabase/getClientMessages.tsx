@@ -1,6 +1,10 @@
-const getClientMessages = async (chatId: string) => {
+const getClientMessages = async (chatId: string, accessToken: string) => {
   try {
-    const response = await fetch(`/api/memories/get?roomId=${chatId}`);
+    const response = await fetch(`/api/memories/get?roomId=${chatId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
     const data = await response.json();
 
     const memories = data?.data || [];

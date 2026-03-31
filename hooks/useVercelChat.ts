@@ -249,6 +249,7 @@ export function useVercelChat({
     messages.length === 0 ? id : undefined,
     userId,
     setMessages,
+    accessToken,
   );
 
   // Only show loading state if:

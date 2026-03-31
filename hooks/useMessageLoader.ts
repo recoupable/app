@@ -7,12 +7,14 @@ import getClientMessages from "@/lib/supabase/getClientMessages";
  * @param roomId - The room ID to load messages from (undefined to skip loading)
  * @param userId - The current user ID (messages won't load if user is not authenticated)
  * @param setMessages - Callback function to set the loaded messages
+ * @param accessToken - Privy access token for /api/memories/get (required for auth)
  * @returns Loading state and error information
  */
 export function useMessageLoader(
   roomId: string | undefined,
   userId: string | undefined,
-  setMessages: (messages: UIMessage[]) => void
+  setMessages: (messages: UIMessage[]) => void,
+  accessToken: string | null,
 ) {
   const [isLoading, setIsLoading] = useState(!!roomId);
   const [error, setError] = useState<Error | null>(null);
@@ -28,12 +30,17 @@ export function useMessageLoader(
       return;
     }
 
+    if (!accessToken) {
+      setIsLoading(true);
+      return;
+    }
+
     const loadMessages = async () => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const initialMessages = await getClientMessages(roomId);
+        const initialMessages = await getClientMessages(roomId, accessToken);
         if (initialMessages.length > 0) {
           setMessages(initialMessages as UIMessage[]);
         }
@@ -48,7 +55,7 @@ export function useMessageLoader(
     };
 
     loadMessages();
-  }, [userId, roomId]);
+  }, [userId, roomId, accessToken]);
 
   return {
     isLoading,
