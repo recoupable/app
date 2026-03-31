@@ -7,7 +7,7 @@ import { useParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import getEarliestFailedUserMessageId from "@/lib/messages/getEarliestFailedUserMessageId";
-import { deleteTrailingMessages } from "@/lib/messages/deleteTrailingMessages";
+import { clientDeleteTrailingMessages } from "@/lib/messages/clientDeleteTrailingMessages";
 import { generateUUID } from "@/lib/generateUUID";
 import { useConversationsProvider } from "@/providers/ConversationsProvider";
 import { UIMessage, FileUIPart } from "ai";
@@ -266,12 +266,9 @@ export function useVercelChat({
   const handleDeleteTrailingMessages = async () => {
     const earliestFailedUserMessageId =
       getEarliestFailedUserMessageId(messages);
-    if (earliestFailedUserMessageId && accessToken) {
-      const successfulDeletion = await deleteTrailingMessages({
-        chatId: id,
-        fromMessageId: earliestFailedUserMessageId,
-        accessToken,
-        baseUrl: apiOverride ?? undefined,
+    if (earliestFailedUserMessageId) {
+      const successfulDeletion = await clientDeleteTrailingMessages({
+        id: earliestFailedUserMessageId,
       });
       if (successfulDeletion) {
         setMessages((messages) => {
