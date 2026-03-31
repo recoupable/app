@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
 import { useConversationsProvider } from "@/providers/ConversationsProvider";
 import { CreateArtistResult } from "@/types/createArtistResult";
-import copyMessages from "@/lib/copyMessages";
+import copyMessages from "@/lib/messages/copyMessages";
 import { useAccessToken } from "@/hooks/useAccessToken";
 import { useApiOverride } from "@/hooks/useApiOverride";
 
