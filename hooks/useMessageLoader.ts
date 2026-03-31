@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { UIMessage } from "ai";
-import getClientMessages from "@/lib/supabase/getClientMessages";
+import getChatMessages from "@/lib/messages/getChatMessages";
 
 /**
  * Hook for loading existing messages from a room
@@ -12,7 +12,9 @@ import getClientMessages from "@/lib/supabase/getClientMessages";
 export function useMessageLoader(
   roomId: string | undefined,
   userId: string | undefined,
-  setMessages: (messages: UIMessage[]) => void
+  accessToken: string | null,
+  apiOverride: string | null,
+  setMessages: (messages: UIMessage[]) => void,
 ) {
   const [isLoading, setIsLoading] = useState(!!roomId);
   const [error, setError] = useState<Error | null>(null);
@@ -28,19 +30,28 @@ export function useMessageLoader(
       return;
     }
 
+    if (!accessToken) {
+      setIsLoading(true);
+      return;
+    }
+
     const loadMessages = async () => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const initialMessages = await getClientMessages(roomId);
+        const initialMessages = await getChatMessages(
+          roomId,
+          accessToken,
+          apiOverride ?? undefined,
+        );
         if (initialMessages.length > 0) {
           setMessages(initialMessages as UIMessage[]);
         }
       } catch (err) {
         console.error("Error loading messages:", err);
         setError(
-          err instanceof Error ? err : new Error("Failed to load messages")
+          err instanceof Error ? err : new Error("Failed to load messages"),
         );
       } finally {
         setIsLoading(false);
@@ -48,7 +59,7 @@ export function useMessageLoader(
     };
 
     loadMessages();
-  }, [userId, roomId]);
+  }, [userId, roomId, accessToken, apiOverride]);
 
   return {
     isLoading,
