@@ -7,7 +7,7 @@ import { useParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import getEarliestFailedUserMessageId from "@/lib/messages/getEarliestFailedUserMessageId";
-import { clientDeleteTrailingMessages } from "@/lib/messages/clientDeleteTrailingMessages";
+import { deleteTrailingMessages } from "@/lib/messages/deleteTrailingMessages";
 import { generateUUID } from "@/lib/generateUUID";
 import { useConversationsProvider } from "@/providers/ConversationsProvider";
 import { UIMessage, FileUIPart } from "ai";
@@ -19,6 +19,7 @@ import useArtistFilesForMentions from "@/hooks/useArtistFilesForMentions";
 import type { KnowledgeBaseEntry } from "@/lib/supabase/getArtistKnowledge";
 import { useChatTransport } from "./useChatTransport";
 import { useAccessToken } from "./useAccessToken";
+import { useApiOverride } from "@/hooks/useApiOverride";
 import { TextAttachment } from "@/types/textAttachment";
 import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
 
@@ -62,6 +63,7 @@ export function useVercelChat({
   const { refetchCredits } = usePaymentProvider();
   const { transport, headers } = useChatTransport();
   const accessToken = useAccessToken();
+  const apiOverride = useApiOverride();
 
   // Load artist files for mentions (from Supabase)
   const { files: allArtistFiles = [] } = useArtistFilesForMentions();
@@ -259,12 +261,15 @@ export function useVercelChat({
 
   const isGeneratingResponse = ["streaming", "submitted"].includes(status);
 
-  const deleteTrailingMessages = async () => {
+  const handleDeleteTrailingMessages = async () => {
     const earliestFailedUserMessageId =
       getEarliestFailedUserMessageId(messages);
-    if (earliestFailedUserMessageId) {
-      const successfulDeletion = await clientDeleteTrailingMessages({
-        id: earliestFailedUserMessageId,
+    if (earliestFailedUserMessageId && accessToken) {
+      const successfulDeletion = await deleteTrailingMessages({
+        chatId: id,
+        fromMessageId: earliestFailedUserMessageId,
+        accessToken,
+        baseUrl: apiOverride ?? undefined,
       });
       if (successfulDeletion) {
         setMessages((messages) => {
@@ -291,7 +296,7 @@ export function useVercelChat({
     event.preventDefault();
 
     if (hasChatApiError) {
-      await deleteTrailingMessages();
+      await handleDeleteTrailingMessages();
     }
 
     // Capture the input value before it's cleared by handleSubmit
