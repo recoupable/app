@@ -263,7 +263,7 @@ export function useVercelChat({
 
   const isGeneratingResponse = ["streaming", "submitted"].includes(status);
 
-  const handleDeleteTrailingMessages = async () => {
+  const deleteTrailingMessages = async () => {
     const earliestFailedUserMessageId =
       getEarliestFailedUserMessageId(messages);
     if (earliestFailedUserMessageId) {
@@ -295,7 +295,7 @@ export function useVercelChat({
     event.preventDefault();
 
     if (hasChatApiError) {
-      await handleDeleteTrailingMessages();
+      await deleteTrailingMessages();
     }
 
     // Capture the input value before it's cleared by handleSubmit
