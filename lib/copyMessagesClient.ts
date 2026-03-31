@@ -1,3 +1,9 @@
+import { NEW_API_BASE_URL } from "@/lib/consts";
+import type {
+  CopyChatMessagesRequest,
+  CopyChatMessagesResponse,
+} from "@/types/chatMessages";
+
 /**
  * Client function to copy messages between rooms
  * @param sourceRoomId ID of the source room to copy messages from
@@ -6,23 +12,33 @@
  */
 export async function copyMessagesClient(
   sourceRoomId: string,
-  targetRoomId: string
+  targetRoomId: string,
+  accessToken: string,
+  baseUrl?: string,
 ): Promise<boolean> {
   try {
-    const response = await fetch("/api/memories/copy", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const url = baseUrl || NEW_API_BASE_URL;
+    const payload: CopyChatMessagesRequest = {
+      targetChatId: targetRoomId,
+      clearExisting: true,
+    };
+
+    const response = await fetch(
+      `${url}/api/chats/${encodeURIComponent(sourceRoomId)}/messages/copy`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(payload),
       },
-      body: JSON.stringify({
-        sourceRoomId,
-        targetRoomId,
-        clearExisting: true,
-      }),
-    });
+    );
+
+    const result: CopyChatMessagesResponse = await response.json();
 
     if (!response.ok) {
-      console.error("Failed to copy messages:", await response.text());
+      console.error("Failed to copy messages:", result.error);
       return false;
     }
 
