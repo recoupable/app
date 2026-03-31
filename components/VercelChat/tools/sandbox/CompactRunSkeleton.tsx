@@ -1,6 +1,9 @@
 export default function CompactRunSkeleton() {
   return (
-    <div className="w-full rounded-2xl border bg-background/80 px-4 py-3 shadow-sm">
+    <div
+      aria-hidden="true"
+      className="w-full rounded-2xl border bg-background/80 px-4 py-3 shadow-sm"
+    >
       <div className="flex items-center gap-3">
         <div className="size-5 animate-pulse rounded-full bg-muted" />
         <div className="min-w-0 flex-1">

@@ -1,8 +1,8 @@
 "use client";
 
 import { useTaskRunStatus } from "@/hooks/useTaskRunStatus";
-import RunDetails from "@/components/TasksPage/Run/RunDetails";
 import CompactRunSkeleton from "./CompactRunSkeleton";
+import ChatSandboxRunDetails from "./ChatSandboxRunDetails";
 
 export default function RunSandboxCommandResultWithPolling({ runId }: { runId: string }) {
   const { data, isLoading } = useTaskRunStatus(runId);
@@ -11,5 +11,5 @@ export default function RunSandboxCommandResultWithPolling({ runId }: { runId: s
     return <CompactRunSkeleton />;
   }
 
-  return <RunDetails runId={runId} data={data} variant="chat-compact" />;
+  return <ChatSandboxRunDetails runId={runId} data={data} />;
 }

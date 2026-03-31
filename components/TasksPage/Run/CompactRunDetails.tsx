@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDownIcon } from "@radix-ui/react-icons";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import type { TaskRunStatus } from "@/lib/tasks/getTaskRunStatus";
 import { formatTimestamp } from "@/lib/tasks/formatTimestamp";
 import { formatDuration } from "@/lib/tasks/formatDuration";
 import { cn } from "@/lib/utils";
 
-interface CompactRunDetailsProps {
+export interface CompactRunDetailsProps {
   runId: string;
   displayName: string;
   displayDuration: number | null;
@@ -74,7 +74,7 @@ export default function CompactRunDetails({
               )}
             </div>
           </div>
-          <ChevronDown
+          <ChevronDownIcon
             className={cn(
               "size-4 shrink-0 text-muted-foreground transition-transform",
               isOpen && "rotate-180",
@@ -91,6 +91,7 @@ export default function CompactRunDetails({
             <Link
               href={`/tasks/${runId}`}
               target="_blank"
+              rel="noopener noreferrer"
               className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               Open full run
