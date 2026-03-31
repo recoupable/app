@@ -3,15 +3,13 @@
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { deleteTrailingMessages } from "@/lib/messages/deleteTrailingMessages";
+import { clientDeleteTrailingMessages } from "@/lib/messages/clientDeleteTrailingMessages";
 import { EditingMessageProps } from "./EditingMessage";
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
-import { useAccessToken } from "@/hooks/useAccessToken";
 import { TextUIPart } from "ai";
 
 export function MessageEditor({ message, setMode }: EditingMessageProps) {
-  const { id, setMessages, reload } = useVercelChatContext();
-  const accessToken = useAccessToken();
+  const { setMessages, reload } = useVercelChatContext();
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const text = (message.parts[0] as TextUIPart)?.text || "";
   const [draftContent, setDraftContent] = useState<string>(text);
@@ -39,13 +37,9 @@ export function MessageEditor({ message, setMode }: EditingMessageProps) {
   const handleSubmit = useCallback(async () => {
     setIsSubmitting(true);
 
-    if (id && accessToken) {
-      await deleteTrailingMessages({
-        chatId: id,
-        fromMessageId: message.id,
-        accessToken,
-      });
-    }
+    await clientDeleteTrailingMessages({
+      id: message.id,
+    });
 
     // @ts-expect-error todo: support UIMessage in setMessages
     setMessages((messages) => {
@@ -70,7 +64,7 @@ export function MessageEditor({ message, setMode }: EditingMessageProps) {
     if (text !== draftContent) {
       reload();
     }
-  }, [id, accessToken, message.id, text, draftContent, setMessages, setMode, reload]);
+  }, [message.id, text, draftContent, setMessages, setMode, reload]);
 
   return (
     <div className="flex flex-col gap-2 w-full">
