@@ -10,7 +10,7 @@ import type {
  * @param targetRoomId ID of the target room to copy messages to
  * @returns Promise resolving to a boolean indicating success
  */
-export async function copyMessagesClient(
+export async function copyMessages(
   sourceRoomId: string,
   targetRoomId: string,
   accessToken: string,
@@ -49,4 +49,4 @@ export async function copyMessagesClient(
   }
 }
 
-export default copyMessagesClient;
+export default copyMessages;
