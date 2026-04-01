@@ -30,20 +30,17 @@ export type MessageFileAttachment = {
 };
 
 export interface CreateChatRequest {
-  accountId: string;
   artistId?: string;
   chatId?: string;
   firstMessage?: string;
-  email?: string;
 }
 
 export interface CreateChatResponse {
-  room: {
+  status: "success" | "error";
+  chat?: {
     id: string;
-    topic: string;
-    memories: unknown[];
-    rooms_reports: string[];
+    topic: string | null;
   };
-  success: boolean;
   error?: string;
+  message?: string;
 }

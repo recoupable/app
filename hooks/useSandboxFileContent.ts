@@ -6,6 +6,7 @@ import { getFileContents } from "@/lib/sandboxes/getFileContents";
 interface UseSandboxFileContentReturn {
   selectedPath: string | undefined;
   content: string | null;
+  imageUrl: string | null;
   loading: boolean;
   error: string | null;
   select: (path: string) => void;
@@ -21,6 +22,7 @@ export default function useSandboxFileContent(): UseSandboxFileContentReturn {
       if (!accessToken) {
         throw new Error("Please sign in to view file contents");
       }
+
       return getFileContents(accessToken, path);
     },
   });
@@ -36,6 +38,7 @@ export default function useSandboxFileContent(): UseSandboxFileContentReturn {
   return {
     selectedPath,
     content: mutation.data?.content ?? null,
+    imageUrl: mutation.data?.imageUrl ?? null,
     loading: mutation.isPending,
     error: mutation.error?.message ?? null,
     select,

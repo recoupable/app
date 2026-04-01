@@ -5,9 +5,10 @@ import {
   CreateChatResponse,
 } from "@/types/Chat";
 import type { ArtistAgent } from "@/lib/supabase/getArtistAgents";
-import { useUserProvider } from "@/providers/UserProvder";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useConversationsProvider } from "@/providers/ConversationsProvider";
+import { useAccessToken } from "@/hooks/useAccessToken";
+import { NEW_API_BASE_URL } from "@/lib/consts";
 
 const useCreateChat = ({
   isOptimisticChatItem,
@@ -18,12 +19,12 @@ const useCreateChat = ({
   chatRoom: Conversation | ArtistAgent;
   setDisplayName: (displayName: string) => void;
 }) => {
-  const { userData, email } = useUserProvider();
   const { selectedArtist } = useArtistProvider();
   const { refetchConversations } = useConversationsProvider();
+  const accessToken = useAccessToken();
 
   useEffect(() => {
-    if (!isOptimisticChatItem) return;
+    if (!isOptimisticChatItem || !accessToken) return;
 
     const createChat = async () => {
       try {
@@ -60,32 +61,31 @@ const useCreateChat = ({
         }
 
         const requestBody: CreateChatRequest = {
-          accountId: userData?.account_id || "",
           artistId: selectedArtist?.account_id,
           chatId: (chatRoom as Conversation).id,
           firstMessage: messageText,
-          email,
         };
 
-        const response = await fetch("/api/chat/create", {
+        const response = await fetch(`${NEW_API_BASE_URL}/api/chats`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify(requestBody),
         });
 
         const data: CreateChatResponse = await response.json();
 
-        if (data.success && data.room) {
+        if (data.status === "success" && data.chat) {
           // Update display name with the room topic
-          setDisplayName(data.room.topic);
+          setDisplayName(data.chat.topic || "");
 
           // Remove optimistic flag from memory and treat it as a normal memory.
           // It will re-enable 3 dots on the chat item.
           await refetchConversations();
         } else {
-          console.error("Failed to create chat:", data.error);
+          console.error("Failed to create chat:", data.error || data.message);
         }
       } catch (error) {
         console.error("Error creating optimistic chat:", error);
@@ -96,10 +96,9 @@ const useCreateChat = ({
   }, [
     isOptimisticChatItem,
     chatRoom,
-    userData?.account_id,
     selectedArtist?.account_id,
+    accessToken,
     setDisplayName,
-    email,
     refetchConversations,
   ]);
 };

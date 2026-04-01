@@ -1,20 +1,21 @@
 import { useState, useEffect } from "react";
 import { UIMessage } from "ai";
-import getClientMessages from "@/lib/supabase/getClientMessages";
+import getChatMessages from "@/lib/messages/getChatMessages";
 
 /**
- * Hook for loading existing messages from a room
+ * Hook for loading existing messages from a room via the chats API (Bearer auth).
  * @param roomId - The room ID to load messages from (undefined to skip loading)
  * @param userId - The current user ID (messages won't load if user is not authenticated)
+ * @param accessToken - Privy access token for the API request
+ * @param apiOverride - Optional API base URL override (e.g. preview)
  * @param setMessages - Callback function to set the loaded messages
- * @param accessToken - Privy access token for /api/memories/get (required for auth)
- * @returns Loading state and error information
  */
 export function useMessageLoader(
   roomId: string | undefined,
   userId: string | undefined,
-  setMessages: (messages: UIMessage[]) => void,
   accessToken: string | null,
+  apiOverride: string | null,
+  setMessages: (messages: UIMessage[]) => void,
 ) {
   const [isLoading, setIsLoading] = useState(!!roomId);
   const [error, setError] = useState<Error | null>(null);
@@ -31,7 +32,6 @@ export function useMessageLoader(
     }
 
     if (!accessToken) {
-      setIsLoading(true);
       return;
     }
 
@@ -40,14 +40,18 @@ export function useMessageLoader(
       setError(null);
 
       try {
-        const initialMessages = await getClientMessages(roomId, accessToken);
+        const initialMessages = await getChatMessages(
+          roomId,
+          accessToken,
+          apiOverride ?? undefined,
+        );
         if (initialMessages.length > 0) {
           setMessages(initialMessages as UIMessage[]);
         }
       } catch (err) {
         console.error("Error loading messages:", err);
         setError(
-          err instanceof Error ? err : new Error("Failed to load messages")
+          err instanceof Error ? err : new Error("Failed to load messages"),
         );
       } finally {
         setIsLoading(false);
@@ -55,7 +59,7 @@ export function useMessageLoader(
     };
 
     loadMessages();
-  }, [userId, roomId, accessToken]);
+  }, [userId, roomId, accessToken, apiOverride]);
 
   return {
     isLoading,

@@ -1,33 +1,29 @@
 import { useQuery } from "@tanstack/react-query";
+import { usePrivy } from "@privy-io/react-auth";
+import { useApiOverride } from "@/hooks/useApiOverride";
+import { getChatSegment } from "@/lib/chats/getChatSegment";
 
 interface RoomSegmentResponse {
   segmentId: string | null;
-  error?: string;
 }
 
 export const useChatSegment = (roomId?: string) => {
+  const { getAccessToken } = usePrivy();
+  const apiOverride = useApiOverride();
+
   return useQuery({
     queryKey: ["roomSegment", roomId],
     queryFn: async (): Promise<RoomSegmentResponse> => {
-      if (!roomId) {
-        return { segmentId: null };
-      }
+      if (!roomId) return { segmentId: null };
 
-      const response = await fetch(`/api/roomSegment?roomId=${roomId}`);
-      if (!response.ok) {
-        const error = await response.json();
-        console.error("[useChatSegment] API error:", {
-          status: response.status,
-          error,
-        });
-        throw new Error(error.error || "Failed to fetch segment ID");
-      }
+      const accessToken = await getAccessToken();
+      if (!accessToken) throw new Error("No access token");
 
-      const data = await response.json();
-      return data;
+      const data = await getChatSegment(roomId, accessToken, apiOverride ?? undefined);
+      return { segmentId: data.segment_id ?? null };
     },
     enabled: !!roomId,
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    staleTime: 1000 * 60 * 5,
     retry: 2,
   });
 };

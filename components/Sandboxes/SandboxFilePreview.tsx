@@ -6,6 +6,7 @@ import { isTextFile } from "@/utils/isTextFile";
 interface SandboxFilePreviewProps {
   selectedPath: string;
   content: string | null;
+  imageUrl: string | null;
   loading: boolean;
   error: string | null;
 }
@@ -13,6 +14,7 @@ interface SandboxFilePreviewProps {
 export default function SandboxFilePreview({
   selectedPath,
   content,
+  imageUrl,
   loading,
   error,
 }: SandboxFilePreviewProps) {
@@ -27,6 +29,7 @@ export default function SandboxFilePreview({
         error={error}
         isTextFile={isTextFile(fileName)}
         fileName={fileName}
+        imageUrl={imageUrl ?? undefined}
       />
     </div>
   );

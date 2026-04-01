@@ -3,13 +3,21 @@
 import { FileTree } from "@/components/ai-elements/file-tree";
 import FileNodeComponent from "./FileNodeComponent";
 import SandboxFilePreview from "./SandboxFilePreview";
+import SandboxDropZone from "./SandboxDropZone";
+import NoSandboxFiles from "./NoSandboxFiles";
 import useSandboxes from "@/hooks/useSandboxes";
 import useSandboxFileContent from "@/hooks/useSandboxFileContent";
+import { useSandboxFileDrop } from "@/hooks/useSandboxFileDrop";
 import { Loader } from "lucide-react";
 
 export default function SandboxFileTree() {
   const { filetree, isLoading, error, refetch } = useSandboxes();
   const fileContent = useSandboxFileContent();
+  const { handleFilesDropped, uploading } = useSandboxFileDrop({
+    selectedPath: fileContent.selectedPath,
+    filetree,
+    refetch,
+  });
 
   if (isLoading) {
     return (
@@ -36,17 +44,18 @@ export default function SandboxFileTree() {
 
   if (filetree.length === 0) {
     return (
-      <div className="w-full max-w-md">
-        <p className="text-sm text-muted-foreground">No files yet.</p>
-      </div>
+      <NoSandboxFiles onDrop={handleFilesDropped} disabled={uploading} />
     );
   }
 
   return (
-    <div className="flex w-full flex-col gap-4 lg:flex-row">
+    <SandboxDropZone onDrop={handleFilesDropped} uploading={uploading}>
       <div className="w-full lg:max-w-md lg:shrink-0">
         <h2 className="mb-2 text-lg font-medium">Repository Files</h2>
-        <FileTree selectedPath={fileContent.selectedPath} onSelect={fileContent.select}>
+        <FileTree
+          selectedPath={fileContent.selectedPath}
+          onSelect={fileContent.select}
+        >
           {filetree.map((node) => (
             <FileNodeComponent key={node.path} node={node} />
           ))}
@@ -56,10 +65,11 @@ export default function SandboxFileTree() {
         <SandboxFilePreview
           selectedPath={fileContent.selectedPath}
           content={fileContent.content}
+          imageUrl={fileContent.imageUrl}
           loading={fileContent.loading}
           error={fileContent.error}
         />
       )}
-    </div>
+    </SandboxDropZone>
   );
 }
