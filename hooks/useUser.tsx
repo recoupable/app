@@ -7,6 +7,7 @@ import { uploadFile } from "@/lib/arweave/uploadFile";
 import { useAccount } from "wagmi";
 import { toast } from "sonner";
 import { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
+import { useAccessToken } from "./useAccessToken";
 
 const useUser = () => {
   const { login, user, logout } = usePrivy();
@@ -27,6 +28,7 @@ const useUser = () => {
   const imageRef = useRef<HTMLInputElement>(null);
   const [updating, setUpdating] = useState(false);
   const router = useRouter();
+  const accessToken = useAccessToken();
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
@@ -57,7 +59,7 @@ const useUser = () => {
   };
 
   const save = async () => {
-    if (!userData?.account_id) {
+    if (!accessToken) {
       return;
     }
 
@@ -73,10 +75,10 @@ const useUser = () => {
           jobTitle,
           roleType,
           companyName,
-          accountId: userData.account_id,
         }),
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 

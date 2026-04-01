@@ -4,6 +4,7 @@ import { uploadFile } from "@/lib/arweave/uploadFile";
 import { getFileMimeType } from "@/utils/getFileMimeType";
 import { NEW_API_BASE_URL } from "@/lib/consts";
 import useAccountOrganizations from "./useAccountOrganizations";
+import { useAccessToken } from "./useAccessToken";
 
 interface KnowledgeItem {
   name: string;
@@ -22,6 +23,7 @@ interface OrgData {
 const useOrgSettings = (orgId: string | null) => {
   const { data: organizations } = useAccountOrganizations();
   const queryClient = useQueryClient();
+  const accessToken = useAccessToken();
   const [orgData, setOrgData] = useState<OrgData | null>(null);
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
@@ -137,20 +139,22 @@ const useOrgSettings = (orgId: string | null) => {
   }, []);
 
   const save = useCallback(async () => {
-    if (!orgId) return false;
+    if (!orgId || !accessToken) return false;
 
     setIsSaving(true);
     try {
       const response = await fetch("/api/account/update", {
         method: "POST",
         body: JSON.stringify({
-          accountId: orgId,
           name,
           image,
           instruction,
           knowledges,
         }),
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
 
       if (response.ok) {
@@ -164,7 +168,7 @@ const useOrgSettings = (orgId: string | null) => {
     } finally {
       setIsSaving(false);
     }
-  }, [orgId, name, image, instruction, knowledges, queryClient]);
+  }, [orgId, accessToken, name, image, instruction, knowledges, queryClient]);
 
   return {
     orgData,
