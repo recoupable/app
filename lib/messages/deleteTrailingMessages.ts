@@ -1,4 +1,4 @@
-import { NEW_API_BASE_URL } from "@/lib/consts";
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
 /**
  * Deletes trailing messages in a chat from a given message ID onward.
@@ -7,14 +7,12 @@ export async function deleteTrailingMessages({
   chatId,
   fromMessageId,
   accessToken,
-  baseUrl,
 }: {
   chatId: string;
   fromMessageId: string;
   accessToken: string;
-  baseUrl?: string;
 }): Promise<boolean> {
-  const url = baseUrl || NEW_API_BASE_URL;
+  const url = getClientApiBaseUrl();
   const response = await fetch(
     `${url}/api/chats/${encodeURIComponent(chatId)}/messages/trailing?from_message_id=${encodeURIComponent(fromMessageId)}`,
     {

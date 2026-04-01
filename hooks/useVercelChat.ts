@@ -19,7 +19,6 @@ import useArtistFilesForMentions from "@/hooks/useArtistFilesForMentions";
 import type { KnowledgeBaseEntry } from "@/lib/supabase/getArtistKnowledge";
 import { useChatTransport } from "./useChatTransport";
 import { useAccessToken } from "./useAccessToken";
-import { useApiOverride } from "@/hooks/useApiOverride";
 import { TextAttachment } from "@/types/textAttachment";
 import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
 
@@ -63,7 +62,6 @@ export function useVercelChat({
   const { refetchCredits } = usePaymentProvider();
   const { transport, headers } = useChatTransport();
   const accessToken = useAccessToken();
-  const apiOverride = useApiOverride();
 
   // Load artist files for mentions (from Supabase)
   const { files: allArtistFiles = [] } = useArtistFilesForMentions();
@@ -269,7 +267,6 @@ export function useVercelChat({
         chatId: id,
         fromMessageId: earliestFailedUserMessageId,
         accessToken,
-        baseUrl: apiOverride ?? undefined,
       });
       if (successfulDeletion) {
         setMessages((messages) => {
