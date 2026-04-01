@@ -31,7 +31,6 @@ export function useMessageLoader(
     }
 
     if (!accessToken) {
-      setIsLoading(true);
       return;
     }
 
