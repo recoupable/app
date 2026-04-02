@@ -10,22 +10,7 @@ import useInitialArtists from "./useInitialArtists";
 import useCreateArtists from "./useCreateArtists";
 import { usePrivy } from "@privy-io/react-auth";
 import { fetchArtists } from "@/lib/artists/fetchArtists";
-
-// Helper function to sort artists with pinned first, then alphabetically
-const sortArtistsWithPinnedFirst = (
-  artists: ArtistRecord[],
-): ArtistRecord[] => {
-  return [...artists].sort((a, b) => {
-    // First sort by pinned status (pinned artists first)
-    if (a.pinned && !b.pinned) return -1;
-    if (!a.pinned && b.pinned) return 1;
-
-    // Then sort alphabetically by name
-    const nameA = a.name?.toLowerCase() || "";
-    const nameB = b.name?.toLowerCase() || "";
-    return nameA.localeCompare(nameB);
-  });
-};
+import { sortArtistsWithPinnedFirst } from "@/lib/artists/sortArtistsWithPinnedFirst";
 
 const useArtists = () => {
   const artistSetting = useArtistSetting();
