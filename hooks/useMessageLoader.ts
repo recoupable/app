@@ -6,13 +6,15 @@ import getChatMessages from "@/lib/messages/getChatMessages";
  * Hook for loading existing messages from a room
  * @param roomId - The room ID to load messages from (undefined to skip loading)
  * @param userId - The current user ID (messages won't load if user is not authenticated)
+ * @param getAccessToken - Function to get a fresh Privy access token
+ * @param apiOverride - Optional API base URL override
  * @param setMessages - Callback function to set the loaded messages
  * @returns Loading state and error information
  */
 export function useMessageLoader(
   roomId: string | undefined,
   userId: string | undefined,
-  accessToken: string | null,
+  getAccessToken: () => Promise<string | null>,
   apiOverride: string | null,
   setMessages: (messages: UIMessage[]) => void,
 ) {
@@ -30,15 +32,14 @@ export function useMessageLoader(
       return;
     }
 
-    if (!accessToken) {
-      return;
-    }
-
     const loadMessages = async () => {
       setIsLoading(true);
       setError(null);
 
       try {
+        const accessToken = await getAccessToken();
+        if (!accessToken) return;
+
         const initialMessages = await getChatMessages(
           roomId,
           accessToken,
@@ -58,7 +59,7 @@ export function useMessageLoader(
     };
 
     loadMessages();
-  }, [userId, roomId, accessToken, apiOverride]);
+  }, [userId, roomId, getAccessToken, apiOverride]);
 
   return {
     isLoading,

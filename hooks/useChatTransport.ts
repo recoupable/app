@@ -1,29 +1,25 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { DefaultChatTransport } from "ai";
 import { NEW_API_BASE_URL } from "@/lib/consts";
-import { useAccessToken } from "./useAccessToken";
+import { usePrivy } from "@privy-io/react-auth";
 import { useApiOverride } from "./useApiOverride";
 
 export function useChatTransport() {
-  const accessToken = useAccessToken();
+  const { getAccessToken } = usePrivy();
   const apiOverride = useApiOverride();
 
   const baseUrl = apiOverride || NEW_API_BASE_URL;
 
-  const headers = useMemo(() => {
-    return accessToken
-      ? {
-          Authorization: `Bearer ${accessToken}`,
-        }
-      : undefined;
-  }, [accessToken]);
+  const getHeaders = useCallback(async () => {
+    const accessToken = await getAccessToken();
+    return accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
+  }, [getAccessToken]);
 
   const transport = useMemo(() => {
     return new DefaultChatTransport({
       api: `${baseUrl}/api/chat`,
-      ...(headers && { headers }),
     });
-  }, [baseUrl, headers]);
+  }, [baseUrl]);
 
-  return { transport, headers };
+  return { transport, getHeaders };
 }

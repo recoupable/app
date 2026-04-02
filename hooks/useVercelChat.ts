@@ -18,7 +18,7 @@ import { usePaymentProvider } from "@/providers/PaymentProvider";
 import useArtistFilesForMentions from "@/hooks/useArtistFilesForMentions";
 import type { KnowledgeBaseEntry } from "@/lib/supabase/getArtistKnowledge";
 import { useChatTransport } from "./useChatTransport";
-import { useAccessToken } from "./useAccessToken";
+import { usePrivy } from "@privy-io/react-auth";
 import { useApiOverride } from "@/hooks/useApiOverride";
 import { TextAttachment } from "@/types/textAttachment";
 import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
@@ -61,8 +61,8 @@ export function useVercelChat({
     availableModels[0]?.id ?? "",
   );
   const { refetchCredits } = usePaymentProvider();
-  const { transport, headers } = useChatTransport();
-  const accessToken = useAccessToken();
+  const { transport, getHeaders } = useChatTransport();
+  const { getAccessToken, authenticated } = usePrivy();
   const apiOverride = useApiOverride();
 
   // Load artist files for mentions (from Supabase)
@@ -166,18 +166,15 @@ export function useVercelChat({
     return outputs;
   }, [knowledgeFiles]);
 
-  const chatRequestOptions = useMemo(
+  const chatRequestBody = useMemo(
     () => ({
-      body: {
-        roomId: id,
-        artistId,
-        // Only include organizationId if it's not null (schema expects string | undefined)
-        ...(organizationId && { organizationId }),
-        model,
-      },
-      headers,
+      roomId: id,
+      artistId,
+      // Only include organizationId if it's not null (schema expects string | undefined)
+      ...(organizationId && { organizationId }),
+      model,
     }),
-    [id, artistId, organizationId, model, headers],
+    [id, artistId, organizationId, model],
   );
 
   const { messages, status, stop, sendMessage, setMessages, regenerate } =
@@ -197,8 +194,10 @@ export function useVercelChat({
       },
     });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const headers = await getHeaders();
 
     // Combine all attachments
     const combined: FileUIPart[] = [];
@@ -236,12 +235,13 @@ export function useVercelChat({
       files: nonAudioAttachments.length > 0 ? nonAudioAttachments : undefined,
     };
 
-    sendMessage(payload, chatRequestOptions);
+    sendMessage(payload, { body: chatRequestBody, headers });
     setInput("");
   };
 
-  const append = (message: UIMessage) => {
-    sendMessage(message, chatRequestOptions);
+  const append = async (message: UIMessage) => {
+    const headers = await getHeaders();
+    sendMessage(message, { body: chatRequestBody, headers });
   };
 
   // Keep messagesRef in sync with messages
@@ -250,7 +250,7 @@ export function useVercelChat({
   const { isLoading: isMessagesLoading, hasError } = useMessageLoader(
     messages.length === 0 ? id : undefined,
     userId,
-    accessToken,
+    getAccessToken,
     apiOverride,
     setMessages,
   );
@@ -315,9 +315,10 @@ export function useVercelChat({
   const handleSendQueryMessages = useCallback(
     async (initialMessage: UIMessage) => {
       silentlyUpdateUrl();
-      sendMessage(initialMessage, chatRequestOptions);
+      const headers = await getHeaders();
+      sendMessage(initialMessage, { body: chatRequestBody, headers });
     },
-    [silentlyUpdateUrl, sendMessage, chatRequestOptions],
+    [silentlyUpdateUrl, sendMessage, chatRequestBody, getHeaders],
   );
 
   useEffect(() => {
@@ -325,14 +326,13 @@ export function useVercelChat({
     const isReady = status === "ready";
     const hasMessages = messages.length > 1;
     const hasInitialMessages = initialMessages && initialMessages.length > 0;
-    const hasAccessToken = !!accessToken;
-    // Wait for access token before sending initial message to avoid 401 errors
+    // Wait for authentication before sending initial message to avoid 401 errors
     if (
       !hasInitialMessages ||
       !isReady ||
       hasMessages ||
       !isFullyLoggedIn ||
-      !hasAccessToken
+      !authenticated
     )
       return;
     handleSendQueryMessages(initialMessages[0]);
@@ -342,7 +342,7 @@ export function useVercelChat({
     userId,
     handleSendQueryMessages,
     messages.length,
-    accessToken,
+    authenticated,
   ]);
 
   // Sync state when models first load and prioritize preferred model

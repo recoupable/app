@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useAccessToken } from "@/hooks/useAccessToken";
+import { usePrivy } from "@privy-io/react-auth";
 import { fetchConnectorsApi } from "@/lib/composio/api/fetchConnectorsApi";
 import { authorizeConnectorApi } from "@/lib/composio/api/authorizeConnectorApi";
 import { disconnectConnectorApi } from "@/lib/composio/api/disconnectConnectorApi";
@@ -40,15 +40,21 @@ export function useConnectors(config?: UseConnectorsConfig) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [slugFilterKey],
   );
-  const accessToken = useAccessToken();
+  const { getAccessToken } = usePrivy();
 
   const [connectors, setConnectors] = useState<ConnectorInfo[]>([]);
   const [isLoading, setIsLoading] = useState(!accountId);
   const [error, setError] = useState<string | null>(null);
 
   const fetchConnectors = useCallback(async () => {
-    if (!accessToken || (accountId !== undefined && !accountId)) {
-      if (accountId !== undefined) setConnectors([]);
+    if (accountId !== undefined && !accountId) {
+      setConnectors([]);
+      setIsLoading(false);
+      return;
+    }
+
+    const accessToken = await getAccessToken();
+    if (!accessToken) {
       setIsLoading(false);
       return;
     }
@@ -68,12 +74,14 @@ export function useConnectors(config?: UseConnectorsConfig) {
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, accountId, slugFilter]);
+  }, [getAccessToken, accountId, slugFilter]);
 
   const authorize = useCallback(
     async (connector: string): Promise<string | null> => {
-      if (!accessToken) return null;
       if (accountId !== undefined && !accountId) return null;
+
+      const accessToken = await getAccessToken();
+      if (!accessToken) return null;
 
       try {
         return await authorizeConnectorApi(accessToken, {
@@ -86,16 +94,22 @@ export function useConnectors(config?: UseConnectorsConfig) {
         return null;
       }
     },
-    [accessToken, accountId, callbackUrl],
+    [getAccessToken, accountId, callbackUrl],
   );
 
   const disconnect = useCallback(
     async (connectedAccountId: string): Promise<boolean> => {
-      if (!accessToken) return false;
       if (accountId !== undefined && !accountId) return false;
 
+      const accessToken = await getAccessToken();
+      if (!accessToken) return false;
+
       try {
-        await disconnectConnectorApi(accessToken, connectedAccountId, accountId);
+        await disconnectConnectorApi(
+          accessToken,
+          connectedAccountId,
+          accountId,
+        );
         await fetchConnectors();
         return true;
       } catch (err) {
@@ -103,7 +117,7 @@ export function useConnectors(config?: UseConnectorsConfig) {
         return false;
       }
     },
-    [accessToken, accountId, fetchConnectors],
+    [getAccessToken, accountId, fetchConnectors],
   );
 
   useEffect(() => {

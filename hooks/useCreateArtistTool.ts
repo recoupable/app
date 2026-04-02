@@ -3,7 +3,7 @@ import { useVercelChatContext } from "@/providers/VercelChatProvider";
 import { useConversationsProvider } from "@/providers/ConversationsProvider";
 import { CreateArtistResult } from "@/types/createArtistResult";
 import copyMessages from "@/lib/messages/copyMessages";
-import { useAccessToken } from "@/hooks/useAccessToken";
+import { usePrivy } from "@privy-io/react-auth";
 import { useApiOverride } from "@/hooks/useApiOverride";
 
 /**
@@ -13,7 +13,7 @@ import { useApiOverride } from "@/hooks/useApiOverride";
 export function useCreateArtistTool(result: CreateArtistResult) {
   const { status, id } = useVercelChatContext();
   const { refetchConversations } = useConversationsProvider();
-  const accessToken = useAccessToken();
+  const { getAccessToken } = usePrivy();
   const apiOverride = useApiOverride();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -28,8 +28,7 @@ export function useCreateArtistTool(result: CreateArtistResult) {
       !result.artist ||
       !result.artist.account_id ||
       isProcessing ||
-      !isFinishedStreaming ||
-      !accessToken;
+      !isFinishedStreaming;
     if (shouldSkip) {
       return;
     }
@@ -37,6 +36,9 @@ export function useCreateArtistTool(result: CreateArtistResult) {
     const processCreateArtistResult = async () => {
       try {
         setIsProcessing(true);
+
+        const accessToken = await getAccessToken();
+        if (!accessToken) return;
 
         // Step 1: Check if we need to copy messages and redirect
         const needsRedirect = id !== result.newRoomId && !!result.newRoomId;
@@ -79,7 +81,7 @@ export function useCreateArtistTool(result: CreateArtistResult) {
     id,
     isProcessing,
     refetchConversations,
-    accessToken,
+    getAccessToken,
     apiOverride,
   ]);
 

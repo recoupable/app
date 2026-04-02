@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { useUserProvider } from "@/providers/UserProvder";
-import { useAccessToken } from "@/hooks/useAccessToken";
+import { usePrivy } from "@privy-io/react-auth";
 import { NEW_API_BASE_URL } from "@/lib/consts";
 
 export interface AccountOrganization {
@@ -38,11 +38,14 @@ const fetchAccountOrganizations = async (
  */
 const useAccountOrganizations = (): UseQueryResult<AccountOrganization[]> => {
   const { userData } = useUserProvider();
-  const accessToken = useAccessToken();
+  const { getAccessToken, authenticated } = usePrivy();
   return useQuery({
     queryKey: ["accountOrganizations", userData?.account_id],
-    queryFn: () => fetchAccountOrganizations(accessToken!),
-    enabled: !!userData?.account_id && !!accessToken,
+    queryFn: async () => {
+      const accessToken = await getAccessToken();
+      return fetchAccountOrganizations(accessToken!);
+    },
+    enabled: !!userData?.account_id && authenticated,
     staleTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: false,
   });

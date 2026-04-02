@@ -7,7 +7,7 @@ import {
 import type { ArtistAgent } from "@/lib/supabase/getArtistAgents";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useConversationsProvider } from "@/providers/ConversationsProvider";
-import { useAccessToken } from "@/hooks/useAccessToken";
+import { usePrivy } from "@privy-io/react-auth";
 import { NEW_API_BASE_URL } from "@/lib/consts";
 
 const useCreateChat = ({
@@ -21,13 +21,16 @@ const useCreateChat = ({
 }) => {
   const { selectedArtist } = useArtistProvider();
   const { refetchConversations } = useConversationsProvider();
-  const accessToken = useAccessToken();
+  const { getAccessToken } = usePrivy();
 
   useEffect(() => {
-    if (!isOptimisticChatItem || !accessToken) return;
+    if (!isOptimisticChatItem) return;
 
     const createChat = async () => {
       try {
+        const accessToken = await getAccessToken();
+        if (!accessToken) return;
+
         // Extract first message from optimistic memories
         const firstMessage = (chatRoom as Conversation).memories?.find(
           (memory) => {
@@ -42,7 +45,7 @@ const useCreateChat = ({
               content.optimistic === true &&
               content.parts?.[0]?.text
             );
-          }
+          },
         );
 
         if (!firstMessage) {
@@ -97,7 +100,7 @@ const useCreateChat = ({
     isOptimisticChatItem,
     chatRoom,
     selectedArtist?.account_id,
-    accessToken,
+    getAccessToken,
     setDisplayName,
     refetchConversations,
   ]);

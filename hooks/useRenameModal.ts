@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { Conversation } from "@/types/Chat";
 import type { ArtistAgent } from "@/lib/supabase/getArtistAgents";
-import { useAccessToken } from "@/hooks/useAccessToken";
+import { usePrivy } from "@privy-io/react-auth";
 import { updateChat } from "@/lib/chats/updateChat";
 import { useConversationsProvider } from "@/providers/ConversationsProvider";
 
@@ -35,7 +35,7 @@ export function useRenameModal({
   chatRoom,
   onClose,
 }: UseRenameModalParams) {
-  const accessToken = useAccessToken();
+  const { getAccessToken } = usePrivy();
   const { refetchConversations } = useConversationsProvider();
 
   const [name, setName] = useState("");
@@ -70,7 +70,7 @@ export function useRenameModal({
       setName(value);
       if (touched) setError(validateName(value));
     },
-    [touched]
+    [touched],
   );
 
   const handleBlur = useCallback(() => {
@@ -88,6 +88,7 @@ export function useRenameModal({
         return;
       }
 
+      const accessToken = await getAccessToken();
       if (!accessToken) {
         setError("Authentication required");
         return;
@@ -111,12 +112,12 @@ export function useRenameModal({
         setError(
           err instanceof Error
             ? err.message
-            : "Failed to rename chat. Please try again."
+            : "Failed to rename chat. Please try again.",
         );
         setIsSubmitting(false);
       }
     },
-    [name, accessToken, chatRoom, refetchConversations, onClose]
+    [name, getAccessToken, chatRoom, refetchConversations, onClose],
   );
 
   const handleModalClose = useCallback(() => {
