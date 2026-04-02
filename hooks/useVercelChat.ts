@@ -57,7 +57,7 @@ export function useVercelChat({
     availableModels[0]?.id ?? "",
   );
   const { refetchCredits } = usePaymentProvider();
-  const { transport } = useChatTransport();
+  const { transport, getHeaders } = useChatTransport();
   const accessToken = useAccessToken();
 
   // Load artist files for mentions (from Supabase)
@@ -161,15 +161,13 @@ export function useVercelChat({
     return outputs;
   }, [knowledgeFiles]);
 
-  const chatRequestOptions = useMemo(
+  const chatRequestBody = useMemo(
     () => ({
-      body: {
-        roomId: id,
-        artistId,
-        // Only include organizationId if it's not null (schema expects string | undefined)
-        ...(organizationId && { organizationId }),
-        model,
-      },
+      roomId: id,
+      artistId,
+      // Only include organizationId if it's not null (schema expects string | undefined)
+      ...(organizationId && { organizationId }),
+      model,
     }),
     [id, artistId, organizationId, model],
   );
@@ -190,8 +188,9 @@ export function useVercelChat({
       },
     });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const headers = await getHeaders();
 
     // Combine all attachments
     const combined: FileUIPart[] = [];
@@ -229,12 +228,13 @@ export function useVercelChat({
       files: nonAudioAttachments.length > 0 ? nonAudioAttachments : undefined,
     };
 
-    sendMessage(payload, chatRequestOptions);
+    sendMessage(payload, { body: chatRequestBody, headers });
     setInput("");
   };
 
-  const append = (message: UIMessage) => {
-    sendMessage(message, chatRequestOptions);
+  const append = async (message: UIMessage) => {
+    const headers = await getHeaders();
+    sendMessage(message, { body: chatRequestBody, headers });
   };
 
   // Keep messagesRef in sync with messages
@@ -278,9 +278,10 @@ export function useVercelChat({
   const handleSendQueryMessages = useCallback(
     async (initialMessage: UIMessage) => {
       silentlyUpdateUrl();
-      sendMessage(initialMessage, chatRequestOptions);
+      const headers = await getHeaders();
+      sendMessage(initialMessage, { body: chatRequestBody, headers });
     },
-    [silentlyUpdateUrl, sendMessage, chatRequestOptions],
+    [silentlyUpdateUrl, sendMessage, chatRequestBody, getHeaders],
   );
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { DefaultChatTransport } from "ai";
 import { NEW_API_BASE_URL } from "@/lib/consts";
 import { useApiOverride } from "./useApiOverride";
@@ -10,21 +10,16 @@ export function useChatTransport() {
 
   const baseUrl = apiOverride || NEW_API_BASE_URL;
 
+  const getHeaders = useCallback(async () => {
+    const accessToken = await getAccessToken();
+    return accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
+  }, [getAccessToken]);
+
   const transport = useMemo(() => {
     return new DefaultChatTransport({
       api: `${baseUrl}/api/chat`,
-      prepareSendMessagesRequest: async ({ headers }) => {
-        const token = await getAccessToken().catch(() => null);
-        const resolvedHeaders = new Headers(headers);
-
-        if (token) {
-          resolvedHeaders.set("Authorization", `Bearer ${token}`);
-        }
-
-        return { headers: resolvedHeaders };
-      },
     });
-  }, [baseUrl, getAccessToken]);
+  }, [baseUrl]);
 
-  return { transport };
+  return { transport, getHeaders };
 }
