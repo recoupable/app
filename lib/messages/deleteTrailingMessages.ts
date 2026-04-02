@@ -11,7 +11,7 @@ export async function deleteTrailingMessages({
   chatId: string;
   fromMessageId: string;
   accessToken: string;
-}): Promise<boolean> {
+}): Promise<void> {
   const url = getClientApiBaseUrl();
   const response = await fetch(
     `${url}/api/chats/${encodeURIComponent(chatId)}/messages/trailing?from_message_id=${encodeURIComponent(fromMessageId)}`,
@@ -24,10 +24,6 @@ export async function deleteTrailingMessages({
   );
 
   if (!response.ok) {
-    const errorData = await response.json();
-    console.error(errorData.error || "Failed to delete trailing messages");
-    return false;
+    throw new Error("Failed to delete trailing messages");
   }
-
-  return true;
 }

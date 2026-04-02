@@ -6,6 +6,7 @@ import { useOrganization } from "@/providers/OrganizationProvider";
 import { useParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
+import getEarliestFailedUserMessageId from "@/lib/messages/getEarliestFailedUserMessageId";
 import { generateUUID } from "@/lib/generateUUID";
 import { useConversationsProvider } from "@/providers/ConversationsProvider";
 import { UIMessage, FileUIPart } from "ai";
@@ -20,6 +21,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useApiOverride } from "@/hooks/useApiOverride";
 import { TextAttachment } from "@/types/textAttachment";
 import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
+import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 
 // 30 days in seconds for Supabase signed URL expiry
 const SIGNED_URL_EXPIRES_SECONDS = 60 * 60 * 24 * 30;
@@ -190,6 +192,26 @@ export function useVercelChat({
       },
     });
 
+  const earliestFailedUserMessageId = useMemo(
+    () => getEarliestFailedUserMessageId(messages),
+    [messages],
+  );
+
+  const { deleteTrailingMessages } = useDeleteTrailingMessages({
+    onSuccess: () => {
+      setMessages((messages) => {
+        const index = messages.findIndex(
+          (m) => m.id === earliestFailedUserMessageId,
+        );
+        if (index !== -1) {
+          return [...messages.slice(0, index)];
+        }
+
+        return messages;
+      });
+    },
+  });
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -264,6 +286,13 @@ export function useVercelChat({
 
   const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (earliestFailedUserMessageId) {
+      await deleteTrailingMessages({
+        chatId: id,
+        fromMessageId: earliestFailedUserMessageId,
+      });
+    }
 
     // Capture the input value before it's cleared by handleSubmit
     const messageContent = input;

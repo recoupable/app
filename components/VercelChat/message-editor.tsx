@@ -6,17 +6,29 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDeleteTrailingMessages } from "@/hooks/useDeleteTrailingMessages";
 import { EditingMessageProps } from "./EditingMessage";
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
-import { TextUIPart } from "ai";
+import { TextUIPart, UIMessage } from "ai";
 
 export function MessageEditor({ message, setMode }: EditingMessageProps) {
-  const { reload } = useVercelChatContext();
+  const { id, setMessages, reload } = useVercelChatContext();
+  if (!id) {
+    throw new Error("MessageEditor requires an active chat id");
+  }
   const text = (message.parts[0] as TextUIPart)?.text || "";
   const [draftContent, setDraftContent] = useState<string>(text);
   const { deleteTrailingMessages, isDeletingTrailingMessages } =
     useDeleteTrailingMessages({
-      message,
-      draftContent,
       onSuccess: () => {
+        setMessages((messages) => {
+          const index = messages.findIndex((m) => m.id === message.id);
+          if (index === -1) return messages;
+
+          const updatedMessage: UIMessage = {
+            ...message,
+            parts: [{ type: "text", text: draftContent } as TextUIPart],
+          };
+
+          return [...messages.slice(0, index), updatedMessage];
+        });
         setMode("view");
         if (text !== draftContent) {
           reload();
@@ -70,7 +82,10 @@ export function MessageEditor({ message, setMode }: EditingMessageProps) {
           size="sm"
           disabled={isDeletingTrailingMessages}
           onClick={() => {
-            void deleteTrailingMessages();
+            void deleteTrailingMessages({
+              chatId: id,
+              fromMessageId: message.id,
+            });
           }}
           className="rounded-xl"
         >

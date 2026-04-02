@@ -1,13 +1,14 @@
 import { useMutation } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
-import { UIMessage } from "ai";
-import { deleteTrailingMessages as deleteTrailingMessagesApi } from "@/lib/messages/deleteTrailingMessages";
-import { useVercelChatContext } from "@/providers/VercelChatProvider";
+import { deleteTrailingMessages } from "@/lib/messages/deleteTrailingMessages";
 
 interface UseDeleteTrailingMessagesInput {
-  message: UIMessage;
-  draftContent: string;
   onSuccess?: () => void;
+}
+
+interface DeleteTrailingMessagesMutationInput {
+  chatId: string;
+  fromMessageId: string;
 }
 
 /**
@@ -15,53 +16,29 @@ interface UseDeleteTrailingMessagesInput {
  * update local chat messages state after mutation completion.
  */
 export function useDeleteTrailingMessages({
-  message,
-  draftContent,
   onSuccess,
 }: UseDeleteTrailingMessagesInput) {
-  const { id, setMessages } = useVercelChatContext();
   const { getAccessToken } = usePrivy();
 
   const mutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({ chatId, fromMessageId }: DeleteTrailingMessagesMutationInput) => {
       const accessToken = await getAccessToken();
-      if (!id || !accessToken) {
-        return false;
+      if (!accessToken) {
+        throw new Error("Missing access token");
       }
 
-      return deleteTrailingMessagesApi({
-        chatId: id,
-        fromMessageId: message.id,
+      return deleteTrailingMessages({
+        chatId,
+        fromMessageId,
         accessToken,
       });
     },
-    onSettled: () => {
-      // @ts-expect-error todo: support UIMessage in setMessages
-      setMessages((messages) => {
-        const index = messages.findIndex((m) => m.id === message.id);
-
-        if (index !== -1) {
-          const updatedMessage = {
-            ...message,
-            content: draftContent,
-            parts: [{ type: "text", text: draftContent }],
-          };
-
-          return [...messages.slice(0, index), updatedMessage];
-        }
-
-        return messages;
-      });
-    },
-    onSuccess: (deleted) => {
-      if (deleted) {
-        onSuccess?.();
-      }
-    },
+    onSuccess,
   });
 
   return {
-    deleteTrailingMessages: () => mutation.mutateAsync(),
+    deleteTrailingMessages: (input: DeleteTrailingMessagesMutationInput) =>
+      mutation.mutateAsync(input),
     isDeletingTrailingMessages: mutation.isPending,
   };
 }
