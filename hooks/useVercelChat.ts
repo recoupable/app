@@ -250,7 +250,6 @@ export function useVercelChat({
   const { isLoading: isMessagesLoading, hasError } = useMessageLoader(
     messages.length === 0 ? id : undefined,
     userId,
-    getAccessToken,
     apiOverride,
     setMessages,
   );
