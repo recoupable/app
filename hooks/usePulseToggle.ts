@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAccessToken } from "@/hooks/useAccessToken";
+import { usePrivy } from "@privy-io/react-auth";
 import { getPulse } from "@/lib/pulse/getPulse";
 import { updatePulse } from "@/lib/pulse/updatePulse";
 import { toast } from "sonner";
@@ -7,25 +7,30 @@ import { toast } from "sonner";
 const QUERY_KEY = ["pulse"];
 
 export function usePulseToggle() {
-  const accessToken = useAccessToken();
+  const { getAccessToken, authenticated } = usePrivy();
   const queryClient = useQueryClient();
 
   const { data, isLoading: isInitialLoading } = useQuery({
     queryKey: QUERY_KEY,
-    queryFn: () => getPulse({ accessToken: accessToken! }),
-    enabled: !!accessToken,
+    queryFn: async () => {
+      const accessToken = await getAccessToken();
+      return getPulse({ accessToken: accessToken! });
+    },
+    enabled: authenticated,
   });
 
   const { mutate, isPending: isToggling } = useMutation({
-    mutationFn: (active: boolean) =>
-      updatePulse({ accessToken: accessToken!, active }),
+    mutationFn: async (active: boolean) => {
+      const accessToken = await getAccessToken();
+      return updatePulse({ accessToken: accessToken!, active });
+    },
     onMutate: async (newActive) => {
       await queryClient.cancelQueries({ queryKey: QUERY_KEY });
       const previousData = queryClient.getQueryData(QUERY_KEY);
       queryClient.setQueryData(QUERY_KEY, (old: typeof data) =>
         old
           ? { ...old, pulses: [{ ...old.pulses[0], active: newActive }] }
-          : old
+          : old,
       );
       return { previousData };
     },
@@ -35,7 +40,7 @@ export function usePulseToggle() {
     },
     onSuccess: (data) => {
       toast.success(
-        data.pulses[0].active ? "Pulse activated" : "Pulse deactivated"
+        data.pulses[0].active ? "Pulse activated" : "Pulse deactivated",
       );
     },
     onSettled: () => {

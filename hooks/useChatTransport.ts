@@ -1,12 +1,12 @@
 import { useMemo, useCallback } from "react";
 import { DefaultChatTransport } from "ai";
 import { NEW_API_BASE_URL } from "@/lib/consts";
-import { useApiOverride } from "./useApiOverride";
 import { usePrivy } from "@privy-io/react-auth";
+import { useApiOverride } from "./useApiOverride";
 
 export function useChatTransport() {
-  const apiOverride = useApiOverride();
   const { getAccessToken } = usePrivy();
+  const apiOverride = useApiOverride();
 
   const baseUrl = apiOverride || NEW_API_BASE_URL;
 

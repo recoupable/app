@@ -8,44 +8,31 @@ import useArtistMode from "./useArtistMode";
 import saveArtist from "@/lib/saveArtist";
 import useInitialArtists from "./useInitialArtists";
 import useCreateArtists from "./useCreateArtists";
-import { useAccessToken } from "@/hooks/useAccessToken";
+import { usePrivy } from "@privy-io/react-auth";
 import { fetchArtists } from "@/lib/artists/fetchArtists";
-
-// Helper function to sort artists with pinned first, then alphabetically
-const sortArtistsWithPinnedFirst = (artists: ArtistRecord[]): ArtistRecord[] => {
-  return [...artists].sort((a, b) => {
-    // First sort by pinned status (pinned artists first)
-    if (a.pinned && !b.pinned) return -1;
-    if (!a.pinned && b.pinned) return 1;
-    
-    // Then sort alphabetically by name
-    const nameA = a.name?.toLowerCase() || "";
-    const nameB = b.name?.toLowerCase() || "";
-    return nameA.localeCompare(nameB);
-  });
-};
+import { sortArtistsWithPinnedFirst } from "@/lib/artists/sortArtistsWithPinnedFirst";
 
 const useArtists = () => {
   const artistSetting = useArtistSetting();
   const [isLoading, setIsLoading] = useState(true);
   const { email, userData } = useUserProvider();
   const { selectedOrgId } = useOrganization();
-  const accessToken = useAccessToken();
+  const { getAccessToken } = usePrivy();
   const [artists, setArtists] = useState<ArtistRecord[]>([]);
   const [selectedArtist, setSelectedArtist] = useState<ArtistRecord | null>(
-    null
+    null,
   );
   const [updating, setUpdating] = useState(false);
   const loading = artistSetting.imageUploading || updating;
   const artistMode = useArtistMode(
     artistSetting.clearParams,
-    artistSetting.setEditableArtist
+    artistSetting.setEditableArtist,
   );
   const { handleSelectArtist } = useInitialArtists(
     artists,
     selectedArtist,
     setSelectedArtist,
-    selectedOrgId
+    selectedOrgId,
   );
   const [menuVisibleArtistId, setMenuVisibleArtistId] = useState<any>("");
   const { isCreatingArtist, setIsCreatingArtist, updateChatState } =
@@ -58,9 +45,9 @@ const useArtists = () => {
 
     // Find the selected artist index
     const selectedIndex = artists.findIndex(
-      (artist: ArtistRecord) => artist.account_id === selectedArtist.account_id
+      (artist: ArtistRecord) => artist.account_id === selectedArtist.account_id,
     );
-    
+
     if (selectedIndex === -1) {
       return sortArtistsWithPinnedFirst(artists);
     }
@@ -80,7 +67,13 @@ const useArtists = () => {
 
   const getArtists = useCallback(
     async (artistId?: string) => {
-      if (!userData?.id || !accessToken) {
+      if (!userData?.id) {
+        setArtists([]);
+        return;
+      }
+
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
         setArtists([]);
         return;
       }
@@ -97,7 +90,7 @@ const useArtists = () => {
       // If specific artistId provided, select it
       if (artistId) {
         const newUpdatedInfo = newArtists.find(
-          (artist: ArtistRecord) => artist.account_id === artistId
+          (artist: ArtistRecord) => artist.account_id === artistId,
         );
         if (newUpdatedInfo) {
           setSelectedArtist(newUpdatedInfo);
@@ -110,18 +103,18 @@ const useArtists = () => {
       setSelectedArtist((current) => {
         if (!current) return newArtists[0] || null;
         const stillExists = newArtists.find(
-          (a) => a.account_id === current.account_id
+          (a) => a.account_id === current.account_id,
         );
         return stillExists || newArtists[0] || null;
       });
 
       setIsLoading(false);
     },
-    [userData, selectedOrgId, accessToken]
+    [userData, selectedOrgId, getAccessToken],
   );
 
   const saveSetting = async (
-    overrideKnowledges?: Array<{ name: string; url: string; type: string }>
+    overrideKnowledges?: Array<{ name: string; url: string; type: string }>,
   ) => {
     setUpdating(true);
     const saveMode = artistMode.settingMode;

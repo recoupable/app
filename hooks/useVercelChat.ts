@@ -6,6 +6,8 @@ import { useOrganization } from "@/providers/OrganizationProvider";
 import { useParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
+import getEarliestFailedUserMessageId from "@/lib/messages/getEarliestFailedUserMessageId";
+import { clientDeleteTrailingMessages } from "@/lib/messages/clientDeleteTrailingMessages";
 import { generateUUID } from "@/lib/generateUUID";
 import { useConversationsProvider } from "@/providers/ConversationsProvider";
 import { UIMessage, FileUIPart } from "ai";
@@ -16,7 +18,8 @@ import { usePaymentProvider } from "@/providers/PaymentProvider";
 import useArtistFilesForMentions from "@/hooks/useArtistFilesForMentions";
 import type { KnowledgeBaseEntry } from "@/lib/supabase/getArtistKnowledge";
 import { useChatTransport } from "./useChatTransport";
-import { useAccessToken } from "./useAccessToken";
+import { usePrivy } from "@privy-io/react-auth";
+import { useApiOverride } from "@/hooks/useApiOverride";
 import { TextAttachment } from "@/types/textAttachment";
 import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
 
@@ -48,6 +51,7 @@ export function useVercelChat({
 
   const userId = userData?.account_id || userData?.id; // Use account_id if available, fallback to id
   const artistId = selectedArtist?.account_id;
+  const [hasChatApiError, setHasChatApiError] = useState(false);
   const messagesLengthRef = useRef<number>();
   const { addOptimisticConversation } = useConversationsProvider();
   const { data: availableModels = [] } = useAvailableModels();
@@ -58,7 +62,8 @@ export function useVercelChat({
   );
   const { refetchCredits } = usePaymentProvider();
   const { transport, getHeaders } = useChatTransport();
-  const accessToken = useAccessToken();
+  const { authenticated } = usePrivy();
+  const apiOverride = useApiOverride();
 
   // Load artist files for mentions (from Supabase)
   const { files: allArtistFiles = [] } = useArtistFilesForMentions();
@@ -181,6 +186,7 @@ export function useVercelChat({
       onError: (e) => {
         console.error("An error occurred, please try again!", e);
         toast.error("An error occurred, please try again!");
+        setHasChatApiError(true);
       },
       onFinish: async () => {
         // Update credits after AI response completes
@@ -190,6 +196,7 @@ export function useVercelChat({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     const headers = await getHeaders();
 
     // Combine all attachments
@@ -243,6 +250,7 @@ export function useVercelChat({
   const { isLoading: isMessagesLoading, hasError } = useMessageLoader(
     messages.length === 0 ? id : undefined,
     userId,
+    apiOverride,
     setMessages,
   );
 
@@ -254,12 +262,40 @@ export function useVercelChat({
 
   const isGeneratingResponse = ["streaming", "submitted"].includes(status);
 
+  const deleteTrailingMessages = async () => {
+    const earliestFailedUserMessageId =
+      getEarliestFailedUserMessageId(messages);
+    if (earliestFailedUserMessageId) {
+      const successfulDeletion = await clientDeleteTrailingMessages({
+        id: earliestFailedUserMessageId,
+      });
+      if (successfulDeletion) {
+        setMessages((messages) => {
+          const index = messages.findIndex(
+            (m) => m.id === earliestFailedUserMessageId,
+          );
+          if (index !== -1) {
+            return [...messages.slice(0, index)];
+          }
+
+          return messages;
+        });
+      }
+    }
+
+    setHasChatApiError(false);
+  };
+
   const silentlyUpdateUrl = useCallback(() => {
     window.history.replaceState({}, "", `/chat/${id}`);
   }, [id]);
 
   const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (hasChatApiError) {
+      await deleteTrailingMessages();
+    }
 
     // Capture the input value before it's cleared by handleSubmit
     const messageContent = input;
@@ -289,14 +325,13 @@ export function useVercelChat({
     const isReady = status === "ready";
     const hasMessages = messages.length > 1;
     const hasInitialMessages = initialMessages && initialMessages.length > 0;
-    const hasAccessToken = !!accessToken;
-    // Wait for access token before sending initial message to avoid 401 errors
+    // Wait for authentication before sending initial message to avoid 401 errors
     if (
       !hasInitialMessages ||
       !isReady ||
       hasMessages ||
       !isFullyLoggedIn ||
-      !hasAccessToken
+      !authenticated
     )
       return;
     handleSendQueryMessages(initialMessages[0]);
@@ -306,7 +341,7 @@ export function useVercelChat({
     userId,
     handleSendQueryMessages,
     messages.length,
-    accessToken,
+    authenticated,
   ]);
 
   // Sync state when models first load and prioritize preferred model

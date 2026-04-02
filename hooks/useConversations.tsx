@@ -6,25 +6,22 @@ import getConversations from "@/lib/getConversations";
 import { Conversation } from "@/types/Chat";
 import useArtistAgents from "./useArtistAgents";
 import { ArtistAgent } from "@/lib/supabase/getArtistAgents";
-import { useAccessToken } from "./useAccessToken";
+import { usePrivy } from "@privy-io/react-auth";
 
 const useConversations = () => {
   const { userData } = useUserProvider();
   const { selectedArtist, artists } = useArtistProvider();
   const { agents } = useArtistAgents();
   const queryClient = useQueryClient();
-  const accessToken = useAccessToken();
+  const { getAccessToken, authenticated } = usePrivy();
 
   // Get artist IDs in the current org/view for filtering
   const orgArtistIds = useMemo(
     () => new Set(artists.map((a) => a.account_id)),
-    [artists]
+    [artists],
   );
 
-  const queryKey = useMemo(
-    () => ["conversations", accessToken] as const,
-    [accessToken]
-  );
+  const queryKey = useMemo(() => ["conversations"] as const, []);
 
   const {
     data: fetchedConversations = [],
@@ -33,8 +30,11 @@ const useConversations = () => {
     refetch,
   } = useQuery<Conversation[]>({
     queryKey,
-    queryFn: () => getConversations(accessToken as string),
-    enabled: Boolean(accessToken),
+    queryFn: async () => {
+      const accessToken = await getAccessToken();
+      return getConversations(accessToken as string);
+    },
+    enabled: authenticated,
     initialData: [],
   });
 
@@ -47,17 +47,17 @@ const useConversations = () => {
   const conversations = useMemo(() => {
     // If artist selected, filter to only that artist's conversations
     if (selectedArtist) {
-    return combinedConversations.filter(
-      (item: Conversation | ArtistAgent) =>
-        "artist_id" in item && item.artist_id === selectedArtist.account_id
-    );
+      return combinedConversations.filter(
+        (item: Conversation | ArtistAgent) =>
+          "artist_id" in item && item.artist_id === selectedArtist.account_id,
+      );
     }
 
     // No artist selected - filter to artists in the current org view
     if (orgArtistIds.size > 0) {
       return combinedConversations.filter(
         (item: Conversation | ArtistAgent) =>
-          "artist_id" in item && orgArtistIds.has(item.artist_id)
+          "artist_id" in item && orgArtistIds.has(item.artist_id),
       );
     }
 
@@ -69,7 +69,7 @@ const useConversations = () => {
   const addOptimisticConversation = (
     topic: string,
     chatId: string,
-    message?: string
+    message?: string,
   ) => {
     if (!userData || !selectedArtist?.account_id) return null;
     // Avoid adding an optimistic conversation when a chat id already exists in the URL

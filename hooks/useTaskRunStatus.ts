@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAccessToken } from "@/hooks/useAccessToken";
+import { usePrivy } from "@privy-io/react-auth";
 import {
   getTaskRunStatus,
   type TaskRunStatus,
@@ -21,12 +21,15 @@ const isTerminal = (data: TaskRunStatus | undefined): boolean =>
  * Polls the task run status every 3s until the run reaches a terminal state.
  */
 export function useTaskRunStatus(runId: string) {
-  const accessToken = useAccessToken();
+  const { getAccessToken, authenticated } = usePrivy();
 
   return useQuery({
     queryKey: ["taskRunStatus", runId],
-    queryFn: () => getTaskRunStatus(runId, accessToken!),
-    enabled: !!runId && !!accessToken,
+    queryFn: async () => {
+      const accessToken = await getAccessToken();
+      return getTaskRunStatus(runId, accessToken!);
+    },
+    enabled: !!runId && authenticated,
     refetchInterval: (query) => (isTerminal(query.state.data) ? false : 3000),
     retry: 3,
     staleTime: 1000,
