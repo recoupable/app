@@ -1,29 +1,30 @@
 import { useMemo } from "react";
 import { DefaultChatTransport } from "ai";
 import { NEW_API_BASE_URL } from "@/lib/consts";
-import { useAccessToken } from "./useAccessToken";
 import { useApiOverride } from "./useApiOverride";
+import { usePrivy } from "@privy-io/react-auth";
 
 export function useChatTransport() {
-  const accessToken = useAccessToken();
   const apiOverride = useApiOverride();
+  const { getAccessToken } = usePrivy();
 
   const baseUrl = apiOverride || NEW_API_BASE_URL;
-
-  const headers = useMemo(() => {
-    return accessToken
-      ? {
-          Authorization: `Bearer ${accessToken}`,
-        }
-      : undefined;
-  }, [accessToken]);
 
   const transport = useMemo(() => {
     return new DefaultChatTransport({
       api: `${baseUrl}/api/chat`,
-      ...(headers && { headers }),
-    });
-  }, [baseUrl, headers]);
+      prepareSendMessagesRequest: async ({ body, headers }) => {
+        const token = await getAccessToken().catch(() => null);
+        const resolvedHeaders = new Headers(headers);
 
-  return { transport, headers };
+        if (token) {
+          resolvedHeaders.set("Authorization", `Bearer ${token}`);
+        }
+
+        return { body: body ?? {}, headers: resolvedHeaders };
+      },
+    });
+  }, [baseUrl, getAccessToken]);
+
+  return { transport };
 }

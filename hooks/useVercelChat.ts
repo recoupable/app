@@ -60,7 +60,7 @@ export function useVercelChat({
     availableModels[0]?.id ?? "",
   );
   const { refetchCredits } = usePaymentProvider();
-  const { transport, headers } = useChatTransport();
+  const { transport } = useChatTransport();
   const accessToken = useAccessToken();
 
   // Load artist files for mentions (from Supabase)
@@ -173,9 +173,8 @@ export function useVercelChat({
         ...(organizationId && { organizationId }),
         model,
       },
-      headers,
     }),
-    [id, artistId, organizationId, model, headers],
+    [id, artistId, organizationId, model],
   );
 
   const { messages, status, stop, sendMessage, setMessages, regenerate } =
