@@ -13,7 +13,7 @@ export function useChatTransport() {
   const transport = useMemo(() => {
     return new DefaultChatTransport({
       api: `${baseUrl}/api/chat`,
-      prepareSendMessagesRequest: async ({ body, headers }) => {
+      prepareSendMessagesRequest: async ({ headers }) => {
         const token = await getAccessToken().catch(() => null);
         const resolvedHeaders = new Headers(headers);
 
@@ -21,7 +21,7 @@ export function useChatTransport() {
           resolvedHeaders.set("Authorization", `Bearer ${token}`);
         }
 
-        return { body: body ?? {}, headers: resolvedHeaders };
+        return { headers: resolvedHeaders };
       },
     });
   }, [baseUrl, getAccessToken]);
