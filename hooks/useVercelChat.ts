@@ -6,8 +6,6 @@ import { useOrganization } from "@/providers/OrganizationProvider";
 import { useParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
-import getEarliestFailedUserMessageId from "@/lib/messages/getEarliestFailedUserMessageId";
-import { deleteTrailingMessages } from "@/lib/messages/deleteTrailingMessages";
 import { generateUUID } from "@/lib/generateUUID";
 import { useConversationsProvider } from "@/providers/ConversationsProvider";
 import { UIMessage, FileUIPart } from "ai";
@@ -50,7 +48,6 @@ export function useVercelChat({
 
   const userId = userData?.account_id || userData?.id; // Use account_id if available, fallback to id
   const artistId = selectedArtist?.account_id;
-  const [hasChatApiError, setHasChatApiError] = useState(false);
   const messagesLengthRef = useRef<number>();
   const { addOptimisticConversation } = useConversationsProvider();
   const { data: availableModels = [] } = useAvailableModels();
@@ -186,7 +183,6 @@ export function useVercelChat({
       onError: (e) => {
         console.error("An error occurred, please try again!", e);
         toast.error("An error occurred, please try again!");
-        setHasChatApiError(true);
       },
       onFinish: async () => {
         // Update credits after AI response completes
@@ -258,42 +254,12 @@ export function useVercelChat({
 
   const isGeneratingResponse = ["streaming", "submitted"].includes(status);
 
-  const handleDeleteTrailingMessages = async () => {
-    const earliestFailedUserMessageId =
-      getEarliestFailedUserMessageId(messages);
-    if (earliestFailedUserMessageId && accessToken) {
-      const successfulDeletion = await deleteTrailingMessages({
-        chatId: id,
-        fromMessageId: earliestFailedUserMessageId,
-        accessToken,
-      });
-      if (successfulDeletion) {
-        setMessages((messages) => {
-          const index = messages.findIndex(
-            (m) => m.id === earliestFailedUserMessageId,
-          );
-          if (index !== -1) {
-            return [...messages.slice(0, index)];
-          }
-
-          return messages;
-        });
-      }
-    }
-
-    setHasChatApiError(false);
-  };
-
   const silentlyUpdateUrl = useCallback(() => {
     window.history.replaceState({}, "", `/chat/${id}`);
   }, [id]);
 
   const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    if (hasChatApiError) {
-      await handleDeleteTrailingMessages();
-    }
 
     // Capture the input value before it's cleared by handleSubmit
     const messageContent = input;
