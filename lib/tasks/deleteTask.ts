@@ -1,4 +1,3 @@
-import { ScheduledAction } from "@/components/VercelChat/types";
 import { TASKS_API_URL } from "@/lib/consts";
 
 export interface DeleteTaskParams {
@@ -26,39 +25,49 @@ async function deleteTaskFromDatabase(taskId: string): Promise<void> {
   });
 }
 
+interface DeleteTaskApiResponse {
+  status: "success" | "error";
+  error?: string;
+}
+
 /**
- * Deletes a task via the Recoup API and database
+ * Deletes a task via the Recoup API and database.
+ *
+ * @param accessToken - Privy access token (same auth model as getTasks).
+ * @param params - Task id to delete.
  * @see https://docs.recoupable.com/tasks/delete
  */
-export async function deleteTask(params: DeleteTaskParams): Promise<void> {
+export async function deleteTask(accessToken: string, params: DeleteTaskParams): Promise<void> {
+  const response = await fetch(TASKS_API_URL, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
+      id: params.id,
+    }),
+  });
+
+  const responseText = await response.text();
+
+  if (!response.ok) {
+    if (isScheduleNotFoundError(responseText)) {
+      await deleteTaskFromDatabase(params.id);
+      return;
+    }
+
+    throw new Error(`HTTP ${response.status}: ${responseText}`);
+  }
+
+  let data: DeleteTaskApiResponse;
   try {
-    const response = await fetch(TASKS_API_URL, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: params.id,
-      }),
-    });
+    data = JSON.parse(responseText) as DeleteTaskApiResponse;
+  } catch {
+    throw new Error("Failed to delete task: invalid response");
+  }
 
-    if (!response.ok) {
-      const errorText = await response.text();
-
-      if (isScheduleNotFoundError(errorText)) {
-        await deleteTaskFromDatabase(params.id);
-        return;
-      }
-
-      throw new Error(`HTTP ${response.status}: ${errorText}`);
-    }
-
-    const data: ScheduledAction = await response.json();
-
-    if (!data) {
-      throw new Error("Failed to delete task");
-    }
-  } catch (error) {
-    throw error;
+  if (data.status === "error") {
+    throw new Error(data.error || "Failed to delete task");
   }
 }

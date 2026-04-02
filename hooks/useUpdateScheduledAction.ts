@@ -2,6 +2,7 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { Tables } from "@/types/database.types";
 import { useQueryClient } from "@tanstack/react-query";
+import { usePrivy } from "@privy-io/react-auth";
 import { updateTask, UpdateTaskParams } from "@/lib/tasks/updateTask";
 
 type ScheduledAction = Tables<"scheduled_actions">;
@@ -15,6 +16,7 @@ interface UpdateScheduledActionParams {
 export const useUpdateScheduledAction = () => {
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
+  const { getAccessToken } = usePrivy();
 
   const updateAction = async ({
     updates,
@@ -23,7 +25,13 @@ export const useUpdateScheduledAction = () => {
   }: UpdateScheduledActionParams) => {
     setIsLoading(true);
     try {
-      const updatedTask = await updateTask(updates);
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        toast.error("Please sign in to update tasks");
+        throw new Error("Please sign in to update tasks");
+      }
+
+      const updatedTask = await updateTask(accessToken, updates);
 
       onSuccess?.(updatedTask);
       toast.success(successMessage);
@@ -35,9 +43,9 @@ export const useUpdateScheduledAction = () => {
       throw error;
     } finally {
       setIsLoading(false);
-      queryClient.invalidateQueries({ 
+      queryClient.invalidateQueries({
         queryKey: ["scheduled-actions"],
-        exact: false 
+        exact: false,
       });
     }
   };

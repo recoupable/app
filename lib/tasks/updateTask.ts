@@ -9,33 +9,35 @@ export interface UpdateTaskParams {
   title?: string;
   prompt?: string;
   schedule?: string;
-  account_id?: string;
   artist_account_id?: string;
   enabled?: boolean | null;
   model?: string | null;
 }
 
 /**
- * Updates an existing task via the Recoup API
+ * Updates an existing task via the Recoup API.
+ * Identity is taken from the Bearer token; do not send account_id (API ignores it on PATCH).
+ *
+ * @param accessToken - Privy access token (same auth model as getTasks).
+ * @param params - Task id and fields to update.
  * @see https://docs.recoupable.com/tasks/update
  */
 export async function updateTask(
-  params: UpdateTaskParams
+  accessToken: string,
+  params: UpdateTaskParams,
 ): Promise<ScheduledAction> {
   try {
     const response = await fetch(TASKS_API_URL, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({
         id: params.id,
         ...(params.title !== undefined && { title: params.title }),
         ...(params.prompt !== undefined && { prompt: params.prompt }),
         ...(params.schedule !== undefined && { schedule: params.schedule }),
-        ...(params.account_id !== undefined && {
-          account_id: params.account_id,
-        }),
         ...(params.artist_account_id !== undefined && {
           artist_account_id: params.artist_account_id,
         }),
