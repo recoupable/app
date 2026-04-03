@@ -6,7 +6,7 @@ import { Youtube } from "lucide-react";
 const ChannelInfo = ({ dense, artistAccountId }: { dense?: boolean; artistAccountId: string }) => {
   const { data, isLoading } = useYoutubeChannel(artistAccountId);
 
-  const channel = data?.channels?.[0];
+  const channel = data?.[0];
 
   return (
       <div className="flex flex-col gap-1 cursor-pointer">

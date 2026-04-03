@@ -45,8 +45,10 @@ export function useYouTubeLoginSuccess() {
     hasCheckedOAuth.current = true;
 
     if (selectedArtist?.account_id) {
-      fetchYouTubeChannel(selectedArtist.account_id).then((youtubeChannel) => {
-        if (youtubeChannel.success) {
+      const checkYouTubeConnection = async () => {
+        try {
+          await fetchYouTubeChannel(selectedArtist.account_id);
+
           const successMessage = {
             id: generateUUID(),
             role: "user" as const,
@@ -59,8 +61,12 @@ export function useYouTubeLoginSuccess() {
           } as UIMessage;
 
           append(successMessage);
+        } catch {
+          // Ignore auth/check errors here; normal flow continues.
         }
-      });
+      };
+
+      void checkYouTubeConnection();
     }
   }, [messages, append, selectedArtist?.account_id]);
 }

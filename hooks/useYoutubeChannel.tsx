@@ -1,9 +1,8 @@
-import fetchYouTubeChannel from "@/lib/youtube/fetchYouTubeChannel";
-import { YouTubeChannelResponse } from "@/types/youtube";
 import { useQuery } from "@tanstack/react-query";
+import fetchYouTubeChannel from "@/lib/youtube/fetchYouTubeChannel";
 
 const useYoutubeChannel = (artistAccountId: string) => {
-  return useQuery<YouTubeChannelResponse>({
+  return useQuery({
     queryKey: ["youtube-channel-info", artistAccountId],
     queryFn: () => fetchYouTubeChannel(artistAccountId),
     enabled: !!artistAccountId, // Only run query if artistAccountId is provided

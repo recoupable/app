@@ -301,14 +301,6 @@ export type YouTubeChannelVideoListResult = {
   videos: YouTubeVideo[];
 };
 
-export interface YouTubeChannelResponse {
-  success: boolean;
-  channels: any[] | null;
-  tokenStatus: "valid" | "invalid" | "missing_param" | "api_error" | "error";
-  error?: string;
-  details?: string;
-}
-
 export interface YoutubeStatus {
   data: {
     status: "valid" | "invalid" | "error";

@@ -13,10 +13,8 @@ const useYoutubeStatus = (artistAccountId?: string) => {
         status: (() => {
           if (error) return "error";
           if (isLoading) return "invalid";
-          if (channelResponse) {
-            return channelResponse.tokenStatus === "valid"
-              ? "valid"
-              : "invalid";
+          if (Array.isArray(channelResponse) && channelResponse.length > 0) {
+            return "valid";
           }
           return "invalid";
         })(),
@@ -27,7 +25,7 @@ const useYoutubeStatus = (artistAccountId?: string) => {
   return {
     data,
     isLoading,
-    error: null,
+    error: error ?? null,
   } as YoutubeStatus;
 };
 
