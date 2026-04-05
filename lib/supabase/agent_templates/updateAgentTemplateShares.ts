@@ -1,6 +1,8 @@
-import getAccountDetailsByEmails from "@/lib/supabase/account_emails/getAccountDetailsByEmails";
+import { deleteAgentTemplateEmailSharesByTemplateId } from "./deleteAgentTemplateEmailShares";
 import { deleteAgentTemplateSharesByTemplateId } from "./deleteAgentTemplateShares";
+import { insertAgentTemplateEmailShares } from "./insertAgentTemplateEmailShares";
 import { insertAgentTemplateShares } from "./insertAgentTemplateShares";
+import { splitShareEmailsByAccount } from "./splitShareEmailsByAccount";
 
 /**
  * Update agent template shares - replaces existing shares with new ones
@@ -11,27 +13,33 @@ export async function updateAgentTemplateShares(
   templateId: string,
   emails: string[]
 ): Promise<void> {
-  // First, delete existing shares
-  await deleteAgentTemplateSharesByTemplateId(templateId);
+  // Replace both account-based shares and raw invited email shares.
+  await Promise.all([
+    deleteAgentTemplateSharesByTemplateId(templateId),
+    deleteAgentTemplateEmailSharesByTemplateId(templateId),
+  ]);
 
-  // Then create new shares if emails provided
-  if (emails && emails.length > 0) {
-    // Get user accounts by email using utility function
-    const userEmails = await getAccountDetailsByEmails(emails);
+  if (!emails || emails.length === 0) {
+    return;
+  }
 
-    if (userEmails.length === 0) {
-      return;
-    }
+  const { accountIds, invitedEmails } = await splitShareEmailsByAccount(emails);
 
-    // Create share records for found users (filter out null account_ids)
-    const sharesData = userEmails
-      .filter(userEmail => userEmail.account_id !== null)
-      .map(userEmail => ({
+  if (accountIds.length > 0) {
+    await insertAgentTemplateShares(
+      accountIds.map((accountId) => ({
         template_id: templateId,
-        user_id: userEmail.account_id!,
-      }));
+        user_id: accountId,
+      }))
+    );
+  }
 
-    // Insert shares using utility function
-    await insertAgentTemplateShares(sharesData);
+  if (invitedEmails.length > 0) {
+    await insertAgentTemplateEmailShares(
+      invitedEmails.map((email) => ({
+        template_id: templateId,
+        email,
+      }))
+    );
   }
 }
