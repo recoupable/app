@@ -13,6 +13,7 @@ import { ToastContainer } from "react-toastify";
 import { Toaster } from "sonner";
 import { Geist, Geist_Mono } from "next/font/google";
 import DeferredAnalytics from "@/components/DeferredAnalytics";
+import AccountOverrideBadge from "@/components/AccountOverrideBadge";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -71,14 +72,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html 
-      lang="en" 
-      suppressHydrationWarning 
+    <html
+      lang="en"
+      suppressHydrationWarning
       className={`${geist.variable} ${geistMono.variable}`}
     >
       <body className={`${geist.variable} antialiased`}>
         <Suspense>
           <Providers>
+            <AccountOverrideBadge />
             <div className="flex flex-col md:flex-row">
               <Sidebar />
               <Header />
