@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import { useQuery } from "@tanstack/react-query";
 import { ACCOUNT_OVERRIDE_STORAGE_KEY } from "@/lib/consts";
-import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import { fetchAccountIdByEmail } from "@/lib/accounts/fetchAccountIdByEmail";
 
 /**
  * Syncs the ?email= query param to session storage as an account ID override.
@@ -22,17 +22,7 @@ export default function AccountOverrideSync() {
     queryFn: async () => {
       const accessToken = await getAccessToken();
       if (!accessToken) return null;
-
-      const baseUrl = getClientApiBaseUrl();
-      const response = await fetch(
-        `${baseUrl}/api/accounts/${encodeURIComponent(emailParam!)}`,
-        { headers: { Authorization: `Bearer ${accessToken}` } },
-      );
-
-      if (!response.ok) return null;
-
-      const data = await response.json();
-      return data.account?.account_id ?? null;
+      return fetchAccountIdByEmail(emailParam!, accessToken);
     },
     enabled: !!emailParam && emailParam !== "clear",
     staleTime: Infinity,
