@@ -1,5 +1,4 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
-import type { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
 
 type KnowledgeItem = {
   name: string;
@@ -20,17 +19,13 @@ type UpdateAccountProfileArgs = {
   knowledges?: KnowledgeItem[];
 };
 
-type UpdateAccountProfileResponse = {
-  data: AccountWithDetails;
-};
-
 /**
  * Updates an account profile using the dedicated accounts API.
  */
 export async function updateAccountProfile({
   accessToken,
   ...body
-}: UpdateAccountProfileArgs): Promise<AccountWithDetails> {
+}: UpdateAccountProfileArgs) {
   const response = await fetch(`${getClientApiBaseUrl()}/api/accounts`, {
     method: "PATCH",
     headers: {
@@ -44,6 +39,6 @@ export async function updateAccountProfile({
     throw new Error(`Failed to update account: ${response.status}`);
   }
 
-  const data: UpdateAccountProfileResponse = await response.json();
+  const data = await response.json();
   return data.data;
 }
