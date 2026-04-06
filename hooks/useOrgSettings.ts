@@ -92,13 +92,7 @@ const useOrgSettings = (orgId: string | null) => {
           const data = await response.json();
           // Response structure: { status: "success", account: {...} }
           const account = data.account;
-          setOrgData({
-            id: account?.id || "",
-            name: account?.name || "",
-            image: account?.image || "",
-            instruction: account?.instruction || "",
-            knowledges: normalizeKnowledges(account?.knowledges),
-          });
+          setOrgData(account);
           setInstruction(account?.instruction || "");
           setKnowledges(normalizeKnowledges(account?.knowledges));
         }
@@ -182,13 +176,7 @@ const useOrgSettings = (orgId: string | null) => {
         instruction,
         knowledges,
       });
-      setOrgData({
-        id: data.id,
-        name: data.name || "",
-        image: data.image || "",
-        instruction: data.instruction || "",
-        knowledges: normalizeKnowledges(data.knowledges),
-      });
+      setOrgData(data);
       await queryClient.invalidateQueries({ queryKey: ["accountOrganizations"] });
       return true;
     } finally {
