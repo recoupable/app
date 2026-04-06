@@ -6,7 +6,7 @@ import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import useAccountOrganizations from "./useAccountOrganizations";
 import { usePrivy } from "@privy-io/react-auth";
 import { updateAccountProfile } from "@/lib/accounts/updateAccountProfile";
-import { normalizeKnowledges } from "@/lib/accounts/normalizeKnowledges";
+import type { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
 import type { Knowledge } from "@/types/Knowledge";
 
 interface OrgData {
@@ -15,6 +15,11 @@ interface OrgData {
   image?: string;
   instruction?: string;
   knowledges?: Knowledge[];
+}
+
+interface GetAccountResponse {
+  status: "success";
+  account: AccountWithDetails;
 }
 
 const useOrgSettings = (orgId: string | null) => {
@@ -66,7 +71,7 @@ const useOrgSettings = (orgId: string | null) => {
           `${getClientApiBaseUrl()}/api/accounts/${orgId}`
         );
         if (response.ok) {
-          const data = await response.json();
+          const data: GetAccountResponse = await response.json();
           // Response structure: { status: "success", account: {...} }
           const account = data.account;
           setOrgData({
@@ -74,10 +79,10 @@ const useOrgSettings = (orgId: string | null) => {
             name: account?.name || "",
             image: account?.image || "",
             instruction: account?.instruction || "",
-            knowledges: normalizeKnowledges(account?.knowledges),
+            knowledges: account?.knowledges || [],
           });
           setInstruction(account?.instruction || "");
-          setKnowledges(normalizeKnowledges(account?.knowledges));
+          setKnowledges(account?.knowledges || []);
         }
       } catch (error) {
         console.error("Error fetching org details:", error);
@@ -164,7 +169,7 @@ const useOrgSettings = (orgId: string | null) => {
         name: data.name || "",
         image: data.image || "",
         instruction: data.instruction || "",
-        knowledges: normalizeKnowledges(data.knowledges),
+        knowledges: data.knowledges || [],
       });
       await queryClient.invalidateQueries({ queryKey: ["accountOrganizations"] });
       return true;
