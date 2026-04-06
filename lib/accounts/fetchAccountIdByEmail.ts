@@ -17,7 +17,8 @@ export async function fetchAccountIdByEmail(
     { headers: { Authorization: `Bearer ${accessToken}` } },
   );
 
-  if (!response.ok) return null;
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`Account lookup failed: ${response.status}`);
 
   const data = await response.json();
   return data.account?.account_id ?? null;
