@@ -30,13 +30,9 @@ interface ChatProps {
 export function Chat({ id, reportId, initialMessages }: ChatProps) {
   const { selectedOrgId } = useOrganization();
   const providerKey = `${id}-${selectedOrgId ?? "personal"}`;
-
+  
   return (
-    <VercelChatProvider
-      key={providerKey}
-      chatId={id}
-      initialMessages={initialMessages}
-    >
+    <VercelChatProvider key={providerKey} chatId={id} initialMessages={initialMessages}>
       <ChatContent reportId={reportId} id={id} />
     </VercelChatProvider>
   );
@@ -87,7 +83,7 @@ function ChatContentMemoized({
         "px-4 md:px-0 pb-4 flex flex-col h-full items-center w-full relative",
         {
           "justify-between": messages.length > 0,
-        },
+        }
       )}
       {...getRootProps()}
     >
