@@ -5,9 +5,9 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAccountIdByEmail } from "@/lib/accounts/fetchAccountIdByEmail";
-import { getStoredAccountOverride } from "@/lib/accounts/getStoredAccountOverride";
-import { setStoredAccountOverride } from "@/lib/accounts/setStoredAccountOverride";
-import { clearStoredAccountOverride } from "@/lib/accounts/clearStoredAccountOverride";
+import { getStoredAccountOverride } from "@/lib/accounts/override/getStoredAccountOverride";
+import { setStoredAccountOverride } from "@/lib/accounts/override/setStoredAccountOverride";
+import { clearStoredAccountOverride } from "@/lib/accounts/override/clearStoredAccountOverride";
 
 interface AccountOverrideContextType {
   accountIdOverride: string | null;
