@@ -6,6 +6,7 @@ import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import useAccountOrganizations from "./useAccountOrganizations";
 import { usePrivy } from "@privy-io/react-auth";
 import { updateAccountProfile } from "@/lib/accounts/updateAccountProfile";
+import type { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
 
 interface KnowledgeItem {
   name: string;
@@ -13,19 +14,11 @@ interface KnowledgeItem {
   type: string;
 }
 
-interface OrgData {
-  id: string;
-  name: string;
-  image?: string;
-  instruction?: string;
-  knowledges?: KnowledgeItem[];
-}
-
 const useOrgSettings = (orgId: string | null) => {
   const { data: organizations } = useAccountOrganizations();
   const { getAccessToken } = usePrivy();
   const queryClient = useQueryClient();
-  const [orgData, setOrgData] = useState<OrgData | null>(null);
+  const [orgData, setOrgData] = useState<AccountWithDetails | null>(null);
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
   const [instruction, setInstruction] = useState("");
