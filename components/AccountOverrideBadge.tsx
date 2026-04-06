@@ -1,34 +1,36 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { usePrivy } from "@privy-io/react-auth";
 import { X } from "lucide-react";
 import { ACCOUNT_OVERRIDE_STORAGE_KEY } from "@/lib/consts";
-import { fetchAccountIdByEmail } from "@/lib/accounts/fetchAccountIdByEmail";
 
 /**
  * Displays a pill badge when an account override is active via ?email= query param.
- * Reads from the same tanstack query cache as AccountOverrideSync (DRY).
+ * Reads from session storage populated by AccountOverrideSync.
  */
 export default function AccountOverrideBadge() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { getAccessToken } = usePrivy();
   const email = searchParams.get("email");
+  const [isActive, setIsActive] = useState(false);
 
-  const { data: accountId } = useQuery({
-    queryKey: ["accountOverride", email],
-    queryFn: async () => {
-      const accessToken = await getAccessToken();
-      if (!accessToken) return null;
-      return fetchAccountIdByEmail(email!, accessToken);
-    },
-    enabled: !!email && email !== "clear",
-    staleTime: Infinity,
-  });
+  useEffect(() => {
+    if (!email || email === "clear") {
+      setIsActive(false);
+      return;
+    }
 
-  if (!accountId || !email) return null;
+    const check = () => {
+      setIsActive(!!window.sessionStorage.getItem(ACCOUNT_OVERRIDE_STORAGE_KEY));
+    };
+
+    check();
+    const interval = setInterval(check, 1000);
+    return () => clearInterval(interval);
+  }, [email]);
+
+  if (!isActive || !email) return null;
 
   const handleClear = () => {
     window.sessionStorage.removeItem(ACCOUNT_OVERRIDE_STORAGE_KEY);
@@ -38,6 +40,7 @@ export default function AccountOverrideBadge() {
       ? `${window.location.pathname}?${params.toString()}`
       : window.location.pathname;
     router.replace(newPath);
+    setIsActive(false);
   };
 
   return (
