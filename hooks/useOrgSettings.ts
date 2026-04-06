@@ -21,25 +21,6 @@ interface OrgData {
   knowledges?: KnowledgeItem[];
 }
 
-const normalizeKnowledges = (value: unknown): KnowledgeItem[] => {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.filter((item): item is KnowledgeItem => {
-    if (!item || typeof item !== "object") {
-      return false;
-    }
-
-    const knowledge = item as Partial<KnowledgeItem>;
-    return (
-      typeof knowledge.name === "string" &&
-      typeof knowledge.url === "string" &&
-      typeof knowledge.type === "string"
-    );
-  });
-};
-
 const useOrgSettings = (orgId: string | null) => {
   const { data: organizations } = useAccountOrganizations();
   const { getAccessToken } = usePrivy();
@@ -94,7 +75,7 @@ const useOrgSettings = (orgId: string | null) => {
           const account = data.account;
           setOrgData(account);
           setInstruction(account?.instruction || "");
-          setKnowledges(normalizeKnowledges(account?.knowledges));
+          setKnowledges(account?.knowledges || []);
         }
       } catch (error) {
         console.error("Error fetching org details:", error);
