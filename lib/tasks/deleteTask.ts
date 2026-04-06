@@ -3,6 +3,7 @@ import { TASKS_API_URL } from "@/lib/consts";
 
 export interface DeleteTaskParams {
   id: string;
+  accessToken: string;
 }
 
 const SCHEDULE_NOT_FOUND_MSG = "Schedule not found";
@@ -18,10 +19,13 @@ function isScheduleNotFoundError(errorText: string): boolean {
 /**
  * Delete task record from database when scheduler deletion isn't possible
  */
-async function deleteTaskFromDatabase(taskId: string): Promise<void> {
+async function deleteTaskFromDatabase(taskId: string, accessToken: string): Promise<void> {
   await fetch("/api/scheduled-actions/delete", {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
     body: JSON.stringify({ id: taskId }),
   });
 }
@@ -32,10 +36,15 @@ async function deleteTaskFromDatabase(taskId: string): Promise<void> {
  */
 export async function deleteTask(params: DeleteTaskParams): Promise<void> {
   try {
+    if (!params.accessToken) {
+      throw new Error("Please sign in to delete scheduled actions");
+    }
+
     const response = await fetch(TASKS_API_URL, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${params.accessToken}`,
       },
       body: JSON.stringify({
         id: params.id,
@@ -46,7 +55,7 @@ export async function deleteTask(params: DeleteTaskParams): Promise<void> {
       const errorText = await response.text();
 
       if (isScheduleNotFoundError(errorText)) {
-        await deleteTaskFromDatabase(params.id);
+        await deleteTaskFromDatabase(params.id, params.accessToken);
         return;
       }
 
