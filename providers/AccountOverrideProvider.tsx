@@ -1,15 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, ReactNode } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAccountIdByEmail } from "@/lib/accounts/fetchAccountIdByEmail";
-import {
-  getStoredAccountOverride,
-  setStoredAccountOverride,
-  clearStoredAccountOverride,
-} from "@/lib/accounts/accountOverrideStorage";
+import { getStoredAccountOverride } from "@/lib/accounts/getStoredAccountOverride";
+import { setStoredAccountOverride } from "@/lib/accounts/setStoredAccountOverride";
+import { clearStoredAccountOverride } from "@/lib/accounts/clearStoredAccountOverride";
 
 interface AccountOverrideContextType {
   accountIdOverride: string | null;
@@ -37,31 +35,30 @@ export function AccountOverrideProvider({ children }: { children: ReactNode }) {
 
   const [stored, setStored] = useState(getStoredAccountOverride);
   const email = emailParam || stored.email;
+  const isClear = emailParam === "clear";
 
   const { data: resolvedAccountId } = useQuery({
     queryKey: ["accountOverride", email],
     queryFn: async () => {
+      if (isClear) {
+        clearStoredAccountOverride();
+        setStored({ accountId: null, email: null });
+        return null;
+      }
       const accessToken = await getAccessToken();
       if (!accessToken) return null;
-      return fetchAccountIdByEmail(email!, accessToken);
+      const accountId = await fetchAccountIdByEmail(email!, accessToken);
+      if (accountId && email) {
+        setStoredAccountOverride(accountId, email);
+        setStored({ accountId, email });
+      }
+      return accountId;
     },
-    enabled: !!email && email !== "clear" && !stored.accountId,
+    enabled: (!!email || isClear) && !stored.accountId,
     staleTime: Infinity,
   });
 
   const accountIdOverride = stored.accountId || resolvedAccountId || null;
-
-  useEffect(() => {
-    if (emailParam === "clear") {
-      clearStoredAccountOverride();
-      setStored({ accountId: null, email: null });
-      return;
-    }
-    if (resolvedAccountId && email) {
-      setStoredAccountOverride(resolvedAccountId, email);
-      setStored({ accountId: resolvedAccountId, email });
-    }
-  }, [emailParam, email, resolvedAccountId]);
 
   const clear = useCallback(() => {
     clearStoredAccountOverride();
