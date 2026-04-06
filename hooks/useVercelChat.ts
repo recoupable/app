@@ -30,7 +30,7 @@ interface UseVercelChatProps {
   initialMessages?: UIMessage[];
   attachments?: FileUIPart[];
   textAttachments?: TextAttachment[];
-  email?: string;
+  accountIdOverride?: string;
 }
 
 /**
@@ -43,7 +43,7 @@ export function useVercelChat({
   initialMessages,
   attachments = [],
   textAttachments = [],
-  email,
+  accountIdOverride,
 }: UseVercelChatProps) {
   const { userData } = useUserProvider();
   const { selectedArtist } = useArtistProvider();
@@ -171,10 +171,10 @@ export function useVercelChat({
       artistId,
       // Only include organizationId if it's not null (schema expects string | undefined)
       ...(organizationId && { organizationId }),
-      ...(email && { email }),
+      ...(accountIdOverride && { accountId: accountIdOverride }),
       model,
     }),
-    [id, artistId, organizationId, email, model],
+    [id, artistId, organizationId, accountIdOverride, model],
   );
 
   const { messages, status, stop, sendMessage, setMessages, regenerate } =

@@ -20,6 +20,7 @@ import FileDragOverlay from "./FileDragOverlay";
 import { Loader } from "lucide-react";
 import { memo } from "react";
 import { useOrganization } from "@/providers/OrganizationProvider";
+import { useEmailAccountId } from "@/hooks/useEmailAccountId";
 
 interface ChatProps {
   id: string;
@@ -30,10 +31,16 @@ interface ChatProps {
 
 export function Chat({ id, reportId, initialMessages, email }: ChatProps) {
   const { selectedOrgId } = useOrganization();
+  const accountIdOverride = useEmailAccountId(email);
   const providerKey = `${id}-${selectedOrgId ?? "personal"}`;
 
   return (
-    <VercelChatProvider key={providerKey} chatId={id} initialMessages={initialMessages} email={email}>
+    <VercelChatProvider
+      key={providerKey}
+      chatId={id}
+      initialMessages={initialMessages}
+      accountIdOverride={accountIdOverride}
+    >
       <ChatContent reportId={reportId} id={id} />
     </VercelChatProvider>
   );
@@ -84,7 +91,7 @@ function ChatContentMemoized({
         "px-4 md:px-0 pb-4 flex flex-col h-full items-center w-full relative",
         {
           "justify-between": messages.length > 0,
-        }
+        },
       )}
       {...getRootProps()}
     >
