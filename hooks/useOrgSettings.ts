@@ -4,6 +4,8 @@ import { uploadFile } from "@/lib/arweave/uploadFile";
 import { getFileMimeType } from "@/utils/getFileMimeType";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import useAccountOrganizations from "./useAccountOrganizations";
+import { usePrivy } from "@privy-io/react-auth";
+import { updateAccountProfile } from "@/lib/accounts/updateAccountProfile";
 
 interface KnowledgeItem {
   name: string;
@@ -19,8 +21,28 @@ interface OrgData {
   knowledges?: KnowledgeItem[];
 }
 
+const normalizeKnowledges = (value: unknown): KnowledgeItem[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((item): item is KnowledgeItem => {
+    if (!item || typeof item !== "object") {
+      return false;
+    }
+
+    const knowledge = item as Partial<KnowledgeItem>;
+    return (
+      typeof knowledge.name === "string" &&
+      typeof knowledge.url === "string" &&
+      typeof knowledge.type === "string"
+    );
+  });
+};
+
 const useOrgSettings = (orgId: string | null) => {
   const { data: organizations } = useAccountOrganizations();
+  const { getAccessToken } = usePrivy();
   const queryClient = useQueryClient();
   const [orgData, setOrgData] = useState<OrgData | null>(null);
   const [name, setName] = useState("");
@@ -70,9 +92,15 @@ const useOrgSettings = (orgId: string | null) => {
           const data = await response.json();
           // Response structure: { status: "success", account: {...} }
           const account = data.account;
-          setOrgData(account);
+          setOrgData({
+            id: account?.id || "",
+            name: account?.name || "",
+            image: account?.image || "",
+            instruction: account?.instruction || "",
+            knowledges: normalizeKnowledges(account?.knowledges),
+          });
           setInstruction(account?.instruction || "");
-          setKnowledges(account?.knowledges || []);
+          setKnowledges(normalizeKnowledges(account?.knowledges));
         }
       } catch (error) {
         console.error("Error fetching org details:", error);
@@ -141,30 +169,32 @@ const useOrgSettings = (orgId: string | null) => {
 
     setIsSaving(true);
     try {
-      const response = await fetch("/api/account/update", {
-        method: "POST",
-        body: JSON.stringify({
-          accountId: orgId,
-          name,
-          image,
-          instruction,
-          knowledges,
-        }),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setOrgData(data.data);
-        // Invalidate org list cache so sidebar shows updated image/name immediately
-        await queryClient.invalidateQueries({ queryKey: ["accountOrganizations"] });
-        return true;
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        return false;
       }
-      return false;
+
+      const data = await updateAccountProfile({
+        accessToken,
+        accountId: orgId,
+        name,
+        image,
+        instruction,
+        knowledges,
+      });
+      setOrgData({
+        id: data.id,
+        name: data.name || "",
+        image: data.image || "",
+        instruction: data.instruction || "",
+        knowledges: normalizeKnowledges(data.knowledges),
+      });
+      await queryClient.invalidateQueries({ queryKey: ["accountOrganizations"] });
+      return true;
     } finally {
       setIsSaving(false);
     }
-  }, [orgId, name, image, instruction, knowledges, queryClient]);
+  }, [orgId, name, image, instruction, knowledges, queryClient, getAccessToken]);
 
   return {
     orgData,

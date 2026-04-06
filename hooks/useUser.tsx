@@ -8,6 +8,7 @@ import { useAccount } from "wagmi";
 import { toast } from "sonner";
 import { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
 import { fetchOrCreateAccount } from "@/lib/accounts/fetchOrCreateAccount";
+import { updateAccountProfile } from "@/lib/accounts/updateAccountProfile";
 
 const useUser = () => {
   const { login, user, logout, getAccessToken } = usePrivy();
@@ -64,29 +65,23 @@ const useUser = () => {
 
     setUpdating(true);
     try {
-      const response = await fetch("/api/account/update", {
-        method: "POST",
-        body: JSON.stringify({
-          instruction,
-          organization,
-          name,
-          image,
-          jobTitle,
-          roleType,
-          companyName,
-          accountId: userData.account_id,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
         return;
       }
 
-      const data = await response.json();
-      setUserData(data.data);
+      const data = await updateAccountProfile({
+        accessToken,
+        accountId: userData.account_id,
+        instruction,
+        organization,
+        name,
+        image,
+        jobTitle,
+        roleType,
+        companyName,
+      });
+      setUserData(data);
       setIsModalOpen(false);
     } catch {
       // Error handled silently
