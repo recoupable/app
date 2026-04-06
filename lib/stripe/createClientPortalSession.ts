@@ -1,12 +1,12 @@
-const createClientPortalSession = async (accountId: string) => {
+const createClientPortalSession = async (accessToken: string) => {
   try {
     const response = await fetch(`/api/stripe/portal/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({
-        accountId,
         returnUrl: window.location.href,
       }),
     });
