@@ -6,16 +6,39 @@ import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import useAccountOrganizations from "./useAccountOrganizations";
 import { usePrivy } from "@privy-io/react-auth";
 import { updateAccountProfile } from "@/lib/accounts/updateAccountProfile";
-import { normalizeKnowledges } from "@/lib/accounts/normalizeKnowledges";
-import type { Knowledge } from "@/types/Knowledge";
+
+interface KnowledgeItem {
+  name: string;
+  url: string;
+  type: string;
+}
 
 interface OrgData {
   id: string;
   name: string;
   image?: string;
   instruction?: string;
-  knowledges?: Knowledge[];
+  knowledges?: KnowledgeItem[];
 }
+
+const normalizeKnowledges = (value: unknown): KnowledgeItem[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((item): item is KnowledgeItem => {
+    if (!item || typeof item !== "object") {
+      return false;
+    }
+
+    const knowledge = item as Partial<KnowledgeItem>;
+    return (
+      typeof knowledge.name === "string" &&
+      typeof knowledge.url === "string" &&
+      typeof knowledge.type === "string"
+    );
+  });
+};
 
 const useOrgSettings = (orgId: string | null) => {
   const { data: organizations } = useAccountOrganizations();
@@ -25,7 +48,7 @@ const useOrgSettings = (orgId: string | null) => {
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
   const [instruction, setInstruction] = useState("");
-  const [knowledges, setKnowledges] = useState<Knowledge[]>([]);
+  const [knowledges, setKnowledges] = useState<KnowledgeItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
@@ -118,7 +141,7 @@ const useOrgSettings = (orgId: string | null) => {
       if (!files) return;
 
       setKnowledgeUploading(true);
-      const newKnowledges: Knowledge[] = [];
+      const newKnowledges: KnowledgeItem[] = [];
       try {
         for (const file of files) {
           const name = file.name;

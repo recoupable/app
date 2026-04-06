@@ -1,6 +1,11 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import type { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
-import type { Knowledge } from "@/types/Knowledge";
+
+type KnowledgeItem = {
+  name: string;
+  url: string;
+  type: string;
+};
 
 type UpdateAccountProfileArgs = {
   accountId: string;
@@ -12,7 +17,7 @@ type UpdateAccountProfileArgs = {
   jobTitle?: string;
   roleType?: string;
   companyName?: string;
-  knowledges?: Knowledge[];
+  knowledges?: KnowledgeItem[];
 };
 
 type UpdateAccountProfileResponse = {
