@@ -64,7 +64,6 @@ interface VercelChatProviderProps {
   children: ReactNode;
   chatId: string;
   initialMessages?: UIMessage[];
-  accountIdOverride?: string;
 }
 
 /**
@@ -74,7 +73,6 @@ export function VercelChatProvider({
   children,
   chatId,
   initialMessages,
-  accountIdOverride,
 }: VercelChatProviderProps) {
   const {
     attachments,
@@ -124,7 +122,6 @@ export function VercelChatProvider({
     initialMessages,
     attachments,
     textAttachments,
-    accountIdOverride,
   });
 
   const reload = useCallback(() => {

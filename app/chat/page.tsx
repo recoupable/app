@@ -13,11 +13,9 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
   const params = await searchParams;
   const initialMessage = Array.isArray(params?.q) ? params.q[0] : params?.q;
   const initialMessages = getMessages(initialMessage);
-  const email = Array.isArray(params?.email) ? params.email[0] : params?.email;
-
   return (
     <div className="flex flex-col size-full items-center">
-      <Chat id={id} initialMessages={initialMessages} email={email} />
+      <Chat id={id} initialMessages={initialMessages} />
     </div>
   );
 }

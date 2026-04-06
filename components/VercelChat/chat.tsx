@@ -20,18 +20,15 @@ import FileDragOverlay from "./FileDragOverlay";
 import { Loader } from "lucide-react";
 import { memo } from "react";
 import { useOrganization } from "@/providers/OrganizationProvider";
-import { useEmailAccountId } from "@/hooks/useEmailAccountId";
 
 interface ChatProps {
   id: string;
   reportId?: string;
   initialMessages?: UIMessage[];
-  email?: string;
 }
 
-export function Chat({ id, reportId, initialMessages, email }: ChatProps) {
+export function Chat({ id, reportId, initialMessages }: ChatProps) {
   const { selectedOrgId } = useOrganization();
-  const accountIdOverride = useEmailAccountId(email);
   const providerKey = `${id}-${selectedOrgId ?? "personal"}`;
 
   return (
@@ -39,7 +36,6 @@ export function Chat({ id, reportId, initialMessages, email }: ChatProps) {
       key={providerKey}
       chatId={id}
       initialMessages={initialMessages}
-      accountIdOverride={accountIdOverride}
     >
       <ChatContent reportId={reportId} id={id} />
     </VercelChatProvider>
