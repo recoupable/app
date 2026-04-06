@@ -26,7 +26,7 @@ const ViewingMessageComponent: React.FC<ViewingMessageProps> = ({
   const hasText = remainingText.length > 0;
 
   return (
-    <div className={cn("flex flex-col gap-2", { "items-end": message.role === "user" })}>
+    <div className="flex flex-col gap-2">
       {hasAttachments && (
         <div className="flex flex-wrap gap-2">
           {textAttachments.map((attachment, index) => (
