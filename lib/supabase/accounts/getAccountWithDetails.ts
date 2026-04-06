@@ -1,11 +1,8 @@
 import supabase from "../serverClient";
 import { Tables } from "@/types/database.types";
-import type { Knowledge } from "@/types/Knowledge";
 
 type Account = Tables<"accounts">;
-type AccountInfo = Omit<Tables<"account_info">, "knowledges"> & {
-  knowledges: Knowledge[] | null;
-};
+type AccountInfo = Tables<"account_info">;
 type AccountEmail = Tables<"account_emails">;
 type AccountWallet = Tables<"account_wallets">;
 
