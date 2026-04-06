@@ -25,14 +25,15 @@ interface ChatProps {
   id: string;
   reportId?: string;
   initialMessages?: UIMessage[];
+  email?: string;
 }
 
-export function Chat({ id, reportId, initialMessages }: ChatProps) {
+export function Chat({ id, reportId, initialMessages, email }: ChatProps) {
   const { selectedOrgId } = useOrganization();
   const providerKey = `${id}-${selectedOrgId ?? "personal"}`;
-  
+
   return (
-    <VercelChatProvider key={providerKey} chatId={id} initialMessages={initialMessages}>
+    <VercelChatProvider key={providerKey} chatId={id} initialMessages={initialMessages} email={email}>
       <ChatContent reportId={reportId} id={id} />
     </VercelChatProvider>
   );

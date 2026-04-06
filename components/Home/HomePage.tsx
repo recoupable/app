@@ -8,9 +8,11 @@ import { UIMessage } from "ai";
 const HomePage = ({
   id,
   initialMessages,
+  email,
 }: {
   id: string;
   initialMessages?: UIMessage[];
+  email?: string;
 }) => {
   const { setFrameReady, isFrameReady } = useMiniKit();
 
@@ -22,7 +24,7 @@ const HomePage = ({
 
   return (
     <div className="flex flex-col size-full items-center">
-      <Chat id={id} initialMessages={initialMessages} />
+      <Chat id={id} initialMessages={initialMessages} email={email} />
     </div>
   );
 };

@@ -10,8 +10,10 @@ interface ChatPageProps {
 
 export default async function Home({ searchParams }: ChatPageProps) {
   const id = generateUUID();
-  const initialMessage = (await searchParams)?.q as string;
+  const params = await searchParams;
+  const initialMessage = params?.q as string;
   const initialMessages = getMessages(initialMessage);
+  const email = params?.email as string | undefined;
 
-  return <HomePage id={id} initialMessages={initialMessages} />;
+  return <HomePage id={id} initialMessages={initialMessages} email={email} />;
 }
