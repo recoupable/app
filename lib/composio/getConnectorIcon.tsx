@@ -3,6 +3,7 @@ import {
   SiGoogledrive,
   SiGoogledocs,
   SiTiktok,
+  SiInstagram,
 } from "@icons-pack/react-simple-icons";
 import { Link2 } from "lucide-react";
 
@@ -18,6 +19,7 @@ export function getConnectorIcon(slug: string, size = 24): React.ReactNode {
     googledrive: <SiGoogledrive {...iconProps} color="#4285F4" />,
     googledocs: <SiGoogledocs {...iconProps} color="#4285F4" />,
     tiktok: <SiTiktok {...iconProps} />,
+    instagram: <SiInstagram {...iconProps} color="#E4405F" />,
   };
 
   return (
