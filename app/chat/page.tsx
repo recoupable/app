@@ -10,9 +10,9 @@ interface ChatPageProps {
 
 export default async function ChatPage({ searchParams }: ChatPageProps) {
   const id = generateUUID();
-  const params = await searchParams;
-  const initialMessage = Array.isArray(params?.q) ? params.q[0] : params?.q;
+  const initialMessage = (await searchParams)?.q as string;
   const initialMessages = getMessages(initialMessage);
+
   return (
     <div className="flex flex-col size-full items-center">
       <Chat id={id} initialMessages={initialMessages} />
