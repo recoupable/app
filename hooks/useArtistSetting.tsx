@@ -2,6 +2,7 @@ import { uploadFile } from "@/lib/arweave/uploadFile";
 import { useEffect, useRef, useState } from "react";
 import { ArtistRecord } from "@/types/Artist";
 import { getFileMimeType } from "@/utils/getFileMimeType";
+import { toast } from "sonner";
 
 const useArtistSetting = () => {
   const imageRef = useRef<HTMLInputElement>(null);
@@ -48,6 +49,7 @@ const useArtistSetting = () => {
       setImage(uri);
     } catch (error) {
       console.error("Failed to upload image:", error);
+      toast.error("Failed to upload image. Please try again.");
     }
     setImageUploading(false);
   };

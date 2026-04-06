@@ -9,10 +9,28 @@ import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useOrganization } from "@/providers/OrganizationProvider";
 import { cn } from "@/lib/utils";
 import { NEW_API_BASE_URL } from "@/lib/consts";
+import type { ArtistRecord } from "@/types/Artist";
+import type { Tables } from "@/types/database.types";
 
 interface CreateWorkspaceModalProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+type WorkspaceResponse = Tables<"accounts"> & {
+  account_info?: Tables<"account_info">[];
+  account_socials?: Tables<"account_socials">[];
+};
+
+function normalizeWorkspace(workspace: WorkspaceResponse): ArtistRecord {
+  const accountInfo = workspace.account_info?.[0] || {};
+
+  return {
+    ...workspace,
+    ...accountInfo,
+    account_id: workspace.id,
+    isWorkspace: true,
+  };
 }
 
 const CreateWorkspaceModal = ({ isOpen, onClose }: CreateWorkspaceModalProps) => {
@@ -57,10 +75,7 @@ const CreateWorkspaceModal = ({ isOpen, onClose }: CreateWorkspaceModalProps) =>
       const data = await response.json();
       
       if (response.ok && data.workspace) {
-        const newWorkspace = {
-          ...data.workspace,
-          account_id: data.workspace.id,
-        };
+        const newWorkspace = normalizeWorkspace(data.workspace);
         
         setSelectedArtist(newWorkspace);
         setEditableArtist(newWorkspace);

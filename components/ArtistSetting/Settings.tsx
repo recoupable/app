@@ -51,8 +51,8 @@ const Settings = ({ defaultTab = "general" }: SettingsProps) => {
     // Only update selected artist if save was successful
     if (artistInfo) {
       setSelectedArtist(artistInfo);
+      toggleSettingModal();
     }
-    toggleSettingModal();
   };
 
   // Header is shared between tabbed and non-tabbed views

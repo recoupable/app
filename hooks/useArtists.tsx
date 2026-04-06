@@ -47,7 +47,7 @@ const useArtists = () => {
     setSelectedArtist,
     selectedOrgId
   );
-  const [menuVisibleArtistId, setMenuVisibleArtistId] = useState<any>("");
+  const [menuVisibleArtistId, setMenuVisibleArtistId] = useState<string>("");
   const { isCreatingArtist, setIsCreatingArtist, updateChatState } =
     useCreateArtists();
 
@@ -120,6 +120,32 @@ const useArtists = () => {
     [userData, selectedOrgId, accessToken]
   );
 
+  const syncArtistLocally = useCallback((artist: ArtistRecord) => {
+    setArtists((current) => {
+      const next = [...current];
+      const existingIndex = next.findIndex(
+        (item) => item.account_id === artist.account_id
+      );
+
+      if (existingIndex >= 0) {
+        next[existingIndex] = {
+          ...next[existingIndex],
+          ...artist,
+        };
+        return next;
+      }
+
+      return [artist, ...next];
+    });
+
+    setSelectedArtist((current) =>
+      current?.account_id === artist.account_id ? { ...current, ...artist } : artist
+    );
+    artistSetting.setEditableArtist((current) =>
+      current?.account_id === artist.account_id ? { ...current, ...artist } : artist
+    );
+  }, [artistSetting]);
+
   const saveSetting = async (
     overrideKnowledges?: Array<{ name: string; url: string; type: string }>
   ) => {
@@ -151,11 +177,23 @@ const useArtists = () => {
         // Link new artist to selected org (only applies when creating)
         organizationId: saveMode === SETTING_MODE.CREATE ? selectedOrgId : null,
       });
+      const savedArtist = data.artist
+        ? {
+            ...data.artist,
+            isWorkspace:
+              artistSetting.editableArtist?.isWorkspace ?? data.artist.isWorkspace,
+          }
+        : null;
+
+      if (savedArtist) {
+        syncArtistLocally(savedArtist);
+      }
+
       await getArtists(data.artist?.account_id);
       setUpdating(false);
       if (artistMode.settingMode === SETTING_MODE.CREATE)
         artistMode.setSettingMode(SETTING_MODE.UPDATE);
-      return data.artist;
+      return savedArtist;
     } catch (error) {
       console.error(error);
       setUpdating(false);
