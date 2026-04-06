@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { CreateArtistResult } from "@/types/createArtistResult";
-import useCreateArtistTool from "@/hooks/useCreateArtistTool";
 import GenericSuccess from "./GenericSuccess";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 
@@ -19,7 +18,6 @@ export function CreateArtistToolResult({
   result,
 }: CreateArtistToolResultProps) {
   const { getArtists } = useArtistProvider();
-  const { isProcessing, error: processingError } = useCreateArtistTool(result);
 
   useEffect(() => {
     getArtists(result.artistAccountId);
@@ -46,13 +44,7 @@ export function CreateArtistToolResult({
     <GenericSuccess
       image={result.artist.image}
       name={result.artist.name}
-      message={
-        isProcessing
-          ? "Setting up artist conversation..."
-          : processingError
-            ? `Created successfully but: ${processingError}`
-            : "Artist created successfully"
-      }
+      message="Artist created successfully"
     />
   );
 }
