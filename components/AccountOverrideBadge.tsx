@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { ACCOUNT_OVERRIDE_STORAGE_KEY } from "@/lib/consts";
@@ -13,24 +12,8 @@ export default function AccountOverrideBadge() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const email = searchParams.get("email");
-  const [isActive, setIsActive] = useState(false);
 
-  useEffect(() => {
-    if (!email || email === "clear") {
-      setIsActive(false);
-      return;
-    }
-
-    const check = () => {
-      setIsActive(!!window.sessionStorage.getItem(ACCOUNT_OVERRIDE_STORAGE_KEY));
-    };
-
-    check();
-    const interval = setInterval(check, 1000);
-    return () => clearInterval(interval);
-  }, [email]);
-
-  if (!isActive || !email) return null;
+  if (!email || email === "clear") return null;
 
   const handleClear = () => {
     window.sessionStorage.removeItem(ACCOUNT_OVERRIDE_STORAGE_KEY);
@@ -40,7 +23,6 @@ export default function AccountOverrideBadge() {
       ? `${window.location.pathname}?${params.toString()}`
       : window.location.pathname;
     router.replace(newPath);
-    setIsActive(false);
   };
 
   return (
