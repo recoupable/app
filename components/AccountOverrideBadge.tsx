@@ -26,15 +26,15 @@ export default function AccountOverrideBadge() {
   };
 
   return (
-    <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-primary/90 text-white px-3 py-1.5 rounded-full shadow-lg text-sm backdrop-blur-sm">
-      <span className="opacity-80">Viewing as</span>
-      <span className="font-medium">{email}</span>
+    <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-amber-500 text-black px-4 py-2 rounded-full shadow-lg text-sm font-medium">
+      <span>Viewing as</span>
+      <span className="font-bold">{email}</span>
       <button
         onClick={handleClear}
-        className="ml-1 p-0.5 rounded-full hover:bg-white/20 transition-colors"
+        className="ml-1 p-0.5 rounded-full hover:bg-black/10 transition-colors"
         aria-label="Clear account override"
       >
-        <X className="h-3.5 w-3.5" />
+        <X className="h-4 w-4" />
       </button>
     </div>
   );
