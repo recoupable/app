@@ -12,7 +12,8 @@ import { useConversationsProvider } from "@/providers/ConversationsProvider";
 import { UIMessage, FileUIPart } from "ai";
 import useAvailableModels from "./useAvailableModels";
 import { useLocalStorage } from "usehooks-ts";
-import { DEFAULT_MODEL, ACCOUNT_OVERRIDE_STORAGE_KEY } from "@/lib/consts";
+import { DEFAULT_MODEL } from "@/lib/consts";
+import { useAccountOverride } from "@/providers/AccountOverrideProvider";
 import { usePaymentProvider } from "@/providers/PaymentProvider";
 import useArtistFilesForMentions from "@/hooks/useArtistFilesForMentions";
 import type { KnowledgeBaseEntry } from "@/lib/supabase/getArtistKnowledge";
@@ -163,10 +164,7 @@ export function useVercelChat({
     return outputs;
   }, [knowledgeFiles]);
 
-  const accountIdOverride =
-    typeof window !== "undefined"
-      ? window.sessionStorage.getItem(ACCOUNT_OVERRIDE_STORAGE_KEY)
-      : null;
+  const { accountIdOverride } = useAccountOverride();
 
   const chatRequestBody = useMemo(
     () => ({

@@ -14,7 +14,7 @@ import { MiniAppProvider } from "./MiniAppProvider";
 import { ThemeProvider } from "./ThemeProvider";
 import { OrganizationProvider } from "./OrganizationProvider";
 import ApiOverrideSync from "./ApiOverrideSync";
-import AccountOverrideSync from "./AccountOverrideSync";
+import { AccountOverrideProvider } from "./AccountOverrideProvider";
 
 const queryClient = new QueryClient();
 
@@ -29,7 +29,7 @@ const Providers = ({ children }: { children: React.ReactNode }) => (
     >
       <WagmiProvider>
         <PrivyProvider>
-          <AccountOverrideSync />
+          <AccountOverrideProvider>
           <MiniKitProvider>
             <MiniAppProvider>
               <UserProvider>
@@ -47,6 +47,7 @@ const Providers = ({ children }: { children: React.ReactNode }) => (
               </UserProvider>
             </MiniAppProvider>
           </MiniKitProvider>
+        </AccountOverrideProvider>
         </PrivyProvider>
       </WagmiProvider>
     </ThemeProvider>
