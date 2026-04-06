@@ -7,9 +7,10 @@ import { uploadFile } from "@/lib/arweave/uploadFile";
 import { useAccount } from "wagmi";
 import { toast } from "sonner";
 import { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
+import { fetchOrCreateAccount } from "@/lib/accounts/fetchOrCreateAccount";
 
 const useUser = () => {
-  const { login, user, logout } = usePrivy();
+  const { login, user, logout, getAccessToken } = usePrivy();
   const { address: wagmiAddress } = useAccount();
   const address = (user?.wallet?.address as Address) || wagmiAddress;
   const email = user?.email?.address;
@@ -119,37 +120,25 @@ const useUser = () => {
 
   useEffect(() => {
     const init = async () => {
-      const config = {
-        method: "POST",
-        body: JSON.stringify({
-          email,
-          wallet: address,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      const response = await fetch("/api/account", config);
+      const accessToken = await getAccessToken();
+      const data = await fetchOrCreateAccount({
+        email,
+        wallet: address,
+        accessToken,
+      });
 
-      if (!response.ok) {
-        throw new Error(
-          `Email API request failed with status: ${response.status}`
-        );
-      }
-
-      const data = await response.json();
-      setUserData(data.data);
-      setImage(data.data?.image || "");
-      setInstruction(data.data?.instruction || "");
-      setName(data?.data?.name || "");
-      setOrganization(data?.data?.organization || "");
-      setJobTitle(data?.data?.job_title || "");
-      setRoleType(data?.data?.role_type || "");
-      setCompanyName(data?.data?.company_name || "");
+      setUserData(data);
+      setImage(data.image || "");
+      setInstruction(data.instruction || "");
+      setName(data.name || "");
+      setOrganization(data.organization || "");
+      setJobTitle(data.job_title || "");
+      setRoleType(data.role_type || "");
+      setCompanyName(data.company_name || "");
     };
     if (!email && !address) return;
     init();
-  }, [email, address]);
+  }, [email, address, getAccessToken]);
 
   return {
     address,
