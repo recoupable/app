@@ -11,11 +11,8 @@ import { extractAccountIds } from "@/utils/extractAccountIds";
 import FileInfoDialogHeader from "./FileInfoDialogHeader";
 import FileInfoDialogContent from "./FileInfoDialogContent";
 import FileInfoDialogMetadata from "./FileInfoDialogMetadata";
-import { useQuery } from "@tanstack/react-query";
-import { Tables } from "@/types/database.types";
 import { useUserProvider } from "@/providers/UserProvder";
-
-type AccountEmail = Tables<"account_emails">;
+import { useAccountEmails } from "@/hooks/useAccountEmails";
 
 type FileInfoDialogProps = {
   file: FileRow | null;
@@ -38,19 +35,10 @@ export default function FileInfoDialog({ file, open, onOpenChange }: FileInfoDia
   const canEdit = file ? isTextFile(file.file_name) : false;
 
   // Fetch owner email
-  const { data: emails } = useQuery<AccountEmail[]>({
-    queryKey: ["file-owner-email", ownerAccountId, artistAccountId],
-    queryFn: async () => {
-      if (!ownerAccountId || !artistAccountId || !userData) return [];
-      const params = new URLSearchParams();
-      params.append("accountIds", ownerAccountId);
-      params.append("currentAccountId", userData.id);
-      params.append("artistAccountId", artistAccountId);
-      const response = await fetch(`/api/account-emails?${params}`);
-      if (!response.ok) return [];
-      return response.json();
-    },
-    enabled: !!ownerAccountId && !!artistAccountId && !!userData && open,
+  const { data: emails } = useAccountEmails({
+    accountIds: ownerAccountId ? [ownerAccountId] : [],
+    enabled: open,
+    queryKey: ["file-owner-email", ownerAccountId],
   });
 
   const ownerEmail = emails?.[0]?.email || undefined;
@@ -121,4 +109,3 @@ export default function FileInfoDialog({ file, open, onOpenChange }: FileInfoDia
     </Dialog>
   );
 }
-
