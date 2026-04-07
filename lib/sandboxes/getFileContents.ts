@@ -21,16 +21,20 @@ interface FileContentsResult {
 export async function getFileContents(
   accessToken: string,
   path: string,
+  accountId?: string | null,
 ): Promise<FileContentsResult> {
-  const response = await fetch(
-    `${getClientApiBaseUrl()}/api/sandboxes/file?path=${encodeURIComponent(path)}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+  const url = new URL(`${getClientApiBaseUrl()}/api/sandboxes/file`);
+  url.searchParams.set("path", path);
+  if (accountId) {
+    url.searchParams.set("account_id", accountId);
+  }
+
+  const response = await fetch(url.toString(), {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
-  );
+  });
 
   const data: GetFileContentsResponse = await response.json();
 

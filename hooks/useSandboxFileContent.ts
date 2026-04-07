@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
+import { useAccountOverride } from "@/providers/AccountOverrideProvider";
 
 interface UseSandboxFileContentReturn {
   selectedPath: string | undefined;
@@ -14,6 +15,7 @@ interface UseSandboxFileContentReturn {
 
 export default function useSandboxFileContent(): UseSandboxFileContentReturn {
   const { getAccessToken } = usePrivy();
+  const { accountIdOverride } = useAccountOverride();
   const [selectedPath, setSelectedPath] = useState<string>();
 
   const mutation = useMutation({
@@ -23,7 +25,7 @@ export default function useSandboxFileContent(): UseSandboxFileContentReturn {
         throw new Error("Please sign in to view file contents");
       }
 
-      return getFileContents(accessToken, path);
+      return getFileContents(accessToken, path, accountIdOverride);
     },
   });
 
