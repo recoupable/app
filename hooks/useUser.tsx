@@ -7,6 +7,7 @@ import { uploadFile } from "@/lib/arweave/uploadFile";
 import { useAccount } from "wagmi";
 import { toast } from "sonner";
 import { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
+import { NEW_API_BASE_URL } from "@/lib/consts";
 
 const useUser = () => {
   const { login, user, logout } = usePrivy();
@@ -63,8 +64,8 @@ const useUser = () => {
 
     setUpdating(true);
     try {
-      const response = await fetch("/api/account/update", {
-        method: "POST",
+      const response = await fetch(`${NEW_API_BASE_URL}/api/accounts`, {
+        method: "PATCH",
         body: JSON.stringify({
           instruction,
           organization,
@@ -129,7 +130,7 @@ const useUser = () => {
           "Content-Type": "application/json",
         },
       };
-      const response = await fetch("/api/account", config);
+      const response = await fetch(`${NEW_API_BASE_URL}/api/accounts`, config);
 
       if (!response.ok) {
         throw new Error(

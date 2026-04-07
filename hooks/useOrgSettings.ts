@@ -141,8 +141,8 @@ const useOrgSettings = (orgId: string | null) => {
 
     setIsSaving(true);
     try {
-      const response = await fetch("/api/account/update", {
-        method: "POST",
+      const response = await fetch(`${NEW_API_BASE_URL}/api/accounts`, {
+        method: "PATCH",
         body: JSON.stringify({
           accountId: orgId,
           name,
