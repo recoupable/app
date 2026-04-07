@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import supabase from "@/lib/supabase/serverClient";
 import { z } from "zod";
 import { validateHeaders } from "@/lib/chat/validateHeaders";
 import { checkAccountArtistAccess } from "@/lib/supabase/account_artist_ids/checkAccountArtistAccess";
+import { deleteScheduledActionById } from "@/lib/supabase/scheduled_actions/deleteScheduledActionById";
+import { selectScheduledActionById } from "@/lib/supabase/scheduled_actions/selectScheduledActionById";
 
 const deleteScheduledActionBodySchema = z.object({
   id: z.string().uuid("id must be a valid UUID"),
@@ -34,11 +35,7 @@ export async function DELETE(req: NextRequest) {
   try {
     const { id } = parsed.data;
 
-    const { data: scheduledAction, error: selectError } = await supabase
-      .from("scheduled_actions")
-      .select("id, account_id, artist_account_id")
-      .eq("id", id)
-      .maybeSingle();
+    const { data: scheduledAction, error: selectError } = await selectScheduledActionById(id);
 
     if (selectError) {
       throw new Error(`Failed to load task: ${selectError.message}`);
@@ -57,10 +54,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { error } = await supabase
-      .from("scheduled_actions")
-      .delete()
-      .eq("id", id);
+    const { error } = await deleteScheduledActionById(id);
 
     if (error) {
       throw new Error(`Failed to delete task: ${error.message}`);
@@ -76,4 +70,3 @@ export async function DELETE(req: NextRequest) {
 }
 
 export const dynamic = "force-dynamic";
-

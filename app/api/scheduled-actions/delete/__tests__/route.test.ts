@@ -1,15 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { DELETE } from "../route";
-import supabase from "@/lib/supabase/serverClient";
 import { validateHeaders } from "@/lib/chat/validateHeaders";
 import { checkAccountArtistAccess } from "@/lib/supabase/account_artist_ids/checkAccountArtistAccess";
-
-vi.mock("@/lib/supabase/serverClient", () => ({
-  default: {
-    from: vi.fn(),
-  },
-}));
+import { deleteScheduledActionById } from "@/lib/supabase/scheduled_actions/deleteScheduledActionById";
+import { selectScheduledActionById } from "@/lib/supabase/scheduled_actions/selectScheduledActionById";
 
 vi.mock("@/lib/chat/validateHeaders", () => ({
   validateHeaders: vi.fn(),
@@ -17,6 +12,14 @@ vi.mock("@/lib/chat/validateHeaders", () => ({
 
 vi.mock("@/lib/supabase/account_artist_ids/checkAccountArtistAccess", () => ({
   checkAccountArtistAccess: vi.fn(),
+}));
+
+vi.mock("@/lib/supabase/scheduled_actions/selectScheduledActionById", () => ({
+  selectScheduledActionById: vi.fn(),
+}));
+
+vi.mock("@/lib/supabase/scheduled_actions/deleteScheduledActionById", () => ({
+  deleteScheduledActionById: vi.fn(),
 }));
 
 function makeRequest(body: unknown): NextRequest {
@@ -28,9 +31,10 @@ function makeRequest(body: unknown): NextRequest {
 }
 
 describe("DELETE /api/scheduled-actions/delete", () => {
-  const mockFrom = vi.mocked(supabase.from);
   const mockValidateHeaders = vi.mocked(validateHeaders);
   const mockCheckAccountArtistAccess = vi.mocked(checkAccountArtistAccess);
+  const mockSelectScheduledActionById = vi.mocked(selectScheduledActionById);
+  const mockDeleteScheduledActionById = vi.mocked(deleteScheduledActionById);
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -44,7 +48,7 @@ describe("DELETE /api/scheduled-actions/delete", () => {
 
     expect(response.status).toBe(401);
     expect(data).toEqual({ error: "Unauthorized" });
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockSelectScheduledActionById).not.toHaveBeenCalled();
   });
 
   it("returns 400 when id is missing or invalid", async () => {
@@ -55,16 +59,15 @@ describe("DELETE /api/scheduled-actions/delete", () => {
 
     expect(response.status).toBe(400);
     expect(data.error).toContain("UUID");
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockSelectScheduledActionById).not.toHaveBeenCalled();
   });
 
   it("returns 404 when task does not exist", async () => {
     mockValidateHeaders.mockResolvedValueOnce({ accountId: "account-123" });
-
-    const maybeSingle = vi.fn().mockResolvedValueOnce({ data: null, error: null });
-    const eq = vi.fn().mockReturnValue({ maybeSingle });
-    const select = vi.fn().mockReturnValue({ eq });
-    mockFrom.mockReturnValueOnce({ select } as never);
+    mockSelectScheduledActionById.mockResolvedValueOnce({
+      data: null,
+      error: null,
+    } as Awaited<ReturnType<typeof selectScheduledActionById>>);
 
     const response = await DELETE(makeRequest({ id: "1e632dc8-94aa-4f85-9f85-241213d0d2f9" }));
     const data = await response.json();
@@ -76,46 +79,36 @@ describe("DELETE /api/scheduled-actions/delete", () => {
   it("returns 403 when caller is not owner and lacks artist access", async () => {
     mockValidateHeaders.mockResolvedValueOnce({ accountId: "account-123" });
     mockCheckAccountArtistAccess.mockResolvedValueOnce(false);
-
-    const maybeSingle = vi.fn().mockResolvedValueOnce({
+    mockSelectScheduledActionById.mockResolvedValueOnce({
       data: {
         id: "1e632dc8-94aa-4f85-9f85-241213d0d2f9",
         account_id: "other-account",
         artist_account_id: "artist-456",
       },
       error: null,
-    });
-    const eqForSelect = vi.fn().mockReturnValue({ maybeSingle });
-    const select = vi.fn().mockReturnValue({ eq: eqForSelect });
-    mockFrom.mockReturnValueOnce({ select } as never);
+    } as Awaited<ReturnType<typeof selectScheduledActionById>>);
 
     const response = await DELETE(makeRequest({ id: "1e632dc8-94aa-4f85-9f85-241213d0d2f9" }));
     const data = await response.json();
 
     expect(response.status).toBe(403);
     expect(data).toEqual({ error: "Forbidden" });
+    expect(mockDeleteScheduledActionById).not.toHaveBeenCalled();
   });
 
   it("returns 200 and deletes when caller owns the task", async () => {
     mockValidateHeaders.mockResolvedValueOnce({ accountId: "account-123" });
-
-    const maybeSingle = vi.fn().mockResolvedValueOnce({
+    mockSelectScheduledActionById.mockResolvedValueOnce({
       data: {
         id: "1e632dc8-94aa-4f85-9f85-241213d0d2f9",
         account_id: "account-123",
         artist_account_id: "artist-456",
       },
       error: null,
-    });
-    const eqForSelect = vi.fn().mockReturnValue({ maybeSingle });
-    const select = vi.fn().mockReturnValue({ eq: eqForSelect });
-
-    const deleteEq = vi.fn().mockResolvedValueOnce({ error: null });
-    const deleteFn = vi.fn().mockReturnValue({ eq: deleteEq });
-
-    mockFrom
-      .mockReturnValueOnce({ select } as never)
-      .mockReturnValueOnce({ delete: deleteFn } as never);
+    } as Awaited<ReturnType<typeof selectScheduledActionById>>);
+    mockDeleteScheduledActionById.mockResolvedValueOnce({
+      error: null,
+    } as Awaited<ReturnType<typeof deleteScheduledActionById>>);
 
     const response = await DELETE(makeRequest({ id: "1e632dc8-94aa-4f85-9f85-241213d0d2f9" }));
     const data = await response.json();
@@ -123,7 +116,9 @@ describe("DELETE /api/scheduled-actions/delete", () => {
     expect(response.status).toBe(200);
     expect(data).toEqual({ success: true });
     expect(mockCheckAccountArtistAccess).not.toHaveBeenCalled();
-    expect(deleteFn).toHaveBeenCalledOnce();
-    expect(deleteEq).toHaveBeenCalledWith("id", "1e632dc8-94aa-4f85-9f85-241213d0d2f9");
+    expect(mockDeleteScheduledActionById).toHaveBeenCalledTimes(1);
+    expect(mockDeleteScheduledActionById).toHaveBeenCalledWith(
+      "1e632dc8-94aa-4f85-9f85-241213d0d2f9"
+    );
   });
 });
