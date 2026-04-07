@@ -20,17 +20,21 @@ type FileInfoDialogProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-export default function FileInfoDialog({ file, open, onOpenChange }: FileInfoDialogProps) {
+export default function FileInfoDialog({
+  file,
+  open,
+  onOpenChange,
+}: FileInfoDialogProps) {
   const { userData } = useUserProvider();
   const { content } = useFileContent(
-    file?.file_name || "", 
-    file?.storage_key || "", 
-    userData?.account_id || ""
+    file?.file_name || "",
+    file?.storage_key || "",
+    userData?.account_id || "",
   );
-  
+
   // Extract account IDs and check if file is editable
-  const { ownerAccountId, artistAccountId } = file 
-    ? extractAccountIds(file.storage_key) 
+  const { ownerAccountId, artistAccountId } = file
+    ? extractAccountIds(file.storage_key)
     : { ownerAccountId: "", artistAccountId: "" };
   const canEdit = file ? isTextFile(file.file_name) : false;
 
@@ -38,7 +42,6 @@ export default function FileInfoDialog({ file, open, onOpenChange }: FileInfoDia
   const { data: emails } = useAccountEmails({
     accountIds: ownerAccountId ? [ownerAccountId] : [],
     enabled: open,
-    queryKey: ["file-owner-email", ownerAccountId],
   });
 
   const ownerEmail = emails?.[0]?.email || undefined;
@@ -80,7 +83,7 @@ export default function FileInfoDialog({ file, open, onOpenChange }: FileInfoDia
     }
     baseHandleEditToggle(editing);
   };
-  
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[96vw] sm:w-[92vw] max-w-5xl h-[90vh] p-0 gap-0 pt-6 flex flex-col">
@@ -95,7 +98,7 @@ export default function FileInfoDialog({ file, open, onOpenChange }: FileInfoDia
         />
 
         <div className="flex flex-col sm:flex-row flex-1 overflow-hidden">
-          <FileInfoDialogContent 
+          <FileInfoDialogContent
             isEditing={isEditing}
             fileName={file.file_name}
             storageKey={file.storage_key}

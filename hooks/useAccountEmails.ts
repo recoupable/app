@@ -2,12 +2,14 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
-import { fetchAccountEmails, type AccountEmail } from "@/lib/accounts/fetchAccountEmails";
+import {
+  fetchAccountEmails,
+  type AccountEmail,
+} from "@/lib/accounts/fetchAccountEmails";
 
 interface UseAccountEmailsParams {
   accountIds: string[];
   enabled?: boolean;
-  queryKey?: readonly unknown[];
 }
 
 /**
@@ -16,12 +18,11 @@ interface UseAccountEmailsParams {
 export function useAccountEmails({
   accountIds,
   enabled = true,
-  queryKey = ["account-emails", accountIds],
 }: UseAccountEmailsParams) {
   const { getAccessToken, authenticated } = usePrivy();
 
   return useQuery<AccountEmail[]>({
-    queryKey: [...queryKey],
+    queryKey: ["account-emails", accountIds],
     queryFn: async () => {
       if (accountIds.length === 0) {
         return [];

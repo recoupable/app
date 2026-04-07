@@ -17,20 +17,19 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError }) => {
 
   // Extract unique account IDs from tasks
   const accountIds = useMemo(
-    () => [...new Set(tasks.map(task => task.account_id))],
-    [tasks]
+    () => [...new Set(tasks.map((task) => task.account_id))],
+    [tasks],
   );
 
   // Batch fetch emails for all task owners
   const { data: accountEmails = [] } = useAccountEmails({
     accountIds,
-    queryKey: ["task-owner-emails", accountIds],
   });
 
   // Create lookup map for O(1) email access
   const emailByAccountId = useMemo(() => {
     const map = new Map<string, string>();
-    accountEmails.forEach(ae => {
+    accountEmails.forEach((ae) => {
       if (ae.account_id && ae.email) {
         map.set(ae.account_id, ae.email);
       }
@@ -39,7 +38,11 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError }) => {
   }, [accountEmails]);
 
   if (isError) {
-    return <div className="text-sm text-red-600 dark:text-red-400">Failed to load tasks</div>;
+    return (
+      <div className="text-sm text-red-600 dark:text-red-400">
+        Failed to load tasks
+      </div>
+    );
   }
 
   if (isLoading || !userData) {
@@ -71,8 +74,8 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError }) => {
               index !== tasks.length - 1 ? "border-b border-border " : ""
             }
           >
-            <TaskCard 
-              task={task} 
+            <TaskCard
+              task={task}
               ownerEmail={emailByAccountId.get(task.account_id)}
             />
           </div>

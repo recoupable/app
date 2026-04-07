@@ -20,7 +20,7 @@ export async function fetchAccountEmails({
   }
 
   const url = new URL(`${getClientApiBaseUrl()}/api/accounts/emails`);
-  accountIds.forEach(accountId => {
+  accountIds.forEach((accountId) => {
     url.searchParams.append("account_id", accountId);
   });
 
