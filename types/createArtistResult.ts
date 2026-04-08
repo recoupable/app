@@ -7,5 +7,4 @@ export interface CreateArtistResult {
   artistAccountId?: string;
   message: string;
   error?: string;
-  newRoomId?: string | null;
 }

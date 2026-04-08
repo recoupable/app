@@ -22,6 +22,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { TextAttachment } from "@/types/textAttachment";
 import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
 import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
+import { z } from "zod";
 
 // 30 days in seconds for Supabase signed URL expiry
 const SIGNED_URL_EXPIRES_SECONDS = 60 * 60 * 24 * 30;
@@ -62,6 +63,7 @@ export function useVercelChat({
   const { refetchCredits } = usePaymentProvider();
   const { transport, getHeaders } = useChatTransport();
   const { authenticated } = usePrivy();
+  const redirectPathRef = useRef<string | null>(null);
 
   // Load artist files for mentions (from Supabase)
   const { files: allArtistFiles = [] } = useArtistFilesForMentions();
@@ -184,13 +186,28 @@ export function useVercelChat({
       transport,
       experimental_throttle: 100,
       generateId: generateUUID,
+      dataPartSchemas: {
+        redirect: z.object({ path: z.string() }),
+      },
       onError: (e) => {
+        redirectPathRef.current = null;
         console.error("An error occurred, please try again!", e);
         toast.error("An error occurred, please try again!");
+      },
+      onData: (part) => {
+        if (part.type === "data-redirect" && part.data.path.startsWith("/")) {
+          redirectPathRef.current = part.data.path;
+        }
       },
       onFinish: async () => {
         // Update credits after AI response completes
         await refetchCredits();
+
+        if (redirectPathRef.current) {
+          const redirectPath = redirectPathRef.current;
+          redirectPathRef.current = null;
+          window.history.replaceState({}, "", redirectPath);
+        }
       },
     });
 
