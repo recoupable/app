@@ -6,7 +6,7 @@ export function useArtistInstruction(artistId?: string) {
   const { getAccessToken, authenticated } = usePrivy();
 
   return useQuery<string | undefined>({
-    queryKey: ["artist-instruction", artistId, authenticated],
+    queryKey: ["artist-instruction", artistId],
     enabled: Boolean(artistId) && authenticated,
     queryFn: async () => {
       if (!artistId) return undefined;

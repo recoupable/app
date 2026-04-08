@@ -7,7 +7,7 @@ export function useArtistKnowledge(artistId?: string) {
   const { getAccessToken, authenticated } = usePrivy();
 
   return useQuery<KnowledgeBaseEntry[]>({
-    queryKey: ["artist-knowledge", artistId, authenticated],
+    queryKey: ["artist-knowledge", artistId],
     enabled: Boolean(artistId) && authenticated,
     queryFn: async () => {
       if (!artistId) return [];
