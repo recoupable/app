@@ -4,27 +4,28 @@ import type { ArtistRecord } from "@/types/Artist";
 const getArtist = async (
   artistId: string,
   accessToken: string,
-): Promise<ArtistRecord | null> => {
-  try {
-    const response = await fetch(
-      `${getClientApiBaseUrl()}/api/artists/${encodeURIComponent(artistId)}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+) : Promise<ArtistRecord | null> => {
+  const response = await fetch(
+    `${getClientApiBaseUrl()}/api/artists/${encodeURIComponent(artistId)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
       },
+    },
+  );
+
+  if (!response.ok) {
+    const responseText = await response.text();
+    throw new Error(
+      responseText
+        ? `Failed to fetch artist: ${response.status} ${responseText}`
+        : `Failed to fetch artist: ${response.status}`,
     );
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = await response.json();
-
-    return data?.artist ?? null;
-  } catch {
-    return null;
   }
+
+  const data = await response.json();
+
+  return data?.artist ?? null;
 };
 
 export default getArtist;

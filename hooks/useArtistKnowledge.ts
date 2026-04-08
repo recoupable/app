@@ -1,20 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
-import getArtist from "@/lib/getArtist";
+import { fetchAuthenticatedArtist } from "@/lib/artists/fetchAuthenticatedArtist";
 import type { KnowledgeBaseEntry } from "@/lib/supabase/getArtistKnowledge";
 
 export function useArtistKnowledge(artistId?: string) {
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken, authenticated } = usePrivy();
 
   return useQuery<KnowledgeBaseEntry[]>({
-    queryKey: ["artist-knowledge", artistId],
-    enabled: Boolean(artistId),
+    queryKey: ["artist-knowledge", artistId, authenticated],
+    enabled: Boolean(artistId) && authenticated,
     queryFn: async () => {
       if (!artistId) return [];
-      const accessToken = await getAccessToken();
-      if (!accessToken) return [];
 
-      const artist = await getArtist(artistId, accessToken);
+      const artist = await fetchAuthenticatedArtist(artistId, getAccessToken);
       const knowledges: KnowledgeBaseEntry[] = artist?.knowledges || [];
       return Array.isArray(knowledges) ? knowledges : [];
     },
@@ -23,4 +21,3 @@ export function useArtistKnowledge(artistId?: string) {
 }
 
 export default useArtistKnowledge;
-
