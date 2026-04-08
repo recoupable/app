@@ -15,9 +15,15 @@ export interface GetSandboxesResult {
 }
 
 export async function getSandboxes(
-  accessToken: string
+  accessToken: string,
+  accountId?: string | null,
 ): Promise<GetSandboxesResult> {
-  const response = await fetch(`${getClientApiBaseUrl()}/api/sandboxes`, {
+  const url = new URL(`${getClientApiBaseUrl()}/api/sandboxes`);
+  if (accountId) {
+    url.searchParams.set("account_id", accountId);
+  }
+
+  const response = await fetch(url.toString(), {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
