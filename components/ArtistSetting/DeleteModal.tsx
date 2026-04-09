@@ -1,23 +1,45 @@
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { ArtistRecord } from "@/types/Artist";
+import { usePrivy } from "@privy-io/react-auth";
+import { toast } from "sonner";
+import { deleteArtist } from "@/lib/artists/deleteArtist";
 
 interface DeleteModalProps {
   toggleModal: () => void;
 }
 
 const DeleteModal = ({ toggleModal }: DeleteModalProps) => {
-  const { editableArtist, artists, setArtists, toggleSettingModal } =
+  const { editableArtist, artists, setArtists, toggleSettingModal, getArtists } =
     useArtistProvider();
+  const { getAccessToken } = usePrivy();
 
   const handleDelete = async () => {
+    const artistId = editableArtist?.account_id;
+    if (!artistId) {
+      return;
+    }
+
+    const previousArtists = artists;
     const temp = artists.filter(
       (artistEle: ArtistRecord) =>
-        artistEle.account_id !== editableArtist?.account_id,
+        artistEle.account_id !== artistId,
     );
     setArtists([...temp]);
     toggleModal();
     toggleSettingModal();
-    await fetch(`/api/artist/remove?artistId=${editableArtist?.account_id}`);
+
+    try {
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        throw new Error("Please sign in to delete an artist");
+      }
+
+      await deleteArtist(accessToken, artistId);
+      await getArtists();
+    } catch (error) {
+      setArtists(previousArtists);
+      toast.error(error instanceof Error ? error.message : "Failed to delete artist");
+    }
   };
 
   return (
