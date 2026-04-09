@@ -5,16 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
 import { useUserProvider } from "@/providers/UserProvder";
 import { useArtistProvider } from "@/providers/ArtistProvider";
-import { fetchFiles } from "@/lib/files/fetchFiles";
-
-export interface ListedFileRow {
-  id: string;
-  file_name: string;
-  storage_key: string;
-  mime_type: string | null;
-  is_directory?: boolean;
-  owner_email?: string | null;
-}
+import { fetchFiles, type ListedFileRow } from "@/lib/files/fetchFiles";
 
 export default function useFilesManager(activePath?: string, recursive: boolean = false) {
   const { userData } = useUserProvider();
@@ -190,4 +181,3 @@ export default function useFilesManager(activePath?: string, recursive: boolean 
     },
   };
 }
-

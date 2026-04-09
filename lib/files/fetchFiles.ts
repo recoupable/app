@@ -7,7 +7,7 @@ interface FetchFilesParams {
   recursive?: boolean;
 }
 
-interface ListedFileRow {
+export interface ListedFileRow {
   id: string;
   file_name: string;
   storage_key: string;
