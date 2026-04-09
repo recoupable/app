@@ -5,8 +5,8 @@ export interface FileRow {
   mime_type?: string | null;
   is_directory?: boolean;
   size_bytes?: number | null;
+  owner_email?: string | null;
 }
-
 
 // Shared types for File Access UI
 export type ArtistAccess = {
@@ -20,7 +20,10 @@ export type ArtistAccess = {
 
 export type AccessArtistsResponse = {
   success: boolean;
-  data?: { artists: ArtistAccess[]; count: number; fileId: string; accountId: string };
+  data?: {
+    artists: ArtistAccess[];
+    count: number;
+    fileId: string;
+    accountId: string;
+  };
 };
-
-

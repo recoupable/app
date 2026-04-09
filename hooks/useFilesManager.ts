@@ -11,14 +11,21 @@ export interface ListedFileRow {
   storage_key: string;
   mime_type: string | null;
   is_directory?: boolean;
+  owner_email?: string | null;
 }
 
-export default function useFilesManager(activePath?: string, recursive: boolean = false) {
+export default function useFilesManager(
+  activePath?: string,
+  recursive: boolean = false,
+) {
   const { userData } = useUserProvider();
   const { selectedArtist } = useArtistProvider();
 
   const ownerAccountId = useMemo(() => userData?.account_id || "", [userData]);
-  const artistAccountId = useMemo(() => selectedArtist?.account_id || "", [selectedArtist]);
+  const artistAccountId = useMemo(
+    () => selectedArtist?.account_id || "",
+    [selectedArtist],
+  );
 
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<string>("");
@@ -38,7 +45,7 @@ export default function useFilesManager(activePath?: string, recursive: boolean 
           if (relativePath) relativePath += "/";
         }
       }
-      
+
       const p = relativePath ? `&path=${encodeURIComponent(relativePath)}` : "";
       const r = recursive ? "&recursive=true" : "";
       const url = `/api/files/list?ownerAccountId=${ownerAccountId}&artistAccountId=${artistAccountId}${p}${r}`;
@@ -54,21 +61,25 @@ export default function useFilesManager(activePath?: string, recursive: boolean 
     const items = data?.files || [];
     if (items.length === 0) return;
     const basePath = activePath
-      ? activePath.endsWith("/") ? activePath : activePath + "/"
+      ? activePath.endsWith("/")
+        ? activePath
+        : activePath + "/"
       : `files/${ownerAccountId}/${artistAccountId}/`;
-    items.filter((f) => f.is_directory).forEach((dir) => {
-      const childPath = `${basePath}${dir.file_name}/`;
-      qc.prefetchQuery({
-        queryKey: ["files", ownerAccountId, artistAccountId, childPath],
-        queryFn: async () => {
-          const url = `/api/files/list?ownerAccountId=${ownerAccountId}&artistAccountId=${artistAccountId}&path=${encodeURIComponent(childPath)}`;
-          const res = await fetch(url, { cache: "no-store" });
-          if (!res.ok) throw new Error("Failed to load files");
-          return res.json();
-        },
-        staleTime: 30000,
+    items
+      .filter((f) => f.is_directory)
+      .forEach((dir) => {
+        const childPath = `${basePath}${dir.file_name}/`;
+        qc.prefetchQuery({
+          queryKey: ["files", ownerAccountId, artistAccountId, childPath],
+          queryFn: async () => {
+            const url = `/api/files/list?ownerAccountId=${ownerAccountId}&artistAccountId=${artistAccountId}&path=${encodeURIComponent(childPath)}`;
+            const res = await fetch(url, { cache: "no-store" });
+            if (!res.ok) throw new Error("Failed to load files");
+            return res.json();
+          },
+          staleTime: 30000,
+        });
       });
-    });
   }, [data?.files, activePath, ownerAccountId, artistAccountId, qc]);
 
   const createFolderMutation = useMutation({
@@ -76,14 +87,22 @@ export default function useFilesManager(activePath?: string, recursive: boolean 
       const res = await fetch("/api/files/folder", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ownerAccountId, artistAccountId, name, parentPath: activePath || `files/${ownerAccountId}/${artistAccountId}/` }),
+        body: JSON.stringify({
+          ownerAccountId,
+          artistAccountId,
+          name,
+          parentPath:
+            activePath || `files/${ownerAccountId}/${artistAccountId}/`,
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to create folder");
       return json.folder as ListedFileRow;
     },
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ["files", ownerAccountId, artistAccountId] });
+      await qc.invalidateQueries({
+        queryKey: ["files", ownerAccountId, artistAccountId],
+      });
     },
   });
 
@@ -98,7 +117,9 @@ export default function useFilesManager(activePath?: string, recursive: boolean 
 
     const safeName = targetFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
     const basePath = activePath
-      ? (activePath.endsWith("/") ? activePath : activePath + "/")
+      ? activePath.endsWith("/")
+        ? activePath
+        : activePath + "/"
       : `files/${ownerAccountId}/${artistAccountId}/`;
     const key = `${basePath}${safeName}`;
 
@@ -149,7 +170,9 @@ export default function useFilesManager(activePath?: string, recursive: boolean 
 
     setStatus("Uploaded successfully");
     if (!selectedFile) setFile(null);
-    await qc.invalidateQueries({ queryKey: ["files", ownerAccountId, artistAccountId] });
+    await qc.invalidateQueries({
+      queryKey: ["files", ownerAccountId, artistAccountId],
+    });
 
     // Clear success status after 3 seconds to be ready for new uploads
     setTimeout(() => {
@@ -169,9 +192,9 @@ export default function useFilesManager(activePath?: string, recursive: boolean 
     handleUpload,
     createFolder: (name: string) => createFolderMutation.mutateAsync(name),
     refreshFiles: async () => {
-      await qc.invalidateQueries({ queryKey: ["files", ownerAccountId, artistAccountId] });
+      await qc.invalidateQueries({
+        queryKey: ["files", ownerAccountId, artistAccountId],
+      });
     },
   };
 }
-
-

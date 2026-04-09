@@ -11,11 +11,7 @@ import { extractAccountIds } from "@/utils/extractAccountIds";
 import FileInfoDialogHeader from "./FileInfoDialogHeader";
 import FileInfoDialogContent from "./FileInfoDialogContent";
 import FileInfoDialogMetadata from "./FileInfoDialogMetadata";
-import { useQuery } from "@tanstack/react-query";
-import { Tables } from "@/types/database.types";
 import { useUserProvider } from "@/providers/UserProvder";
-
-type AccountEmail = Tables<"account_emails">;
 
 type FileInfoDialogProps = {
   file: FileRow | null;
@@ -23,37 +19,23 @@ type FileInfoDialogProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-export default function FileInfoDialog({ file, open, onOpenChange }: FileInfoDialogProps) {
+export default function FileInfoDialog({
+  file,
+  open,
+  onOpenChange,
+}: FileInfoDialogProps) {
   const { userData } = useUserProvider();
   const { content } = useFileContent(
-    file?.file_name || "", 
-    file?.storage_key || "", 
-    userData?.account_id || ""
+    file?.file_name || "",
+    file?.storage_key || "",
+    userData?.account_id || "",
   );
-  
+
   // Extract account IDs and check if file is editable
-  const { ownerAccountId, artistAccountId } = file 
-    ? extractAccountIds(file.storage_key) 
+  const { ownerAccountId, artistAccountId } = file
+    ? extractAccountIds(file.storage_key)
     : { ownerAccountId: "", artistAccountId: "" };
   const canEdit = file ? isTextFile(file.file_name) : false;
-
-  // Fetch owner email
-  const { data: emails } = useQuery<AccountEmail[]>({
-    queryKey: ["file-owner-email", ownerAccountId, artistAccountId],
-    queryFn: async () => {
-      if (!ownerAccountId || !artistAccountId || !userData) return [];
-      const params = new URLSearchParams();
-      params.append("accountIds", ownerAccountId);
-      params.append("currentAccountId", userData.id);
-      params.append("artistAccountId", artistAccountId);
-      const response = await fetch(`/api/account-emails?${params}`);
-      if (!response.ok) return [];
-      return response.json();
-    },
-    enabled: !!ownerAccountId && !!artistAccountId && !!userData && open,
-  });
-
-  const ownerEmail = emails?.[0]?.email || undefined;
 
   // File editing state and operations
   const {
@@ -92,7 +74,7 @@ export default function FileInfoDialog({ file, open, onOpenChange }: FileInfoDia
     }
     baseHandleEditToggle(editing);
   };
-  
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[96vw] sm:w-[92vw] max-w-5xl h-[90vh] p-0 gap-0 pt-6 flex flex-col">
@@ -107,7 +89,7 @@ export default function FileInfoDialog({ file, open, onOpenChange }: FileInfoDia
         />
 
         <div className="flex flex-col sm:flex-row flex-1 overflow-hidden">
-          <FileInfoDialogContent 
+          <FileInfoDialogContent
             isEditing={isEditing}
             fileName={file.file_name}
             storageKey={file.storage_key}
@@ -115,10 +97,12 @@ export default function FileInfoDialog({ file, open, onOpenChange }: FileInfoDia
             editedContent={editedContent}
             onContentChange={setEditedContent}
           />
-          <FileInfoDialogMetadata file={file} ownerEmail={ownerEmail} />
+          <FileInfoDialogMetadata
+            file={file}
+            ownerEmail={file.owner_email || undefined}
+          />
         </div>
       </DialogContent>
     </Dialog>
   );
 }
-
