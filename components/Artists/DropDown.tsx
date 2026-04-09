@@ -27,10 +27,16 @@ const DropDown = ({ artist }: { artist: ArtistRecord }) => {
       }
 
       await deleteArtist(accessToken, artist.account_id);
-      await getArtists();
     } catch (error) {
       setArtists(previousArtists);
       toast.error(error instanceof Error ? error.message : "Failed to delete artist");
+      return;
+    }
+
+    try {
+      await getArtists();
+    } catch {
+      toast.error("Artist deleted, but failed to refresh the artist list");
     }
   };
 
