@@ -56,11 +56,16 @@ const usePromptSuggestions = () => {
     }
   }, [content, isMessageLoading, isAssistantMessage]);
 
+  const effectiveSuggestions = messages.length <= 0 ? [] : suggestions;
+  const shouldShowStrip =
+    isAssistantMessage &&
+    (isLoading || effectiveSuggestions.length > 0);
+
   return {
-    suggestions: messages.length <= 0 ? [] : suggestions,
+    suggestions: effectiveSuggestions,
     handleSuggestionClick,
     isLoading,
-    isHidden: !isAssistantMessage,
+    isHidden: !shouldShowStrip,
   };
 };
 
