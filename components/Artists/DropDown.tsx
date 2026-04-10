@@ -3,41 +3,16 @@ import { ArtistRecord } from "@/types/Artist";
 import { Trash2 } from "lucide-react";
 import { containerPatterns, textPatterns } from "@/lib/styles/patterns";
 import { cn } from "@/lib/utils";
-import { usePrivy } from "@privy-io/react-auth";
-import { toast } from "sonner";
-import { deleteArtist } from "@/lib/artists/deleteArtist";
+import useDeleteArtist from "@/hooks/useDeleteArtist";
 
 const DropDown = ({ artist }: { artist: ArtistRecord }) => {
-  const { setArtists, artists, setMenuVisibleArtistId, getArtists } =
-    useArtistProvider();
-  const { getAccessToken } = usePrivy();
+  const { setMenuVisibleArtistId } = useArtistProvider();
+  const { deleteArtist } = useDeleteArtist();
 
   const handleDelete = async () => {
-    const previousArtists = artists;
-    const temp = artists.filter(
-      (artistEle: ArtistRecord) => artistEle.account_id !== artist.account_id,
-    );
-    setArtists([...temp]);
-    setMenuVisibleArtistId(null);
-
-    try {
-      const accessToken = await getAccessToken();
-      if (!accessToken) {
-        throw new Error("Please sign in to delete an artist");
-      }
-
-      await deleteArtist(accessToken, artist.account_id);
-    } catch (error) {
-      setArtists(previousArtists);
-      toast.error(error instanceof Error ? error.message : "Failed to delete artist");
-      return;
-    }
-
-    try {
-      await getArtists();
-    } catch {
-      toast.error("Artist deleted, but failed to refresh the artist list");
-    }
+    await deleteArtist(artist.account_id, {
+      onSuccess: () => setMenuVisibleArtistId(null),
+    });
   };
 
   return (
