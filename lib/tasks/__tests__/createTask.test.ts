@@ -47,7 +47,7 @@ describe("createTask", () => {
     expect(result).toEqual(createdTask);
   });
 
-  it("includes optional account_id and model when provided", async () => {
+  it("includes optional model when provided", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: vi.fn().mockResolvedValue({
@@ -61,7 +61,6 @@ describe("createTask", () => {
       prompt: "Generate weekly report",
       schedule: "0 9 * * 1",
       artist_account_id: "artist-2",
-      account_id: "account-2",
       model: "anthropic/claude-sonnet-4.5",
     });
 
@@ -73,7 +72,6 @@ describe("createTask", () => {
         prompt: "Generate weekly report",
         schedule: "0 9 * * 1",
         artist_account_id: "artist-2",
-        account_id: "account-2",
         model: "anthropic/claude-sonnet-4.5",
       }),
     );
