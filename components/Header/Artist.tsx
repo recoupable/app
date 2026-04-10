@@ -25,7 +25,7 @@ const Artist = ({
     toggleSettingModal,
   } = useArtistProvider();
   const [isHovered, setIsHovered] = useState(false);
-  const { handlePinToggle, isPinning } = useArtistPinToggle(artist);
+  const { togglePin, isPinning } = useArtistPinToggle(artist);
 
   const isSelectedArtist = selectedArtist?.account_id === artist?.account_id;
   const isAnyArtistSelected = !!selectedArtist;
@@ -118,7 +118,10 @@ const Artist = ({
           </div>
           <div className="ml-auto flex gap-1 flex-shrink-0">
             <ArtistActionButton
-              onClick={handlePinToggle}
+              onClick={(e) => {
+                e.stopPropagation();
+                void togglePin();
+              }}
               disabled={isPinning}
               isVisible={isHovered || isSelectedArtist}
               title={artist?.pinned ? "Unpin artist" : "Pin artist"}

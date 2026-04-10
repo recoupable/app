@@ -10,16 +10,26 @@ export const useArtistPinToggle = (artist: ArtistRecord | null) => {
   const { getArtists, setArtists } = useArtistProvider();
 
   const mutation = useMutation({
-    mutationFn: async ({ artistId, pinned }: { artistId: string; pinned: boolean }) => {
+    mutationFn: async () => {
+      if (!artist) {
+        return;
+      }
+
       const accessToken = await getAccessToken();
       if (!accessToken) {
         throw new Error("Please sign in to pin an artist");
       }
 
-      await toggleArtistPin(accessToken, artistId, pinned);
+      await toggleArtistPin(accessToken, artist.account_id, !artist.pinned);
     },
-    onMutate: async ({ artistId, pinned }) => {
+    onMutate: async () => {
+      if (!artist) {
+        return { previousPinned: undefined, artistId: undefined };
+      }
+
       const previousPinned = artist?.pinned;
+      const artistId = artist.account_id;
+      const pinned = !artist.pinned;
 
       setArtists((prevArtists: ArtistRecord[]) =>
         prevArtists.map((currentArtist: ArtistRecord) =>
@@ -53,18 +63,8 @@ export const useArtistPinToggle = (artist: ArtistRecord | null) => {
     },
   });
 
-  const handlePinToggle = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!artist || mutation.isPending) return;
-
-    await mutation.mutateAsync({
-      artistId: artist.account_id,
-      pinned: !artist.pinned,
-    });
-  };
-
   return {
-    handlePinToggle,
+    togglePin: mutation.mutateAsync,
     isPinning: mutation.isPending,
   };
 };
