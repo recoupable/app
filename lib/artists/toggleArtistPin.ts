@@ -19,16 +19,11 @@ export async function toggleArtistPin(
   artistId: string,
   pinned: boolean,
 ): Promise<void> {
-  const response = await fetch(`${getClientApiBaseUrl()}/api/artists/pin`, {
-    method: "POST",
+  const response = await fetch(`${getClientApiBaseUrl()}/api/artists/${artistId}/pin`, {
+    method: pinned ? "POST" : "DELETE",
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     },
-    body: JSON.stringify({
-      artistId,
-      pinned,
-    }),
   });
 
   const data: ToggleArtistPinResponse = await response.json();
