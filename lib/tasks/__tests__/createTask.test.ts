@@ -11,7 +11,9 @@ describe("createTask", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getClientApiBaseUrl).mockReturnValue("https://api.recoupable.com");
+    vi.mocked(getClientApiBaseUrl).mockReturnValue(
+      "https://api.recoupable.com",
+    );
   });
 
   it("calls POST /api/tasks with bearer auth and required payload", async () => {
@@ -47,7 +49,7 @@ describe("createTask", () => {
     expect(result).toEqual(createdTask);
   });
 
-  it("includes optional model when provided", async () => {
+  it("includes optional account_id and model when provided", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: vi.fn().mockResolvedValue({
@@ -61,6 +63,7 @@ describe("createTask", () => {
       prompt: "Generate weekly report",
       schedule: "0 9 * * 1",
       artist_account_id: "artist-2",
+      account_id: "account-2",
       model: "anthropic/claude-sonnet-4.5",
     });
 
@@ -72,6 +75,7 @@ describe("createTask", () => {
         prompt: "Generate weekly report",
         schedule: "0 9 * * 1",
         artist_account_id: "artist-2",
+        account_id: "account-2",
         model: "anthropic/claude-sonnet-4.5",
       }),
     );
@@ -81,7 +85,9 @@ describe("createTask", () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 403,
-      text: vi.fn().mockResolvedValue('{"status":"error","error":"Access denied"}'),
+      text: vi
+        .fn()
+        .mockResolvedValue('{"status":"error","error":"Access denied"}'),
     }) as unknown as typeof fetch;
 
     await expect(

@@ -9,12 +9,14 @@ export interface CreateTaskParams {
   prompt: string;
   schedule: string;
   artist_account_id: string;
+  /** When omitted, the API uses the authenticated account. When set, must be allowed for the caller (e.g. org membership). */
+  account_id?: string;
   model?: string | null;
 }
 
 /**
  * Creates a new scheduled task via the Recoup API.
- * Requires a valid bearer token. The API resolves the task owner account from the token; do not rely on sending `account_id` in the JSON body.
+ * Requires a valid bearer token. Optional `account_id` matches OpenAPI `CreateTaskRequest`.
  */
 export async function createTask(
   accessToken: string,
@@ -31,6 +33,7 @@ export async function createTask(
       prompt: params.prompt,
       schedule: params.schedule,
       artist_account_id: params.artist_account_id,
+      ...(params.account_id ? { account_id: params.account_id } : {}),
       ...(params.model !== undefined ? { model: params.model } : {}),
     }),
   });
