@@ -5,6 +5,7 @@ import { MentionsInput, Mention, OnChangeHandlerFunc, SuggestionDataItem } from 
 import { Card } from "@/components/ui/card";
 import { mentionsStyles } from "./mentionsStyles";
 import useFileMentionSuggestions, { GroupedSuggestion } from "@/hooks/useFileMentionSuggestions";
+import useMentionImagePreviews from "@/hooks/useMentionImagePreviews";
 import { SuggestionItem } from "./SuggestionItem";
 
 interface FileMentionsInputProps {
@@ -25,6 +26,7 @@ export default function FileMentionsInput({ value, onChange, disabled, model }: 
 	};
 
 	const { provideSuggestions, lastResults } = useFileMentionSuggestions(value);
+	const previewUrls = useMentionImagePreviews(lastResults as GroupedSuggestion[]);
 
 	return (
 		<MentionsInput
@@ -86,6 +88,7 @@ export default function FileMentionsInput({ value, onChange, disabled, model }: 
                                     entry={current} 
                                     focused={focused} 
                                     highlightedDisplay={highlightedDisplay}
+									imageUrl={previewUrls[current.path]}
                                 />
                             )}
 						</div>
