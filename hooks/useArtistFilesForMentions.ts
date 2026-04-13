@@ -5,6 +5,8 @@ import useSandboxes from "@/hooks/useSandboxes";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import type { FileNode } from "@/lib/sandboxes/parseFileTree";
 
+const WORKSPACE_ORGS_PREFIX = ".openclaw/workspace/orgs/";
+
 export type MentionableFile = {
   id: string;
   file_name: string;
@@ -26,6 +28,9 @@ export default function useArtistFilesForMentions() {
 
         const path = node.path;
         const fileName = path.split("/").pop() || path;
+        const relativePath = path.startsWith(WORKSPACE_ORGS_PREFIX)
+          ? path.slice(WORKSPACE_ORGS_PREFIX.length)
+          : path;
 
         return [
           {
@@ -34,7 +39,7 @@ export default function useArtistFilesForMentions() {
             path,
             mime_type: getMimeFromPath(path),
             is_directory: false,
-            relative_path: path,
+            relative_path: relativePath,
           },
         ];
       });
