@@ -3,7 +3,7 @@
 import cn from "classnames";
 import { GroupedSuggestion } from "@/hooks/useFileMentionSuggestions";
 import { ImageIcon } from "lucide-react";
-import useSandboxFilePreview from "@/hooks/useSandboxFilePreview";
+import useSandboxFileContent from "@/hooks/useSandboxFileContent";
 
 interface SuggestionItemProps {
   entry: GroupedSuggestion;
@@ -19,9 +19,8 @@ export function SuggestionItem({
   const isImage =
     entry.mime_type?.startsWith("image/") ||
     /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(entry.path || entry.display || "");
-  const { imageUrl } = useSandboxFilePreview({
+  const { imageUrl } = useSandboxFileContent({
     path: entry.path,
-    mimeType: entry.mime_type,
     enabled: isImage,
   });
 
