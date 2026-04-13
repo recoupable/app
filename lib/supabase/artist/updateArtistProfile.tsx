@@ -7,12 +7,9 @@ import getAccountByEmail from "@/lib/supabase/accounts/getAccountByEmail";
 import insertAccount from "@/lib/supabase/accounts/insertAccount";
 import insertAccountArtistId from "@/lib/supabase/account_artist_ids/insertAccountArtistId";
 import type { Tables } from "@/types/database.types";
+import type { Knowledge } from "@/types/knowledge";
 
-export type Knowledge = {
-  url: string;
-  name: string;
-  type: string;
-};
+export type { Knowledge } from "@/types/knowledge";
 
 export type ArtistProfile = Tables<"accounts"> & Tables<"account_info">;
 

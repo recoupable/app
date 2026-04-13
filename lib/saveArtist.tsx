@@ -1,13 +1,39 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const saveArtist = async (artist_data: any) => {
-  const response = await fetch("/api/artist/profile", {
-    method: "POST",
-    body: JSON.stringify(artist_data),
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import type { ArtistRecord } from "@/types/Artist";
+import type { Knowledge } from "@/types/knowledge";
+
+interface SaveArtistPayload {
+  name: string;
+  image: string;
+  instruction: string;
+  label: string;
+  knowledges: Knowledge[];
+  profileUrls: Record<string, string>;
+}
+
+interface SaveArtistResponse {
+  artist?: ArtistRecord;
+  error?: string;
+}
+
+const saveArtist = async (
+  accessToken: string,
+  artistId: string,
+  artistData: SaveArtistPayload,
+): Promise<SaveArtistResponse> => {
+  const response = await fetch(`${getClientApiBaseUrl()}/api/artists/${artistId}`, {
+    method: "PATCH",
+    body: JSON.stringify(artistData),
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
     },
   });
-  const data = await response.json();
+  const data: SaveArtistResponse = await response.json();
+
+  if (!response.ok || !data.artist) {
+    throw new Error(data.error || "Failed to save artist");
+  }
 
   return data;
 };
