@@ -1,26 +1,78 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import cn from "classnames";
 import { GroupedSuggestion } from "@/hooks/useFileMentionSuggestions";
 import { ImageIcon } from "lucide-react";
+import { usePrivy } from "@privy-io/react-auth";
+import { getFileContents } from "@/lib/sandboxes/getFileContents";
 
 interface SuggestionItemProps {
   entry: GroupedSuggestion;
   focused: boolean;
   highlightedDisplay: React.ReactNode;
-  imageUrl?: string;
 }
+
+const imagePreviewCache = new Map<string, string>();
+const imagePreviewInFlight = new Map<string, Promise<string | null>>();
 
 export function SuggestionItem({ 
   entry, 
   focused, 
-  highlightedDisplay,
-  imageUrl,
+  highlightedDisplay
 }: SuggestionItemProps) {
+  const { getAccessToken } = usePrivy();
+
   // Check for common image extensions if mime_type is missing
-  const isImage =
-    entry.mime_type?.startsWith("image/") ||
-    /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(entry.path || entry.display || "");
+  const isImage = useMemo(
+    () =>
+      entry.mime_type?.startsWith("image/") ||
+      /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(entry.path || entry.display || ""),
+    [entry.mime_type, entry.path, entry.display],
+  );
+  const [imageUrl, setImageUrl] = useState<string | undefined>(
+    imagePreviewCache.get(entry.path),
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadPreview = async () => {
+      if (!isImage || !entry.path) return;
+      const cached = imagePreviewCache.get(entry.path);
+      if (cached) {
+        if (!cancelled) setImageUrl(cached);
+        return;
+      }
+
+      let pending = imagePreviewInFlight.get(entry.path);
+      if (!pending) {
+        pending = (async () => {
+          const accessToken = await getAccessToken();
+          if (!accessToken) return null;
+          const file = await getFileContents(accessToken, entry.path);
+          return file.imageUrl;
+        })();
+        imagePreviewInFlight.set(entry.path, pending);
+      }
+
+      try {
+        const nextUrl = await pending;
+        if (!nextUrl || cancelled) return;
+        imagePreviewCache.set(entry.path, nextUrl);
+        setImageUrl(nextUrl);
+      } catch {
+        // Ignore preview errors; keep fallback icon.
+      } finally {
+        imagePreviewInFlight.delete(entry.path);
+      }
+    };
+
+    loadPreview();
+    return () => {
+      cancelled = true;
+    };
+  }, [entry.path, isImage, getAccessToken]);
 
   return (
     <div
