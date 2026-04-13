@@ -2,15 +2,20 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { usePrivy } from "@privy-io/react-auth";
 import { useUserProvider } from "@/providers/UserProvder";
 import { useArtistProvider } from "@/providers/ArtistProvider";
-import { fetchFiles, type ListedFileRow } from "@/lib/files/fetchFiles";
+
+export interface ListedFileRow {
+  id: string;
+  file_name: string;
+  storage_key: string;
+  mime_type: string | null;
+  is_directory?: boolean;
+}
 
 export default function useFilesManager(activePath?: string, recursive: boolean = false) {
   const { userData } = useUserProvider();
   const { selectedArtist } = useArtistProvider();
-  const { getAccessToken, authenticated } = usePrivy();
 
   const ownerAccountId = useMemo(() => userData?.account_id || "", [userData]);
   const artistAccountId = useMemo(() => selectedArtist?.account_id || "", [selectedArtist]);
@@ -33,20 +38,15 @@ export default function useFilesManager(activePath?: string, recursive: boolean 
           if (relativePath) relativePath += "/";
         }
       }
-
-      const accessToken = await getAccessToken();
-      if (!accessToken) {
-        throw new Error("Please sign in to view files");
-      }
-
-      return fetchFiles({
-        accessToken,
-        artistAccountId,
-        path: relativePath,
-        recursive,
-      });
+      
+      const p = relativePath ? `&path=${encodeURIComponent(relativePath)}` : "";
+      const r = recursive ? "&recursive=true" : "";
+      const url = `/api/files/list?ownerAccountId=${ownerAccountId}&artistAccountId=${artistAccountId}${p}${r}`;
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error("Failed to load files");
+      return res.json();
     },
-    enabled: Boolean(ownerAccountId && artistAccountId && authenticated),
+    enabled: Boolean(ownerAccountId && artistAccountId),
   });
 
   // Prefetch next-level directories for snappier navigation
@@ -58,26 +58,18 @@ export default function useFilesManager(activePath?: string, recursive: boolean 
       : `files/${ownerAccountId}/${artistAccountId}/`;
     items.filter((f) => f.is_directory).forEach((dir) => {
       const childPath = `${basePath}${dir.file_name}/`;
-      const childParts = childPath.replace(/\/$/, "").split("/");
-      const relativeChildPath = childParts.length > 3 ? `${childParts.slice(3).join("/")}/` : undefined;
       qc.prefetchQuery({
         queryKey: ["files", ownerAccountId, artistAccountId, childPath],
         queryFn: async () => {
-          const accessToken = await getAccessToken();
-          if (!accessToken) {
-            throw new Error("Please sign in to view files");
-          }
-
-          return fetchFiles({
-            accessToken,
-            artistAccountId,
-            path: relativeChildPath,
-          });
+          const url = `/api/files/list?ownerAccountId=${ownerAccountId}&artistAccountId=${artistAccountId}&path=${encodeURIComponent(childPath)}`;
+          const res = await fetch(url, { cache: "no-store" });
+          if (!res.ok) throw new Error("Failed to load files");
+          return res.json();
         },
         staleTime: 30000,
       });
     });
-  }, [data?.files, activePath, ownerAccountId, artistAccountId, qc, getAccessToken]);
+  }, [data?.files, activePath, ownerAccountId, artistAccountId, qc]);
 
   const createFolderMutation = useMutation({
     mutationFn: async (name: string) => {
@@ -181,3 +173,5 @@ export default function useFilesManager(activePath?: string, recursive: boolean 
     },
   };
 }
+
+

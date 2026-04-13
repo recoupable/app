@@ -2,8 +2,7 @@
 
 import { useMemo } from "react";
 import getRelativeStoragePath from "@/utils/getRelativeStoragePath";
-import useFilesManager from "@/hooks/useFilesManager";
-import type { ListedFileRow } from "@/lib/files/fetchFiles";
+import useFilesManager, { ListedFileRow } from "@/hooks/useFilesManager";
 
 export type MentionableFile = {
   id: string;
@@ -33,3 +32,4 @@ export default function useArtistFilesForMentions() {
 
   return { files, isLoading: fm.isLoading };
 }
+
