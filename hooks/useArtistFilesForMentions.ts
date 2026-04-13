@@ -1,35 +1,46 @@
 "use client";
 
 import { useMemo } from "react";
-import getRelativeStoragePath from "@/utils/getRelativeStoragePath";
-import useFilesManager, { ListedFileRow } from "@/hooks/useFilesManager";
+import useSandboxes from "@/hooks/useSandboxes";
+import getMimeFromPath from "@/lib/files/getMimeFromPath";
+import type { FileNode } from "@/lib/sandboxes/parseFileTree";
 
 export type MentionableFile = {
   id: string;
   file_name: string;
-  storage_key: string;
+  path: string;
   mime_type: string | null;
-  is_directory?: boolean;
+  is_directory: boolean;
   relative_path: string;
 };
 
 export default function useArtistFilesForMentions() {
-  const fm = useFilesManager(undefined, true);
-  const ownerAccountId = fm.ownerAccountId;
-  const artistAccountId = fm.artistAccountId;
-  const rows = (fm.files as unknown) as ListedFileRow[];
+  const { filetree, isLoading } = useSandboxes();
 
   const files: MentionableFile[] = useMemo(() => {
-    return rows.map((r) => ({
-      id: r.id,
-      file_name: r.file_name,
-      storage_key: r.storage_key,
-      mime_type: r.mime_type ?? null,
-      is_directory: r.is_directory,
-      relative_path: getRelativeStoragePath(r.storage_key, ownerAccountId, artistAccountId, r.is_directory),
-    }));
-  }, [rows, ownerAccountId, artistAccountId]);
+    const flatten = (nodes: FileNode[]): MentionableFile[] =>
+      nodes.flatMap((node) => {
+        if (node.type === "folder") {
+          return flatten(node.children || []);
+        }
 
-  return { files, isLoading: fm.isLoading };
+        const path = node.path;
+        const fileName = path.split("/").pop() || path;
+
+        return [
+          {
+            id: path,
+            file_name: fileName,
+            path,
+            mime_type: getMimeFromPath(path),
+            is_directory: false,
+            relative_path: path,
+          },
+        ];
+      });
+
+    return flatten(filetree || []);
+  }, [filetree]);
+
+  return { files, isLoading };
 }
-
