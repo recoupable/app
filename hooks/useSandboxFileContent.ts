@@ -21,7 +21,9 @@ export default function useSandboxFileContent(
   options?: UseSandboxFileContentOptions,
 ): UseSandboxFileContentReturn {
   const { getAccessToken } = usePrivy();
-  const [selectedPath, setSelectedPath] = useState<string>(options?.path);
+  const [selectedPath, setSelectedPath] = useState<string | undefined>(
+    options?.path,
+  );
   const effectivePath = options?.path ?? selectedPath;
   const enabled = options?.enabled ?? true;
 
