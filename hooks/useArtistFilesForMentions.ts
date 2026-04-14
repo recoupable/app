@@ -4,8 +4,7 @@ import { useMemo } from "react";
 import useSandboxes from "@/hooks/useSandboxes";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import type { FileNode } from "@/lib/sandboxes/parseFileTree";
-
-const WORKSPACE_ORGS_PREFIX = ".openclaw/workspace/orgs/";
+import { WORKSPACE_ORGS_PREFIX } from "@/lib/sandboxes/workspaceOrgsPath";
 
 export type MentionableFile = {
   id: string;
