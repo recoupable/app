@@ -55,10 +55,7 @@ export function useVercelChat({
   const { addOptimisticConversation } = useConversationsProvider();
   const { data: availableModels = [] } = useAvailableModels();
   const [input, setInput] = useState("");
-  const [model, setModel] = useLocalStorage(
-    "RECOUP_MODEL",
-    availableModels[0]?.id ?? "",
-  );
+  const [model, setModel] = useLocalStorage("RECOUP_MODEL", DEFAULT_MODEL);
   const { refetchCredits } = usePaymentProvider();
   const { transport, getHeaders } = useChatTransport();
   const { authenticated } = usePrivy();
@@ -346,14 +343,6 @@ export function useVercelChat({
     messages.length,
     authenticated,
   ]);
-
-  // Sync state when models first load and prioritize preferred model
-  useEffect(() => {
-    if (!availableModels.length || model) return;
-    const preferred = availableModels.find((m) => m.id === DEFAULT_MODEL);
-    const defaultId = preferred ? preferred.id : availableModels[0].id;
-    setModel(defaultId);
-  }, [availableModels, model, setModel]);
 
   return {
     // States
