@@ -19,7 +19,6 @@ export function ChatInput() {
     hasPendingUploads,
     messages,
     status,
-    model,
     isLoadingSignedUrls,
     handleSendMessage,
     isGeneratingResponse,
@@ -76,7 +75,6 @@ export function ChatInput() {
             value={typeof input === "string" ? input : ""}
             onChange={setInput}
             disabled={isDisabled || hasPendingUploads}
-            model={model}
           />
           <PromptInputToolbar>
             <PromptInputTools>

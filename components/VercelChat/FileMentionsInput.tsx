@@ -12,10 +12,9 @@ interface FileMentionsInputProps {
 	value: string;
 	onChange: (newValue: string) => void;
 	disabled: boolean;
-	model: string;
 }
 
-export default function FileMentionsInput({ value, onChange, disabled, model }: FileMentionsInputProps) {
+export default function FileMentionsInput({ value, onChange, disabled }: FileMentionsInputProps) {
 	const [portalHost, setPortalHost] = useState<Element | undefined>(undefined);
 	useEffect(() => {
 		if (typeof window !== "undefined") setPortalHost(document.body);
@@ -41,11 +40,7 @@ export default function FileMentionsInput({ value, onChange, disabled, model }: 
 			customSuggestionsContainer={(children) => (
 				<Card className="z-[70] shadow-lg border border-border rounded-xl overflow-hidden p-1 max-w-32 bg-popover" style={{ minWidth: 320, maxHeight: 360, overflow: "auto" }}>{children}</Card>
 			)}
-			placeholder={
-				model === "fal-ai/nano-banana/edit"
-					? "Describe an image or upload a file to edit..."
-					: "What would you like to know? Type @ to attach files"
-			}
+			placeholder="What would you like to know? Type @ to attach files"
 			onKeyDown={(e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 				if (e.key === "Enter" && !e.shiftKey) {
 					e.preventDefault();

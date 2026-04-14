@@ -8,7 +8,7 @@ import {
 export interface OrganizedModels {
   featuredModels: GatewayLanguageModelEntry[];
   otherModels: GatewayLanguageModelEntry[];
-  /** True when the gateway returned chat models; false means only Fal image models are available */
+  /** True when the gateway returned any models */
   hasGatewayModels: boolean;
 }
 
@@ -21,7 +21,6 @@ export const organizeModels = (availableModels: GatewayLanguageModelEntry[]): Or
   const featuredModels: GatewayLanguageModelEntry[] = [];
   const otherModels: GatewayLanguageModelEntry[] = [];
 
-  // Create a map for quick lookup of available models (now includes both Gateway and Fal models)
   const availableModelMap = new Map(availableModels.map(model => [model.id, model]));
 
   // Add featured models in the specified order
@@ -56,13 +55,9 @@ export const organizeModels = (availableModels: GatewayLanguageModelEntry[]): Or
     return a.name.localeCompare(b.name);
   });
 
-  const hasGatewayModels = availableModels.some(
-    (m) => !m.id.startsWith("fal-ai/")
-  );
-
   return {
     featuredModels,
     otherModels,
-    hasGatewayModels,
+    hasGatewayModels: availableModels.length > 0,
   };
 };
