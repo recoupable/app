@@ -5,7 +5,6 @@ import { MentionsInput, Mention, OnChangeHandlerFunc, SuggestionDataItem } from 
 import { Card } from "@/components/ui/card";
 import { mentionsStyles } from "./mentionsStyles";
 import useFileMentionSuggestions, { GroupedSuggestion } from "@/hooks/useFileMentionSuggestions";
-import { useBatchSignedUrls } from "@/hooks/useBatchSignedUrls";
 import { SuggestionItem } from "./SuggestionItem";
 
 interface FileMentionsInputProps {
@@ -25,9 +24,6 @@ export default function FileMentionsInput({ value, onChange, disabled }: FileMen
 	};
 
 	const { provideSuggestions, lastResults } = useFileMentionSuggestions(value);
-    
-    // Batch fetch signed URLs using the custom hook
-    const signedUrls = useBatchSignedUrls(lastResults as GroupedSuggestion[]);
 
 	return (
 		<MentionsInput
@@ -72,9 +68,6 @@ export default function FileMentionsInput({ value, onChange, disabled }: FileMen
 					const current = lastResults[index] as GroupedSuggestion | undefined;
 					const prev = index > 0 ? (lastResults[index - 1] as GroupedSuggestion | undefined) : undefined;
 					const showHeader = !prev || (current && prev && current.group !== prev.group);
-                    
-                    // Pass the pre-loaded URL if available
-                    const url = current?.storage_key ? signedUrls[current.storage_key] : undefined;
 
 					return (
 						<div key={entry.id}>
@@ -87,8 +80,7 @@ export default function FileMentionsInput({ value, onChange, disabled }: FileMen
                                 <SuggestionItem 
                                     entry={current} 
                                     focused={focused} 
-                                    highlightedDisplay={highlightedDisplay} 
-                                    imageUrl={url}
+                                    highlightedDisplay={highlightedDisplay}
                                 />
                             )}
 						</div>

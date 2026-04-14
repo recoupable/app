@@ -1,6 +1,5 @@
 import type { FileNode } from "./parseFileTree";
-
-const WORKSPACE_ORGS_PATH = ".openclaw/workspace/orgs";
+import { WORKSPACE_ORGS_PATH } from "./workspaceOrgsPath";
 
 export default function getSubtreeAtPath(nodes: FileNode[]): FileNode[] {
   const segments = WORKSPACE_ORGS_PATH.split("/");

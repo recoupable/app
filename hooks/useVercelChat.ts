@@ -16,15 +16,13 @@ import { DEFAULT_MODEL } from "@/lib/consts";
 import { useAccountOverride } from "@/providers/AccountOverrideProvider";
 import { usePaymentProvider } from "@/providers/PaymentProvider";
 import useArtistFilesForMentions from "@/hooks/useArtistFilesForMentions";
-import type { KnowledgeBaseEntry } from "@/lib/supabase/getArtistKnowledge";
 import { useChatTransport } from "./useChatTransport";
 import { usePrivy } from "@privy-io/react-auth";
 import { TextAttachment } from "@/types/textAttachment";
 import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
 import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
-
-// 30 days in seconds for Supabase signed URL expiry
-const SIGNED_URL_EXPIRES_SECONDS = 60 * 60 * 24 * 30;
+import { getFileContents } from "@/lib/sandboxes/getFileContents";
+import getMimeFromPath from "@/lib/files/getMimeFromPath";
 
 interface UseVercelChatProps {
   id: string;
@@ -58,7 +56,7 @@ export function useVercelChat({
   const [model, setModel] = useLocalStorage("RECOUP_MODEL", DEFAULT_MODEL);
   const { refetchCredits } = usePaymentProvider();
   const { transport, getHeaders } = useChatTransport();
-  const { authenticated } = usePrivy();
+  const { authenticated, getAccessToken } = usePrivy();
 
   // Load artist files for mentions (from Supabase)
   const { files: allArtistFiles = [] } = useArtistFilesForMentions();
@@ -75,72 +73,82 @@ export function useVercelChat({
     return Array.from(ids);
   }, [input]);
 
-  // Resolve selected files to signed URLs for attachment
-  const [knowledgeFiles, setKnowledgeFiles] = useState<KnowledgeBaseEntry[]>(
-    [],
-  );
+  // Resolve selected sandbox files for mention context and file attachments.
+  const [mentionAttachments, setMentionAttachments] = useState<FileUIPart[]>([]);
+  const [mentionTextContext, setMentionTextContext] = useState("");
   const [isLoadingSignedUrls, setIsLoadingSignedUrls] = useState(false);
-  // Cache signed URLs by storage_key to avoid redundant refetches
-  const signedUrlCacheRef = useRef<Map<string, KnowledgeBaseEntry>>(new Map());
+
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
       if (!selectedFileIds.length) {
-        if (!cancelled) setKnowledgeFiles((prev) => (prev.length ? [] : prev));
+        if (!cancelled) setMentionAttachments((prev) => (prev.length ? [] : prev));
+        if (!cancelled) setMentionTextContext((prev) => (prev ? "" : prev));
         if (!cancelled) setIsLoadingSignedUrls((prev) => (prev ? false : prev));
         return;
       }
+
       const idSet = new Set(selectedFileIds);
       const selected = allArtistFiles.filter((f) => idSet.has(f.id));
       if (selected.length === 0) {
-        if (!cancelled) setKnowledgeFiles((prev) => (prev.length ? [] : prev));
+        if (!cancelled) setMentionAttachments((prev) => (prev.length ? [] : prev));
+        if (!cancelled) setMentionTextContext((prev) => (prev ? "" : prev));
         if (!cancelled) setIsLoadingSignedUrls((prev) => (prev ? false : prev));
         return;
       }
+
       try {
-        const cache = signedUrlCacheRef.current;
-
-        // Determine which of the selected files need fetching
-        const toFetch = selected.filter((f) => !cache.has(f.storage_key));
-
-        if (toFetch.length === 0) {
-          // All selected entries are cached and valid
-          const entries = selected
-            .map((f) => cache.get(f.storage_key))
-            .filter((e): e is KnowledgeBaseEntry => Boolean(e));
-          if (!cancelled) setKnowledgeFiles(entries);
-          if (!cancelled) setIsLoadingSignedUrls(false);
-          return;
-        }
-
         if (!cancelled) setIsLoadingSignedUrls(true);
 
-        await Promise.all(
-          toFetch.map(async (f) => {
-            const res = await fetch(
-              `/api/files/get-signed-url?key=${encodeURIComponent(f.storage_key)}&accountId=${encodeURIComponent(userData?.account_id || "")}&expires=${SIGNED_URL_EXPIRES_SECONDS}`,
-            );
-            if (!res.ok) throw new Error("Failed to get signed URL");
-            const { signedUrl } = (await res.json()) as { signedUrl: string };
-            const entry: KnowledgeBaseEntry = {
-              url: signedUrl,
-              name: f.file_name,
-              type: f.mime_type || "application/octet-stream",
+        const accessToken = await getAccessToken();
+        if (!accessToken) {
+          throw new Error("Please sign in to attach mentioned files");
+        }
+
+        const results = await Promise.all(
+          selected.map(async (f) => {
+            const fileResult = await getFileContents(accessToken, f.path);
+            const mimeType = f.mime_type || getMimeFromPath(f.path);
+            return {
+              path: f.path,
+              mimeType,
+              content: fileResult.content,
+              dataUrl: fileResult.imageUrl,
             };
-            cache.set(f.storage_key, entry);
           }),
         );
 
-        // Compose final entries in the order of selection
-        const entries = selected
-          .map((f) => signedUrlCacheRef.current.get(f.storage_key))
-          .filter((e): e is KnowledgeBaseEntry => Boolean(e));
+        const nextAttachments: FileUIPart[] = [];
+        const textBlocks: string[] = [];
+        for (const result of results) {
+          if (
+            result.dataUrl &&
+            (result.mimeType === "application/pdf" ||
+              result.mimeType.startsWith("image/"))
+          ) {
+            nextAttachments.push({
+              type: "file",
+              url: result.dataUrl,
+              mediaType: result.mimeType,
+            });
+            continue;
+          }
 
-        if (!cancelled) setKnowledgeFiles(entries);
+          if (result.content) {
+            textBlocks.push(
+              `[Mentioned File: ${result.path}]\n${result.content}`,
+            );
+          }
+        }
+
+        if (!cancelled) setMentionAttachments(nextAttachments);
+        if (!cancelled)
+          setMentionTextContext(textBlocks.length ? textBlocks.join("\n\n") : "");
         if (!cancelled) setIsLoadingSignedUrls(false);
       } catch (e) {
         console.error(e);
-        if (!cancelled) setKnowledgeFiles((prev) => (prev.length ? [] : prev));
+        if (!cancelled) setMentionAttachments((prev) => (prev.length ? [] : prev));
+        if (!cancelled) setMentionTextContext((prev) => (prev ? "" : prev));
         if (!cancelled) setIsLoadingSignedUrls((prev) => (prev ? false : prev));
       }
     };
@@ -148,18 +156,7 @@ export function useVercelChat({
     return () => {
       cancelled = true;
     };
-  }, [selectedFileIds, allArtistFiles, userData?.account_id]);
-
-  // Convert selected signed files to FileUIPart attachments (pdf/images)
-  const selectedFileAttachments = useMemo(() => {
-    const outputs: FileUIPart[] = [];
-    for (const f of knowledgeFiles) {
-      if (f.type === "application/pdf" || f.type.startsWith("image")) {
-        outputs.push({ type: "file", url: f.url, mediaType: f.type });
-      }
-    }
-    return outputs;
-  }, [knowledgeFiles]);
+  }, [selectedFileIds, allArtistFiles, getAccessToken]);
 
   const { accountIdOverride } = useAccountOverride();
 
@@ -219,8 +216,7 @@ export function useVercelChat({
     // Combine all attachments
     const combined: FileUIPart[] = [];
     if (attachments && attachments.length > 0) combined.push(...attachments);
-    if (selectedFileAttachments.length > 0)
-      combined.push(...selectedFileAttachments);
+    if (mentionAttachments.length > 0) combined.push(...mentionAttachments);
 
     // Separate audio files (can't be sent to AI as file parts)
     const audioAttachments = combined.filter((f) =>
@@ -237,6 +233,11 @@ export function useVercelChat({
     const textContext = formatTextAttachments(textAttachments);
     if (textContext) {
       messageText = textContext + "\n\n" + messageText;
+    }
+
+    // Prepend mentioned sandbox file text content.
+    if (mentionTextContext) {
+      messageText = mentionTextContext + "\n\n" + messageText;
     }
 
     // Prepend audio URLs
