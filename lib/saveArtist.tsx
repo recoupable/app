@@ -3,12 +3,13 @@ import type { ArtistRecord } from "@/types/Artist";
 import type { Knowledge } from "@/types/knowledge";
 
 interface SaveArtistPayload {
-  name: string;
-  image: string;
-  instruction: string;
-  label: string;
-  knowledges: Knowledge[];
-  profileUrls: Record<string, string>;
+  name?: string;
+  image?: string;
+  instruction?: string;
+  label?: string;
+  knowledges?: Knowledge[];
+  profileUrls?: Record<string, string>;
+  pinned?: boolean;
 }
 
 interface SaveArtistResponse {
