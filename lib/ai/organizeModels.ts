@@ -8,6 +8,8 @@ import {
 export interface OrganizedModels {
   featuredModels: GatewayLanguageModelEntry[];
   otherModels: GatewayLanguageModelEntry[];
+  /** True when the gateway returned chat models; false means only Fal image models are available */
+  hasGatewayModels: boolean;
 }
 
 /**
@@ -56,6 +58,7 @@ export const organizeModels = (availableModels: GatewayLanguageModelEntry[]): Or
 
   return {
     featuredModels,
-    otherModels
+    otherModels,
+    hasGatewayModels: featuredModels.length > 0,
   };
 };

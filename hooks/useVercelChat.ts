@@ -57,7 +57,7 @@ export function useVercelChat({
   const [input, setInput] = useState("");
   const [model, setModel] = useLocalStorage(
     "RECOUP_MODEL",
-    availableModels[0]?.id ?? "",
+    availableModels[0]?.id ?? DEFAULT_MODEL,
   );
   const { refetchCredits } = usePaymentProvider();
   const { transport, getHeaders } = useChatTransport();
@@ -347,12 +347,13 @@ export function useVercelChat({
     authenticated,
   ]);
 
-  // Sync state when models first load and prioritize preferred model
+  // Sync state when models first load and prioritize preferred model.
+  // If gateway models aren't available, always use DEFAULT_MODEL so
+  // the user doesn't accidentally get routed to a Fal image model.
   useEffect(() => {
     if (!availableModels.length || model) return;
     const preferred = availableModels.find((m) => m.id === DEFAULT_MODEL);
-    const defaultId = preferred ? preferred.id : availableModels[0].id;
-    setModel(defaultId);
+    setModel(preferred ? preferred.id : DEFAULT_MODEL);
   }, [availableModels, model, setModel]);
 
   return {

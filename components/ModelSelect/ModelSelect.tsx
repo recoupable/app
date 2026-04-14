@@ -12,19 +12,21 @@ import { usePaymentProvider } from "@/providers/PaymentProvider";
 import { organizeModels } from "@/lib/ai/organizeModels";
 import { getFeaturedModelConfig } from "@/lib/ai/featuredModels";
 import { useMemo } from "react";
+
 const ModelSelect = () => {
   const { model, setModel, availableModels } = useVercelChatContext();
   const { isSubscribed } = usePaymentProvider();
 
-  // Organize models into featured and other models
   const organizedModels = useMemo(() => {
     return organizeModels(availableModels);
   }, [availableModels]);
 
-  // Get the selected model for clean display in trigger
   const selectedModel = availableModels.find(m => m.id === model);
   const selectedModelConfig = getFeaturedModelConfig(model);
-  const displayName = selectedModelConfig?.displayName || selectedModel?.name || "Select a model";
+
+  const displayName = organizedModels.hasGatewayModels
+    ? (selectedModelConfig?.displayName || selectedModel?.name || "Recoupable Pro")
+    : "Recoupable Pro";
 
   const handleModelChange = (value: string) => {
     const selectedModel = availableModels.find((m) => m.id === value);
@@ -39,31 +41,43 @@ const ModelSelect = () => {
   };
 
   return (
-    <PromptInputModelSelect onValueChange={handleModelChange} value={model}>
+    <PromptInputModelSelect
+      onValueChange={organizedModels.hasGatewayModels ? handleModelChange : undefined}
+      value={model}
+    >
       <PromptInputModelSelectTrigger>
         <PromptInputModelSelectValue placeholder="Select a model">
           {displayName}
         </PromptInputModelSelectValue>
       </PromptInputModelSelectTrigger>
       <PromptInputModelSelectContent>
-        {/* Featured Models */}
-        {organizedModels.featuredModels.map((model) => (
-          <ModelSelectItem key={model.id} model={model} />
-        ))}
-
-        {/* More Models Section */}
-        {organizedModels.otherModels.length > 0 && (
+        {organizedModels.hasGatewayModels ? (
           <>
-            {organizedModels.featuredModels.length > 0 && (
-              <div className="my-1 h-px bg-border" />
-            )}
-            <div className="px-3 py-2.5 text-sm font-medium text-muted-foreground">
-              More Models
-            </div>
-            {organizedModels.otherModels.map((model) => (
+            {organizedModels.featuredModels.map((model) => (
               <ModelSelectItem key={model.id} model={model} />
             ))}
+
+            {organizedModels.otherModels.length > 0 && (
+              <>
+                {organizedModels.featuredModels.length > 0 && (
+                  <div className="my-1 h-px bg-border" />
+                )}
+                <div className="px-3 py-2.5 text-sm font-medium text-muted-foreground">
+                  More Models
+                </div>
+                {organizedModels.otherModels.map((model) => (
+                  <ModelSelectItem key={model.id} model={model} />
+                ))}
+              </>
+            )}
           </>
+        ) : (
+          <div className="flex items-start gap-2.5 px-3 py-3">
+            <div className="mt-1 h-1.5 w-1.5 rounded-full bg-[#345A5D] animate-pulse shrink-0" />
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Model selection temporarily unavailable. Keep chatting and we&apos;ll pick the best model for you. Check back shortly.
+            </p>
+          </div>
         )}
       </PromptInputModelSelectContent>
     </PromptInputModelSelect>
