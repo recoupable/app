@@ -33,8 +33,8 @@ export const FEATURED_MODELS: FeaturedModelConfig[] = [
     tooltip: "OpenAI's best general-purpose model for both general and agentic tasks",
   },
   {
-    id: "openai/gpt-5-mini",
-    displayName: "GPT-5 Mini",
+    id: "openai/gpt-5.4-mini",
+    displayName: "GPT-5.4 Mini",
     isPro: false,
     pill: "Fast",
     description: "Great for everyday",

@@ -11,6 +11,7 @@ import ModelSelectItem from "./ModelSelectItem";
 import { usePaymentProvider } from "@/providers/PaymentProvider";
 import { organizeModels } from "@/lib/ai/organizeModels";
 import { getFeaturedModelConfig } from "@/lib/ai/featuredModels";
+import { DEFAULT_MODEL } from "@/lib/consts";
 import { useMemo } from "react";
 
 const ModelSelect = () => {
@@ -24,9 +25,12 @@ const ModelSelect = () => {
   const selectedModel = availableModels.find(m => m.id === model);
   const selectedModelConfig = getFeaturedModelConfig(model);
 
+  const defaultModelConfig = getFeaturedModelConfig(DEFAULT_MODEL);
+  const defaultDisplayName = defaultModelConfig?.displayName || DEFAULT_MODEL;
+
   const displayName = organizedModels.hasGatewayModels
-    ? (selectedModelConfig?.displayName || selectedModel?.name || "Recoupable Pro")
-    : "Recoupable Pro";
+    ? (selectedModelConfig?.displayName || selectedModel?.name || defaultDisplayName)
+    : defaultDisplayName;
 
   const handleModelChange = (value: string) => {
     const selectedModel = availableModels.find((m) => m.id === value);
@@ -75,7 +79,9 @@ const ModelSelect = () => {
           <div className="flex items-start gap-2.5 px-3 py-3">
             <div className="mt-1 h-1.5 w-1.5 rounded-full bg-[#345A5D] animate-pulse shrink-0" />
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Model selection temporarily unavailable. Keep chatting and we&apos;ll pick the best model for you. Check back shortly.
+              <span className="font-medium text-foreground">Model Maintenance</span>
+              <br />
+              Selection is temporarily unavailable. Keep chatting and check back shortly!
             </p>
           </div>
         )}
