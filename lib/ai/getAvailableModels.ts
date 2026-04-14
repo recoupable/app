@@ -19,18 +19,10 @@ export const getAvailableModels = async (): Promise<
     if (token) headers.Authorization = `Bearer ${token}`;
 
     const res = await fetch(GATEWAY_CONFIG_URL, { headers });
-    if (!res.ok) {
-      const body = await res.text().catch(() => "");
-      console.error("[getAvailableModels] Gateway returned non-OK:", {
-        status: res.status,
-        body: body.slice(0, 500),
-      });
-      return [];
-    }
+    if (!res.ok) return [];
     const data = (await res.json()) as { models: GatewayLanguageModelEntry[] };
     return data.models.filter((m) => !isEmbedModel(m));
-  } catch (error) {
-    console.error("[getAvailableModels] Gateway fetch failed:", error);
+  } catch {
     return [];
   }
 };
