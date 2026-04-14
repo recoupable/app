@@ -5,7 +5,6 @@ import { useVercelChatContext } from "@/providers/VercelChatProvider";
 import AttachmentsPreview from "./AttachmentsPreview";
 import PureAttachmentsButton from "./PureAttachmentsButton";
 import { motion } from "framer-motion";
-import PromptSuggestions from "./PromptSuggestions";
 import {
   PromptInput,
   PromptInputSubmit,
@@ -20,7 +19,6 @@ export function ChatInput() {
     hasPendingUploads,
     messages,
     status,
-    model,
     isLoadingSignedUrls,
     handleSendMessage,
     isGeneratingResponse,
@@ -57,7 +55,6 @@ export function ChatInput() {
           "absolute bottom-[100%]": messages.length > 0,
         })}
       >
-        <PromptSuggestions />
         <AttachmentsPreview />
       </div>
       <motion.div
@@ -78,7 +75,6 @@ export function ChatInput() {
             value={typeof input === "string" ? input : ""}
             onChange={setInput}
             disabled={isDisabled || hasPendingUploads}
-            model={model}
           />
           <PromptInputToolbar>
             <PromptInputTools>

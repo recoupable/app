@@ -19,7 +19,6 @@ export const organizeModels = (availableModels: GatewayLanguageModelEntry[]): Or
   const featuredModels: GatewayLanguageModelEntry[] = [];
   const otherModels: GatewayLanguageModelEntry[] = [];
 
-  // Create a map for quick lookup of available models (now includes both Gateway and Fal models)
   const availableModelMap = new Map(availableModels.map(model => [model.id, model]));
 
   // Add featured models in the specified order
@@ -56,6 +55,6 @@ export const organizeModels = (availableModels: GatewayLanguageModelEntry[]): Or
 
   return {
     featuredModels,
-    otherModels
+    otherModels,
   };
 };

@@ -3,19 +3,16 @@ import { ArtistRecord } from "@/types/Artist";
 import { Trash2 } from "lucide-react";
 import { containerPatterns, textPatterns } from "@/lib/styles/patterns";
 import { cn } from "@/lib/utils";
+import useDeleteArtist from "@/hooks/useDeleteArtist";
 
 const DropDown = ({ artist }: { artist: ArtistRecord }) => {
-  const { setArtists, artists, setMenuVisibleArtistId, getArtists } =
-    useArtistProvider();
+  const { setMenuVisibleArtistId } = useArtistProvider();
+  const { deleteArtist } = useDeleteArtist();
 
   const handleDelete = async () => {
-    const temp = artists.filter(
-      (artistEle: ArtistRecord) => artistEle.account_id !== artist.account_id,
-    );
-    setArtists([...temp]);
-    setMenuVisibleArtistId(null);
-    await fetch(`/api/artist/remove?artistId=${artist.account_id}`);
-    getArtists();
+    await deleteArtist(artist.account_id, {
+      onSuccess: () => setMenuVisibleArtistId(null),
+    });
   };
 
   return (

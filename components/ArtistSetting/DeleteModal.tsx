@@ -1,23 +1,22 @@
 import { useArtistProvider } from "@/providers/ArtistProvider";
-import { ArtistRecord } from "@/types/Artist";
+import useDeleteArtist from "@/hooks/useDeleteArtist";
 
 interface DeleteModalProps {
   toggleModal: () => void;
 }
 
 const DeleteModal = ({ toggleModal }: DeleteModalProps) => {
-  const { editableArtist, artists, setArtists, toggleSettingModal } =
-    useArtistProvider();
+  const { editableArtist, toggleSettingModal } = useArtistProvider();
+  const { deleteArtist } = useDeleteArtist();
 
   const handleDelete = async () => {
-    const temp = artists.filter(
-      (artistEle: ArtistRecord) =>
-        artistEle.account_id !== editableArtist?.account_id,
-    );
-    setArtists([...temp]);
+    const artistId = editableArtist?.account_id;
+    if (!artistId) {
+      return;
+    }
     toggleModal();
     toggleSettingModal();
-    await fetch(`/api/artist/remove?artistId=${editableArtist?.account_id}`);
+    await deleteArtist(artistId);
   };
 
   return (
