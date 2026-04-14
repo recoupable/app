@@ -22,6 +22,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { TextAttachment } from "@/types/textAttachment";
 import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
 import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
+import { useNewChatSidebarSync } from "./useNewChatSidebarSync";
 
 // 30 days in seconds for Supabase signed URL expiry
 const SIGNED_URL_EXPIRES_SECONDS = 60 * 60 * 24 * 30;
@@ -48,11 +49,15 @@ export function useVercelChat({
   const { selectedArtist } = useArtistProvider();
   const { selectedOrgId: organizationId } = useOrganization();
   const { roomId } = useParams();
+  const routeRoomId = typeof roomId === "string" ? roomId : undefined;
 
   const userId = userData?.account_id || userData?.id; // Use account_id if available, fallback to id
   const artistId = selectedArtist?.account_id;
   const messagesLengthRef = useRef<number>();
-  const { addOptimisticConversation } = useConversationsProvider();
+  /** True after starting a thread from `/chat` or `?q=` until sidebar list refetch succeeds */
+  const pendingNewThreadSidebarSyncRef = useRef(false);
+  const { addOptimisticConversation, refetchConversations } =
+    useConversationsProvider();
   const { data: availableModels = [] } = useAvailableModels();
   const [input, setInput] = useState("");
   const [model, setModel] = useLocalStorage(
@@ -178,6 +183,19 @@ export function useVercelChat({
     [id, artistId, organizationId, accountIdOverride, model],
   );
 
+  useEffect(() => {
+    pendingNewThreadSidebarSyncRef.current = false;
+  }, [id]);
+
+  const { onFinish: onChatFinishSync, maybeRefreshOnFirstStream } =
+    useNewChatSidebarSync({
+      chatId: id,
+      routeRoomId,
+      pendingNewThreadSidebarSyncRef,
+      refetchCredits,
+      refetchConversations,
+    });
+
   const { messages, status, stop, sendMessage, setMessages, regenerate } =
     useChat({
       id,
@@ -188,11 +206,12 @@ export function useVercelChat({
         console.error("An error occurred, please try again!", e);
         toast.error("An error occurred, please try again!");
       },
-      onFinish: async () => {
-        // Update credits after AI response completes
-        await refetchCredits();
-      },
+      onFinish: onChatFinishSync,
     });
+
+  useEffect(() => {
+    maybeRefreshOnFirstStream(status);
+  }, [status, maybeRefreshOnFirstStream]);
 
   const earliestFailedUserMessageId = useMemo(
     () => getEarliestFailedUserMessageId(messages),
@@ -307,6 +326,7 @@ export function useVercelChat({
     handleSubmit(event);
 
     if (!roomId) {
+      pendingNewThreadSidebarSyncRef.current = true;
       // Optimistically append a temporary conversation so it appears in Recent Chats
       // It will be replaced by the real conversation after the updates/refetch
       addOptimisticConversation("New Chat", id, messageContent);
@@ -316,6 +336,7 @@ export function useVercelChat({
 
   const handleSendQueryMessages = useCallback(
     async (initialMessage: UIMessage) => {
+      pendingNewThreadSidebarSyncRef.current = true;
       silentlyUpdateUrl();
       const headers = await getHeaders();
       sendMessage(initialMessage, { body: chatRequestBody, headers });
