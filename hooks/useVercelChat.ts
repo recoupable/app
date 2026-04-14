@@ -347,15 +347,6 @@ export function useVercelChat({
     authenticated,
   ]);
 
-  // Sync state when models first load and prioritize preferred model.
-  // If gateway models aren't available, always use DEFAULT_MODEL so
-  // the user doesn't accidentally get routed to a Fal image model.
-  useEffect(() => {
-    if (!availableModels.length || model) return;
-    const preferred = availableModels.find((m) => m.id === DEFAULT_MODEL);
-    setModel(preferred ? preferred.id : DEFAULT_MODEL);
-  }, [availableModels, model, setModel]);
-
   return {
     // States
     messages,

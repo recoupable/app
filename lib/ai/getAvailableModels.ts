@@ -9,27 +9,20 @@ import { getFalModels } from "./getFalModels";
 export const getAvailableModels = async (): Promise<
   GatewayLanguageModelEntry[]
 > => {
+  let gatewayModels: GatewayLanguageModelEntry[] = [];
   try {
-    // Fetch models from Vercel AI Gateway
-    let gatewayModels: GatewayLanguageModelEntry[] = [];
-    try {
-      const apiResponse = await gateway.getAvailableModels();
-      gatewayModels = apiResponse.models.filter((m) => !isEmbedModel(m));
-    } catch (error) {
-      console.error("[getAvailableModels] Gateway fetch failed:", error);
-    }
-
-    // Fetch models from Fal AI
-    let falModels: GatewayLanguageModelEntry[] = [];
-    try {
-      falModels = getFalModels();
-    } catch (error) {
-      console.error("[getAvailableModels] Fal models failed:", error);
-    }
-
-    return [...gatewayModels, ...falModels];
+    const apiResponse = await gateway.getAvailableModels();
+    gatewayModels = apiResponse.models.filter((m) => !isEmbedModel(m));
   } catch (error) {
-    console.error("[getAvailableModels] All providers failed:", error);
-    return [];
+    console.error("[getAvailableModels] Gateway fetch failed:", error);
   }
+
+  let falModels: GatewayLanguageModelEntry[] = [];
+  try {
+    falModels = getFalModels();
+  } catch (error) {
+    console.error("[getAvailableModels] Fal models failed:", error);
+  }
+
+  return [...gatewayModels, ...falModels];
 };
