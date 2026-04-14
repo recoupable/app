@@ -12,16 +12,19 @@ export const getAvailableModels = async (): Promise<
   GatewayLanguageModelEntry[]
 > => {
   try {
-    const headers: Record<string, string> = {};
+    const headers: Record<string, string> = {
+      "ai-gateway-protocol-version": "0.0.1",
+    };
     const token = process.env.VERCEL_OIDC_TOKEN;
     if (token) headers.Authorization = `Bearer ${token}`;
 
     const res = await fetch(GATEWAY_CONFIG_URL, { headers });
     if (!res.ok) {
-      console.error(
-        "[getAvailableModels] Gateway returned non-OK:",
-        res.status,
-      );
+      const body = await res.text().catch(() => "");
+      console.error("[getAvailableModels] Gateway returned non-OK:", {
+        status: res.status,
+        body: body.slice(0, 500),
+      });
       return [];
     }
     const data = (await res.json()) as { models: GatewayLanguageModelEntry[] };
