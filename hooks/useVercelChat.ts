@@ -55,10 +55,7 @@ export function useVercelChat({
   const { addOptimisticConversation } = useConversationsProvider();
   const { data: availableModels = [] } = useAvailableModels();
   const [input, setInput] = useState("");
-  const [model, setModel] = useLocalStorage(
-    "RECOUP_MODEL",
-    availableModels[0]?.id ?? DEFAULT_MODEL,
-  );
+  const [model, setModel] = useLocalStorage("RECOUP_MODEL", DEFAULT_MODEL);
   const { refetchCredits } = usePaymentProvider();
   const { transport, getHeaders } = useChatTransport();
   const { authenticated } = usePrivy();
