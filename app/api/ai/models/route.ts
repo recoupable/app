@@ -12,6 +12,7 @@ export async function GET() {
     const models = await getAvailableModels();
     return Response.json({ models });
   } catch (error) {
+    console.error("/api/ai/models error", error);
     const message = error instanceof Error ? error.message : "failed";
     return Response.json({ message }, { status: 500 });
   }

@@ -22,7 +22,8 @@ export const getAvailableModels = async (): Promise<
     if (!res.ok) return [];
     const data = (await res.json()) as { models: GatewayLanguageModelEntry[] };
     return data.models.filter((m) => !isEmbedModel(m));
-  } catch {
+  } catch (error) {
+    console.error("[getAvailableModels] Gateway fetch failed:", error);
     return [];
   }
 };
