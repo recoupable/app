@@ -56,9 +56,13 @@ export const organizeModels = (availableModels: GatewayLanguageModelEntry[]): Or
     return a.name.localeCompare(b.name);
   });
 
+  const hasGatewayModels = availableModels.some(
+    (m) => !m.id.startsWith("fal-ai/")
+  );
+
   return {
     featuredModels,
     otherModels,
-    hasGatewayModels: featuredModels.length > 0,
+    hasGatewayModels,
   };
 };
