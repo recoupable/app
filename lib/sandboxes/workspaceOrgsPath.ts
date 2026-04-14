@@ -4,4 +4,3 @@
  * stay in lockstep if the sandbox layout changes.
  */
 export const WORKSPACE_ORGS_PATH = ".openclaw/workspace/orgs";
-export const WORKSPACE_ORGS_PREFIX = `${WORKSPACE_ORGS_PATH}/`;

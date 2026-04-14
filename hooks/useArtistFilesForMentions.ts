@@ -4,7 +4,9 @@ import { useMemo } from "react";
 import useSandboxes from "@/hooks/useSandboxes";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import type { FileNode } from "@/lib/sandboxes/parseFileTree";
-import { WORKSPACE_ORGS_PREFIX } from "@/lib/sandboxes/workspaceOrgsPath";
+import { WORKSPACE_ORGS_PATH } from "@/lib/sandboxes/workspaceOrgsPath";
+
+const WORKSPACE_ORGS_PREFIX = `${WORKSPACE_ORGS_PATH}/`;
 
 export type MentionableFile = {
   id: string;
