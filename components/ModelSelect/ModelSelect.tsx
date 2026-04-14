@@ -10,7 +10,6 @@ import { toast } from "react-toastify";
 import { usePaymentProvider } from "@/providers/PaymentProvider";
 import { organizeModels } from "@/lib/ai/organizeModels";
 import { getFeaturedModelConfig } from "@/lib/ai/featuredModels";
-import { DEFAULT_MODEL } from "@/lib/consts";
 import { useMemo } from "react";
 import ModelSelectList from "./ModelSelectList";
 import ModelSelectMaintenance from "./ModelSelectMaintenance";
@@ -23,17 +22,11 @@ const ModelSelect = () => {
     return organizeModels(availableModels);
   }, [availableModels]);
 
-  const selectedModel = availableModels.find(m => m.id === model);
-  const selectedModelConfig = getFeaturedModelConfig(model);
-
-  const defaultModelConfig = getFeaturedModelConfig(DEFAULT_MODEL);
-  const defaultDisplayName = defaultModelConfig?.displayName || DEFAULT_MODEL;
+  const selectedModel = availableModels.find((m) => m.id === model);
+  const displayName =
+    getFeaturedModelConfig(model)?.displayName || selectedModel?.name || model;
 
   const hasModels = availableModels.length > 0;
-
-  const displayName = hasModels
-    ? (selectedModelConfig?.displayName || selectedModel?.name || defaultDisplayName)
-    : defaultDisplayName;
 
   const handleModelChange = (value: string) => {
     const selectedModel = availableModels.find((m) => m.id === value);
