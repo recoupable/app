@@ -28,7 +28,9 @@ const ModelSelect = () => {
   const defaultModelConfig = getFeaturedModelConfig(DEFAULT_MODEL);
   const defaultDisplayName = defaultModelConfig?.displayName || DEFAULT_MODEL;
 
-  const displayName = organizedModels.hasGatewayModels
+  const hasModels = availableModels.length > 0;
+
+  const displayName = hasModels
     ? (selectedModelConfig?.displayName || selectedModel?.name || defaultDisplayName)
     : defaultDisplayName;
 
@@ -46,7 +48,7 @@ const ModelSelect = () => {
 
   return (
     <PromptInputModelSelect
-      onValueChange={organizedModels.hasGatewayModels ? handleModelChange : undefined}
+      onValueChange={hasModels ? handleModelChange : undefined}
       value={model}
     >
       <PromptInputModelSelectTrigger>
@@ -55,7 +57,7 @@ const ModelSelect = () => {
         </PromptInputModelSelectValue>
       </PromptInputModelSelectTrigger>
       <PromptInputModelSelectContent>
-        {organizedModels.hasGatewayModels ? (
+        {hasModels ? (
           <>
             {organizedModels.featuredModels.map((model) => (
               <ModelSelectItem key={model.id} model={model} />

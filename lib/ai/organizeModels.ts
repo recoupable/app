@@ -8,8 +8,6 @@ import {
 export interface OrganizedModels {
   featuredModels: GatewayLanguageModelEntry[];
   otherModels: GatewayLanguageModelEntry[];
-  /** True when the gateway returned any models */
-  hasGatewayModels: boolean;
 }
 
 /**
@@ -58,6 +56,5 @@ export const organizeModels = (availableModels: GatewayLanguageModelEntry[]): Or
   return {
     featuredModels,
     otherModels,
-    hasGatewayModels: availableModels.length > 0,
   };
 };
