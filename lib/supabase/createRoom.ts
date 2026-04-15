@@ -11,7 +11,7 @@ interface CreateRoomParams {
   chat_id?: string;
 }
 
-export const createRoomWithReport = async ({
+export const createRoom = async ({
   account_id,
   topic,
   artist_id,
