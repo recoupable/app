@@ -1,5 +1,6 @@
 import { generateText as generate } from "ai";
 import { DEFAULT_MODEL } from "@/lib/consts";
+import { createModel } from "./createModel";
 
 const generateText = async ({
   system,
@@ -12,7 +13,7 @@ const generateText = async ({
 }) => {
   const result = await generate({
     system,
-    model: model || DEFAULT_MODEL,
+    model: createModel(model || DEFAULT_MODEL),
     prompt,
   });
 
