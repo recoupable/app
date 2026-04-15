@@ -21,8 +21,14 @@ export function createModel(modelId: string): LanguageModel {
     return openrouter(modelId);
   }
 
-  // Direct OpenAI — strip provider prefix
+  // Direct OpenAI — only supports openai/* models
   if (process.env.OPENAI_API_KEY) {
+    if (!modelId.startsWith("openai/") && modelId.includes("/")) {
+      throw new Error(
+        `Model "${modelId}" is not an OpenAI model. Direct OpenAI mode only supports openai/* models. ` +
+          `Use OPENROUTER_API_KEY or VERCEL_AI_GATEWAY_API_KEY for multi-provider support.`,
+      );
+    }
     const bareModel = modelId.startsWith("openai/") ? modelId.slice(7) : modelId;
     return openai(bareModel);
   }
