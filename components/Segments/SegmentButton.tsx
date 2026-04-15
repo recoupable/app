@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Users, ArrowUpRight } from "lucide-react";
-import { Segment } from "@/lib/supabase/getArtistSegments";
+import type { Segment } from "@/types/Segment";
 import SegmentFanCircles from "./SegmentFanCircles";
 
 interface SegmentButtonProps {

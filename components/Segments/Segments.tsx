@@ -1,5 +1,5 @@
 import useGenerateSegmentReport from "@/hooks/useGenerateSegmentReport";
-import { type Segment } from "@/lib/supabase/getArtistSegments";
+import type { Segment } from "@/types/Segment";
 import SegmentButton from "./SegmentButton";
 
 interface SegmentsProps {

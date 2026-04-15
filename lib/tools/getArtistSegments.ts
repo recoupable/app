@@ -36,9 +36,12 @@ const getArtistSegments = tool({
   inputSchema: schema,
   execute: async ({ artist_account_id, page, limit }) => {
     try {
-      // Construct URL with query parameters
-      const url = new URL(`${getClientApiBaseUrl()}/api/artist/segments`);
-      url.searchParams.append("artist_account_id", artist_account_id);
+      // Construct URL with query parameters. The artist account ID is now
+      // encoded in the path under the nested `/api/artists/{id}/segments`
+      // resource; only `page` and `limit` remain as query params.
+      const url = new URL(
+        `${getClientApiBaseUrl()}/api/artists/${artist_account_id}/segments`,
+      );
       if (page) url.searchParams.append("page", page.toString());
       if (limit) url.searchParams.append("limit", limit.toString());
 
