@@ -2,7 +2,7 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { usePrivy } from "@privy-io/react-auth";
 import { useArtistProvider } from "@/providers/ArtistProvider";
-import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import { createArtistSegments } from "@/lib/artists/createArtistSegments";
 
 export function useCreateSegments() {
   const { getAccessToken } = usePrivy();
@@ -18,24 +18,11 @@ export function useCreateSegments() {
       if (!accessToken) {
         throw new Error("Please sign in to generate segments");
       }
-
-      const response = await fetch(
-        `${getClientApiBaseUrl()}/api/artists/${artist_account_id}/segments`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({
-            prompt: "Segment my fans to help me fund my next project.",
-          }),
-        },
+      await createArtistSegments(
+        accessToken,
+        artist_account_id,
+        "Segment my fans to help me fund my next project.",
       );
-      const data = await response.json();
-      if (!response.ok || data.status !== "success") {
-        throw new Error(data.error || "Failed to generate segments");
-      }
       toast.success("Segments generated successfully!");
       if (onSuccess) onSuccess();
     } catch (error) {
