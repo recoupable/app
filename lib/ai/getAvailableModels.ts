@@ -6,19 +6,21 @@ const GATEWAY_CONFIG_URL = "https://ai-gateway.vercel.sh/v1/ai/config";
 
 /**
  * Default model list for non-gateway providers (OpenRouter, direct OpenAI).
- * Returned when the Vercel AI Gateway is not configured.
+ * Returned only when the Vercel AI Gateway is not configured.
  */
 const DEFAULT_MODELS: GatewayLanguageModelEntry[] = [
   {
     id: DEFAULT_MODEL,
     name: "GPT-5 Mini",
     description: "Default model for chat and generation",
+    pricing: { input: "0.0001", output: "0.0004" },
     specification: { specificationVersion: "v2", provider: "openai", modelId: DEFAULT_MODEL },
   },
   {
     id: LIGHTWEIGHT_MODEL,
     name: "GPT-4o Mini",
     description: "Lightweight model for simple tasks",
+    pricing: { input: "0.00015", output: "0.0006" },
     specification: { specificationVersion: "v2", provider: "openai", modelId: LIGHTWEIGHT_MODEL },
   },
 ];
@@ -43,12 +45,12 @@ export const getAvailableModels = async (): Promise<
       if (token) headers.Authorization = `Bearer ${token}`;
 
       const res = await fetch(GATEWAY_CONFIG_URL, { headers });
-      if (!res.ok) return DEFAULT_MODELS;
+      if (!res.ok) return [];
       const data = (await res.json()) as { models: GatewayLanguageModelEntry[] };
       return data.models.filter((m) => !isEmbedModel(m));
     } catch (error) {
       console.error("[getAvailableModels] Gateway fetch failed:", error);
-      return DEFAULT_MODELS;
+      return [];
     }
   }
 

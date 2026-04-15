@@ -11,7 +11,7 @@ import { openai } from "@ai-sdk/openai";
  */
 export function createModel(modelId: string): LanguageModel {
   // Vercel AI Gateway — existing production behavior
-  if (process.env.VERCEL_AI_GATEWAY_API_KEY) {
+  if (process.env.VERCEL_AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN) {
     return gateway(modelId);
   }
 
