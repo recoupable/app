@@ -1,7 +1,7 @@
 import createMemories from "@/lib/supabase/createMemories";
 import { validateMessages } from "@/lib/chat/validateMessages";
 import getRoom from "@/lib/supabase/getRoom";
-import { createRoomWithReport } from "@/lib/supabase/createRoomWithReport";
+import { createRoom } from "@/lib/supabase/createRoom";
 import { generateChatTitle } from "@/lib/chat/generateChatTitle";
 import { sendNewConversationNotification } from "@/lib/telegram/sendNewConversationNotification";
 import filterMessageContentForMemories from "@/lib/messages/filterMessageContentForMemories";
@@ -36,7 +36,7 @@ export async function handleChatCompletion(
       const conversationName = await generateChatTitle(latestMessageText);
 
       await Promise.all([
-        createRoomWithReport({
+        createRoom({
           account_id: accountId,
           topic: conversationName,
           artist_id: artistId || undefined,
