@@ -9,6 +9,5 @@ export type Conversation = {
   id: string;
   account_id: string;
   memories: Array<string>;
-  room_reports: Array<string>;
   updated_at: string;
 };
