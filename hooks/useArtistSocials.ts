@@ -10,10 +10,8 @@ export function useArtistSocials() {
   const { data: socialsData } = useQuery({
     queryKey: ["artistSocials", artist_account_id],
     queryFn: async () => {
-      if (!artist_account_id) return undefined;
       const accessToken = await getAccessToken();
-      if (!accessToken) return undefined;
-      return getArtistSocials(artist_account_id, accessToken);
+      return getArtistSocials(artist_account_id!, accessToken!);
     },
     enabled: !!artist_account_id && authenticated,
     staleTime: 1000 * 60 * 5,
