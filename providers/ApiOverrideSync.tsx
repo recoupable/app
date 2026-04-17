@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { API_OVERRIDE_STORAGE_KEY } from "@/lib/consts";
+import { clearAllApiOverrideSessionKeys } from "@/lib/sessionStorage/migrateRecoupOverrideKeys";
 
 export default function ApiOverrideSync() {
   const searchParams = useSearchParams();
@@ -12,7 +13,7 @@ export default function ApiOverrideSync() {
 
     try {
       if (apiParam === "clear") {
-        window.sessionStorage.removeItem(API_OVERRIDE_STORAGE_KEY);
+        clearAllApiOverrideSessionKeys(API_OVERRIDE_STORAGE_KEY);
         return;
       }
 

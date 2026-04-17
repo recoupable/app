@@ -1,4 +1,5 @@
 import { API_OVERRIDE_STORAGE_KEY, NEW_API_BASE_URL } from "@/lib/consts";
+import { migrateApiOverrideSessionStorage } from "@/lib/sessionStorage/migrateRecoupOverrideKeys";
 
 /**
  * Resolves the API base URL for client-side API calls.
@@ -8,6 +9,7 @@ export function getClientApiBaseUrl(): string {
 
   if (typeof window !== "undefined") {
     try {
+      migrateApiOverrideSessionStorage(API_OVERRIDE_STORAGE_KEY);
       const storedApiOverride = window.sessionStorage.getItem(
         API_OVERRIDE_STORAGE_KEY,
       );

@@ -27,8 +27,9 @@ export const CHAT_POINT_SYSTEM_ID = 4172;
 export const SCORE_POINT_SYSTEM_ID = 4186;
 export const AGENT_API = "https://api.recoupable.com";
 export const TASKS_API_URL = `${NEW_API_BASE_URL}/api/tasks`;
-export const API_OVERRIDE_STORAGE_KEY = "apiOverride";
-export const ACCOUNT_OVERRIDE_STORAGE_KEY = "accountOverride";
+/** Namespaced keys avoid collisions with other scripts on the same origin. */
+export const API_OVERRIDE_STORAGE_KEY = "recoup_api_override";
+export const ACCOUNT_OVERRIDE_STORAGE_KEY = "recoup_account_override";
 export const ONE_DAY_MILLISECONDS = 24 * 60 * 60 * 1000;
 export const SOCIAL_DEFAULT_PLATFORMS = [
   "Apple",
