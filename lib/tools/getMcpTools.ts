@@ -1,6 +1,4 @@
 import { ToolSet } from "ai";
-import getSegmentFans from "./getSegmentFans";
-import getArtistSegments from "./getArtistSegments";
 import getSocialPosts from "./getSocialPosts";
 import getPostComments from "./getPostComments";
 import { webDeepResearch } from "./searchWeb";
@@ -15,7 +13,6 @@ import scrapeInstagramComments from "./scrapeInstagramComments";
 import artistDeepResearch from "./artistDeepResearch";
 import getVideoGameCampaignPlays from "./getVideoGameCampaignPlays";
 import getSocialFans from "./getSocialFans";
-import createSegments from "./createSegments";
 import createReleaseReport from "./createReleaseReport";
 import filesTools from "./files";
 import browserTools from "./browser";
@@ -23,9 +20,6 @@ import getCatalogSongs from "./catalogs/getCatalogSongs";
 
 export function getMcpTools(): ToolSet {
   const tools = {
-    create_segments: createSegments,
-    get_artist_segments: getArtistSegments,
-    get_segment_fans: getSegmentFans,
     get_social_posts: getSocialPosts,
     get_post_comments: getPostComments,
     search_google_images: searchGoogleImages,
