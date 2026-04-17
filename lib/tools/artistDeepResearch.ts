@@ -18,9 +18,14 @@ const artistDeepResearch = tool({
   `,
   inputSchema: z.object({
     artist_account_id: z.string().describe("Artist account ID to research"),
+    access_token: z
+      .string()
+      .describe(
+        "Privy access token forwarded from the caller so mono/api can authorize the socials fetch."
+      ),
   }),
-  execute: async ({ artist_account_id }) => {
-    const data = await getArtistSocials(artist_account_id);
+  execute: async ({ artist_account_id, access_token }) => {
+    const data = await getArtistSocials(artist_account_id, access_token);
     return {
       artistSocials: data,
       artist_account_id,

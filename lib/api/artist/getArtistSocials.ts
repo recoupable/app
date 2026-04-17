@@ -28,17 +28,18 @@ export interface SocialResponse {
 }
 
 export async function getArtistSocials(
-  artist_account_id: string
+  artist_account_id: string,
+  accessToken: string
 ): Promise<SocialResponse> {
-  // Construct URL with query parameters
-  const url = new URL(`${getClientApiBaseUrl()}/api/artist/socials`);
-  url.searchParams.append("artist_account_id", artist_account_id);
+  // Build URL with id as a path segment (RESTful nested route on mono/api).
+  const url = `${getClientApiBaseUrl()}/api/artists/${artist_account_id}/socials`;
 
-  // Make the API request
-  const response = await fetch(url.toString(), {
+  // Make the API request with Privy Bearer auth (mono/api requires auth).
+  const response = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
     },
   });
 
