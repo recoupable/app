@@ -11,6 +11,7 @@ import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useAccountOverride } from "@/providers/AccountOverrideProvider";
 import { createTask } from "@/lib/tasks/createTask";
 import useAvailableModels from "@/hooks/useAvailableModels";
+import { DEFAULT_MODEL } from "@/lib/consts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -96,6 +97,14 @@ const CreateTaskPage = () => {
         })),
     [availableModels],
   );
+  const defaultModelLabel = useMemo(() => {
+    const configuredDefault = availableModels.find(
+      (modelOption) => modelOption.id === DEFAULT_MODEL,
+    );
+    return configuredDefault?.name
+      ? `${configuredDefault.name} (${DEFAULT_MODEL})`
+      : DEFAULT_MODEL;
+  }, [availableModels]);
 
   const selectedSchedulePreset = useMemo(
     () =>
@@ -306,7 +315,9 @@ const CreateTaskPage = () => {
               <SelectValue placeholder="Use default model" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={DEFAULT_MODEL_OPTION}>Use default model</SelectItem>
+              <SelectItem value={DEFAULT_MODEL_OPTION}>
+                {`Use default model (${defaultModelLabel})`}
+              </SelectItem>
               {modelOptions.map((modelOption) => (
                 <SelectItem key={modelOption.id} value={modelOption.id}>
                   {modelOption.label}
@@ -314,6 +325,9 @@ const CreateTaskPage = () => {
               ))}
             </SelectContent>
           </Select>
+          <p className="text-xs text-muted-foreground">
+            Default model: <span className="font-mono">{defaultModelLabel}</span>
+          </p>
           {isModelsError && (
             <p className="text-xs text-muted-foreground">
               Could not load model list. The default model will be used.
