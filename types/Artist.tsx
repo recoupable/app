@@ -1,5 +1,6 @@
 import { SOCIAL } from "./Agent";
 import { FAN_TYPE } from "./fans";
+import type { Knowledge } from "./knowledge";
 
 export type Artist = {
   name: string;
@@ -17,7 +18,7 @@ export type ArtistRecord = {
   created_at?: string;
   id?: string;
   instruction?: string | null;
-  knowledges?: any;
+  knowledges?: Knowledge[] | null;
   label?: string | null;
   organization?: string | null;
   pinned?: boolean;

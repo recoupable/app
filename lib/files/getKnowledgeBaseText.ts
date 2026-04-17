@@ -1,4 +1,4 @@
-import type { Knowledge } from "@/lib/supabase/artist/updateArtistProfile";
+import type { Knowledge } from "@/types/knowledge";
 
 /**
  * Processes knowledge base files and extracts text content.

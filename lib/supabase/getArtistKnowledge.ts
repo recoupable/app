@@ -1,12 +1,9 @@
 import supabase from "./serverClient";
+import type { Knowledge } from "@/types/knowledge";
 
-export interface KnowledgeBaseEntry {
-  url: string;
-  name: string;
-  type: string;
-}
+export type KnowledgeBaseEntry = Knowledge;
 
-export async function getArtistKnowledge(artistId: string): Promise<KnowledgeBaseEntry[]> {
+export async function getArtistKnowledge(artistId: string): Promise<Knowledge[]> {
   const { data, error } = await supabase
     .from("account_info")
     .select("knowledges")
