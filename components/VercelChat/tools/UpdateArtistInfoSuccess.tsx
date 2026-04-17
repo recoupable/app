@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import ArtistHeroSection from "./ArtistHeroSection";
 import KnowledgeBaseSection from "./KnowledgeBaseSection";
-import { Knowledge } from "@/lib/supabase/artist/updateArtistProfile";
+import { Knowledge } from "@/types/knowledge";
 import { CheckCircle, FileText } from "lucide-react";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { ArtistProfile } from "@/lib/supabase/artist/updateArtistProfile";

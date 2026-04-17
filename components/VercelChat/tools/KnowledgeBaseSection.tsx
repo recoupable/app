@@ -1,7 +1,7 @@
 import React from "react";
 import { FileText, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { Knowledge } from "@/lib/supabase/artist/updateArtistProfile";
+import { Knowledge } from "@/types/knowledge";
 
 const KnowledgeBaseSection = ({ knowledges }: { knowledges: Knowledge[] }) => {
   return (

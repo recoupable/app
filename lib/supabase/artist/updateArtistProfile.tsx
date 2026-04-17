@@ -9,8 +9,6 @@ import insertAccountArtistId from "@/lib/supabase/account_artist_ids/insertAccou
 import type { Tables } from "@/types/database.types";
 import type { Knowledge } from "@/types/knowledge";
 
-export type { Knowledge } from "@/types/knowledge";
-
 export type ArtistProfile = Tables<"accounts"> & Tables<"account_info">;
 
 const updateArtistProfile = async (
