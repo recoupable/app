@@ -5,10 +5,12 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import { toast } from "react-toastify";
+import cronstrue from "cronstrue";
 import useAutoLogin from "@/hooks/useAutoLogin";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useAccountOverride } from "@/providers/AccountOverrideProvider";
 import { createTask } from "@/lib/tasks/createTask";
+import useAvailableModels from "@/hooks/useAvailableModels";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +26,34 @@ import {
 type FormErrors = Partial<Record<"title" | "prompt" | "schedule" | "artist", string>>;
 
 const DEFAULT_SCHEDULE = "0 9 * * *";
+const DEFAULT_MODEL_OPTION = "__default__";
+const CUSTOM_SCHEDULE_OPTION = "__custom__";
+
+const SCHEDULE_PRESETS = [
+  { id: "daily-0900", label: "Daily at 09:00 UTC", cron: "0 9 * * *" },
+  { id: "daily-1700", label: "Daily at 17:00 UTC", cron: "0 17 * * *" },
+  { id: "weekdays-0900", label: "Weekdays at 09:00 UTC", cron: "0 9 * * 1-5" },
+  { id: "weekly-mon-0900", label: "Every Monday at 09:00 UTC", cron: "0 9 * * 1" },
+] as const;
+
+const validateCronExpression = (value: string): string | null => {
+  const normalized = value.trim();
+  if (!normalized) {
+    return "Schedule is required.";
+  }
+
+  const fields = normalized.split(/\s+/);
+  if (fields.length !== 5) {
+    return "Use a 5-part cron expression: minute hour day month weekday.";
+  }
+
+  try {
+    cronstrue.toString(normalized);
+    return null;
+  } catch {
+    return "Invalid cron format. Try a preset or use example: 0 9 * * *";
+  }
+};
 
 const CreateTaskPage = () => {
   useAutoLogin();
@@ -31,6 +61,11 @@ const CreateTaskPage = () => {
   const router = useRouter();
   const { getAccessToken } = usePrivy();
   const { sorted, selectedArtist, isLoading } = useArtistProvider();
+  const {
+    data: availableModels = [],
+    isLoading: isModelsLoading,
+    isError: isModelsError,
+  } = useAvailableModels();
   const { accountIdOverride, email } = useAccountOverride();
 
   const [title, setTitle] = useState("");
@@ -51,6 +86,36 @@ const CreateTaskPage = () => {
     [sorted],
   );
 
+  const modelOptions = useMemo(
+    () =>
+      [...availableModels]
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((modelOption) => ({
+          id: modelOption.id,
+          label: modelOption.name,
+        })),
+    [availableModels],
+  );
+
+  const selectedSchedulePreset = useMemo(
+    () =>
+      SCHEDULE_PRESETS.find((preset) => preset.cron === schedule.trim())?.id ??
+      CUSTOM_SCHEDULE_OPTION,
+    [schedule],
+  );
+
+  const cronPreview = useMemo(() => {
+    const cronError = validateCronExpression(schedule);
+    if (cronError) {
+      return null;
+    }
+    try {
+      return cronstrue.toString(schedule.trim());
+    } catch {
+      return null;
+    }
+  }, [schedule]);
+
   useEffect(() => {
     if (!artistAccountId && selectedArtist?.account_id) {
       setArtistAccountId(selectedArtist.account_id);
@@ -66,7 +131,8 @@ const CreateTaskPage = () => {
     const nextErrors: FormErrors = {};
     if (!title.trim()) nextErrors.title = "Title is required.";
     if (!prompt.trim()) nextErrors.prompt = "Prompt is required.";
-    if (!schedule.trim()) nextErrors.schedule = "Schedule is required.";
+    const scheduleError = validateCronExpression(schedule);
+    if (scheduleError) nextErrors.schedule = scheduleError;
     if (!artistAccountId.trim()) nextErrors.artist = "Artist is required.";
 
     setErrors(nextErrors);
@@ -96,8 +162,11 @@ const CreateTaskPage = () => {
       router.push("/tasks");
       router.refresh();
     } catch (error) {
-      const message =
+      const rawMessage =
         error instanceof Error ? error.message : "Failed to create task.";
+      const message = rawMessage.includes("HTTP 500")
+        ? "Server failed to create the task. Verify cron/model fields and try a schedule preset."
+        : rawMessage;
       setSubmitError(message);
       toast.error(message);
     } finally {
@@ -157,17 +226,42 @@ const CreateTaskPage = () => {
 
         <div className="space-y-2">
           <Label htmlFor="task-schedule">Schedule (cron)</Label>
+          <Select
+            value={selectedSchedulePreset}
+            onValueChange={(value) => {
+              const preset = SCHEDULE_PRESETS.find((item) => item.id === value);
+              if (preset) {
+                setSchedule(preset.cron);
+              }
+            }}
+            disabled={isSubmitting}
+          >
+            <SelectTrigger id="task-schedule-presets">
+              <SelectValue placeholder="Choose a common schedule (optional)" />
+            </SelectTrigger>
+            <SelectContent>
+              {SCHEDULE_PRESETS.map((preset) => (
+                <SelectItem key={preset.id} value={preset.id}>
+                  {preset.label}
+                </SelectItem>
+              ))}
+              <SelectItem value={CUSTOM_SCHEDULE_OPTION}>Custom cron</SelectItem>
+            </SelectContent>
+          </Select>
           <Input
             id="task-schedule"
-            placeholder="0 9 * * *"
+            placeholder="Use 5-part cron, e.g. 0 9 * * *"
             value={schedule}
             onChange={(event) => setSchedule(event.target.value)}
             disabled={isSubmitting}
           />
           <p className="text-xs text-muted-foreground">
-            Example: <span className="font-mono">0 9 * * *</span> runs daily at
-            09:00 UTC.
+            Cron format: <span className="font-mono">minute hour day month weekday</span>.
+            Example: <span className="font-mono">0 9 * * *</span>.
           </p>
+          {cronPreview && (
+            <p className="text-xs text-muted-foreground">Runs: {cronPreview}</p>
+          )}
           {errors.schedule && (
             <p className="text-sm text-red-600">{errors.schedule}</p>
           )}
@@ -201,13 +295,30 @@ const CreateTaskPage = () => {
 
         <div className="space-y-2">
           <Label htmlFor="task-model">Model (optional)</Label>
-          <Input
-            id="task-model"
-            placeholder="anthropic/claude-sonnet-4.5"
-            value={model}
-            onChange={(event) => setModel(event.target.value)}
-            disabled={isSubmitting}
-          />
+          <Select
+            value={model || DEFAULT_MODEL_OPTION}
+            onValueChange={(value) =>
+              setModel(value === DEFAULT_MODEL_OPTION ? "" : value)
+            }
+            disabled={isSubmitting || isModelsLoading}
+          >
+            <SelectTrigger id="task-model">
+              <SelectValue placeholder="Use default model" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={DEFAULT_MODEL_OPTION}>Use default model</SelectItem>
+              {modelOptions.map((modelOption) => (
+                <SelectItem key={modelOption.id} value={modelOption.id}>
+                  {modelOption.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {isModelsError && (
+            <p className="text-xs text-muted-foreground">
+              Could not load model list. The default model will be used.
+            </p>
+          )}
         </div>
 
         {submitError && <p className="text-sm text-red-600">{submitError}</p>}
