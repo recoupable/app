@@ -22,7 +22,6 @@ const Menu = ({ isExpanded, isPinned = false, onTogglePin }: MenuProps) => {
   const pathname = usePathname();
   const { email, isPrepared } = useUserProvider();
   const isAgents = pathname.includes("/agents");
-  const isSegments = pathname.includes("/segments");
   const isTasks = pathname.includes("/tasks");
   const isFiles = pathname.includes("/files");
 
@@ -47,7 +46,6 @@ const Menu = ({ isExpanded, isPinned = false, onTogglePin }: MenuProps) => {
         isExpanded={isExpanded}
         isAgents={isAgents}
         isTasks={isTasks}
-        isSegments={isSegments}
         isFiles={isFiles}
         onNavigate={goToItem}
       />

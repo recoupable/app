@@ -10,7 +10,6 @@ import { v4 as uuidV4 } from "uuid";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { PointerIcon } from "lucide-react";
 import { Button } from "../ui/button";
-import FanGroupNavItem from "../Sidebar/FanGroupNavItem";
 import AgentsNavItem from "../Sidebar/AgentsNavItem";
 import { usePathname } from "next/navigation";
 import TasksNavItem from "../Sidebar/TasksNavItem";
@@ -32,7 +31,6 @@ const SideMenu = ({
   const hasArtists = sorted.length > 0;
   const isArtistSelected = !!selectedArtist;
   const isAgents = pathname.includes("/agents");
-  const isSegments = pathname.includes("/segments");
   const isTasks = pathname.includes("/tasks");
   const isFiles = pathname.includes("/files");
 
@@ -95,10 +93,6 @@ const SideMenu = ({
             onClick={() => goToItem("agents")}
           />
           <TasksNavItem isActive={isTasks} onClick={() => goToItem("tasks")} />
-          <FanGroupNavItem
-            isActive={isSegments}
-            onClick={() => goToItem("segments")}
-          />
           <FilesNavItem isActive={isFiles} onClick={() => goToItem("files")} />
         </div>
       </div>
