@@ -6,7 +6,6 @@ import ChatInput from "./ChatInput";
 import ChatSkeleton from "../Chat/ChatSkeleton";
 import ChatGreeting from "../Chat/ChatGreeting";
 import useVisibilityDelay from "@/hooks/useVisibilityDelay";
-import { ChatReport } from "../Chat/ChatReport";
 import { useParams } from "next/navigation";
 import { useAutoLogin } from "@/hooks/useAutoLogin";
 import { useArtistFromRoom } from "@/hooks/useArtistFromRoom";
@@ -23,27 +22,24 @@ import { useOrganization } from "@/providers/OrganizationProvider";
 
 interface ChatProps {
   id: string;
-  reportId?: string;
   initialMessages?: UIMessage[];
 }
 
-export function Chat({ id, reportId, initialMessages }: ChatProps) {
+export function Chat({ id, initialMessages }: ChatProps) {
   const { selectedOrgId } = useOrganization();
   const providerKey = `${id}-${selectedOrgId ?? "personal"}`;
-  
+
   return (
     <VercelChatProvider key={providerKey} chatId={id} initialMessages={initialMessages}>
-      <ChatContent reportId={reportId} id={id} />
+      <ChatContent id={id} />
     </VercelChatProvider>
   );
 }
 
 // Inner component that uses the context
 function ChatContentMemoized({
-  reportId,
   id,
 }: {
-  reportId?: string;
   id: string;
 }) {
   const { messages, status, isLoading, hasError } = useVercelChatContext();
@@ -53,8 +49,8 @@ function ChatContentMemoized({
   const { getRootProps, isDragActive } = useDropzone();
 
   const { isVisible } = useVisibilityDelay({
-    shouldBeVisible: messages.length === 0 && !reportId && status === "ready",
-    deps: [messages.length, reportId, status],
+    shouldBeVisible: messages.length === 0 && status === "ready",
+    deps: [messages.length, status],
   });
 
   if (isLoading) {
@@ -106,13 +102,7 @@ function ChatContentMemoized({
         </>
       ) : (
         <>
-          <Messages>
-            {reportId && (
-              <div className="w-full max-w-3xl mx-auto">
-                <ChatReport reportId={reportId} />
-              </div>
-            )}
-          </Messages>
+          <Messages />
           <div className="w-full max-w-3xl mx-auto">
             <ChatInput />
           </div>
@@ -123,7 +113,5 @@ function ChatContentMemoized({
 }
 
 const ChatContent = memo(ChatContentMemoized, (prevProps, nextProps) => {
-  return (
-    prevProps.id === nextProps.id && prevProps.reportId === nextProps.reportId
-  );
+  return prevProps.id === nextProps.id;
 });

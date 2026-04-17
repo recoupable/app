@@ -14,9 +14,6 @@ export type Conversation = {
     room_id: string;
     created_at: string;
   }>;
-  room_reports: Array<{
-    report_id: string;
-  }>;
   updated_at: string;
 };
 

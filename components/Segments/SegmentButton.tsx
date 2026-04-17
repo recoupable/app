@@ -1,21 +1,17 @@
 import { Card } from "@/components/ui/card";
-import { Users, ArrowUpRight } from "lucide-react";
+import { Users } from "lucide-react";
 import { Segment } from "@/lib/supabase/getArtistSegments";
 import SegmentFanCircles from "./SegmentFanCircles";
 
 interface SegmentButtonProps {
   segment: Segment;
-  onGenerateReport: (id: string, name: string) => void;
 }
 
-const SegmentButton = ({ segment, onGenerateReport }: SegmentButtonProps) => {
+const SegmentButton = ({ segment }: SegmentButtonProps) => {
   const fansWithAvatars = segment.fans?.filter((fan) => fan.avatar) || [];
 
   return (
-    <Card 
-      className="p-6 border border-border-light  hover:shadow-lg dark:hover:bg-dark-bg-hover transition-all duration-200 cursor-pointer relative"
-      onClick={() => onGenerateReport(segment.id, segment.name)}
-    >
+    <Card className="p-6 border border-border-light transition-all duration-200 relative">
       <div className="space-y-4">
         {/* Title */}
         <h3 className="text-base font-medium text-foreground">
@@ -25,8 +21,8 @@ const SegmentButton = ({ segment, onGenerateReport }: SegmentButtonProps) => {
         {/* Fan Avatars and Count */}
         <div className="flex items-center space-x-3">
           {fansWithAvatars.length > 0 ? (
-            <SegmentFanCircles 
-              fans={fansWithAvatars} 
+            <SegmentFanCircles
+              fans={fansWithAvatars}
               maxVisible={3}
               totalCount={segment.size}
             />
@@ -39,11 +35,6 @@ const SegmentButton = ({ segment, onGenerateReport }: SegmentButtonProps) => {
           )}
           <span className="text-sm text-muted-foreground dark:text-muted-foreground">{segment.size} Fans</span>
         </div>
-      </div>
-
-      {/* Arrow Icon */}
-      <div className="absolute bottom-4 right-4">
-        <ArrowUpRight className="w-4 h-4 text-muted-foreground dark:text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-muted-foreground transition-colors" />
       </div>
     </Card>
   );

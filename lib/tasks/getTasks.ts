@@ -7,6 +7,7 @@ type ScheduledAction = Tables<"scheduled_actions">;
 export type Task = ScheduledAction & {
   recent_runs?: TaskRunItem[];
   upcoming?: string[];
+  owner_email?: string | null;
 };
 
 export interface GetTasksParams {
@@ -27,7 +28,7 @@ export interface GetTasksResponse {
  */
 export async function getTasks(
   accessToken: string,
-  params?: GetTasksParams
+  params?: GetTasksParams,
 ): Promise<Task[]> {
   try {
     const url = new URL(`${getClientApiBaseUrl()}/api/tasks`);

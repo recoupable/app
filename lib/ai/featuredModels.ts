@@ -1,3 +1,5 @@
+import { DEFAULT_MODEL } from "@/lib/consts";
+
 /**
  * Featured models configuration for the model selection dropdown
  * These models will be displayed prominently at the top of the dropdown
@@ -33,8 +35,8 @@ export const FEATURED_MODELS: FeaturedModelConfig[] = [
     tooltip: "OpenAI's best general-purpose model for both general and agentic tasks",
   },
   {
-    id: "openai/gpt-5-mini",
-    displayName: "GPT-5 Mini",
+    id: DEFAULT_MODEL,
+    displayName: "GPT-5.4 Mini",
     isPro: false,
     pill: "Fast",
     description: "Great for everyday",

@@ -1,7 +1,12 @@
 import { useCallback, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
+
+interface UseSandboxFileContentOptions {
+  path?: string;
+  enabled?: boolean;
+}
 
 interface UseSandboxFileContentReturn {
   selectedPath: string | undefined;
@@ -12,35 +17,44 @@ interface UseSandboxFileContentReturn {
   select: (path: string) => void;
 }
 
-export default function useSandboxFileContent(): UseSandboxFileContentReturn {
+export default function useSandboxFileContent(
+  options?: UseSandboxFileContentOptions,
+): UseSandboxFileContentReturn {
   const { getAccessToken } = usePrivy();
-  const [selectedPath, setSelectedPath] = useState<string>();
+  const [selectedPath, setSelectedPath] = useState<string | undefined>(
+    options?.path,
+  );
+  const effectivePath = options?.path ?? selectedPath;
+  const enabled = options?.enabled ?? true;
 
-  const mutation = useMutation({
-    mutationFn: async (path: string) => {
+  const query = useQuery({
+    queryKey: ["sandbox-file-content", effectivePath],
+    enabled: Boolean(enabled && effectivePath),
+    queryFn: async () => {
+      if (!effectivePath) {
+        return { content: null, imageUrl: null };
+      }
       const accessToken = await getAccessToken();
       if (!accessToken) {
         throw new Error("Please sign in to view file contents");
       }
-
-      return getFileContents(accessToken, path);
+      return getFileContents(accessToken, effectivePath);
     },
   });
 
   const select = useCallback(
     (path: string) => {
       setSelectedPath(path);
-      mutation.mutate(path);
     },
-    [mutation],
+    [],
   );
 
   return {
-    selectedPath,
-    content: mutation.data?.content ?? null,
-    imageUrl: mutation.data?.imageUrl ?? null,
-    loading: mutation.isPending,
-    error: mutation.error?.message ?? null,
+    selectedPath: effectivePath,
+    content: query.data?.content ?? null,
+    imageUrl: query.data?.imageUrl ?? null,
+    loading: query.isLoading || query.isFetching,
+    error: query.error?.message ?? null,
     select,
   };
 }

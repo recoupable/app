@@ -5,17 +5,15 @@ import { MentionsInput, Mention, OnChangeHandlerFunc, SuggestionDataItem } from 
 import { Card } from "@/components/ui/card";
 import { mentionsStyles } from "./mentionsStyles";
 import useFileMentionSuggestions, { GroupedSuggestion } from "@/hooks/useFileMentionSuggestions";
-import { useBatchSignedUrls } from "@/hooks/useBatchSignedUrls";
 import { SuggestionItem } from "./SuggestionItem";
 
 interface FileMentionsInputProps {
 	value: string;
 	onChange: (newValue: string) => void;
 	disabled: boolean;
-	model: string;
 }
 
-export default function FileMentionsInput({ value, onChange, disabled, model }: FileMentionsInputProps) {
+export default function FileMentionsInput({ value, onChange, disabled }: FileMentionsInputProps) {
 	const [portalHost, setPortalHost] = useState<Element | undefined>(undefined);
 	useEffect(() => {
 		if (typeof window !== "undefined") setPortalHost(document.body);
@@ -26,9 +24,6 @@ export default function FileMentionsInput({ value, onChange, disabled, model }: 
 	};
 
 	const { provideSuggestions, lastResults } = useFileMentionSuggestions(value);
-    
-    // Batch fetch signed URLs using the custom hook
-    const signedUrls = useBatchSignedUrls(lastResults as GroupedSuggestion[]);
 
 	return (
 		<MentionsInput
@@ -41,11 +36,7 @@ export default function FileMentionsInput({ value, onChange, disabled, model }: 
 			customSuggestionsContainer={(children) => (
 				<Card className="z-[70] shadow-lg border border-border rounded-xl overflow-hidden p-1 max-w-32 bg-popover" style={{ minWidth: 320, maxHeight: 360, overflow: "auto" }}>{children}</Card>
 			)}
-			placeholder={
-				model === "fal-ai/nano-banana/edit"
-					? "Describe an image or upload a file to edit..."
-					: "What would you like to know? Type @ to attach files"
-			}
+			placeholder="What would you like to know? Type @ to attach files"
 			onKeyDown={(e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 				if (e.key === "Enter" && !e.shiftKey) {
 					e.preventDefault();
@@ -77,9 +68,6 @@ export default function FileMentionsInput({ value, onChange, disabled, model }: 
 					const current = lastResults[index] as GroupedSuggestion | undefined;
 					const prev = index > 0 ? (lastResults[index - 1] as GroupedSuggestion | undefined) : undefined;
 					const showHeader = !prev || (current && prev && current.group !== prev.group);
-                    
-                    // Pass the pre-loaded URL if available
-                    const url = current?.storage_key ? signedUrls[current.storage_key] : undefined;
 
 					return (
 						<div key={entry.id}>
@@ -92,8 +80,7 @@ export default function FileMentionsInput({ value, onChange, disabled, model }: 
                                 <SuggestionItem 
                                     entry={current} 
                                     focused={focused} 
-                                    highlightedDisplay={highlightedDisplay} 
-                                    imageUrl={url}
+                                    highlightedDisplay={highlightedDisplay}
                                 />
                             )}
 						</div>
