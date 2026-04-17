@@ -1,6 +1,7 @@
 import { generateText, tool } from "ai";
 import { z } from "zod";
 import { ANTHROPIC_MODEL, MERMAID_INSTRUCTIONS_PROMPT } from "../consts";
+import { createModel } from "@/lib/ai/createModel";
 
 export interface GenerateMermaidDiagramResult {
   content: { type: "text"; text: string }[];
@@ -22,7 +23,7 @@ export const generateMermaidDiagram = tool({
   }),
   execute: async ({ context }) => {
     const result = await generateText({
-      model: ANTHROPIC_MODEL,
+      model: createModel(`anthropic/${ANTHROPIC_MODEL}`),
       system: MERMAID_INSTRUCTIONS_PROMPT,
       prompt: `Generate a Mermaid diagram for the following context: ${context}
             `,

@@ -30,6 +30,7 @@
     "@hookform/resolvers": "^3.9.1",
     "@icons-pack/react-simple-icons": "^13.8.0",
     "@modelcontextprotocol/sdk": "^1.24.3",
+    "@openrouter/ai-sdk-provider": "^2.6.0",
     "@privy-io/react-auth": "^1.88.4",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-avatar": "^1.1.3",
