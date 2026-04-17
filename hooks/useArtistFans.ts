@@ -4,6 +4,8 @@ import {
   type InfiniteData,
 } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { usePrivy } from "@privy-io/react-auth";
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
 export interface Social {
   id: string;
@@ -38,12 +40,18 @@ export interface FansError {
  */
 async function fetchFans(
   artistAccountId: string,
+  accessToken: string,
   page: number = 1,
   limit: number = 20
 ): Promise<FansResponse> {
   try {
     const response = await fetch(
-      `https://api.recoupable.com/api/fans?artist_account_id=${artistAccountId}&page=${page}&limit=${limit}`
+      `${getClientApiBaseUrl()}/api/artists/${artistAccountId}/fans?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
     );
 
     if (!response.ok) {
@@ -78,10 +86,14 @@ export function useArtistFans(
   artistAccountId?: string,
   limit: number = 20
 ): UseInfiniteQueryResult<InfiniteData<FansResponse, unknown>, Error> {
+  const { getAccessToken, authenticated } = usePrivy();
+
   const queryResult = useInfiniteQuery({
     queryKey: ["fans", artistAccountId, limit],
-    queryFn: ({ pageParam = 1 }) =>
-      fetchFans(artistAccountId!, pageParam, limit),
+    queryFn: async ({ pageParam = 1 }) => {
+      const accessToken = await getAccessToken();
+      return fetchFans(artistAccountId!, accessToken!, pageParam, limit);
+    },
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       const { pagination } = lastPage;
@@ -92,7 +104,7 @@ export function useArtistFans(
       // Otherwise, return the next page number
       return pagination.page + 1;
     },
-    enabled: !!artistAccountId,
+    enabled: !!artistAccountId && authenticated,
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
     retry: (failureCount, error) => {
