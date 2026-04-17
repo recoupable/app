@@ -7,19 +7,17 @@ type Room = Database["public"]["Tables"]["rooms"]["Row"];
 interface CreateRoomParams {
   account_id: string;
   topic: string;
-  report_id?: string;
   artist_id?: string;
   chat_id?: string;
 }
 
-export const createRoomWithReport = async ({
+export const createRoom = async ({
   account_id,
   topic,
-  report_id,
   artist_id,
   chat_id,
 }: CreateRoomParams): Promise<{
-  new_room: Room & { memories: []; rooms_reports: string[] };
+  new_room: Room & { memories: [] };
   error: PostgrestError | null;
 }> => {
   try {
@@ -38,18 +36,10 @@ export const createRoomWithReport = async ({
 
     if (error) throw error;
 
-    if (report_id) {
-      await supabase.from("room_reports").insert({
-        room_id: new_room.id,
-        report_id,
-      });
-    }
-
     return {
       new_room: {
         ...new_room,
         memories: [],
-        rooms_reports: report_id ? [report_id] : [],
       },
       error: null,
     };

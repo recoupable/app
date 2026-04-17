@@ -97,7 +97,6 @@ const useConversations = () => {
           created_at: now,
         },
       ],
-      room_reports: [],
       updated_at: now,
     };
 
