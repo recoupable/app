@@ -5,78 +5,14 @@ import {
 } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import {
+  fetchArtistFans,
+  type FansResponse,
+  type Social,
+  type FansError,
+} from "@/lib/fans/fetchArtistFans";
 
-export interface Social {
-  id: string;
-  username: string;
-  avatar: string | null;
-  profile_url: string;
-  region: string;
-  bio: string;
-  followerCount: number;
-  followingCount: number;
-  updated_at: string;
-}
-
-export interface FansResponse {
-  status: string;
-  fans: Social[];
-  pagination: {
-    total_count: number;
-    page: number;
-    limit: number;
-    total_pages: number;
-  };
-}
-
-export interface FansError {
-  message: string;
-  status?: number;
-}
-
-/**
- * Fetches fans for a specific artist from the API with pagination
- */
-async function fetchFans(
-  artistAccountId: string,
-  accessToken: string,
-  page: number = 1,
-  limit: number = 20
-): Promise<FansResponse> {
-  try {
-    const response = await fetch(
-      `${getClientApiBaseUrl()}/api/artists/${artistAccountId}/fans?page=${page}&limit=${limit}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const error: FansError = {
-        message: "Failed to fetch fans",
-        status: response.status,
-      };
-      throw error;
-    }
-
-    const data: FansResponse = await response.json();
-
-    if (data.status !== "success") {
-      throw { message: "API returned error status" } as FansError;
-    }
-
-    return data;
-  } catch (error) {
-    // Ensure we're always throwing a consistent error shape
-    if (typeof error === "object" && error !== null && "message" in error) {
-      throw error;
-    }
-    throw { message: "An unexpected error occurred" } as FansError;
-  }
-}
+export type { Social, FansResponse, FansError };
 
 /**
  * Hook to fetch and manage fans for an artist with automatic pagination
@@ -92,7 +28,7 @@ export function useArtistFans(
     queryKey: ["fans", artistAccountId, limit],
     queryFn: async ({ pageParam = 1 }) => {
       const accessToken = await getAccessToken();
-      return fetchFans(artistAccountId!, accessToken!, pageParam, limit);
+      return fetchArtistFans(artistAccountId!, accessToken!, pageParam, limit);
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
