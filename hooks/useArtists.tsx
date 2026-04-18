@@ -3,7 +3,6 @@ import { useOrganization } from "@/providers/OrganizationProvider";
 import { ArtistRecord } from "@/types/Artist";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import useArtistSetting from "./useArtistSetting";
-import { SETTING_MODE } from "@/types/Setting";
 import useArtistMode from "./useArtistMode";
 import saveArtist from "@/lib/saveArtist";
 import useInitialArtists from "./useInitialArtists";
@@ -15,7 +14,7 @@ import { sortArtistsWithPinnedFirst } from "@/lib/artists/sortArtistsWithPinnedF
 const useArtists = () => {
   const artistSetting = useArtistSetting();
   const [isLoading, setIsLoading] = useState(true);
-  const { email, userData } = useUserProvider();
+  const { userData } = useUserProvider();
   const { selectedOrgId } = useOrganization();
   const { getAccessToken } = usePrivy();
   const [artists, setArtists] = useState<ArtistRecord[]>([]);
@@ -113,8 +112,15 @@ const useArtists = () => {
     overrideKnowledges?: Array<{ name: string; url: string; type: string }>,
   ) => {
     setUpdating(true);
-    const saveMode = artistMode.settingMode;
     try {
+      const accessToken = await getAccessToken();
+      const artistId = artistSetting.editableArtist?.account_id;
+
+      if (!accessToken || !artistId) {
+        setUpdating(false);
+        return null;
+      }
+
       const profileUrls = {
         TWITTER: artistSetting.twitter,
         TIKTOK: artistSetting.tiktok,
@@ -125,25 +131,16 @@ const useArtists = () => {
         FACEBOOK: artistSetting.facebook,
         THREADS: artistSetting.threads,
       };
-      const data = await saveArtist({
+      const data = await saveArtist(accessToken, artistId, {
         name: artistSetting.name,
         image: artistSetting.image,
         profileUrls,
         instruction: artistSetting.instruction,
         label: artistSetting.label,
         knowledges: overrideKnowledges ?? artistSetting.bases,
-        artistId:
-          saveMode === SETTING_MODE.CREATE
-            ? ""
-            : artistSetting.editableArtist?.account_id,
-        email,
-        // Link new artist to selected org (only applies when creating)
-        organizationId: saveMode === SETTING_MODE.CREATE ? selectedOrgId : null,
       });
       await getArtists(data.artist?.account_id);
       setUpdating(false);
-      if (artistMode.settingMode === SETTING_MODE.CREATE)
-        artistMode.setSettingMode(SETTING_MODE.UPDATE);
       return data.artist;
     } catch (error) {
       console.error(error);
