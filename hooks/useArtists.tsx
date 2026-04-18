@@ -1,7 +1,7 @@
 import { useUserProvider } from "@/providers/UserProvder";
 import { useOrganization } from "@/providers/OrganizationProvider";
 import { ArtistRecord } from "@/types/Artist";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import useArtistSetting from "./useArtistSetting";
 import { SETTING_MODE } from "@/types/Setting";
 import useArtistMode from "./useArtistMode";
@@ -38,12 +38,11 @@ const useArtists = () => {
   const { isCreatingArtist, setIsCreatingArtist, updateChatState } =
     useCreateArtists();
 
-  const sorted = (() => {
+  const sorted = useMemo(() => {
     if (!selectedArtist) {
       return sortArtistsWithPinnedFirst(artists);
     }
 
-    // Find the selected artist index
     const selectedIndex = artists.findIndex(
       (artist: ArtistRecord) => artist.account_id === selectedArtist.account_id,
     );
@@ -52,18 +51,15 @@ const useArtists = () => {
       return sortArtistsWithPinnedFirst(artists);
     }
 
-    // Remove selected artist from the list
     const artistsWithoutSelected = [
       ...artists.slice(0, selectedIndex),
       ...artists.slice(selectedIndex + 1),
     ];
 
-    // Sort remaining artists with pinned first
     const sortedRemaining = sortArtistsWithPinnedFirst(artistsWithoutSelected);
 
-    // Selected artist always appears at the top of the list
     return [selectedArtist, ...sortedRemaining];
-  })();
+  }, [artists, selectedArtist]);
 
   const getArtists = useCallback(
     async (artistId?: string) => {
