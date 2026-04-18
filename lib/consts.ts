@@ -1,12 +1,11 @@
 import { Address } from "viem";
 
 export const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
-const apiBaseUrlOverride = process.env.NEXT_PUBLIC_API_BASE_URL;
-export const NEW_API_BASE_URL = apiBaseUrlOverride
-  ? apiBaseUrlOverride
-  : IS_PROD
+export const NEW_API_BASE_URL = IS_PROD
   ? "https://recoup-api.vercel.app"
   : "https://test-recoup-api.vercel.app";
+export const API_OVERRIDE_STORAGE_KEY = "recoup_api_override";
+export const ACCOUNT_OVERRIDE_STORAGE_KEY = "recoup_account_override";
 export const IN_PROCESS_PROTOCOL_ADDRESS = IS_PROD
   ? ("0x540C18B7f99b3b599c6FeB99964498931c211858" as Address)
   : ("0x6832A997D8616707C7b68721D6E9332E77da7F6C" as Address);
@@ -27,9 +26,6 @@ export const CHAT_POINT_SYSTEM_ID = 4172;
 export const SCORE_POINT_SYSTEM_ID = 4186;
 export const AGENT_API = "https://api.recoupable.com";
 export const TASKS_API_URL = `${NEW_API_BASE_URL}/api/tasks`;
-/** Namespaced keys avoid collisions with other scripts on the same origin. */
-export const API_OVERRIDE_STORAGE_KEY = "recoup_api_override";
-export const ACCOUNT_OVERRIDE_STORAGE_KEY = "recoup_account_override";
 export const ONE_DAY_MILLISECONDS = 24 * 60 * 60 * 1000;
 export const SOCIAL_DEFAULT_PLATFORMS = [
   "Apple",
@@ -47,7 +43,7 @@ export const APIFY_WEBHOOKS_VALUE =
 // Vercel AI SDK
 export const AI_MODEL = "o3-mini";
 export const ANTHROPIC_MODEL = "claude-3-7-sonnet-20250219";
-export const DEFAULT_MODEL = "openai/gpt-5-mini";
+export const DEFAULT_MODEL = "openai/gpt-5.4-mini";
 export const FAST_MODEL = "openai/gpt-5-nano";
 // Fastest model for lightweight tasks e.g generating chat titles etc.
 export const LIGHTWEIGHT_MODEL = "openai/gpt-4o-mini";
@@ -1824,58 +1820,6 @@ export const SEGMENT_SYSTEM_PROMPT = `You are an expert music industry analyst s
     The segment names should help artists and managers understand their audience better for targeted marketing campaigns.
     
     ${SEGMENT_FAN_SOCIAL_ID_PROMPT}`;
-
-export const PROMPT_SUGGESTIONS_SYSTEM_PROMPT = `You are a prompt suggestion generator for Recoup, a music industry AI assistant that specializes in artist management, fan analysis, social media strategy, and marketing optimization.
-
-**Your Purpose:**
-Generate 4 relevant, actionable follow-up prompt suggestions based on the content provided (First prompt should always be related to YouTube). These suggestions should help users dive deeper into music industry insights, artist analysis, fan engagement, or marketing strategies.
-
-**Core Focus Areas:**
-- Artist profile analysis and optimization
-- Fan demographics and behavior analysis  
-- Social media performance (Spotify, TikTok, Instagram, YouTube, etc.)
-- Marketing funnel optimization
-- Campaign performance analysis
-- Content strategy and engagement
-- Music industry trends and opportunities
-- Brand partnerships and collaborations
-
-**Content Filtering Rules:**
-ONLY generate suggestions if the content is related to:
-- Music, artists, bands, musicians, singers
-- Social media platforms and content creation
-- Fan engagement, audience analysis, demographics  
-- Marketing campaigns, promotions, streaming
-- Music industry topics, labels, releases
-- Performance metrics, analytics, data analysis
-
-**Do NOT generate suggestions for:**
-- Generic greetings ("Hello", "Hi there")
-- Basic math or factual statements ("2 + 2 = 4", "cats are animals")
-- Unrelated topics (weather, cooking, sports, etc.)
-- Personal conversations without music context
-
-**Response Format:**
-If content IS music/artist/recoup related, return: {"suggestions": ["suggestion 1", "suggestion 2", "suggestion 3", "suggestion 4"]}
-If content is NOT relevant, return: {"suggestions": ["Generic suggestion 1 (recoup/music/artist)", "Generic suggestion 2 (recoup/music/artist)", "Generic suggestion 3 (recoup/music/artist)", "Generic suggestion 4 (recoup/music/artist)"]}
-
-**Example Good Suggestions:**
-- "Analyze my YouTube engagement metrics"
-- "Find my most active fans on TikTok"
-- "Review my streaming performance trends"
-- "Identify top-performing content themes"
-- "Analyze fan demographics by platform"
-- "Compare engagement across social channels"
-- "Suggest content ideas for next week"
-- "Identify collaboration opportunities"
-
-**Guidelines:**
-- Keep suggestions under 40 characters
-- Make them actionable and specific
-- Focus on analysis, insights, or strategic recommendations
-- Use active language ("Analyze", "Find", "Review", "Identify")
-- Be platform-specific when relevant
-- Consider the user's current context and next logical steps`;
 
 export const FAN_GROUPS_PROMPT = `
 Analyze the fan data to create highly specific niche-based segments that artists can leverage for targeted business collaborations and brand partnerships. Focus on identifying distinct interest clusters, lifestyle preferences, hobby groups, cultural affiliations, consumption patterns, and behavioral niches that would be valuable for brands seeking authentic audience connections. Generate segment names that represent clear commercial opportunities, such as specific food cultures, fashion styles, gaming communities, fitness activities, travel preferences, technology interests, or cultural movements. Each segment should be precise enough that artists can confidently approach relevant brands, venues, or collaborators with concrete audience insights for partnership pitches, sponsored content opportunities, or co-marketing campaigns.
