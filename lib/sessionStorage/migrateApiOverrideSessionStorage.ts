@@ -1,3 +1,7 @@
+/**
+ * One-time migration from short-lived sessionStorage keys to namespaced keys.
+ */
+
 const LEGACY_API_OVERRIDE_KEY = "apiOverride";
 
 export function migrateApiOverrideSessionStorage(

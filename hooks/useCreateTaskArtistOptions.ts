@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 
-export function useArtistOptions() {
+export function useCreateTaskArtistOptions() {
   const { sorted, selectedArtist, isLoading } = useArtistProvider();
   const [artistAccountId, setArtistAccountId] = useState("");
 

@@ -4,11 +4,11 @@ import { useMemo } from "react";
 import useAvailableModels from "@/hooks/useAvailableModels";
 import { DEFAULT_MODEL } from "@/lib/consts";
 
-export function useModelOptions() {
+export function useCreateTaskModelOptions() {
   const {
     data: availableModels = [],
-    isLoading: isModelsLoading,
-    isError: isModelsError,
+    isLoading,
+    isError,
   } = useAvailableModels();
 
   const modelOptions = useMemo(
@@ -34,7 +34,7 @@ export function useModelOptions() {
   return {
     modelOptions,
     defaultModelLabel,
-    isModelsLoading,
-    isModelsError,
+    isModelsLoading: isLoading,
+    isModelsError: isError,
   };
 }

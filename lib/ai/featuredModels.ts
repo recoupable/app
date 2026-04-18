@@ -40,7 +40,7 @@ export const FEATURED_MODELS: FeaturedModelConfig[] = [
     isPro: false,
     pill: "Fast",
     description: "Great for everyday",
-    tooltip: "OpenAI's faster, cost-optimized model (GPT-5 Mini)",
+    tooltip: "OpenAI's faster, cost-optimized model",
   },
   {
     id: "anthropic/claude-opus-4.5",
