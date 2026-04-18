@@ -1,16 +1,16 @@
 "use client";
 
-import type { RefObject } from "react";
+import type { Ref } from "react";
 import { useMemo } from "react";
 import { Input } from "@/components/ui/input";
-import { getCronHumanPreview } from "@/lib/tasks/validateCronExpression";
+import { getCronHumanPreview } from "@/lib/tasks/getCronHumanPreview";
 
 interface CronInputProps {
   schedule: string;
   onScheduleChange: (value: string) => void;
   isSubmitting: boolean;
   scheduleError?: string;
-  inputRef?: RefObject<HTMLInputElement | null>;
+  inputRef?: Ref<HTMLInputElement>;
 }
 
 /**

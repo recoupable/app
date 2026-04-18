@@ -36,11 +36,11 @@ export const FEATURED_MODELS: FeaturedModelConfig[] = [
   },
   {
     id: DEFAULT_MODEL,
-    displayName: "GPT-5.4 Mini",
+    displayName: "GPT-5 Mini",
     isPro: false,
     pill: "Fast",
     description: "Great for everyday",
-    tooltip: "OpenAI's faster, cost-optimized model",
+    tooltip: "OpenAI's faster, cost-optimized model (GPT-5 Mini)",
   },
   {
     id: "anthropic/claude-opus-4.5",

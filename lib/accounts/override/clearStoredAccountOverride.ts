@@ -1,5 +1,5 @@
 import { ACCOUNT_OVERRIDE_STORAGE_KEY } from "@/lib/consts";
-import { clearLegacyAccountOverrideKeys } from "@/lib/sessionStorage/migrateRecoupOverrideKeys";
+import { clearLegacyAccountOverrideKeys } from "@/lib/sessionStorage/clearLegacyAccountOverrideKeys";
 
 /**
  * Removes the account override from session storage.

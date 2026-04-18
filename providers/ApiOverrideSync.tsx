@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { API_OVERRIDE_STORAGE_KEY } from "@/lib/consts";
-import { clearAllApiOverrideSessionKeys } from "@/lib/sessionStorage/migrateRecoupOverrideKeys";
+import { clearAllApiOverrideSessionKeys } from "@/lib/sessionStorage/clearAllApiOverrideSessionKeys";
 
 export default function ApiOverrideSync() {
   const searchParams = useSearchParams();

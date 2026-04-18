@@ -1,5 +1,5 @@
 import { ACCOUNT_OVERRIDE_STORAGE_KEY } from "@/lib/consts";
-import { migrateAccountOverrideSessionStorage } from "@/lib/sessionStorage/migrateRecoupOverrideKeys";
+import { migrateAccountOverrideSessionStorage } from "@/lib/sessionStorage/migrateAccountOverrideSessionStorage";
 
 /**
  * Reads the stored account override from session storage.
