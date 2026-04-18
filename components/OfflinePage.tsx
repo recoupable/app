@@ -1,6 +1,9 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 const OfflinePage = () => {
+  const t = useTranslations("OfflinePage");
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-background text-center px-4 z-50">
       <div className="w-full max-w-lg flex flex-col items-center">
@@ -14,13 +17,12 @@ const OfflinePage = () => {
           />
         </div>
         <h1 className="text-2xl md:text-4xl font-medium mb-4">
-          Recoup is Offline
+          {t("title")}
         </h1>
         <p className="text-muted-foreground max-w-md mx-auto text-base md:text-lg">
-          The internet is having an outage, affecting Recoup and thousands of
-          other applications.
+          {t("description")}
           <br />
-          We expect this to be resolved shortly
+          {t("resolution")}
         </p>
       </div>
     </div>

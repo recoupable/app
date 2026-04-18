@@ -1,6 +1,9 @@
 // next.config.mjs
 
 import withPWA from "next-pwa";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -24,20 +27,20 @@ const nextConfig = {
     domains: [
       "i.imgur.com",
       "ipfs.decentralized-content.com",
-      "pbs.twimg.com", // Twitter profile images
-      "abs.twimg.com", // Twitter media
-      "cdn.discordapp.com", // Discord
-      "scontent.xx.fbcdn.net", // Facebook
-      "scontent.cdninstagram.com", // Instagram
-      "instagram.fyvr4-1.fna.fbcdn.net", // Instagram
-      "platform-lookaside.fbsbx.com", // Facebook
-      "static-cdn.jtvnw.net", // Twitch
-      "yt3.ggpht.com", // YouTube
-      "i.ytimg.com", // YouTube
-      "avatars.githubusercontent.com", // GitHub
-      "example.com", // Example domain from our mock data
-      "arweave.net", // Arweave
-      "storage.googleapis.com", // Fal AI image hosting (backup)
+      "pbs.twimg.com",
+      "abs.twimg.com",
+      "cdn.discordapp.com",
+      "scontent.xx.fbcdn.net",
+      "scontent.cdninstagram.com",
+      "instagram.fyvr4-1.fna.fbcdn.net",
+      "platform-lookaside.fbsbx.com",
+      "static-cdn.jtvnw.net",
+      "yt3.ggpht.com",
+      "i.ytimg.com",
+      "avatars.githubusercontent.com",
+      "example.com",
+      "arweave.net",
+      "storage.googleapis.com",
     ],
     remotePatterns: [
       {
@@ -62,9 +65,11 @@ const nextConfig = {
   },
 };
 
-export default withPWA({
-  dest: "public",
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === "development",
-})(nextConfig);
+export default withNextIntl(
+  withPWA({
+    dest: "public",
+    register: true,
+    skipWaiting: true,
+    disable: process.env.NODE_ENV === "development",
+  })(nextConfig)
+);
