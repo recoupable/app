@@ -58,9 +58,10 @@ export async function createTask(
     throw new Error(data.error || "Unknown error occurred");
   }
 
-  if (!data.tasks || data.tasks.length === 0) {
+  const tasks = data.tasks;
+  if (!tasks?.length) {
     throw new Error("API returned success but no task was created");
   }
 
-  return data.tasks[0];
+  return tasks[0];
 }

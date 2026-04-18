@@ -1,17 +1,19 @@
 "use client";
 
-import { FormEvent, useCallback, useState } from "react";
+import { FormEvent, useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import { toast } from "react-toastify";
-import { createTask } from "@/lib/tasks/createTask";
-import { validateCronExpression } from "@/lib/tasks/validateCronExpression";
+import { executeCreateTaskClient } from "@/lib/tasks/executeCreateTaskClient";
+import { mapCreateTaskSubmitError } from "@/lib/tasks/mapCreateTaskSubmitError";
+import {
+  type CreateTaskFormErrors,
+  validateCreateTaskFields,
+} from "@/lib/tasks/validateCreateTaskFields";
 
-export type CreateTaskFormErrors = Partial<
-  Record<"title" | "prompt" | "schedule" | "artist", string>
->;
+export type { CreateTaskFormErrors };
 
-type SubmitFields = {
+type Fields = {
   title: string;
   prompt: string;
   schedule: string;
@@ -20,9 +22,10 @@ type SubmitFields = {
   accountIdOverride: string | null;
 };
 
-export function useCreateTaskSubmit(fields: SubmitFields) {
+export function useCreateTaskSubmit(fields: Fields) {
   const router = useRouter();
   const { getAccessToken } = usePrivy();
+  const submittingRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [errors, setErrors] = useState<CreateTaskFormErrors>({});
@@ -30,61 +33,32 @@ export function useCreateTaskSubmit(fields: SubmitFields) {
   const handleSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      if (isSubmitting) {
-        return;
-      }
-
-      const {
-        title,
-        prompt,
-        schedule,
-        model,
-        artistAccountId,
-        accountIdOverride,
-      } = fields;
-
-      const nextErrors: CreateTaskFormErrors = {};
-      if (!title.trim()) nextErrors.title = "Title is required.";
-      if (!prompt.trim()) nextErrors.prompt = "Prompt is required.";
-      const scheduleError = validateCronExpression(schedule);
-      if (scheduleError) nextErrors.schedule = scheduleError;
-      if (!artistAccountId.trim()) nextErrors.artist = "Artist is required.";
-
-      setErrors(nextErrors);
+      if (submittingRef.current) return;
+      const next = validateCreateTaskFields({
+        title: fields.title,
+        prompt: fields.prompt,
+        schedule: fields.schedule,
+        artistAccountId: fields.artistAccountId,
+      });
+      setErrors(next);
       setSubmitError(null);
+      if (Object.keys(next).length > 0) return;
 
-      if (Object.keys(nextErrors).length > 0) {
-        return;
-      }
-
+      submittingRef.current = true;
       setIsSubmitting(true);
       try {
-        const accessToken = await getAccessToken();
-        if (!accessToken) {
-          throw new Error("Please sign in to create a task.");
-        }
-
-        await createTask(accessToken, {
-          title: title.trim(),
-          prompt: prompt.trim(),
-          schedule: schedule.trim(),
-          artist_account_id: artistAccountId,
-          ...(model.trim() ? { model: model.trim() } : {}),
-          ...(accountIdOverride ? { account_id: accountIdOverride } : {}),
-        });
-
+        await executeCreateTaskClient({ getAccessToken, ...fields });
         toast.success("Task created successfully.");
         router.push("/tasks");
         router.refresh();
       } catch (error) {
-        const rawMessage =
+        const raw =
           error instanceof Error ? error.message : "Failed to create task.";
-        const message = rawMessage.includes("HTTP 500")
-          ? "Server failed to create the task. Verify cron/model fields and try a schedule preset."
-          : rawMessage;
+        const message = mapCreateTaskSubmitError(raw);
         setSubmitError(message);
         toast.error(message);
       } finally {
+        submittingRef.current = false;
         setIsSubmitting(false);
       }
     },
@@ -96,7 +70,6 @@ export function useCreateTaskSubmit(fields: SubmitFields) {
       fields.artistAccountId,
       fields.accountIdOverride,
       getAccessToken,
-      isSubmitting,
       router,
     ],
   );
@@ -106,11 +79,5 @@ export function useCreateTaskSubmit(fields: SubmitFields) {
     router.push("/tasks");
   }, [isSubmitting, router]);
 
-  return {
-    handleSubmit,
-    handleCancel,
-    isSubmitting,
-    submitError,
-    errors,
-  };
+  return { handleSubmit, handleCancel, isSubmitting, submitError, errors };
 }

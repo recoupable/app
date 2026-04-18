@@ -1,10 +1,19 @@
 import type { Task } from "./getTasks";
 
 /**
- * Parsed JSON body for POST /api/tasks (success uses the same envelope as list responses).
+ * POST /api/tasks JSON body — separate from {@link GetTasksResponse} (GET list)
+ * even when the wire shape overlaps (success returns `tasks` for parity with GET).
  */
-export type CreateTaskApiResponse = {
-  status: "success" | "error";
-  tasks?: Task[];
+export type CreateTaskApiSuccessBody = {
+  status: "success";
+  tasks: Task[];
+};
+
+export type CreateTaskApiErrorBody = {
+  status: "error";
   error?: string;
 };
+
+export type CreateTaskApiResponse =
+  | CreateTaskApiSuccessBody
+  | CreateTaskApiErrorBody;
