@@ -8,33 +8,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useCreateTaskFormContext } from "@/providers/CreateTaskFormProvider";
 
 const DEFAULT_MODEL_OPTION = "__default__";
 
-interface ModelOption {
-  id: string;
-  label: string;
-}
+export function ModelField() {
+  const {
+    model,
+    setModel,
+    modelOptions,
+    defaultModelLabel,
+    isModelsLoading,
+    isModelsError,
+    isSubmitting,
+  } = useCreateTaskFormContext();
 
-interface ModelFieldProps {
-  model: string;
-  onModelChange: (value: string) => void;
-  modelOptions: ModelOption[];
-  defaultModelLabel: string;
-  isModelsLoading: boolean;
-  isModelsError: boolean;
-  isSubmitting: boolean;
-}
-
-export function ModelField({
-  model,
-  onModelChange,
-  modelOptions,
-  defaultModelLabel,
-  isModelsLoading,
-  isModelsError,
-  isSubmitting,
-}: ModelFieldProps) {
   const selectValue = model || DEFAULT_MODEL_OPTION;
 
   return (
@@ -43,7 +31,7 @@ export function ModelField({
       <Select
         value={selectValue}
         onValueChange={(value) =>
-          onModelChange(value === DEFAULT_MODEL_OPTION ? "" : value)
+          setModel(value === DEFAULT_MODEL_OPTION ? "" : value)
         }
         disabled={isSubmitting || isModelsLoading}
       >

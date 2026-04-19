@@ -13,7 +13,7 @@ export default function ApiOverrideSync() {
 
     try {
       if (apiParam === "clear") {
-        clearAllApiOverrideSessionKeys(API_OVERRIDE_STORAGE_KEY);
+        clearAllApiOverrideSessionKeys();
         return;
       }
 

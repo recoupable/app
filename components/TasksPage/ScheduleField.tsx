@@ -9,24 +9,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useCreateTaskFormContext } from "@/providers/CreateTaskFormProvider";
 import { CronInput } from "./CronInput";
 import { CUSTOM_SCHEDULE_OPTION, SCHEDULE_PRESETS } from "./schedulePresets";
 
-type ScheduleErrors = { schedule?: string };
-
-interface ScheduleFieldProps {
-  schedule: string;
-  onScheduleChange: (value: string) => void;
-  isSubmitting: boolean;
-  errors: ScheduleErrors;
-}
-
-export function ScheduleField({
-  schedule,
-  onScheduleChange,
-  isSubmitting,
-  errors,
-}: ScheduleFieldProps) {
+export function ScheduleField() {
+  const { schedule, setSchedule, isSubmitting, errors } =
+    useCreateTaskFormContext();
   const cronInputRef = useRef<HTMLInputElement>(null);
 
   const selectedPreset = useMemo(
@@ -42,7 +31,7 @@ export function ScheduleField({
         (preset) => preset.cron === schedule.trim(),
       );
       if (matchesPresetCron) {
-        onScheduleChange("");
+        setSchedule("");
       }
       requestAnimationFrame(() => {
         cronInputRef.current?.focus();
@@ -51,7 +40,7 @@ export function ScheduleField({
     }
     const preset = SCHEDULE_PRESETS.find((item) => item.id === value);
     if (preset) {
-      onScheduleChange(preset.cron);
+      setSchedule(preset.cron);
     }
   };
 
@@ -77,7 +66,7 @@ export function ScheduleField({
       </Select>
       <CronInput
         schedule={schedule}
-        onScheduleChange={onScheduleChange}
+        onScheduleChange={setSchedule}
         isSubmitting={isSubmitting}
         scheduleError={errors.schedule}
         inputRef={cronInputRef}

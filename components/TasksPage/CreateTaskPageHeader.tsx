@@ -1,20 +1,20 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useAccountOverride } from "@/providers/AccountOverrideProvider";
 
 interface CreateTaskPageHeaderProps {
   title: string;
   description: string;
-  accountIdOverride: string | null;
-  /** Shown when `accountIdOverride` is set (e.g. email resolved for override). */
-  overrideDisplay: string | null;
 }
 
 export function CreateTaskPageHeader({
   title,
   description,
-  accountIdOverride,
-  overrideDisplay,
 }: CreateTaskPageHeaderProps) {
+  const { accountIdOverride, email } = useAccountOverride();
+
   return (
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
@@ -28,7 +28,7 @@ export function CreateTaskPageHeader({
           <p className="mt-2 text-sm text-muted-foreground">
             Creating as override account:{" "}
             <span className="font-mono">
-              {overrideDisplay || accountIdOverride}
+              {email || accountIdOverride}
             </span>
           </p>
         ) : null}

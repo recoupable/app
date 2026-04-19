@@ -9,7 +9,7 @@ export function getClientApiBaseUrl(): string {
 
   if (typeof window !== "undefined") {
     try {
-      migrateApiOverrideSessionStorage(API_OVERRIDE_STORAGE_KEY);
+      migrateApiOverrideSessionStorage();
       const storedApiOverride = window.sessionStorage.getItem(
         API_OVERRIDE_STORAGE_KEY,
       );

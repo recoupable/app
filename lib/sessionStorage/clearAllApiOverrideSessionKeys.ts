@@ -1,11 +1,14 @@
-const LEGACY_API_OVERRIDE_KEY = "apiOverride";
+import {
+  API_OVERRIDE_STORAGE_KEY,
+  LEGACY_API_OVERRIDE_STORAGE_KEY,
+} from "@/lib/consts";
 
-/** Clears canonical + legacy API override keys (e.g. `?api=clear`). */
-export function clearAllApiOverrideSessionKeys(canonicalKey: string): void {
+/** Clears API override from sessionStorage (canonical + legacy key). */
+export function clearAllApiOverrideSessionKeys(): void {
   if (typeof window === "undefined") return;
   try {
-    window.sessionStorage.removeItem(canonicalKey);
-    window.sessionStorage.removeItem(LEGACY_API_OVERRIDE_KEY);
+    window.sessionStorage.removeItem(API_OVERRIDE_STORAGE_KEY);
+    window.sessionStorage.removeItem(LEGACY_API_OVERRIDE_STORAGE_KEY);
   } catch {
     // Ignore.
   }
