@@ -1,8 +1,6 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import type { Social } from "@/types/ArtistSocials";
 
-export type { Social };
-
 export interface FansResponse {
   status: string;
   fans: Social[];
