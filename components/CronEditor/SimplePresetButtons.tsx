@@ -1,21 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { FC } from "react";
-
-interface SimplePreset {
-  label: string;
-  value: string;
-  icon: string;
-}
-
-const PRESET_SCHEDULES: SimplePreset[] = [
-  { label: "Every day at 9:00 AM", value: "0 9 * * *", icon: "☀️" },
-  { label: "Every weekday at 9:00 AM", value: "0 9 * * 1-5", icon: "💼" },
-  { label: "Every Monday at 9:00 AM", value: "0 9 * * 1", icon: "📅" },
-  { label: "Every hour", value: "0 * * * *", icon: "⏰" },
-  { label: "Every day at noon", value: "0 12 * * *", icon: "🌞" },
-  { label: "Every day at 6:00 PM", value: "0 18 * * *", icon: "🌆" },
-  { label: "First day of every month", value: "0 9 1 * *", icon: "📆" },
-];
+import { CRON_SIMPLE_PRESETS } from "@/lib/cron/cronPresetSchedules";
 
 interface SimplePresetButtonsProps {
   cronExpression: string;
@@ -30,14 +15,14 @@ const SimplePresetButtons: FC<SimplePresetButtonsProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-2 gap-2">
-      {PRESET_SCHEDULES.map((preset) => (
+      {CRON_SIMPLE_PRESETS.map((preset) => (
         <Button
-          key={preset.value}
+          key={preset.cron}
           variant={
-            cronExpression.trim() === preset.value ? "default" : "outline"
+            cronExpression.trim() === preset.cron ? "default" : "outline"
           }
           size="sm"
-          onClick={() => onPresetSelect(preset.value)}
+          onClick={() => onPresetSelect(preset.cron)}
           disabled={disabled}
           className="h-auto justify-start px-3 py-2 text-xs"
         >
