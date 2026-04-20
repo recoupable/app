@@ -24,7 +24,7 @@ const FansList = ({ fans }: FansListProps) => {
               </div>
 
               <div className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">
-                {fan.followerCount.toLocaleString()} followers
+                {fan.follower_count.toLocaleString()} followers
               </div>
 
               {fan.region && (

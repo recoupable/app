@@ -9,7 +9,7 @@ interface FanAvatarProps {
 const FanAvatar = ({ fan }: FanAvatarProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  const formattedFollowerCount = fan.followerCount.toLocaleString();
+  const formattedFollowerCount = fan.follower_count.toLocaleString();
 
   const getInitials = (username: string) => {
     if (!username) return "?";

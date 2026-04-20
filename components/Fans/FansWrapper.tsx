@@ -31,33 +31,19 @@ const FansWrapper = () => {
       page.fans.forEach((fan) => {
         if (!fan || typeof fan !== "object") return;
 
-        const safeFan: Social = {
-          id: fan.id || `fan-${Math.random().toString(36).substring(2, 9)}`,
-          username: fan.username || "Anonymous",
-          avatar: fan.avatar || null,
-          profile_url: fan.profile_url || "#",
-          region: fan.region || "",
-          bio: fan.bio || "",
-          followerCount:
-            typeof fan.followerCount === "number" ? fan.followerCount : 0,
-          followingCount:
-            typeof fan.followingCount === "number" ? fan.followingCount : 0,
-          updated_at: fan.updated_at || new Date().toISOString(),
-        };
-
-        if (safeFan.avatar) {
-          fansWithAvatars.push(safeFan);
+        if (fan.avatar) {
+          fansWithAvatars.push(fan);
         } else {
-          fansWithoutAvatars.push(safeFan);
+          fansWithoutAvatars.push(fan);
         }
       });
     });
 
     const sortedFansWithAvatars = [...fansWithAvatars].sort(
-      (a, b) => b.followerCount - a.followerCount
+      (a, b) => b.follower_count - a.follower_count
     );
     const sortedFansWithoutAvatars = [...fansWithoutAvatars].sort(
-      (a, b) => b.followerCount - a.followerCount
+      (a, b) => b.follower_count - a.follower_count
     );
 
     return {

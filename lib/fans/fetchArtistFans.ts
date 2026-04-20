@@ -1,16 +1,7 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import type { Social } from "@/types/ArtistSocials";
 
-export interface Social {
-  id: string;
-  username: string;
-  avatar: string | null;
-  profile_url: string;
-  region: string;
-  bio: string;
-  followerCount: number;
-  followingCount: number;
-  updated_at: string;
-}
+export type { Social };
 
 export interface FansResponse {
   status: string;
