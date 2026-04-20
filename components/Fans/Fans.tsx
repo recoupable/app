@@ -1,4 +1,4 @@
-import { type Social } from "@/types/ArtistSocials";
+import { type Social } from "@/types/Social";
 import FanAvatar from "./FanAvatar";
 import FansList from "./FansList";
 

@@ -1,18 +1,5 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
-
-// Response types
-export interface Social {
-  id: string;
-  social_id: string;
-  username: string;
-  profile_url: string;
-  avatar: string | null;
-  bio: string | null;
-  follower_count: number | null;
-  following_count: number | null;
-  region: string | null;
-  updated_at: string;
-}
+import type { Social } from "@/types/Social";
 
 export interface SocialResponse {
   success: boolean;

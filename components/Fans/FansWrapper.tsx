@@ -1,6 +1,6 @@
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useArtistFans } from "@/hooks/useArtistFans";
-import { type Social } from "@/types/ArtistSocials";
+import { type Social } from "@/types/Social";
 import { type FansResponse } from "@/lib/fans/fetchArtistFans";
 import Fans from "./Fans";
 import FansSkeleton from "./FansSkeleton";
@@ -38,10 +38,10 @@ const FansWrapper = () => {
     });
 
     const sortedFansWithAvatars = [...fansWithAvatars].sort(
-      (a, b) => b.follower_count - a.follower_count
+      (a, b) => (b.follower_count ?? 0) - (a.follower_count ?? 0)
     );
     const sortedFansWithoutAvatars = [...fansWithoutAvatars].sort(
-      (a, b) => b.follower_count - a.follower_count
+      (a, b) => (b.follower_count ?? 0) - (a.follower_count ?? 0)
     );
 
     return {

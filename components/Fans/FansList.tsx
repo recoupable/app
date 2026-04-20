@@ -1,4 +1,4 @@
-import { type Social } from "@/types/ArtistSocials";
+import { type Social } from "@/types/Social";
 
 interface FansListProps {
   fans: Social[];
@@ -24,7 +24,7 @@ const FansList = ({ fans }: FansListProps) => {
               </div>
 
               <div className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">
-                {fan.follower_count.toLocaleString()} followers
+                {(fan.follower_count ?? 0).toLocaleString()} followers
               </div>
 
               {fan.region && (
