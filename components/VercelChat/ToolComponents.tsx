@@ -53,9 +53,6 @@ import GetVideoGameCampaignPlaysResultComponent from "./tools/GetVideoGameCampai
 import { CommentsResult } from "@/components/Chat/comments/CommentsResult";
 import { CommentsResultData } from "@/types/Comment";
 import CommentsResultSkeleton from "@/components/Chat/comments/CommentsResultSkeleton";
-import GetSegmentFansResult from "./tools/segment-fans/GetSegmentFansResult";
-import GetSegmentFansResultSkeleton from "./tools/segment-fans/GetSegmentFansResultSkeleton";
-import { SegmentFansResult } from "@/types/fans";
 import YouTubeAccessSkeleton from "./tools/youtube/YouTubeAccessSkeleton";
 import YouTubeRevenueResult from "./tools/youtube/YouTubeRevenueResult";
 import YouTubeRevenueSkeleton from "./tools/youtube/YouTubeRevenueSkeleton";
@@ -166,12 +163,6 @@ export function getToolCallComponent(part: ToolUIPart) {
     return (
       <div key={toolCallId}>
         <CommentsResultSkeleton />
-      </div>
-    );
-  } else if (toolName === "get_segment_fans") {
-    return (
-      <div key={toolCallId} className="w-full">
-        <GetSegmentFansResultSkeleton />
       </div>
     );
   } else if (toolName === "get_youtube_channels") {
@@ -416,12 +407,6 @@ export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
     return (
       <div key={toolCallId}>
         <CommentsResult result={result as CommentsResultData} />
-      </div>
-    );
-  } else if (toolName === "get_segment_fans") {
-    return (
-      <div key={toolCallId} className="w-full">
-        <GetSegmentFansResult result={result as SegmentFansResult} />
       </div>
     );
   } else if (toolName === "youtube_login") {

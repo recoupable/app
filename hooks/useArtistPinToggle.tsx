@@ -1,11 +1,14 @@
 import { useState } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useUserProvider } from "@/providers/UserProvder";
+import saveArtist from "@/lib/saveArtist";
 import { ArtistRecord } from "@/types/Artist";
 
 export const useArtistPinToggle = (artist: ArtistRecord | null) => {
   const { userData } = useUserProvider();
   const { getArtists, setArtists } = useArtistProvider();
+  const { getAccessToken } = usePrivy();
   const [isPinning, setIsPinning] = useState(false);
 
   const handlePinToggle = async (e: React.MouseEvent) => {
@@ -13,41 +16,32 @@ export const useArtistPinToggle = (artist: ArtistRecord | null) => {
     if (!artist || !userData?.id || isPinning) return;
 
     const newPinnedStatus = !artist.pinned;
-    
-    // Optimistic update - immediately update the UI
+    const previousPinnedStatus = artist.pinned;
+
     setArtists((prevArtists: ArtistRecord[]) =>
       prevArtists.map((a: ArtistRecord) =>
-        a.account_id === artist.account_id ? { ...a, pinned: newPinnedStatus } : a
-      )
+        a.account_id === artist.account_id ? { ...a, pinned: newPinnedStatus } : a,
+      ),
     );
 
     setIsPinning(true);
-    
-    try {
-      const response = await fetch("/api/artist/pin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          accountId: userData.id,
-          artistId: artist.account_id,
-          pinned: newPinnedStatus,
-        }),
-      });
 
-      if (!response.ok) {
-        throw new Error("Failed to toggle pin status");
+    try {
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        throw new Error("Missing access token");
       }
 
-      // Refetch to ensure consistency with server
+      await saveArtist(accessToken, artist.account_id, { pinned: newPinnedStatus });
+
       await getArtists();
     } catch (error) {
       console.error("Error toggling pin:", error);
-      
-      // Rollback optimistic update on error
+
       setArtists((prevArtists: ArtistRecord[]) =>
         prevArtists.map((a: ArtistRecord) =>
-          a.account_id === artist.account_id ? { ...a, pinned: artist.pinned } : a
-        )
+          a.account_id === artist.account_id ? { ...a, pinned: previousPinnedStatus } : a,
+        ),
       );
     } finally {
       setIsPinning(false);

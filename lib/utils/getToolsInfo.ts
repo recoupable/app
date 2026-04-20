@@ -7,20 +7,12 @@ function getToolInfo(toolName: string): { message: string } {
   }
   // Artist data tools
   else if (
-    toolName === "get_artist_segments" ||
-    toolName === "create_segments" ||
     toolName === "get_artist_socials" ||
     toolName === "create_new_artist" ||
     toolName === "delete_artist"
   ) {
     return {
       message: "Artist data processed",
-    };
-  }
-  // Segment and fans tools
-  else if (toolName === "get_segment_fans") {
-    return {
-      message: "Fan data analyzed",
     };
   }
   // Social media content tools
