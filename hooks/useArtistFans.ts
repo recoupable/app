@@ -8,11 +8,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import {
   fetchArtistFans,
   type FansResponse,
-  type Social,
-  type FansError,
 } from "@/lib/fans/fetchArtistFans";
-
-export type { Social, FansResponse, FansError };
 
 /**
  * Hook to fetch and manage fans for an artist with automatic pagination

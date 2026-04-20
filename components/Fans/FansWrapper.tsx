@@ -1,9 +1,7 @@
 import { useArtistProvider } from "@/providers/ArtistProvider";
-import {
-  useArtistFans,
-  type Social,
-  type FansResponse,
-} from "@/hooks/useArtistFans";
+import { useArtistFans } from "@/hooks/useArtistFans";
+import { type Social } from "@/types/ArtistSocials";
+import { type FansResponse } from "@/lib/fans/fetchArtistFans";
 import Fans from "./Fans";
 import FansSkeleton from "./FansSkeleton";
 import { useCallback } from "react";

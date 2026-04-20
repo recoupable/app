@@ -1,4 +1,4 @@
-import { type Social } from "@/hooks/useArtistFans";
+import { type Social } from "@/types/ArtistSocials";
 import FanAvatar from "./FanAvatar";
 import FansList from "./FansList";
 

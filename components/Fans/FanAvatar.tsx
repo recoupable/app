@@ -1,4 +1,4 @@
-import { type Social } from "@/hooks/useArtistFans";
+import { type Social } from "@/types/ArtistSocials";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
