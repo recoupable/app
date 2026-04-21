@@ -1,4 +1,4 @@
-import { Social as SocialType } from "@/types/ArtistSocials";
+import { Social as SocialType } from "@/types/Social";
 import Link from "next/link";
 import ArtistSocialDisplayText from "./ArtistSocialDisplayText";
 import getSocialPlatformByLink from "@/lib/getSocialPlatformByLink";

@@ -4,71 +4,11 @@ import {
   type InfiniteData,
 } from "@tanstack/react-query";
 import { useEffect } from "react";
-
-export interface Social {
-  id: string;
-  username: string;
-  avatar: string | null;
-  profile_url: string;
-  region: string;
-  bio: string;
-  followerCount: number;
-  followingCount: number;
-  updated_at: string;
-}
-
-export interface FansResponse {
-  status: string;
-  fans: Social[];
-  pagination: {
-    total_count: number;
-    page: number;
-    limit: number;
-    total_pages: number;
-  };
-}
-
-export interface FansError {
-  message: string;
-  status?: number;
-}
-
-/**
- * Fetches fans for a specific artist from the API with pagination
- */
-async function fetchFans(
-  artistAccountId: string,
-  page: number = 1,
-  limit: number = 20
-): Promise<FansResponse> {
-  try {
-    const response = await fetch(
-      `https://api.recoupable.com/api/fans?artist_account_id=${artistAccountId}&page=${page}&limit=${limit}`
-    );
-
-    if (!response.ok) {
-      const error: FansError = {
-        message: "Failed to fetch fans",
-        status: response.status,
-      };
-      throw error;
-    }
-
-    const data: FansResponse = await response.json();
-
-    if (data.status !== "success") {
-      throw { message: "API returned error status" } as FansError;
-    }
-
-    return data;
-  } catch (error) {
-    // Ensure we're always throwing a consistent error shape
-    if (typeof error === "object" && error !== null && "message" in error) {
-      throw error;
-    }
-    throw { message: "An unexpected error occurred" } as FansError;
-  }
-}
+import { usePrivy } from "@privy-io/react-auth";
+import {
+  fetchArtistFans,
+  type FansResponse,
+} from "@/lib/fans/fetchArtistFans";
 
 /**
  * Hook to fetch and manage fans for an artist with automatic pagination
@@ -78,10 +18,14 @@ export function useArtistFans(
   artistAccountId?: string,
   limit: number = 20
 ): UseInfiniteQueryResult<InfiniteData<FansResponse, unknown>, Error> {
+  const { getAccessToken, authenticated } = usePrivy();
+
   const queryResult = useInfiniteQuery({
     queryKey: ["fans", artistAccountId, limit],
-    queryFn: ({ pageParam = 1 }) =>
-      fetchFans(artistAccountId!, pageParam, limit),
+    queryFn: async ({ pageParam = 1 }) => {
+      const accessToken = await getAccessToken();
+      return fetchArtistFans(artistAccountId!, accessToken!, pageParam, limit);
+    },
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       const { pagination } = lastPage;
@@ -92,7 +36,7 @@ export function useArtistFans(
       // Otherwise, return the next page number
       return pagination.page + 1;
     },
-    enabled: !!artistAccountId,
+    enabled: !!artistAccountId && authenticated,
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
     retry: (failureCount, error) => {
