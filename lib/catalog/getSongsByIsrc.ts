@@ -1,15 +1,5 @@
-/**
- * Fetches songs by ISRC code using the Recoupable API
- */
-
-import { Tables } from "@/types/database.types";
-
-type Song = Tables<"songs">;
-type Account = Tables<"accounts">;
-
-export type SongByIsrc = Song & {
-  artists: Array<Pick<Account, "id" | "name" | "timestamp">>;
-};
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import type { SongByIsrc } from "@/types/Song";
 
 export interface SongsByIsrcResponse {
   status: string;
@@ -17,8 +7,17 @@ export interface SongsByIsrcResponse {
   error?: string;
 }
 
+/**
+ * Fetches songs by ISRC code from the Recoup API.
+ *
+ * Authentication is via Bearer token (Privy access token).
+ *
+ * @param isrc - The ISRC code to search for.
+ * @param accessToken - Privy access token for Bearer auth.
+ */
 export async function getSongsByIsrc(
-  isrc: string
+  isrc: string,
+  accessToken: string,
 ): Promise<SongsByIsrcResponse> {
   try {
     if (!isrc || isrc.trim() === "") {
@@ -30,13 +29,14 @@ export async function getSongsByIsrc(
     });
 
     const response = await fetch(
-      `https://api.recoupable.com/api/songs?${params}`,
+      `${getClientApiBaseUrl()}/api/songs?${params.toString()}`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
-      }
+      },
     );
 
     if (!response.ok) {
