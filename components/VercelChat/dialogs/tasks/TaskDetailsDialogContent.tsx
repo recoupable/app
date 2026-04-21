@@ -89,15 +89,10 @@ const TaskDetailsDialogContent: React.FC<TaskDetailsDialogContentProps> = ({
       )}
 
       {canEdit ? (
-        <GatewayModelSelect
-          value={editModel}
-          onValueChange={onModelChange}
-          disabled={false}
-          label="Model"
-          includeDefaultOption={false}
-          triggerId="task-detail-model"
-          hintId="task-detail-model-hint"
-        />
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-foreground">Model</label>
+          <GatewayModelSelect value={editModel} onValueChange={onModelChange} />
+        </div>
       ) : (
         <div className="space-y-2">
           <label className="text-xs font-medium text-foreground">Model</label>

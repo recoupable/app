@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAccountOverride } from "@/providers/AccountOverrideProvider";
 import { useCreateTaskArtistOptions } from "@/hooks/useCreateTaskArtistOptions";
 import { useCreateTaskSubmit } from "@/hooks/useCreateTaskSubmit";
+import { DEFAULT_MODEL } from "@/lib/consts";
 
 const DEFAULT_SCHEDULE = "0 9 * * *";
 
@@ -12,7 +13,7 @@ export function useCreateTaskForm() {
   const [title, setTitle] = useState("");
   const [prompt, setPrompt] = useState("");
   const [schedule, setSchedule] = useState(DEFAULT_SCHEDULE);
-  const [model, setModel] = useState("");
+  const [model, setModel] = useState(DEFAULT_MODEL);
 
   const artist = useCreateTaskArtistOptions();
   const { handleSubmit, handleCancel, isSubmitting, submitError, errors } =
