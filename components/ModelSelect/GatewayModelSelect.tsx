@@ -1,6 +1,5 @@
 "use client";
 
-import { GatewayLanguageModelEntry } from "@ai-sdk/gateway";
 import { useMemo } from "react";
 import { toast } from "react-toastify";
 import { Label } from "@/components/ui/label";
@@ -11,6 +10,7 @@ import {
   PromptInputModelSelectTrigger,
   PromptInputModelSelectValue,
 } from "@/components/ai-elements/prompt-input";
+import useAvailableModels from "@/hooks/useAvailableModels";
 import { getFeaturedModelConfig } from "@/lib/ai/featuredModels";
 import { isFreeModel } from "@/lib/ai/isFreeModel";
 import { organizeModels } from "@/lib/ai/organizeModels";
@@ -24,10 +24,7 @@ const DEFAULT_OPTION = "__default__";
 type GatewayModelSelectProps = {
   value: string;
   onValueChange: (modelId: string) => void;
-  availableModels: GatewayLanguageModelEntry[];
   disabled?: boolean;
-  isLoading?: boolean;
-  isError?: boolean;
   /** When set, renders a form-labeled wrapper with this label text. */
   label?: string;
   /** Id applied to the trigger so a label's htmlFor / aria-describedby can target it. */
@@ -41,15 +38,17 @@ type GatewayModelSelectProps = {
 export function GatewayModelSelect({
   value,
   onValueChange,
-  availableModels,
   disabled = false,
-  isLoading = false,
-  isError = false,
   label,
   triggerId,
   hintId,
   includeDefaultOption = false,
 }: GatewayModelSelectProps) {
+  const {
+    data: availableModels = [],
+    isLoading,
+    isError,
+  } = useAvailableModels();
   const { isSubscribed } = usePaymentProvider();
   const hasModels = availableModels.length > 0;
 

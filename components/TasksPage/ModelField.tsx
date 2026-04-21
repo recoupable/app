@@ -1,13 +1,13 @@
 "use client";
 
-import { EditableGatewayModelSelect } from "@/components/ModelSelect/EditableGatewayModelSelect";
+import { GatewayModelSelect } from "@/components/ModelSelect/GatewayModelSelect";
 import { useCreateTaskFormContext } from "@/providers/CreateTaskFormProvider";
 
 export function ModelField() {
   const { model, setModel, isSubmitting } = useCreateTaskFormContext();
 
   return (
-    <EditableGatewayModelSelect
+    <GatewayModelSelect
       value={model}
       onValueChange={setModel}
       disabled={isSubmitting}

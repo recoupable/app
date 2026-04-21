@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import TaskDetailsDialogTitle from "./TaskDetailsDialogTitle";
 import TaskPromptSection from "./TaskPromptSection";
 import dynamic from "next/dynamic";
-import { EditableGatewayModelSelect } from "@/components/ModelSelect/EditableGatewayModelSelect";
+import { GatewayModelSelect } from "@/components/ModelSelect/GatewayModelSelect";
 import { getFeaturedModelConfig } from "@/lib/ai/featuredModels";
 import useAvailableModels from "@/hooks/useAvailableModels";
 import TaskLastRunSection from "./TaskLastRunSection";
@@ -89,7 +89,7 @@ const TaskDetailsDialogContent: React.FC<TaskDetailsDialogContentProps> = ({
       )}
 
       {canEdit ? (
-        <EditableGatewayModelSelect
+        <GatewayModelSelect
           value={editModel}
           onValueChange={onModelChange}
           disabled={false}
@@ -109,7 +109,10 @@ const TaskDetailsDialogContent: React.FC<TaskDetailsDialogContentProps> = ({
 
       <TaskLastRunSection lastRun={task.last_run} isDeleted={isDeleted} />
 
-      <TaskRecentRunsSection recentRuns={task.recent_runs} isDeleted={isDeleted} />
+      <TaskRecentRunsSection
+        recentRuns={task.recent_runs}
+        isDeleted={isDeleted}
+      />
 
       <TaskUpcomingRunsSection upcoming={task.upcoming} isDeleted={isDeleted} />
     </div>
