@@ -1,5 +1,12 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
-import type { SongByIsrc } from "@/types/Song";
+import { Tables } from "@/types/database.types";
+
+type Song = Tables<"songs">;
+type Account = Tables<"accounts">;
+
+export type SongByIsrc = Song & {
+  artists: Array<Pick<Account, "id" | "name" | "timestamp">>;
+};
 
 export interface SongsByIsrcResponse {
   status: string;
@@ -11,9 +18,6 @@ export interface SongsByIsrcResponse {
  * Fetches songs by ISRC code from the Recoup API.
  *
  * Authentication is via Bearer token (Privy access token).
- *
- * @param isrc - The ISRC code to search for.
- * @param accessToken - Privy access token for Bearer auth.
  */
 export async function getSongsByIsrc(
   isrc: string,
