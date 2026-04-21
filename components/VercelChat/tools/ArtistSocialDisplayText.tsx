@@ -1,5 +1,5 @@
 import { getYoutubeChannelNameFromURL } from "@/lib/youtube/getYoutubeChannelNameFromURL";
-import { Social as SocialType } from "@/types/ArtistSocials";
+import { Social as SocialType } from "@/types/Social";
 import getSocialPlatformByLink from "@/lib/getSocialPlatformByLink";
 
 const ArtistSocialDisplayText = ({ social }: { social: SocialType }) => {

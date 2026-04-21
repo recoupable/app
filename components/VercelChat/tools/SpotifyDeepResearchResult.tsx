@@ -1,6 +1,6 @@
 import { SpotifyDeepResearchResultUIType } from "@/types/spotify";
 import GetArtistSocialsResult from "./GetArtistSocialsResult";
-import { ArtistSocialsResultType } from "@/types/ArtistSocials";
+import { SocialsResponse } from "@/types/Social";
 import Image from "next/image";
 import spotifyLogo from "@/public/brand-logos/spotify.png";
 
@@ -20,7 +20,7 @@ export default function SpotifyDeepResearchResult({
       total_count: socials.length,
       total_pages: 1,
     },
-  } as ArtistSocialsResultType;
+  } as SocialsResponse;
   return (
     <GetArtistSocialsResult
       title="Spotify Deep Research Complete"

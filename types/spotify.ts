@@ -1,4 +1,4 @@
-import { ArtistSocialsResultType } from "./ArtistSocials";
+import { SocialsResponse } from "./Social";
 // Spotify Artist Search Result Type
 export interface SpotifyArtistSearchResult {
   id: string;
@@ -122,7 +122,7 @@ export interface SpotifyArtistAlbumsResultUIType {
 }
 export interface SpotifyDeepResearchResultUIType {
   success: boolean;
-  artistSocials: ArtistSocialsResultType;
+  artistSocials: SocialsResponse;
 }
 export interface SpotifyArtistTopTracksResultType {
   tracks: SpotifyTrackSearchResult[];

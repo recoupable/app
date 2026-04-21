@@ -25,7 +25,7 @@ import {
   SpotifyArtistTopTracksResultType,
   SpotifySearchResponse,
 } from "@/types/spotify";
-import { ArtistSocialsResultType } from "@/types/ArtistSocials";
+import { SocialsResponse } from "@/types/Social";
 import { ToolUIPart, getToolOrDynamicToolName, DynamicToolUIPart } from "ai";
 import UpdateArtistInfoSuccess from "./tools/UpdateArtistInfoSuccess";
 import { UpdateAccountInfoResult } from "./tools/UpdateArtistInfoSuccess";
@@ -493,7 +493,7 @@ export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
   } else if (toolName === "get_artist_socials") {
     return (
       <div key={toolCallId}>
-        <GetArtistSocialsResult result={result as ArtistSocialsResultType} />
+        <GetArtistSocialsResult result={result as SocialsResponse} />
       </div>
     );
   } else if (toolName === "get_spotify_artist_albums") {
