@@ -8,20 +8,10 @@ function getToolInfo(toolName: string): { message: string } {
   // Artist data tools
   else if (
     toolName === "get_artist_socials" ||
-    toolName === "create_new_artist" ||
-    toolName === "delete_artist"
+    toolName === "create_new_artist"
   ) {
     return {
       message: "Artist data processed",
-    };
-  }
-  // Social media content tools
-  else if (
-    toolName === "get_social_posts" ||
-    toolName === "get_post_comments"
-  ) {
-    return {
-      message: "Social content analyzed",
     };
   }
   // Contact team

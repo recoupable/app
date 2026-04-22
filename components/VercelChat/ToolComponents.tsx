@@ -5,20 +5,10 @@ import {
   ScheduledAction,
   RetrieveVideoContentResult,
 } from "@/components/VercelChat/types";
-import { MermaidDiagramSkeleton } from "@/components/VercelChat/tools/mermaid/MermaidDiagramSkeleton";
 import dynamic from "next/dynamic";
-
-const MermaidDiagram = dynamic(
-  () => import("@/components/VercelChat/tools/mermaid/MermaidDiagram"),
-  { ssr: false, loading: () => <MermaidDiagramSkeleton /> }
-);
-import { GenerateMermaidDiagramResult } from "@/lib/tools/generateMermaidDiagram";
 import CreateArtistToolCall from "./tools/CreateArtistToolCall";
 import CreateArtistToolResult from "./tools/CreateArtistToolResult";
 import { CreateArtistResult } from "@/types/createArtistResult";
-import DeleteArtistToolCall from "./tools/DeleteArtistToolCall";
-import DeleteArtistToolResult from "./tools/DeleteArtistToolResult";
-import { DeleteArtistResult } from "@/lib/tools/deleteArtist";
 import GetSpotifySearchToolResult from "./tools/GetSpotifySearchToolResult";
 import {
   SpotifyDeepResearchResultUIType,
@@ -34,25 +24,9 @@ import { UpdateArtistSocialsResult } from "./tools/UpdateArtistSocialsSuccess";
 import { TxtFileResult } from "@/components/ui/TxtFileResult";
 import { TxtFileGenerationResult } from "@/components/ui/TxtFileResult";
 import { Loader } from "lucide-react";
-import { getDisplayToolName } from "@/lib/tools/get-tools-name";
 import GenericSuccess from "./tools/GenericSuccess";
 import getToolInfo from "@/lib/utils/getToolsInfo";
-import { BrowserToolSkeleton } from "./BrowserToolSkeleton";
-import type { BrowserToolResultType } from "./tools/browser/BrowserToolResult";
-
-const BrowserToolResult = dynamic(
-  () =>
-    import("./tools/browser/BrowserToolResult").then(
-      (mod) => mod.BrowserToolResult
-    ),
-  { ssr: false, loading: () => <BrowserToolSkeleton toolName="browser_agent" /> }
-);
 import { isSearchProgressUpdate } from "@/lib/search/searchProgressUtils";
-import { GetSpotifyPlayButtonClickedResult } from "@/lib/supabase/getSpotifyPlayButtonClicked";
-import GetVideoGameCampaignPlaysResultComponent from "./tools/GetVideoGameCampaignPlaysResult";
-import { CommentsResult } from "@/components/Chat/comments/CommentsResult";
-import { CommentsResultData } from "@/types/Comment";
-import CommentsResultSkeleton from "@/components/Chat/comments/CommentsResultSkeleton";
 import YouTubeAccessSkeleton from "./tools/youtube/YouTubeAccessSkeleton";
 import YouTubeRevenueResult from "./tools/youtube/YouTubeRevenueResult";
 import YouTubeRevenueSkeleton from "./tools/youtube/YouTubeRevenueSkeleton";
@@ -70,17 +44,10 @@ import YouTubeSetThumbnailResult from "./tools/youtube/YouTubeSetThumbnailResult
 import YouTubeSetThumbnailSkeleton from "./tools/youtube/YouTubeSetThumbnailSkeleton";
 import type { YouTubeSetThumbnailResult as YouTubeSetThumbnailResultType } from "@/types/youtube";
 import SearchWebSkeleton from "./tools/SearchWeb/SearchWebSkeleton";
-import { GoogleImagesSkeleton } from "./tools/GoogleImagesSkeleton";
-import {
-  GoogleImagesResult,
-  type GoogleImagesResultType,
-} from "./tools/GoogleImagesResult";
 import SpotifyDeepResearchSkeleton from "./tools/SpotifyDeepResearchSkeleton";
-import WebDeepResearchSkeleton from "./tools/SearchWeb/WebDeepResearchSkeleton";
 import { SearchApiResultType } from "./tools/SearchWeb/SearchApiResult";
 import SearchApiResult from "./tools/SearchWeb/SearchApiResult";
 import SearchWebProgress from "./tools/SearchWeb/SearchWebProgress";
-import WebDeepResearchProgress from "./tools/SearchWeb/WebDeepResearchProgress";
 import SpotifyDeepResearchResult from "./tools/SpotifyDeepResearchResult";
 import GetArtistSocialsResult from "./tools/GetArtistSocialsResult";
 import GetArtistSocialsSkeleton from "./tools/GetArtistSocialsSkeleton";
@@ -141,28 +108,10 @@ export function getToolCallComponent(part: ToolUIPart) {
         <ImageSkeleton />
       </div>
     );
-  } else if (toolName === "generate_mermaid_diagram") {
-    return (
-      <div key={toolCallId}>
-        <MermaidDiagramSkeleton />
-      </div>
-    );
   } else if (toolName === "create_new_artist") {
     return (
       <div key={toolCallId}>
         <CreateArtistToolCall />
-      </div>
-    );
-  } else if (toolName === "delete_artist") {
-    return (
-      <div key={toolCallId}>
-        <DeleteArtistToolCall />
-      </div>
-    );
-  } else if (toolName === "get_post_comments") {
-    return (
-      <div key={toolCallId}>
-        <CommentsResultSkeleton />
       </div>
     );
   } else if (toolName === "get_youtube_channels") {
@@ -193,18 +142,6 @@ export function getToolCallComponent(part: ToolUIPart) {
     return (
       <div key={toolCallId}>
         <SearchWebSkeleton />
-      </div>
-    );
-  } else if (toolName === "search_google_images") {
-    return (
-      <div key={toolCallId}>
-        <GoogleImagesSkeleton />
-      </div>
-    );
-  } else if (toolName === "web_deep_research") {
-    return (
-      <div key={toolCallId}>
-        <WebDeepResearchSkeleton />
       </div>
     );
   } else if (toolName === "spotify_deep_research") {
@@ -268,22 +205,6 @@ export function getToolCallComponent(part: ToolUIPart) {
       </div>
     );
   } else if (
-    toolName === "browser_act" ||
-    toolName === "browser_extract" ||
-    toolName === "browser_observe" ||
-    toolName === "browser_agent"
-  ) {
-    const toolPart = part as ToolUIPart & {
-      args?: { url?: string; startUrl?: string };
-    };
-    const url = toolPart.args?.url || toolPart.args?.startUrl;
-
-    return (
-      <div key={toolCallId}>
-        <BrowserToolSkeleton toolName={toolName} url={url} />
-      </div>
-    );
-  } else if (
     toolName === "insert_catalog_songs" ||
     toolName === "select_catalog_songs"
   ) {
@@ -319,7 +240,7 @@ export function getToolCallComponent(part: ToolUIPart) {
       className="flex items-center gap-1 py-1 px-2 bg-muted/50 rounded-sm border border-border w-fit text-xs text-muted-foreground"
     >
       <Loader className="h-3 w-3 animate-spin text-foreground" />
-      <span>Using {getDisplayToolName(toolName)}</span>
+      <span>Using {toolName}</span>
     </div>
   );
 }
@@ -332,7 +253,6 @@ export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
     : output;
   const toolName = getToolOrDynamicToolName(part);
   const isSearchWebTool = toolName === "search_web";
-  const isDeepResearchTool = toolName === "web_deep_research";
 
   if (toolName === "generate_image" || toolName === "edit_image") {
     return (
@@ -340,33 +260,10 @@ export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
         <ImageResult result={result as ImageGenerationResult} />
       </div>
     );
-  } else if (
-    toolName === "browser_extract" ||
-    toolName === "browser_act" ||
-    toolName === "browser_observe" ||
-    toolName === "browser_agent"
-  ) {
-    return (
-      <div key={toolCallId}>
-        <BrowserToolResult result={result as BrowserToolResultType} />
-      </div>
-    );
-  } else if (toolName === "generate_mermaid_diagram") {
-    return (
-      <div key={toolCallId}>
-        <MermaidDiagram result={result as GenerateMermaidDiagramResult} />
-      </div>
-    );
   } else if (toolName === "create_new_artist") {
     return (
       <div key={toolCallId}>
         <CreateArtistToolResult result={result as CreateArtistResult} />
-      </div>
-    );
-  } else if (toolName === "delete_artist") {
-    return (
-      <div key={toolCallId}>
-        <DeleteArtistToolResult result={result as DeleteArtistResult} />
       </div>
     );
   } else if (toolName === "get_spotify_search") {
@@ -393,20 +290,6 @@ export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
     return (
       <div key={toolCallId}>
         <TxtFileResult result={result as TxtFileGenerationResult} />
-      </div>
-    );
-  } else if (toolName === "get_video_game_campaign_plays") {
-    return (
-      <div key={toolCallId} className="w-full">
-        <GetVideoGameCampaignPlaysResultComponent
-          result={result as GetSpotifyPlayButtonClickedResult}
-        />
-      </div>
-    );
-  } else if (toolName === "get_post_comments") {
-    return (
-      <div key={toolCallId}>
-        <CommentsResult result={result as CommentsResultData} />
       </div>
     );
   } else if (toolName === "youtube_login") {
@@ -457,31 +340,6 @@ export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
         <SearchApiResult result={result as SearchApiResultType} />
       </div>
     );
-  } else if (toolName === "search_google_images") {
-    // Handle progress updates during search
-    if (isSearchProgressUpdate(result)) {
-      return (
-        <div key={toolCallId}>
-          <GoogleImagesSkeleton />
-        </div>
-      );
-    }
-
-    return (
-      <div key={toolCallId}>
-        <GoogleImagesResult result={result as GoogleImagesResultType} />
-      </div>
-    );
-  } else if (isDeepResearchTool) {
-    if (isSearchProgressUpdate(result)) {
-      return (
-        <div key={toolCallId}>
-          <WebDeepResearchProgress progress={result} />
-        </div>
-      );
-    }
-
-    return null;
   } else if (toolName === "spotify_deep_research") {
     return (
       <div key={toolCallId}>
@@ -597,7 +455,7 @@ export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
   return (
     <GenericSuccess
       key={toolCallId}
-      name={getDisplayToolName(toolName)}
+      name={toolName}
       message={
         (result as { message?: string }).message ??
         getToolInfo(toolName).message
