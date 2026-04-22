@@ -5,13 +5,15 @@ import { DEFAULT_MODEL } from "@/lib/consts";
 interface UseTaskDetailsDialogParams {
   task: Tables<"scheduled_actions">;
   isDeleted?: boolean;
+  defaultOpen?: boolean;
 }
 
 export const useTaskDetailsDialog = ({
   task,
   isDeleted = false,
+  defaultOpen = false,
 }: UseTaskDetailsDialogParams) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(defaultOpen);
   const [editTitle, setEditTitle] = useState(task.title);
   const [editPrompt, setEditPrompt] = useState(task.prompt);
   const [editCron, setEditCron] = useState(

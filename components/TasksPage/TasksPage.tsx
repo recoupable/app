@@ -1,12 +1,15 @@
 "use client";
 
 import useAutoLogin from "@/hooks/useAutoLogin";
-import Link from "next/link";
 import TasksTabs from "./TasksTabs";
 import { Button } from "@/components/ui/button";
+import { useCreateTask } from "@/hooks/useCreateTask";
+import TaskDetailsDialog from "@/components/VercelChat/dialogs/tasks/TaskDetailsDialog";
 
 const TasksPage = () => {
   useAutoLogin();
+  const { handleCreateTask, isCreating, createdTask, clearCreatedTask } =
+    useCreateTask();
 
   return (
     <div className="max-w-full md:max-w-[calc(100vw-200px)] grow py-8 px-6 md:px-12">
@@ -19,10 +22,24 @@ const TasksPage = () => {
             View and manage all the tasks for your selected artist.
           </p>
         </div>
-        <Button asChild className="w-full sm:w-auto">
-          <Link href="/tasks/new">Create Task</Link>
+        <Button
+          onClick={handleCreateTask}
+          disabled={isCreating}
+          className="w-full sm:w-auto"
+        >
+          {isCreating ? "Creating..." : "Create Task"}
         </Button>
       </div>
+
+      {createdTask && (
+        <TaskDetailsDialog
+          task={createdTask}
+          defaultOpen
+          onClose={clearCreatedTask}
+        >
+          <div />
+        </TaskDetailsDialog>
+      )}
 
       <TasksTabs />
     </div>

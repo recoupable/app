@@ -13,6 +13,8 @@ interface TaskDetailsDialogProps {
   task: Task;
   isDeleted?: boolean;
   onDelete?: () => void;
+  defaultOpen?: boolean;
+  onClose?: () => void;
 }
 
 const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
@@ -20,6 +22,8 @@ const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
   task,
   isDeleted = false,
   onDelete,
+  defaultOpen = false,
+  onClose,
 }: TaskDetailsDialogProps) => {
   const {
     isDialogOpen,
@@ -35,10 +39,16 @@ const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
     isActive,
     isPaused,
     canEdit,
-  } = useTaskDetailsDialog({ task, isDeleted });
+  } = useTaskDetailsDialog({ task, isDeleted, defaultOpen });
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <Dialog
+      open={isDialogOpen}
+      onOpenChange={(open) => {
+        setIsDialogOpen(open);
+        if (!open) onClose?.();
+      }}
+    >
       <DialogTrigger asChild>
         <div className="cursor-pointer">{children}</div>
       </DialogTrigger>
