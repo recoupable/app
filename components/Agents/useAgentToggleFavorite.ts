@@ -1,22 +1,19 @@
-import { useUserProvider } from "@/providers/UserProvder";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { ToggleFavoriteRequest } from "@/types/AgentTemplates";
 
 export function useAgentToggleFavorite() {
-  const { userData } = useUserProvider();
   const queryClient = useQueryClient();
 
   const handleToggleFavorite = async (
     templateId: string,
     nextFavourite: boolean
   ) => {
-    if (!userData?.id || !templateId) return;
+    if (!templateId) return;
     
     try {
       const body: ToggleFavoriteRequest = {
         templateId,
-        userId: userData.id,
         isFavourite: nextFavourite,
       };
       const res = await fetch("/api/agent-templates/favorites", {

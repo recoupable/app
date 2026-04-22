@@ -14,7 +14,7 @@ const ChatInputYoutubeButtonPopover = ({ children, artistAccountId }: { children
   const { data: channelInfo, isLoading: isChannelInfoLoading } = useYoutubeChannel(artistAccountId);
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
-  const channel = channelInfo?.channels?.[0];
+  const channel = channelInfo?.[0];
 
   if (youtubeStatus?.status === "invalid" || isLoading || isChannelInfoLoading) {
     return children;

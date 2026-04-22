@@ -1,6 +1,5 @@
 export type ToggleFavoriteRequest = {
   templateId: string;
-  userId: string;
   isFavourite: boolean;
 };
 
@@ -27,5 +26,4 @@ export type AgentTemplateRow = {
   // emails the template is shared with (only for private templates)
   shared_emails?: string[];
 };
-
 
