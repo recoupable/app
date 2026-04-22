@@ -1,5 +1,4 @@
 import { ToolSet } from "ai";
-import getSocialPosts from "./getSocialPosts";
 import getPostComments from "./getPostComments";
 import { webDeepResearch } from "./searchWeb";
 import searchGoogleImages from "./searchGoogleImages";
@@ -19,7 +18,6 @@ import getCatalogSongs from "./catalogs/getCatalogSongs";
 
 export function getMcpTools(): ToolSet {
   const tools = {
-    get_social_posts: getSocialPosts,
     get_post_comments: getPostComments,
     search_google_images: searchGoogleImages,
     web_deep_research: webDeepResearch,
