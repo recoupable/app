@@ -1,6 +1,6 @@
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useArtistPosts } from "@/hooks/useArtistPosts";
-import { type Post } from "@/lib/recoup/fetchPosts";
+import { type Post } from "@/types/Post";
 import Posts from "./Posts";
 import PostsSkeleton from "./PostsSkeleton";
 

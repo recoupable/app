@@ -1,5 +1,5 @@
 export const codeExamples = {
-  curl: `curl -X GET "https://api.recoupable.com/api/posts?artist_account_id=YOUR_ARTIST_ACCOUNT_ID&page=1&limit=20" \\
+  curl: `curl -X GET "https://recoup-api.vercel.app/api/artists/YOUR_ARTIST_ACCOUNT_ID/posts?page=1&limit=20" \\
   -H "Content-Type: application/json"`,
   python: `import requests
 
@@ -8,14 +8,13 @@ headers = {
 }
 
 params = {
-    "artist_account_id": "YOUR_ARTIST_ACCOUNT_ID",
     "page": 1,
     "limit": 20
 }
 
-response = requests.get("https://api.recoupable.com/api/posts", headers=headers, params=params)
+response = requests.get("https://recoup-api.vercel.app/api/artists/YOUR_ARTIST_ACCOUNT_ID/posts", headers=headers, params=params)
 data = response.json()`,
-  javascript: `fetch("https://api.recoupable.com/api/posts?artist_account_id=YOUR_ARTIST_ACCOUNT_ID&page=1&limit=20", {
+  javascript: `fetch("https://recoup-api.vercel.app/api/artists/YOUR_ARTIST_ACCOUNT_ID/posts?page=1&limit=20", {
   headers: {
     "Content-Type": "application/json"
   }
@@ -40,12 +39,12 @@ interface PostsResponse {
 }
 
 const fetchArtistPosts = async (
-  artistAccountId: string, 
-  page: number = 1, 
+  artistAccountId: string,
+  page: number = 1,
   limit: number = 20
 ) => {
   const response = await fetch(
-    \`https://api.recoupable.com/api/posts?artist_account_id=\${artistAccountId}&page=\${page}&limit=\${limit}\`, 
+    \`https://recoup-api.vercel.app/api/artists/\${artistAccountId}/posts?page=\${page}&limit=\${limit}\`,
     {
       headers: {
         "Content-Type": "application/json"
