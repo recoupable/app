@@ -1,4 +1,4 @@
-import { ArtistSocialsResultType } from "@/types/ArtistSocials";
+import { SocialsResponse } from "@/types/Social";
 import { Music } from "lucide-react";
 import { ReactNode } from "react";
 import { ArtistSocial } from "./ArtistSocial";
@@ -9,7 +9,7 @@ export default function GetArtistSocialsResult({
   icon,
   title,
 }: {
-  result: ArtistSocialsResultType;
+  result: SocialsResponse;
   errorText?: string;
   icon?: ReactNode;
   title?: string;

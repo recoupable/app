@@ -1,9 +1,7 @@
 import { useArtistProvider } from "@/providers/ArtistProvider";
-import {
-  useArtistFans,
-  type Social,
-  type FansResponse,
-} from "@/hooks/useArtistFans";
+import { useArtistFans } from "@/hooks/useArtistFans";
+import { type Social } from "@/types/Social";
+import { type FansResponse } from "@/lib/fans/fetchArtistFans";
 import Fans from "./Fans";
 import FansSkeleton from "./FansSkeleton";
 import { useCallback } from "react";
@@ -31,33 +29,19 @@ const FansWrapper = () => {
       page.fans.forEach((fan) => {
         if (!fan || typeof fan !== "object") return;
 
-        const safeFan: Social = {
-          id: fan.id || `fan-${Math.random().toString(36).substring(2, 9)}`,
-          username: fan.username || "Anonymous",
-          avatar: fan.avatar || null,
-          profile_url: fan.profile_url || "#",
-          region: fan.region || "",
-          bio: fan.bio || "",
-          followerCount:
-            typeof fan.followerCount === "number" ? fan.followerCount : 0,
-          followingCount:
-            typeof fan.followingCount === "number" ? fan.followingCount : 0,
-          updated_at: fan.updated_at || new Date().toISOString(),
-        };
-
-        if (safeFan.avatar) {
-          fansWithAvatars.push(safeFan);
+        if (fan.avatar) {
+          fansWithAvatars.push(fan);
         } else {
-          fansWithoutAvatars.push(safeFan);
+          fansWithoutAvatars.push(fan);
         }
       });
     });
 
     const sortedFansWithAvatars = [...fansWithAvatars].sort(
-      (a, b) => b.followerCount - a.followerCount
+      (a, b) => (b.follower_count ?? 0) - (a.follower_count ?? 0)
     );
     const sortedFansWithoutAvatars = [...fansWithoutAvatars].sort(
-      (a, b) => b.followerCount - a.followerCount
+      (a, b) => (b.follower_count ?? 0) - (a.follower_count ?? 0)
     );
 
     return {

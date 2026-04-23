@@ -1,4 +1,4 @@
-import { type Social } from "@/hooks/useArtistFans";
+import { type Social } from "@/types/Social";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -9,7 +9,7 @@ interface FanAvatarProps {
 const FanAvatar = ({ fan }: FanAvatarProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  const formattedFollowerCount = fan.followerCount.toLocaleString();
+  const formattedFollowerCount = (fan.follower_count ?? 0).toLocaleString();
 
   const getInitials = (username: string) => {
     if (!username) return "?";
