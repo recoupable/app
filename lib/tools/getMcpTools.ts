@@ -8,7 +8,6 @@ import deleteArtist from "./deleteArtist";
 import searchTwitter from "./searchTwitter";
 import getTwitterTrends from "./getTwitterTrends";
 import scrapeInstagramProfile from "./scrapeInstagramProfile";
-import getApifyScraper from "./getApifyScraper";
 import scrapeInstagramComments from "./scrapeInstagramComments";
 import getVideoGameCampaignPlays from "./getVideoGameCampaignPlays";
 import getSocialFans from "./getSocialFans";
@@ -28,7 +27,6 @@ export function getMcpTools(): ToolSet {
     search_twitter: searchTwitter,
     get_twitter_trends: getTwitterTrends,
     scrape_instagram_profile: scrapeInstagramProfile,
-    get_apify_scraper: getApifyScraper,
     scrape_instagram_comments: scrapeInstagramComments,
     get_video_game_campaign_plays: getVideoGameCampaignPlays,
     get_social_fans: getSocialFans,
