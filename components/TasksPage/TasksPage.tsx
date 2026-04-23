@@ -2,12 +2,10 @@
 
 import useAutoLogin from "@/hooks/useAutoLogin";
 import TasksTabs from "./TasksTabs";
-import { Button } from "@/components/ui/button";
-import { useCreateTask } from "@/hooks/useCreateTask";
+import { CreateTaskButton } from "./CreateTaskButton";
 
 const TasksPage = () => {
   useAutoLogin();
-  const { handleCreateTask, isCreating } = useCreateTask();
 
   return (
     <div className="max-w-full md:max-w-[calc(100vw-200px)] grow py-8 px-6 md:px-12">
@@ -20,13 +18,7 @@ const TasksPage = () => {
             View and manage all the tasks for your selected artist.
           </p>
         </div>
-        <Button
-          onClick={() => handleCreateTask()}
-          disabled={isCreating}
-          className="w-full sm:w-auto"
-        >
-          {isCreating ? "Creating..." : "Create Task"}
-        </Button>
+        <CreateTaskButton />
       </div>
 
       <TasksTabs />

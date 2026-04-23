@@ -36,7 +36,7 @@ export const FEATURED_MODELS: FeaturedModelConfig[] = [
   },
   {
     id: DEFAULT_MODEL,
-    displayName: "GPT-5 Mini",
+    displayName: "GPT-5.4 Mini",
     isPro: false,
     pill: "Fast",
     description: "Great for everyday",

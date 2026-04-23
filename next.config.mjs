@@ -1,33 +1,13 @@
 // next.config.mjs
 
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import withPWA from "next-pwa";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["geist"],
   serverExternalPackages: ['@browserbasehq/stagehand', 'playwright'],
-  turbopack: {
-    resolveAlias: {
-      "@react-native-async-storage/async-storage": "./lib/shims/async-storage-web-stub.js",
-    },
-  },
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        "@react-native-async-storage/async-storage": path.join(
-          __dirname,
-          "lib/shims/async-storage-web-stub.js",
-        ),
-      };
-    }
-    return config;
-  },
+  webpack: (config) => config,
   experimental: {
     optimizePackageImports: [
       'lucide-react',
