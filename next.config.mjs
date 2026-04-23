@@ -7,7 +7,6 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["geist"],
   serverExternalPackages: ['@browserbasehq/stagehand', 'playwright'],
-  webpack: (config) => config,
   experimental: {
     optimizePackageImports: [
       'lucide-react',

@@ -33,18 +33,22 @@ describe("createTask", () => {
       artist_account_id: "artist-1",
     });
 
-    expect(fetch).toHaveBeenCalledWith("https://api.recoupable.com/api/tasks", {
-      method: "POST",
-      headers: {
-        Authorization: "Bearer test-token",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: "Daily summary",
-        prompt: "Summarize fan growth",
-        schedule: "0 9 * * *",
-        artist_account_id: "artist-1",
+    expect(fetch).toHaveBeenCalledWith(
+      "https://api.recoupable.com/api/tasks",
+      expect.objectContaining({
+        method: "POST",
+        headers: {
+          Authorization: "Bearer test-token",
+          "Content-Type": "application/json",
+        },
       }),
+    );
+    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
+    expect(JSON.parse(String(init.body))).toEqual({
+      title: "Daily summary",
+      prompt: "Summarize fan growth",
+      schedule: "0 9 * * *",
+      artist_account_id: "artist-1",
     });
     expect(result).toEqual(createdTask);
   });
@@ -69,15 +73,13 @@ describe("createTask", () => {
 
     const call = vi.mocked(fetch).mock.calls[0];
     const init = call[1] as RequestInit;
-    expect(init.body).toBe(
-      JSON.stringify({
-        title: "Weekly sync",
-        prompt: "Generate weekly report",
-        schedule: "0 9 * * 1",
-        artist_account_id: "artist-2",
-        account_id: "account-2",
-        model: "anthropic/claude-sonnet-4.5",
-      }),
-    );
+    expect(JSON.parse(String(init.body))).toEqual({
+      title: "Weekly sync",
+      prompt: "Generate weekly report",
+      schedule: "0 9 * * 1",
+      artist_account_id: "artist-2",
+      account_id: "account-2",
+      model: "anthropic/claude-sonnet-4.5",
+    });
   });
 });

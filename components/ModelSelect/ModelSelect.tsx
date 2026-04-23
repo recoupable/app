@@ -2,8 +2,8 @@ import {
   PromptInputModelSelect,
   PromptInputModelSelectTrigger,
   PromptInputModelSelectValue,
-  PromptInputModelSelectContent,
-} from "@/components/ai-elements/prompt-input";
+} from "../ai-elements/prompt-input";
+import { PromptInputModelSelectContent } from "../ai-elements/prompt-input";
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
 import { isFreeModel } from "@/lib/ai/isFreeModel";
 import { toast } from "react-toastify";
@@ -33,7 +33,7 @@ const ModelSelect = () => {
     const isModelFree = selectedModel ? isFreeModel(selectedModel) : false;
     if (!isModelFree && !isSubscribed) {
       toast.error(
-        "This model is not free. Please upgrade to a paid plan or select a free model.",
+        "This model is not free. Please upgrade to a paid plan or select a free model."
       );
       return;
     }
