@@ -1,6 +1,5 @@
-import { Tables } from "@/types/database.types";
-
-type Catalog = Tables<"catalogs">;
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import type { Catalog } from "@/types/Catalog";
 
 export interface CatalogsResponse {
   status: string;
@@ -8,18 +7,28 @@ export interface CatalogsResponse {
   error?: string;
 }
 
+/**
+ * Fetches catalogs linked to an account from the Recoup API.
+ *
+ * Authentication is via Bearer token (Privy access token).
+ *
+ * @param accountId - The account id whose catalogs to fetch (path segment).
+ * @param accessToken - Privy access token for Bearer auth.
+ */
 export async function getCatalogs(
-  accountId: string
+  accountId: string,
+  accessToken: string,
 ): Promise<CatalogsResponse> {
   try {
     const response = await fetch(
-      `https://api.recoupable.com/api/catalogs?account_id=${accountId}`,
+      `${getClientApiBaseUrl()}/api/accounts/${accountId}/catalogs`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
-      }
+      },
     );
 
     if (!response.ok) {
