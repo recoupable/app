@@ -1,13 +1,11 @@
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import type { Post } from "@/types/Post";
+
 interface FetchPostsParams {
   artistAccountId: string;
+  accessToken: string;
   page?: number;
   limit?: number;
-}
-
-export interface Post {
-  id: string;
-  post_url: string;
-  updated_at: string;
 }
 
 export interface PostsResponse {
@@ -26,21 +24,22 @@ export interface PostsError {
   status?: number;
 }
 
-/**
- * Fetches posts for a specific artist from the API
- */
 async function fetchPosts({
   artistAccountId,
+  accessToken,
   page = 1,
   limit = 20,
 }: FetchPostsParams): Promise<PostsResponse> {
   try {
-    const url = new URL("https://api.recoupable.com/api/posts");
-    url.searchParams.append("artist_account_id", artistAccountId);
-    url.searchParams.append("page", page.toString());
-    url.searchParams.append("limit", limit.toString());
+    const url = new URL(
+      `${getClientApiBaseUrl()}/api/artists/${artistAccountId}/posts?page=${page}&limit=${limit}`,
+    );
 
-    const response = await fetch(url.toString());
+    const response = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     if (!response.ok) {
       const error: PostsError = {
