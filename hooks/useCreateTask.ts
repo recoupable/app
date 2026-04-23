@@ -35,7 +35,7 @@ export function useCreateTask() {
     try {
       const task = await createTask(accessToken, {
         title: "Untitled Task",
-        prompt: "",
+        prompt: "New task — replace with your instructions.",
         schedule: DEFAULT_SCHEDULE,
         artist_account_id: artistAccountId,
         model: DEFAULT_MODEL,
