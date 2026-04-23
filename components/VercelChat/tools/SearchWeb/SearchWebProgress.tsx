@@ -1,7 +1,7 @@
 import React from "react";
 import { Loader } from "lucide-react";
 import { Response } from "@/components/ai-elements/response";
-import { SearchProgress } from "@/lib/tools/searchWeb/types";
+import { SearchProgress } from "@/lib/search/searchProgressUtils";
 import SearchResultItem from "./SearchResultItem";
 import SearchQueryPill from "./SearchQueryPill";
 
