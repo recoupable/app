@@ -1,4 +1,4 @@
-import { type Post } from "@/lib/recoup/fetchPosts";
+import { type Post } from "@/types/Post";
 import { memo } from "react";
 import { useInView } from "react-intersection-observer";
 import dynamic from "next/dynamic";
