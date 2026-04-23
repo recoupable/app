@@ -3,7 +3,7 @@ import { Task } from "@/lib/tasks/getTasks";
 import { Textarea } from "@/components/ui/textarea";
 import TaskDetailsDialogTitle from "./TaskDetailsDialogTitle";
 import TaskPromptSection from "./TaskPromptSection";
-import dynamic from "next/dynamic";
+import { CronEditor } from "@/components/CronEditor";
 import { GatewayModelSelect } from "@/components/ModelSelect/GatewayModelSelect";
 import { getFeaturedModelConfig } from "@/lib/ai/featuredModels";
 import useAvailableModels from "@/hooks/useAvailableModels";
@@ -11,11 +11,6 @@ import TaskLastRunSection from "./TaskLastRunSection";
 import TaskScheduleSection from "./TaskScheduleSection";
 import TaskRecentRunsSection from "./TaskRecentRunsSection";
 import TaskUpcomingRunsSection from "./TaskUpcomingRunsSection";
-
-const CronEditor = dynamic(
-  () => import("@/components/CronEditor").then((mod) => mod.CronEditor),
-  { ssr: false },
-);
 
 interface TaskDetailsDialogContentProps {
   task: Task;

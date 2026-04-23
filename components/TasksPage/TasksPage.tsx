@@ -4,12 +4,10 @@ import useAutoLogin from "@/hooks/useAutoLogin";
 import TasksTabs from "./TasksTabs";
 import { Button } from "@/components/ui/button";
 import { useCreateTask } from "@/hooks/useCreateTask";
-import TaskDetailsDialog from "@/components/VercelChat/dialogs/tasks/TaskDetailsDialog";
 
 const TasksPage = () => {
   useAutoLogin();
-  const { handleCreateTask, isCreating, createdTask, clearCreatedTask } =
-    useCreateTask();
+  const { handleCreateTask, isCreating } = useCreateTask();
 
   return (
     <div className="max-w-full md:max-w-[calc(100vw-200px)] grow py-8 px-6 md:px-12">
@@ -23,23 +21,13 @@ const TasksPage = () => {
           </p>
         </div>
         <Button
-          onClick={handleCreateTask}
+          onClick={() => handleCreateTask()}
           disabled={isCreating}
           className="w-full sm:w-auto"
         >
           {isCreating ? "Creating..." : "Create Task"}
         </Button>
       </div>
-
-      {createdTask && (
-        <TaskDetailsDialog
-          task={createdTask}
-          defaultOpen
-          onClose={clearCreatedTask}
-        >
-          <div />
-        </TaskDetailsDialog>
-      )}
 
       <TasksTabs />
     </div>
