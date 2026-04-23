@@ -46,6 +46,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError }) => {
       {tasks.map((task: Task, index) => (
         <TaskDetailsDialog key={task.id} task={task}>
           <div
+            data-task-dialog-trigger={task.id}
             className={
               index !== tasks.length - 1 ? "border-b border-border " : ""
             }
