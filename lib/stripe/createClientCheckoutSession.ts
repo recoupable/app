@@ -1,28 +1,17 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
-function buildSubscriptionSuccessUrl(): string {
-  const url = new URL(window.location.href);
-  url.searchParams.set("subscription", "success");
-  return url.toString();
-}
-
-const createClientCheckoutSession = async (
-  accountId: string,
-  accessToken: string,
-) => {
+const createClientCheckoutSession = async (accountId: string, accessToken: string) => {
   try {
-    const successUrl = buildSubscriptionSuccessUrl();
-    const response = await fetch(
-      `${getClientApiBaseUrl()}/api/subscriptions/sessions`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ accountId, successUrl }),
+    const successUrl = new URL(window.location.href);
+    successUrl.searchParams.set("subscription", "success");
+    const response = await fetch(`${getClientApiBaseUrl()}/api/subscriptions/sessions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
       },
-    );
+      body: JSON.stringify({ accountId, successUrl: successUrl.toString() }),
+    });
 
     const data = await response.json();
 
