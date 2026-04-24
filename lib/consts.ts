@@ -24,7 +24,6 @@ export const MESSAGE_SENT_POINT = 1;
 export const PAYMENT_CREDITS_POINT = 1;
 export const CHAT_POINT_SYSTEM_ID = 4172;
 export const SCORE_POINT_SYSTEM_ID = 4186;
-export const AGENT_API = "https://api.recoupable.com";
 export const TASKS_API_URL = `${NEW_API_BASE_URL}/api/tasks`;
 export const ONE_DAY_MILLISECONDS = 24 * 60 * 60 * 1000;
 export const SOCIAL_DEFAULT_PLATFORMS = [
@@ -35,10 +34,6 @@ export const SOCIAL_DEFAULT_PLATFORMS = [
   "Instagram",
   "Spotify",
 ];
-
-// Apify webhook configuration
-export const APIFY_WEBHOOKS_VALUE =
-  "ICBbCiAgICB7CiAgICAgICJldmVudFR5cGVzIjogWyJBQ1RPUi5SVU4uU1VDQ0VFREVEIl0sCiAgICAgICJyZXF1ZXN0VXJsIjogImh0dHBzOi8vY2hhdC5yZWNvdXBhYmxlLmNvbS9hcGkvYXBpZnkiCiAgICB9CiAgXQ==";
 
 // Vercel AI SDK
 export const AI_MODEL = "o3-mini";
