@@ -1,5 +1,6 @@
 import { APIFY_WEBHOOKS_VALUE } from "@/lib/consts";
 import { ApifyScraperResult } from "@/lib/apify/types";
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
 /**
  * Runs the Instagram comments scraper for the provided post URLs
@@ -21,7 +22,7 @@ export default async function runInstagramCommentsScraper(
     }
 
     // Construct URL with postUrls as query parameters
-    const url = new URL("https://api.recoupable.com/api/instagram/comments");
+    const url = new URL(`${getClientApiBaseUrl()}/api/instagram/comments`);
     postUrls.forEach((postUrl) => {
       url.searchParams.append("postUrls", postUrl);
     });
@@ -34,7 +35,10 @@ export default async function runInstagramCommentsScraper(
 
     const response = await fetch(url.toString(), {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": process.env.RECOUP_API_KEY ?? "",
+      },
     });
 
     if (!response.ok) {
