@@ -5,7 +5,9 @@ const createClientCheckoutSession = async (
   accessToken: string,
 ) => {
   try {
-    const successUrl = `${window.location.href}?subscription=success`;
+    const url = new URL(window.location.href);
+    url.searchParams.set("subscription", "success");
+    const successUrl = url.toString();
     const response = await fetch(
       `${getClientApiBaseUrl()}/api/subscriptions/sessions`,
       {
