@@ -1,4 +1,5 @@
 import { usePrivy } from "@privy-io/react-auth";
+import { toast } from "sonner";
 import { useUserProvider } from "@/providers/UserProvder";
 import { usePaymentProvider } from "@/providers/PaymentProvider";
 import createClientPortalSession from "@/lib/stripe/createClientPortalSession";
@@ -20,7 +21,14 @@ const useSubscribeClick = () => {
     const accessToken = await getAccessToken();
     if (!accessToken) return;
 
-    createClientCheckoutSession(userData.account_id, accessToken);
+    const checkout = await createClientCheckoutSession(userData.account_id, accessToken);
+    if (checkout?.error) {
+      const message =
+        checkout.error instanceof Error
+          ? checkout.error.message
+          : "Failed to create checkout session";
+      toast.error(message);
+    }
   };
 
   return {
