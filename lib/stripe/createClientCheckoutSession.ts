@@ -1,11 +1,17 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
+function buildSubscriptionSuccessUrl(): string {
+  const url = new URL(window.location.href);
+  url.searchParams.set("subscription", "success");
+  return url.toString();
+}
+
 const createClientCheckoutSession = async (
   accountId: string,
   accessToken: string,
 ) => {
   try {
-    const successUrl = `${window.location.href}?subscription=success`;
+    const successUrl = buildSubscriptionSuccessUrl();
     const response = await fetch(
       `${getClientApiBaseUrl()}/api/subscriptions/sessions`,
       {
