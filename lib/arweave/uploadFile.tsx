@@ -1,3 +1,5 @@
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+
 export type ArweaveUploadResponse = {
   id: string;
   uri: string;
@@ -10,7 +12,7 @@ export const uploadFile = async (
     const data = new FormData();
     data.set("file", file);
 
-    const res = await fetch("/api/upload", {
+    const res = await fetch(`${getClientApiBaseUrl()}/api/upload`, {
       method: "POST",
       body: data,
     });
