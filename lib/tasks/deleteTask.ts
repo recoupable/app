@@ -4,9 +4,23 @@ export interface DeleteTaskParams {
   id: string;
 }
 
+const SCHEDULE_NOT_FOUND_MSG = "Schedule not found";
+
 interface DeleteTaskResponse {
   status: "success" | "error";
   error?: string;
+}
+
+function isScheduleNotFoundError(errorText: string): boolean {
+  return errorText.includes(SCHEDULE_NOT_FOUND_MSG);
+}
+
+async function deleteTaskFromDatabase(taskId: string): Promise<void> {
+  await fetch("/api/scheduled-actions/delete", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: taskId }),
+  });
 }
 
 /**
@@ -30,6 +44,12 @@ export async function deleteTask(
 
   if (!response.ok) {
     const errorText = await response.text();
+
+    if (isScheduleNotFoundError(errorText)) {
+      await deleteTaskFromDatabase(params.id);
+      return;
+    }
+
     throw new Error(`HTTP ${response.status}: ${errorText}`);
   }
 

@@ -37,4 +37,27 @@ describe("deleteTask error handling", () => {
 
     await expect(deleteTask(accessToken, { id: "task-1" })).rejects.toThrow("Task not found");
   });
+
+  it("falls back to local delete endpoint when scheduler says not found", async () => {
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: vi.fn().mockResolvedValue("Schedule not found"),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+      }) as unknown as typeof fetch;
+
+    await expect(deleteTask(accessToken, { id: "task-1" })).resolves.toBeUndefined();
+
+    expect(fetch).toHaveBeenNthCalledWith(
+      2,
+      "/api/scheduled-actions/delete",
+      expect.objectContaining({
+        method: "DELETE",
+      }),
+    );
+  });
 });
