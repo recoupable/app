@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
+import { usePrivy } from "@privy-io/react-auth";
 import { deleteTask } from "@/lib/tasks/deleteTask";
 
 interface DeleteScheduledActionParams {
@@ -12,6 +13,7 @@ interface DeleteScheduledActionParams {
 export const useDeleteScheduledAction = () => {
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
+  const { getAccessToken } = usePrivy();
 
   const deleteAction = async ({
     actionId,
@@ -20,7 +22,12 @@ export const useDeleteScheduledAction = () => {
   }: DeleteScheduledActionParams) => {
     setIsLoading(true);
     try {
-      await deleteTask({ id: actionId });
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        throw new Error("Please sign in to delete tasks");
+      }
+
+      await deleteTask(accessToken, { id: actionId });
 
       onSuccess?.();
       toast.success(successMessage);
@@ -31,9 +38,9 @@ export const useDeleteScheduledAction = () => {
       throw error;
     } finally {
       setIsLoading(false);
-      queryClient.invalidateQueries({ 
+      queryClient.invalidateQueries({
         queryKey: ["scheduled-actions"],
-        exact: false 
+        exact: false,
       });
     }
   };
