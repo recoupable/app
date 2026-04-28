@@ -10,14 +10,18 @@ const useTrackEmail = () => {
     const init = async () => {
       const email = searchParams.get("email");
       if (!email) return;
-      const response = await fetch(`${getClientApiBaseUrl()}/api/email`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await response.json();
-
-      setTrackId(data.id);
+      try {
+        const response = await fetch(`${getClientApiBaseUrl()}/api/email`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        if (!response.ok) return;
+        const data = (await response.json()) as { id?: string };
+        if (data.id) setTrackId(data.id);
+      } catch {
+        // tracking is fire-and-forget; don't break the page if Loops/api is down
+      }
     };
     if (!searchParams) return;
     init();
