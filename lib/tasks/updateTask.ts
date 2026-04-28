@@ -1,5 +1,5 @@
 import { Tables } from "@/types/database.types";
-import { TASKS_API_URL } from "@/lib/consts";
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import { GetTasksResponse } from "./getTasks";
 
 type ScheduledAction = Tables<"scheduled_actions">;
@@ -20,12 +20,14 @@ export interface UpdateTaskParams {
  * @see https://docs.recoupable.com/tasks/update
  */
 export async function updateTask(
+  accessToken: string,
   params: UpdateTaskParams
 ): Promise<ScheduledAction> {
   try {
-    const response = await fetch(TASKS_API_URL, {
+    const response = await fetch(`${getClientApiBaseUrl()}/api/tasks`, {
       method: "PATCH",
       headers: {
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
