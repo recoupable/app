@@ -1,6 +1,8 @@
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+
 const fetchYouTubeChannel = async (artistAccountId: string) => {
   const response = await fetch(
-    `/api/youtube/channel-info?artist_account_id=${artistAccountId}`
+    `${getClientApiBaseUrl()}/api/youtube/channel-info?artist_account_id=${artistAccountId}`,
   );
 
   if (!response.ok) {

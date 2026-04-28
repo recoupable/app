@@ -1,5 +1,6 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
 const useTrackEmail = () => {
   const searchParams = useSearchParams();
@@ -10,7 +11,7 @@ const useTrackEmail = () => {
       const email = searchParams.get("email");
       if (!email) return;
       const response = await fetch(
-        `/api/email?email=${encodeURIComponent(email)}`,
+        `${getClientApiBaseUrl()}/api/email?email=${encodeURIComponent(email)}`,
       );
       const data = await response.json();
 
