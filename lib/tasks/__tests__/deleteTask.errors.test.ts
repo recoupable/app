@@ -60,4 +60,48 @@ describe("deleteTask error handling", () => {
       }),
     );
   });
+
+  it("falls back to local delete endpoint when JSON error says scheduler not found", async () => {
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          status: "error",
+          error: "Schedule not found",
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+      }) as unknown as typeof fetch;
+
+    await expect(deleteTask(accessToken, { id: "task-1" })).resolves.toBeUndefined();
+
+    expect(fetch).toHaveBeenNthCalledWith(
+      2,
+      "/api/scheduled-actions/delete",
+      expect.objectContaining({
+        method: "DELETE",
+      }),
+    );
+  });
+
+  it("throws when local fallback delete endpoint fails", async () => {
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: vi.fn().mockResolvedValue("Schedule not found"),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: vi.fn().mockResolvedValue("local delete failed"),
+      }) as unknown as typeof fetch;
+
+    await expect(deleteTask(accessToken, { id: "task-1" })).rejects.toThrow(
+      "HTTP 500: local delete failed",
+    );
+  });
 });

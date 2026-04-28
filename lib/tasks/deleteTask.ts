@@ -16,11 +16,16 @@ function isScheduleNotFoundError(errorText: string): boolean {
 }
 
 async function deleteTaskFromDatabase(taskId: string): Promise<void> {
-  await fetch("/api/scheduled-actions/delete", {
+  const response = await fetch("/api/scheduled-actions/delete", {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id: taskId }),
   });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`HTTP ${response.status}: ${errorText}`);
+  }
 }
 
 /**
@@ -55,6 +60,11 @@ export async function deleteTask(
 
   const data = (await response.json()) as DeleteTaskResponse;
   if (data.status === "error") {
+    if (isScheduleNotFoundError(data.error || "")) {
+      await deleteTaskFromDatabase(params.id);
+      return;
+    }
+
     throw new Error(data.error || "Unknown error occurred");
   }
 }
