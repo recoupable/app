@@ -45,25 +45,32 @@ export function useYouTubeLoginSuccess() {
     hasCheckedOAuth.current = true;
 
     if (selectedArtist?.account_id) {
-      fetchYouTubeChannel(selectedArtist.account_id).then((youtubeChannel) => {
-        if (
-          Array.isArray(youtubeChannel?.channels) &&
-          youtubeChannel.channels.length > 0
-        ) {
-          const successMessage = {
-            id: generateUUID(),
-            role: "user" as const,
-            parts: [
-              {
-                type: "text",
-                text: "Great! I've successfully connected my YouTube account. Please continue with what you were helping me with.",
-              },
-            ],
-          } as UIMessage;
+      // The fetch wrapper throws on non-2xx (including 401 re-auth);
+      // success implies a 200 with at least one channel.
+      fetchYouTubeChannel(selectedArtist.account_id)
+        .then((youtubeChannel) => {
+          if (
+            Array.isArray(youtubeChannel?.channels) &&
+            youtubeChannel.channels.length > 0
+          ) {
+            const successMessage = {
+              id: generateUUID(),
+              role: "user" as const,
+              parts: [
+                {
+                  type: "text",
+                  text: "Great! I've successfully connected my YouTube account. Please continue with what you were helping me with.",
+                },
+              ],
+            } as UIMessage;
 
-          append(successMessage);
-        }
-      });
+            append(successMessage);
+          }
+        })
+        .catch(() => {
+          // Re-auth still required — leave the youtube_login tool result
+          // in place so the user can retry the OAuth flow.
+        });
     }
   }, [messages, append, selectedArtist?.account_id]);
 }
