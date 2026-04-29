@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
 import { generateUUID } from "@/lib/generateUUID";
@@ -13,6 +14,7 @@ import { UIMessage, isToolUIPart, getToolName } from "ai";
 export function useYouTubeLoginSuccess() {
   const { selectedArtist } = useArtistProvider();
   const { append, messages } = useVercelChatContext();
+  const { getAccessToken } = usePrivy();
   const hasCheckedOAuth = useRef(false);
 
   useEffect(() => {
@@ -47,8 +49,15 @@ export function useYouTubeLoginSuccess() {
     if (selectedArtist?.account_id) {
       // The fetch wrapper throws on non-2xx (including 401 re-auth);
       // success implies a 200 with at least one channel.
-      fetchYouTubeChannel(selectedArtist.account_id)
+      (async () => {
+        const accessToken = await getAccessToken();
+        if (!accessToken) {
+          return;
+        }
+        return fetchYouTubeChannel(selectedArtist.account_id, accessToken);
+      })()
         .then((youtubeChannel) => {
+          if (!youtubeChannel) return;
           if (
             Array.isArray(youtubeChannel?.channels) &&
             youtubeChannel.channels.length > 0
@@ -72,5 +81,5 @@ export function useYouTubeLoginSuccess() {
           // in place so the user can retry the OAuth flow.
         });
     }
-  }, [messages, append, selectedArtist?.account_id]);
+  }, [messages, append, selectedArtist?.account_id, getAccessToken]);
 }
