@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { usePrivy } from "@privy-io/react-auth";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
 import { generateUUID } from "@/lib/generateUUID";
@@ -14,7 +13,6 @@ import { UIMessage, isToolUIPart, getToolName } from "ai";
 export function useYouTubeLoginSuccess() {
   const { selectedArtist } = useArtistProvider();
   const { append, messages } = useVercelChatContext();
-  const { getAccessToken } = usePrivy();
   const hasCheckedOAuth = useRef(false);
 
   useEffect(() => {
@@ -47,39 +45,22 @@ export function useYouTubeLoginSuccess() {
     hasCheckedOAuth.current = true;
 
     if (selectedArtist?.account_id) {
-      // The fetch wrapper throws on non-2xx (including 401 re-auth);
-      // success implies a 200 with at least one channel.
-      (async () => {
-        const accessToken = await getAccessToken();
-        if (!accessToken) {
-          return;
-        }
-        return fetchYouTubeChannel(selectedArtist.account_id, accessToken);
-      })()
-        .then((youtubeChannel) => {
-          if (!youtubeChannel) return;
-          if (
-            Array.isArray(youtubeChannel?.channels) &&
-            youtubeChannel.channels.length > 0
-          ) {
-            const successMessage = {
-              id: generateUUID(),
-              role: "user" as const,
-              parts: [
-                {
-                  type: "text",
-                  text: "Great! I've successfully connected my YouTube account. Please continue with what you were helping me with.",
-                },
-              ],
-            } as UIMessage;
+      fetchYouTubeChannel(selectedArtist.account_id).then((youtubeChannel) => {
+        if (youtubeChannel.success) {
+          const successMessage = {
+            id: generateUUID(),
+            role: "user" as const,
+            parts: [
+              {
+                type: "text",
+                text: "Great! I've successfully connected my YouTube account. Please continue with what you were helping me with.",
+              },
+            ],
+          } as UIMessage;
 
-            append(successMessage);
-          }
-        })
-        .catch(() => {
-          // Re-auth still required — leave the youtube_login tool result
-          // in place so the user can retry the OAuth flow.
-        });
+          append(successMessage);
+        }
+      });
     }
-  }, [messages, append, selectedArtist?.account_id, getAccessToken]);
+  }, [messages, append, selectedArtist?.account_id]);
 }

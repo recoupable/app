@@ -11,16 +11,12 @@ const useYoutubeStatus = (artistAccountId?: string) => {
   const data = artistAccountId
     ? {
         status: (() => {
+          if (error) return "error";
           if (isLoading) return "invalid";
-          // Any fetch error (e.g. 401 re-auth required) → invalid so the
-          // UI prompts the user to reconnect their YouTube account.
-          if (error) return "invalid";
-          if (
-            channelResponse &&
-            Array.isArray(channelResponse.channels) &&
-            channelResponse.channels.length > 0
-          ) {
-            return "valid";
+          if (channelResponse) {
+            return channelResponse.tokenStatus === "valid"
+              ? "valid"
+              : "invalid";
           }
           return "invalid";
         })(),
