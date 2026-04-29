@@ -14,7 +14,10 @@ const useYoutubeStatus = (artistAccountId?: string) => {
           if (error) return "error";
           if (isLoading) return "invalid";
           if (channelResponse) {
-            return channelResponse.success ? "valid" : "invalid";
+            return Array.isArray(channelResponse.channels) &&
+              channelResponse.channels.length > 0
+              ? "valid"
+              : "invalid";
           }
           return "invalid";
         })(),

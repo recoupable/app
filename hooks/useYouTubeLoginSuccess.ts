@@ -46,7 +46,10 @@ export function useYouTubeLoginSuccess() {
 
     if (selectedArtist?.account_id) {
       fetchYouTubeChannel(selectedArtist.account_id).then((youtubeChannel) => {
-        if (youtubeChannel.success) {
+        if (
+          Array.isArray(youtubeChannel?.channels) &&
+          youtubeChannel.channels.length > 0
+        ) {
           const successMessage = {
             id: generateUUID(),
             role: "user" as const,

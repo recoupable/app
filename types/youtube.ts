@@ -302,7 +302,7 @@ export type YouTubeChannelVideoListResult = {
 };
 
 export interface YouTubeChannelResponse {
-  success: boolean;
+  status: "success";
   channels: YouTubeChannelData[] | null;
 }
 
