@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { GatewayLanguageModelEntry } from "@ai-sdk/gateway";
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
 /**
  * A thin wrapper around TanStack's useQuery to fetch the list of
@@ -9,7 +10,7 @@ const useAvailableModels = () =>
   useQuery<GatewayLanguageModelEntry[]>({
     queryKey: ["available-models"],
     queryFn: async () => {
-      const res = await fetch("/api/ai/models");
+      const res = await fetch(`${getClientApiBaseUrl()}/api/ai/models`);
       if (!res.ok) throw new Error("Failed to load models");
       const data = (await res.json()) as {
         models: GatewayLanguageModelEntry[];
