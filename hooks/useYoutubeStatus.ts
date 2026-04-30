@@ -1,34 +1,41 @@
-import { YoutubeStatus } from "@/types/youtube";
-import useYoutubeChannel from "./useYoutubeChannel";
+import { useMemo } from "react";
+import { useConnectors } from "./useConnectors";
 
+interface YoutubeStatusData {
+  status: "valid" | "invalid" | "error";
+  connectedAccountId?: string;
+  artistAccountId: string;
+}
+
+/**
+ * YouTube connection status for an artist account, derived from the
+ * Composio connectors list. Returns `valid` when YouTube is connected,
+ * `invalid` otherwise.
+ */
 const useYoutubeStatus = (artistAccountId?: string) => {
-  const {
-    data: channelResponse,
-    isLoading,
-    error,
-  } = useYoutubeChannel(artistAccountId || "");
+  const config = useMemo(
+    () => ({
+      accountId: artistAccountId,
+      allowedSlugs: ["youtube"] as string[],
+    }),
+    [artistAccountId],
+  );
+  const { connectors, isLoading, error } = useConnectors(config);
 
-  const data = artistAccountId
+  const data: YoutubeStatusData | null = artistAccountId
     ? {
-        status: (() => {
-          if (error) return "error";
-          if (isLoading) return "invalid";
-          if (channelResponse) {
-            return channelResponse.tokenStatus === "valid"
-              ? "valid"
-              : "invalid";
-          }
-          return "invalid";
-        })(),
+        status: error
+          ? "error"
+          : connectors.find((c) => c.slug === "youtube")?.isConnected
+            ? "valid"
+            : "invalid",
+        connectedAccountId: connectors.find((c) => c.slug === "youtube")
+          ?.connectedAccountId,
         artistAccountId,
       }
     : null;
 
-  return {
-    data,
-    isLoading,
-    error: null,
-  } as YoutubeStatus;
+  return { data, isLoading, error: null as Error | null };
 };
 
 export default useYoutubeStatus;
