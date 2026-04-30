@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Pause, Trash2 } from "lucide-react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useUpdateScheduledAction } from "@/hooks/useUpdateScheduledAction";
 import { useDeleteScheduledAction } from "@/hooks/useDeleteScheduledAction";
 
@@ -30,6 +31,7 @@ const TaskDetailsDialogActionButtons: React.FC<
   isEnabled,
   canEdit,
 }) => {
+  const { authenticated } = usePrivy();
   const { updateAction, isLoading: isUpdating } = useUpdateScheduledAction();
   const { deleteAction, isLoading: isDeleting } = useDeleteScheduledAction();
   const isLoading = isUpdating || isDeleting;
@@ -99,16 +101,18 @@ const TaskDetailsDialogActionButtons: React.FC<
           <Pause className="h-4 w-4 mr-2" />
           {isEnabled ? "Pause" : "Resume"}
         </Button>
-        <Button
-          variant="outline"
-          onClick={handleDelete}
-          className="border-red-200 text-red-600 hover:bg-red-50"
-          disabled={isLoading}
-          size="sm"
-        >
-          <Trash2 className="h-4 w-4 mr-2" />
-          Delete
-        </Button>
+        {authenticated && (
+          <Button
+            variant="outline"
+            onClick={handleDelete}
+            className="border-red-200 text-red-600 hover:bg-red-50"
+            disabled={isLoading}
+            size="sm"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete
+          </Button>
+        )}
       </div>
       <Button
         onClick={handleSave}

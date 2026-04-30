@@ -10,12 +10,10 @@ interface DeleteScheduledActionParams {
   successMessage?: string;
 }
 
-const SIGN_IN_DELETE_TASKS_MESSAGE = "Please sign in to delete tasks";
-
 export const useDeleteScheduledAction = () => {
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken, authenticated } = usePrivy();
 
   const deleteAction = async ({
     actionId,
@@ -24,9 +22,13 @@ export const useDeleteScheduledAction = () => {
   }: DeleteScheduledActionParams) => {
     setIsLoading(true);
     try {
+      if (!authenticated) {
+        return;
+      }
+
       const accessToken = await getAccessToken();
       if (!accessToken) {
-        throw new Error(SIGN_IN_DELETE_TASKS_MESSAGE);
+        return;
       }
 
       await deleteTask(accessToken, { id: actionId });
@@ -36,11 +38,7 @@ export const useDeleteScheduledAction = () => {
       return;
     } catch (error) {
       console.error("Failed to delete scheduled action:", error);
-      if (error instanceof Error && error.message === SIGN_IN_DELETE_TASKS_MESSAGE) {
-        toast.error(SIGN_IN_DELETE_TASKS_MESSAGE);
-      } else {
-        toast.error("Failed to delete. Please try again.");
-      }
+      toast.error("Failed to delete. Please try again.");
       throw error;
     } finally {
       setIsLoading(false);

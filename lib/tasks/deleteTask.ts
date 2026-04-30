@@ -15,7 +15,8 @@ function isScheduleNotFoundError(errorText: string): boolean {
   return errorText.includes(SCHEDULE_NOT_FOUND_MSG);
 }
 
-async function deleteTaskFromDatabase(taskId: string): Promise<void> {
+/** Chat app route that performs the scheduled-action delete (legacy fallback). */
+async function deleteTaskViaScheduledActionsRoute(taskId: string): Promise<void> {
   const response = await fetch("/api/scheduled-actions/delete", {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
@@ -51,7 +52,7 @@ export async function deleteTask(
     const errorText = await response.text();
 
     if (isScheduleNotFoundError(errorText)) {
-      await deleteTaskFromDatabase(params.id);
+      await deleteTaskViaScheduledActionsRoute(params.id);
       return;
     }
 
@@ -61,7 +62,7 @@ export async function deleteTask(
   const data = (await response.json()) as DeleteTaskResponse;
   if (data.status === "error") {
     if (isScheduleNotFoundError(data.error || "")) {
-      await deleteTaskFromDatabase(params.id);
+      await deleteTaskViaScheduledActionsRoute(params.id);
       return;
     }
 
