@@ -27,7 +27,7 @@ const createClientCheckoutSession = async (
       throw new Error(data.error || "Failed to create checkout session");
     }
 
-    window.open(data.url, "_blank");
+    window.open(data.url, "_blank", "noopener,noreferrer");
   } catch (error) {
     console.error("Error creating checkout session:", error);
     return { error };

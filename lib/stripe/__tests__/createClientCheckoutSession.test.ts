@@ -52,6 +52,7 @@ describe("createClientCheckoutSession", () => {
     expect(mockOpen).toHaveBeenCalledWith(
       "https://checkout.stripe.com/test",
       "_blank",
+      "noopener,noreferrer",
     );
   });
 
