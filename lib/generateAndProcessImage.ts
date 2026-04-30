@@ -35,7 +35,7 @@ export async function generateAndProcessImage(
     throw new Error("Account ID is required");
   }
 
-  const apiUrl = new URL("https://recoup-api.vercel.app/api/image/generate");
+  const apiUrl = new URL("https://api.recoupable.com/api/image/generate");
   apiUrl.searchParams.set("prompt", prompt);
   apiUrl.searchParams.set("account_id", accountId);
 
