@@ -24,6 +24,20 @@ describe("deleteTask error handling", () => {
     await expect(deleteTask(accessToken, { id: "task-1" })).rejects.toThrow(
       'HTTP 403: {"status":"error","error":"Access denied to this task"}',
     );
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("throws on non-ok when body is schedule not found (single API call)", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: vi.fn().mockResolvedValue("Schedule not found"),
+    }) as unknown as typeof fetch;
+
+    await expect(deleteTask(accessToken, { id: "task-1" })).rejects.toThrow(
+      "HTTP 500: Schedule not found",
+    );
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it("throws when API returns status:error", async () => {
@@ -36,72 +50,19 @@ describe("deleteTask error handling", () => {
     }) as unknown as typeof fetch;
 
     await expect(deleteTask(accessToken, { id: "task-1" })).rejects.toThrow("Task not found");
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
-  it("falls back to local delete endpoint when scheduler says not found", async () => {
-    global.fetch = vi
-      .fn()
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        text: vi.fn().mockResolvedValue("Schedule not found"),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-      }) as unknown as typeof fetch;
-
-    await expect(deleteTask(accessToken, { id: "task-1" })).resolves.toBeUndefined();
-
-    expect(fetch).toHaveBeenNthCalledWith(
-      2,
-      "/api/scheduled-actions/delete",
-      expect.objectContaining({
-        method: "DELETE",
+  it("throws when API returns status:error with schedule not found (single API call)", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({
+        status: "error",
+        error: "Schedule not found",
       }),
-    );
-  });
+    }) as unknown as typeof fetch;
 
-  it("falls back to local delete endpoint when JSON error says scheduler not found", async () => {
-    global.fetch = vi
-      .fn()
-      .mockResolvedValueOnce({
-        ok: true,
-        json: vi.fn().mockResolvedValue({
-          status: "error",
-          error: "Schedule not found",
-        }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-      }) as unknown as typeof fetch;
-
-    await expect(deleteTask(accessToken, { id: "task-1" })).resolves.toBeUndefined();
-
-    expect(fetch).toHaveBeenNthCalledWith(
-      2,
-      "/api/scheduled-actions/delete",
-      expect.objectContaining({
-        method: "DELETE",
-      }),
-    );
-  });
-
-  it("throws when local fallback delete endpoint fails", async () => {
-    global.fetch = vi
-      .fn()
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        text: vi.fn().mockResolvedValue("Schedule not found"),
-      })
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        text: vi.fn().mockResolvedValue("local delete failed"),
-      }) as unknown as typeof fetch;
-
-    await expect(deleteTask(accessToken, { id: "task-1" })).rejects.toThrow(
-      "HTTP 500: local delete failed",
-    );
+    await expect(deleteTask(accessToken, { id: "task-1" })).rejects.toThrow("Schedule not found");
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 });
