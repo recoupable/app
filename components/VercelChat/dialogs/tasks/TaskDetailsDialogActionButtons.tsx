@@ -7,18 +7,12 @@ import {
   type TaskDetailsDialogActionButtonsProps,
 } from "./useTaskDetailsDialogActionButtons";
 
-export default function TaskDetailsDialogActionButtons(
-  props: TaskDetailsDialogActionButtonsProps,
-) {
-  const {
-    authenticated,
-    handlePause,
-    handleDelete,
-    handleSave,
-    isLoading,
-    canEdit,
-    isEnabled,
-  } = useTaskDetailsDialogActionButtons(props);
+const TaskDetailsDialogActionButtons: React.FC<
+  TaskDetailsDialogActionButtonsProps
+> = (props) => {
+  const { authenticated, handleDelete, handlePause, handleSave, isLoading } =
+    useTaskDetailsDialogActionButtons(props);
+  const { canEdit, isEnabled } = props;
 
   return (
     <div className="flex gap-2 mt-4 pt-4 border-t border-border justify-between shrink-0">
@@ -50,4 +44,6 @@ export default function TaskDetailsDialogActionButtons(
       </Button>
     </div>
   );
-}
+};
+
+export default TaskDetailsDialogActionButtons;

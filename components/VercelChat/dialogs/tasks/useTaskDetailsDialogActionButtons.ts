@@ -1,3 +1,5 @@
+"use client";
+
 import { usePrivy } from "@privy-io/react-auth";
 import { useUpdateScheduledAction } from "@/hooks/useUpdateScheduledAction";
 import { useDeleteScheduledAction } from "@/hooks/useDeleteScheduledAction";
@@ -32,13 +34,9 @@ export function useTaskDetailsDialogActionButtons({
 
   const handlePause = async () => {
     if (!canEdit) return;
-
     try {
       await updateAction({
-        updates: {
-          id: taskId,
-          enabled: !isEnabled,
-        },
+        updates: { id: taskId, enabled: !isEnabled },
         successMessage: isEnabled ? "Task paused" : "Task activated",
       });
     } catch (error) {
@@ -48,13 +46,10 @@ export function useTaskDetailsDialogActionButtons({
 
   const handleDelete = async () => {
     if (!canEdit) return;
-
     try {
       await deleteAction({
         actionId: taskId,
-        onSuccess: () => {
-          onDeleteSuccess();
-        },
+        onSuccess: () => onDeleteSuccess(),
       });
     } catch (error) {
       console.error("Failed to delete task:", error);
@@ -63,20 +58,16 @@ export function useTaskDetailsDialogActionButtons({
 
   const handleSave = async () => {
     if (!canEdit) return;
-
     try {
-      const cronExpression = editCron.trim();
       await updateAction({
         updates: {
           id: taskId,
           title: editTitle,
           prompt: editPrompt,
-          schedule: cronExpression,
+          schedule: editCron.trim(),
           model: editModel,
         },
-        onSuccess: () => {
-          onSaveSuccess();
-        },
+        onSuccess: () => onSaveSuccess(),
         successMessage: "Task updated successfully",
       });
     } catch (error) {
@@ -86,11 +77,9 @@ export function useTaskDetailsDialogActionButtons({
 
   return {
     authenticated,
-    handlePause,
     handleDelete,
+    handlePause,
     handleSave,
     isLoading,
-    canEdit,
-    isEnabled,
   };
 }
