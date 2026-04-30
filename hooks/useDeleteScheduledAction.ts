@@ -10,7 +10,8 @@ interface DeleteScheduledActionParams {
   successMessage?: string;
 }
 
-const SIGN_IN_DELETE_TASKS_MESSAGE = "Please sign in to delete tasks";
+/** Internal sentinel when delete runs without a session; UI must hide delete until authenticated. */
+const UNAUTHENTICATED_DELETE_ATTEMPT = "UNAUTHENTICATED_DELETE_ATTEMPT";
 
 export const useDeleteScheduledAction = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -25,12 +26,12 @@ export const useDeleteScheduledAction = () => {
     setIsLoading(true);
     try {
       if (!authenticated) {
-        throw new Error(SIGN_IN_DELETE_TASKS_MESSAGE);
+        throw new Error(UNAUTHENTICATED_DELETE_ATTEMPT);
       }
 
       const accessToken = await getAccessToken();
       if (!accessToken) {
-        throw new Error(SIGN_IN_DELETE_TASKS_MESSAGE);
+        throw new Error(UNAUTHENTICATED_DELETE_ATTEMPT);
       }
 
       await deleteTask(accessToken, { id: actionId });
@@ -39,15 +40,14 @@ export const useDeleteScheduledAction = () => {
       toast.success(successMessage);
       return;
     } catch (error) {
-      console.error("Failed to delete scheduled action:", error);
       if (
         error instanceof Error &&
-        error.message === SIGN_IN_DELETE_TASKS_MESSAGE
+        error.message === UNAUTHENTICATED_DELETE_ATTEMPT
       ) {
-        toast.error(SIGN_IN_DELETE_TASKS_MESSAGE);
-      } else {
-        toast.error("Failed to delete. Please try again.");
+        throw error;
       }
+      console.error("Failed to delete scheduled action:", error);
+      toast.error("Failed to delete. Please try again.");
       throw error;
     } finally {
       setIsLoading(false);
