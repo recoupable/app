@@ -10,14 +10,11 @@ export interface ProStatusResponse {
 const fetchProStatus = async (
   accessToken: string,
 ): Promise<ProStatusResponse> => {
-  const response = await fetch(
-    `${getClientApiBaseUrl()}/api/subscriptions/status`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+  const response = await fetch(`${getClientApiBaseUrl()}/api/subscription`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
-  );
+  });
   if (!response.ok) {
     throw new Error(`Error: ${response.status}`);
   }
