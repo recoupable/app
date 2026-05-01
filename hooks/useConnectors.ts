@@ -75,11 +75,15 @@ export function useConnectors(config?: UseConnectorsConfig) {
       if (accountId !== undefined && !accountId) return null;
       const accessToken = await getAccessToken();
       if (!accessToken) return null;
-      return authorizeConnectorApi(accessToken, {
-        connector,
-        accountId,
-        callbackUrl,
-      });
+      try {
+        return await authorizeConnectorApi(accessToken, {
+          connector,
+          accountId,
+          callbackUrl,
+        });
+      } catch {
+        return null;
+      }
     },
     [getAccessToken, accountId, callbackUrl],
   );
