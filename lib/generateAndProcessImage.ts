@@ -1,6 +1,7 @@
 import { Experimental_GenerateImageResult } from "ai";
 import Transaction from "arweave/node/lib/transaction";
 import { Address, Hash } from "viem";
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
 interface RecoupImageGenerateResponse extends Experimental_GenerateImageResult {
   imageUrl: string;
@@ -35,7 +36,7 @@ export async function generateAndProcessImage(
     throw new Error("Account ID is required");
   }
 
-  const apiUrl = new URL("https://recoup-api.vercel.app/api/image/generate");
+  const apiUrl = new URL(`${getClientApiBaseUrl()}/api/image/generate`);
   apiUrl.searchParams.set("prompt", prompt);
   apiUrl.searchParams.set("account_id", accountId);
 
