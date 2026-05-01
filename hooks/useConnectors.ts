@@ -50,7 +50,7 @@ export function useConnectors(config?: UseConnectorsConfig) {
   const query = useQuery({
     queryKey: [CONNECTORS_QUERY_KEY, accountId ?? null],
     enabled: accountId === undefined || Boolean(accountId),
-    queryFn: async (): Promise<ConnectorInfo[]> => {
+    queryFn: async () => {
       const accessToken = await getAccessToken();
       if (!accessToken) return [];
       return fetchConnectorsApi(accessToken, accountId);
