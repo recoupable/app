@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Youtube } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useConnectors } from "@/hooks/useConnectors";
+import { useConnectorHandlers } from "@/hooks/useConnectorHandlers";
 
 interface ConnectYouTubeButtonProps {
   accountId?: string;
@@ -32,25 +33,16 @@ export const ConnectYouTubeButton = ({
     }),
     [accountId],
   );
-  const { authorize } = useConnectors(config);
-  const [isConnecting, setIsConnecting] = useState(false);
-
-  const handleClick = async () => {
-    if (!accountId || isConnecting) return;
-    setIsConnecting(true);
-    try {
-      const redirectUrl = await authorize("youtube");
-      if (redirectUrl) {
-        window.location.href = redirectUrl;
-      }
-    } finally {
-      setIsConnecting(false);
-    }
-  };
+  const { authorize, disconnect } = useConnectors(config);
+  const { isConnecting, handleConnect } = useConnectorHandlers({
+    slug: "youtube",
+    onConnect: authorize,
+    onDisconnect: disconnect,
+  });
 
   return (
     <Button
-      onClick={handleClick}
+      onClick={handleConnect}
       aria-label="Connect YouTube Account"
       className={cn(
         "bg-red-600 hover:bg-red-700 text-white flex items-center justify-center",
