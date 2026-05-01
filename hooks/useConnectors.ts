@@ -6,6 +6,11 @@ import { fetchConnectorsApi } from "@/lib/composio/api/fetchConnectorsApi";
 import { authorizeConnectorApi } from "@/lib/composio/api/authorizeConnectorApi";
 import { disconnectConnectorApi } from "@/lib/composio/api/disconnectConnectorApi";
 
+const refreshListeners = new Set<() => void>();
+const broadcastConnectorRefresh = () => {
+  refreshListeners.forEach((fn) => fn());
+};
+
 /**
  * Connector info from the API.
  */
@@ -110,18 +115,25 @@ export function useConnectors(config?: UseConnectorsConfig) {
           connectedAccountId,
           accountId,
         );
-        await fetchConnectors();
+        broadcastConnectorRefresh();
         return true;
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
         return false;
       }
     },
-    [getAccessToken, accountId, fetchConnectors],
+    [getAccessToken, accountId],
   );
 
   useEffect(() => {
     fetchConnectors();
+  }, [fetchConnectors]);
+
+  useEffect(() => {
+    refreshListeners.add(fetchConnectors);
+    return () => {
+      refreshListeners.delete(fetchConnectors);
+    };
   }, [fetchConnectors]);
 
   return {

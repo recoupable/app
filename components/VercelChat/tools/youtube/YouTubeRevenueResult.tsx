@@ -35,7 +35,11 @@ export default function YouTubeRevenueResult({
 }: YouTubeRevenueResultProps) {
   // Handle error states
   if (!result.success) {
-    return <YouTubeRevenueError message={result.message} />;
+    return (
+      <YouTubeRevenueError
+        message={result.message || "An error occurred while fetching revenue."}
+      />
+    );
   }
 
   // Handle successful revenue data

@@ -19,7 +19,7 @@ const ChannelInfo = ({
 
   return (
     <div className="flex flex-col gap-1 cursor-pointer">
-      <label className={cn("text-sm", { hidden: dense })}>YouTube</label>
+      <span className={cn("text-sm", { hidden: dense })}>YouTube</span>
       <div
         className={cn(
           "flex items-center px-2 py-1 rounded-lg bg-red-50 border border-red-200",

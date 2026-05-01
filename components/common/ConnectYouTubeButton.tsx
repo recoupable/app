@@ -51,6 +51,7 @@ export const ConnectYouTubeButton = ({
   return (
     <Button
       onClick={handleClick}
+      aria-label="Connect YouTube Account"
       className={cn(
         "bg-red-600 hover:bg-red-700 text-white flex items-center justify-center",
         { "rounded-full px-2": dense },

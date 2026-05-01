@@ -35,7 +35,7 @@ const useYoutubeStatus = (artistAccountId?: string) => {
       }
     : null;
 
-  return { data, isLoading, error: null as Error | null };
+  return { data, isLoading, error };
 };
 
 export default useYoutubeStatus;

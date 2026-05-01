@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -20,6 +20,7 @@ const YoutubeLogoutButton = ({
     [artistAccountId],
   );
   const { connectors, isLoading, disconnect } = useConnectors(config);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
   const youtube = connectors.find((c) => c.slug === "youtube");
 
   if (isLoading) {
@@ -31,20 +32,27 @@ const YoutubeLogoutButton = ({
   }
 
   const handleClick = async () => {
-    if (!youtube.connectedAccountId) return;
-    const ok = await disconnect(youtube.connectedAccountId);
-    if (ok) {
-      queryClient.invalidateQueries({
-        queryKey: ["youtube-channel-info", artistAccountId],
-      });
+    if (!youtube.connectedAccountId || isDisconnecting) return;
+    setIsDisconnecting(true);
+    try {
+      const ok = await disconnect(youtube.connectedAccountId);
+      if (ok) {
+        queryClient.invalidateQueries({
+          queryKey: ["youtube-channel-info", artistAccountId],
+        });
+      }
+    } finally {
+      setIsDisconnecting(false);
     }
   };
 
   return (
     <div className="flex flex-col gap-1 cursor-pointer absolute bottom-0 -top-3 -right-1 md:top-[-1rem]">
-      <label className={"text-sm"}>&nbsp;</label>
+      <span className={"text-sm"}>&nbsp;</span>
       <Button
         size="icon"
+        aria-label="Disconnect YouTube"
+        disabled={isDisconnecting}
         className="w-4 h-4 bg-transparent text-red-500 px-1 py-1 rounded-xl hover:bg-red-500 hover:text-white"
         onClick={handleClick}
       >
