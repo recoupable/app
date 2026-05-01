@@ -8,11 +8,9 @@ interface ExecuteConnectorActionParams {
 
 /**
  * Execute a connector action via the api's generic Composio action endpoint.
- * Returns the raw `result` field (action-specific, passed through from
- * Composio).
- *
- * @param accessToken - Bearer token for authentication
- * @param params - Action slug, parameters, optional account ID to scope the connection
+ * Unwraps Composio's `ToolExecuteResponse` envelope so callers get the
+ * underlying provider payload directly (e.g. Google `youtube.channels.list`
+ * with `items`); throws on `successful: false`.
  */
 export async function executeConnectorActionApi<T = unknown>(
   accessToken: string,
@@ -38,6 +36,26 @@ export async function executeConnectorActionApi<T = unknown>(
     throw new Error(`Failed to execute connector action (${response.status})`);
   }
 
-  const data = await response.json();
-  return data.result as T;
+  const body = await response.json();
+  const result = body.result as
+    | { successful?: boolean; data?: unknown; error?: string | null }
+    | unknown;
+
+  if (
+    result &&
+    typeof result === "object" &&
+    "successful" in (result as Record<string, unknown>)
+  ) {
+    const envelope = result as {
+      successful: boolean;
+      data?: unknown;
+      error?: string | null;
+    };
+    if (!envelope.successful) {
+      throw new Error(envelope.error ?? "Connector action failed");
+    }
+    return envelope.data as T;
+  }
+
+  return result as T;
 }
