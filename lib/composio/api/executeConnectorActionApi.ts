@@ -6,6 +6,12 @@ interface ExecuteConnectorActionParams {
   accountId?: string;
 }
 
+interface ToolExecuteEnvelope<T> {
+  successful: boolean;
+  data?: T;
+  error?: string | null;
+}
+
 /**
  * Execute a connector action via the api's generic Composio action endpoint.
  * Unwraps Composio's `ToolExecuteResponse` envelope so callers get the
@@ -36,26 +42,9 @@ export async function executeConnectorActionApi<T = unknown>(
     throw new Error(`Failed to execute connector action (${response.status})`);
   }
 
-  const body = await response.json();
-  const result = body.result as
-    | { successful?: boolean; data?: unknown; error?: string | null }
-    | unknown;
-
-  if (
-    result &&
-    typeof result === "object" &&
-    "successful" in (result as Record<string, unknown>)
-  ) {
-    const envelope = result as {
-      successful: boolean;
-      data?: unknown;
-      error?: string | null;
-    };
-    if (!envelope.successful) {
-      throw new Error(envelope.error ?? "Connector action failed");
-    }
-    return envelope.data as T;
+  const { result }: { result: ToolExecuteEnvelope<T> } = await response.json();
+  if (!result.successful) {
+    throw new Error(result.error ?? "Connector action failed");
   }
-
-  return result as T;
+  return result.data as T;
 }
