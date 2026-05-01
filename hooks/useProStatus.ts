@@ -1,4 +1,5 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { usePrivy } from "@privy-io/react-auth";
 import { useUserProvider } from "@/providers/UserProvder";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
@@ -7,10 +8,15 @@ export interface ProStatusResponse {
 }
 
 const fetchProStatus = async (
-  accountId: string,
+  accessToken: string,
 ): Promise<ProStatusResponse> => {
   const response = await fetch(
-    `${getClientApiBaseUrl()}/api/subscription/status?accountId=${encodeURIComponent(accountId)}`,
+    `${getClientApiBaseUrl()}/api/subscriptions/status`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
   );
   if (!response.ok) {
     throw new Error(`Error: ${response.status}`);
@@ -20,10 +26,14 @@ const fetchProStatus = async (
 
 const useProStatus = (): UseQueryResult<ProStatusResponse> => {
   const { userData } = useUserProvider();
+  const { getAccessToken, authenticated } = usePrivy();
   return useQuery({
     queryKey: ["proStatus", userData?.account_id],
-    queryFn: () => fetchProStatus(userData?.account_id || ""),
-    enabled: !!userData?.account_id,
+    queryFn: async () => {
+      const accessToken = await getAccessToken();
+      return fetchProStatus(accessToken!);
+    },
+    enabled: !!userData?.account_id && authenticated,
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: true,
   });
