@@ -1,24 +1,37 @@
+"use client";
+
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import useYoutubeStatus from "@/hooks/useYoutubeStatus";
+import { useQueryClient } from "@tanstack/react-query";
+import { useConnectors } from "@/hooks/useConnectors";
+import { useConnectorHandlers } from "@/hooks/useConnectorHandlers";
 
 const YoutubeLogoutButton = ({
   artistAccountId,
 }: {
   artistAccountId: string;
 }) => {
-  const { data: youtubeStatus, isLoading } = useYoutubeStatus(artistAccountId);
   const queryClient = useQueryClient();
-
-  const logoutMutation = useMutation({
-    mutationFn: () =>
-      fetch(`/api/youtube/logout?artist_account_id=${artistAccountId}`, {
-        method: "DELETE",
-      }).then((res) => res.json()),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["youtube-status", artistAccountId] });
-      queryClient.invalidateQueries({ queryKey: ["youtube-channel-info", artistAccountId] });
+  const config = useMemo(
+    () => ({
+      accountId: artistAccountId,
+      allowedSlugs: ["youtube"] as string[],
+    }),
+    [artistAccountId],
+  );
+  const { connectors, isLoading, authorize, disconnect } =
+    useConnectors(config);
+  const youtube = connectors.find((c) => c.slug === "youtube");
+  const { isDisconnecting, handleDisconnect } = useConnectorHandlers({
+    slug: "youtube",
+    connectedAccountId: youtube?.connectedAccountId,
+    onConnect: authorize,
+    onDisconnect: disconnect,
+    onDisconnectSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["youtube-channel-info", artistAccountId],
+      });
     },
   });
 
@@ -26,18 +39,19 @@ const YoutubeLogoutButton = ({
     return null;
   }
 
-  if (youtubeStatus?.status === "invalid" || youtubeStatus?.status === "error") {
+  if (!youtube?.isConnected || !youtube.connectedAccountId) {
     return null;
   }
 
   return (
     <div className="flex flex-col gap-1 cursor-pointer absolute bottom-0 -top-3 -right-1 md:top-[-1rem]">
-      <label className={"text-sm"}>&nbsp;</label>
+      <span className={"text-sm"}>&nbsp;</span>
       <Button
         size="icon"
+        aria-label="Disconnect YouTube"
+        disabled={isDisconnecting}
         className="w-4 h-4 bg-transparent text-red-500 px-1 py-1 rounded-xl hover:bg-red-500 hover:text-white"
-        onClick={() => logoutMutation.mutate()}
-        disabled={logoutMutation.isPending}
+        onClick={handleDisconnect}
       >
         <XIcon className="w-4 h-4" />
       </Button>

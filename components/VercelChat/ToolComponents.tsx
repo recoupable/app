@@ -27,22 +27,10 @@ import { Loader } from "lucide-react";
 import GenericSuccess from "./tools/GenericSuccess";
 import getToolInfo from "@/lib/utils/getToolsInfo";
 import { isSearchProgressUpdate } from "@/lib/search/searchProgressUtils";
-import YouTubeAccessSkeleton from "./tools/youtube/YouTubeAccessSkeleton";
-import YouTubeRevenueResult from "./tools/youtube/YouTubeRevenueResult";
+import YouTubeRevenueResult, {
+  type YouTubeRevenueResult as YouTubeRevenueResultType,
+} from "./tools/youtube/YouTubeRevenueResult";
 import YouTubeRevenueSkeleton from "./tools/youtube/YouTubeRevenueSkeleton";
-import {
-  YouTubeChannelInfoResult,
-  YouTubeChannelVideoListResult,
-  YouTubeRevenueResult as YouTubeRevenueResultType,
-} from "@/types/youtube";
-import YouTubeChannelsResult from "./tools/youtube/YouTubeChannelsResult";
-import YouTubeLoginResult from "./tools/youtube/YouTubeLoginResult";
-import { YouTubeLoginResultType } from "./tools/youtube/YouTubeLoginResult";
-import YoutubeChannelVideosListResult from "./tools/youtube/YoutubeChannelVideosListResult";
-import YouTubeChannelVideosListSkeleton from "./tools/youtube/YouTubeChannelVideosListSkeleton";
-import YouTubeSetThumbnailResult from "./tools/youtube/YouTubeSetThumbnailResult";
-import YouTubeSetThumbnailSkeleton from "./tools/youtube/YouTubeSetThumbnailSkeleton";
-import type { YouTubeSetThumbnailResult as YouTubeSetThumbnailResultType } from "@/types/youtube";
 import SearchWebSkeleton from "./tools/SearchWeb/SearchWebSkeleton";
 import SpotifyDeepResearchSkeleton from "./tools/SpotifyDeepResearchSkeleton";
 import { SearchApiResultType } from "./tools/SearchWeb/SearchApiResult";
@@ -69,8 +57,10 @@ import { Sora2VideoSkeleton } from "./tools/sora2/Sora2VideoSkeleton";
 
 const Sora2VideoResult = dynamic(
   () =>
-    import("./tools/sora2/Sora2VideoResult").then((mod) => mod.Sora2VideoResult),
-  { ssr: false, loading: () => <Sora2VideoSkeleton /> }
+    import("./tools/sora2/Sora2VideoResult").then(
+      (mod) => mod.Sora2VideoResult,
+    ),
+  { ssr: false, loading: () => <Sora2VideoSkeleton /> },
 );
 import CatalogSongsSkeleton from "./tools/catalog/CatalogSongsSkeleton";
 import CatalogSongsResult, {
@@ -114,28 +104,10 @@ export function getToolCallComponent(part: ToolUIPart) {
         <CreateArtistToolCall />
       </div>
     );
-  } else if (toolName === "get_youtube_channels") {
-    return (
-      <div key={toolCallId}>
-        <YouTubeAccessSkeleton />
-      </div>
-    );
   } else if (toolName === "get_youtube_revenue") {
     return (
       <div key={toolCallId}>
         <YouTubeRevenueSkeleton />
-      </div>
-    );
-  } else if (toolName === "get_youtube_channel_video_list") {
-    return (
-      <div key={toolCallId}>
-        <YouTubeChannelVideosListSkeleton />
-      </div>
-    );
-  } else if (toolName === "set_youtube_thumbnail") {
-    return (
-      <div key={toolCallId}>
-        <YouTubeSetThumbnailSkeleton />
       </div>
     );
   } else if (isSearchWebTool) {
@@ -225,7 +197,10 @@ export function getToolCallComponent(part: ToolUIPart) {
         <GetChatsSkeleton />
       </div>
     );
-  } else if (toolName === "get_task_run_status" || toolName === "prompt_sandbox") {
+  } else if (
+    toolName === "get_task_run_status" ||
+    toolName === "prompt_sandbox"
+  ) {
     return (
       <div key={toolCallId}>
         <RunPageSkeleton />
@@ -292,38 +267,10 @@ export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
         <TxtFileResult result={result as TxtFileGenerationResult} />
       </div>
     );
-  } else if (toolName === "youtube_login") {
-    return (
-      <div key={toolCallId}>
-        <YouTubeLoginResult result={result as YouTubeLoginResultType} />
-      </div>
-    );
-  } else if (toolName === "get_youtube_channels") {
-    return (
-      <div key={toolCallId}>
-        <YouTubeChannelsResult result={result as YouTubeChannelInfoResult} />
-      </div>
-    );
   } else if (toolName === "get_youtube_revenue") {
     return (
       <div key={toolCallId}>
         <YouTubeRevenueResult result={result as YouTubeRevenueResultType} />
-      </div>
-    );
-  } else if (toolName === "get_youtube_channel_video_list") {
-    return (
-      <div key={toolCallId}>
-        <YoutubeChannelVideosListResult
-          result={result as YouTubeChannelVideoListResult}
-        />
-      </div>
-    );
-  } else if (toolName === "set_youtube_thumbnail") {
-    return (
-      <div key={toolCallId}>
-        <YouTubeSetThumbnailResult
-          result={result as YouTubeSetThumbnailResultType}
-        />
       </div>
     );
   } else if (isSearchWebTool) {
@@ -439,7 +386,10 @@ export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
         <GetChatsResult result={result as GetChatsResultType} />
       </div>
     );
-  } else if (toolName === "get_task_run_status" || toolName === "prompt_sandbox") {
+  } else if (
+    toolName === "get_task_run_status" ||
+    toolName === "prompt_sandbox"
+  ) {
     const runId =
       toolName === "get_task_run_status"
         ? ((part as DynamicToolUIPart).input as { runId: string }).runId
