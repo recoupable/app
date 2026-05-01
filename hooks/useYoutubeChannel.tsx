@@ -6,7 +6,7 @@ import {
 } from "@/lib/youtube/fetchYoutubeChannel";
 
 const useYoutubeChannel = (artistAccountId: string) => {
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken, authenticated } = usePrivy();
   return useQuery<YouTubeChannelStatisticsResponse>({
     queryKey: ["youtube-channel-info", artistAccountId],
     queryFn: async () => {
@@ -16,7 +16,7 @@ const useYoutubeChannel = (artistAccountId: string) => {
       }
       return fetchYoutubeChannel(accessToken, artistAccountId);
     },
-    enabled: !!artistAccountId,
+    enabled: !!artistAccountId && authenticated,
   });
 };
 
