@@ -51,7 +51,9 @@ const useYoutubeChannel = (artistAccountId: string) => {
         accessToken,
         {
           actionSlug: "YOUTUBE_GET_CHANNEL_STATISTICS",
-          parameters: { mine: true },
+          // Composio's action defaults `part` to "statistics" only — request
+          // snippet too so we get title/thumbnails for the UI.
+          parameters: { mine: true, part: "snippet,statistics" },
           accountId: artistAccountId,
         },
       );
