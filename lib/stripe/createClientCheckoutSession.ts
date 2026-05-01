@@ -3,7 +3,7 @@ import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 const createClientCheckoutSession = async (accessToken: string) => {
   try {
     const response = await fetch(
-      `${getClientApiBaseUrl()}/api/subscriptions/sessions`,
+      `${getClientApiBaseUrl()}/api/stripe/checkout-sessions`,
       {
         method: "POST",
         headers: {

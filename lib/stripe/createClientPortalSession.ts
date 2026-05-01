@@ -3,7 +3,7 @@ import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 const createClientPortalSession = async (accessToken: string) => {
   try {
     const response = await fetch(
-      `${getClientApiBaseUrl()}/api/subscriptions/portal-sessions`,
+      `${getClientApiBaseUrl()}/api/stripe/portal-sessions`,
       {
         method: "POST",
         headers: {
