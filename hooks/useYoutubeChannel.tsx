@@ -1,12 +1,22 @@
-import fetchYouTubeChannel from "@/lib/youtube/fetchYouTubeChannel";
-import { YouTubeChannelResponse } from "@/types/youtube";
 import { useQuery } from "@tanstack/react-query";
+import { usePrivy } from "@privy-io/react-auth";
+import {
+  fetchYoutubeChannel,
+  type YouTubeChannelStatisticsResponse,
+} from "@/lib/youtube/fetchYoutubeChannel";
 
 const useYoutubeChannel = (artistAccountId: string) => {
-  return useQuery<YouTubeChannelResponse>({
+  const { getAccessToken, authenticated } = usePrivy();
+  return useQuery<YouTubeChannelStatisticsResponse>({
     queryKey: ["youtube-channel-info", artistAccountId],
-    queryFn: () => fetchYouTubeChannel(artistAccountId),
-    enabled: !!artistAccountId, // Only run query if artistAccountId is provided
+    queryFn: async () => {
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        throw new Error("Not authenticated");
+      }
+      return fetchYoutubeChannel(accessToken, artistAccountId);
+    },
+    enabled: !!artistAccountId && authenticated,
   });
 };
 

@@ -5,6 +5,7 @@ interface UseConnectorHandlersProps {
   connectedAccountId?: string;
   onConnect: (slug: string) => Promise<string | null>;
   onDisconnect: (connectedAccountId: string) => Promise<boolean>;
+  onDisconnectSuccess?: () => void;
 }
 
 interface UseConnectorHandlersReturn {
@@ -22,6 +23,7 @@ export function useConnectorHandlers({
   connectedAccountId,
   onConnect,
   onDisconnect,
+  onDisconnectSuccess,
 }: UseConnectorHandlersProps): UseConnectorHandlersReturn {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
@@ -43,7 +45,8 @@ export function useConnectorHandlers({
 
     setIsDisconnecting(true);
     try {
-      await onDisconnect(connectedAccountId);
+      const ok = await onDisconnect(connectedAccountId);
+      if (ok) onDisconnectSuccess?.();
     } finally {
       setIsDisconnecting(false);
     }

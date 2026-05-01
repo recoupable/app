@@ -11,6 +11,7 @@ const CONNECTOR_DISPLAY_NAMES: Record<string, string> = {
   googledocs: "Google Docs",
   tiktok: "TikTok",
   instagram: "Instagram",
+  youtube: "YouTube",
 };
 
 export function formatConnectorName(name: string, slug?: string): string {
