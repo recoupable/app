@@ -1,19 +1,35 @@
-const createClientCheckoutSession = async (accountId: string) => {
-  try {
-    const response = await fetch(`/api/stripe/session/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        accountId,
-        successUrl: `${window.location.href}`,
-      }),
-    });
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
-    const data = await response.json();
-    window.open(data.data.url, "__blank");
+const createClientCheckoutSession = async (
+  accessToken: string,
+  successUrl: string,
+) => {
+  try {
+    const response = await fetch(
+      `${getClientApiBaseUrl()}/api/subscriptions/sessions`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ successUrl }),
+      },
+    );
+
+    const data = (await response.json()) as {
+      id?: string;
+      url?: string;
+      error?: string;
+    };
+
+    if (!response.ok || typeof data.url !== "string") {
+      throw new Error(data.error || "Failed to create checkout session");
+    }
+
+    window.open(data.url, "_blank", "noopener,noreferrer");
   } catch (error) {
+    console.error("Error creating checkout session:", error);
     return { error };
   }
 };
