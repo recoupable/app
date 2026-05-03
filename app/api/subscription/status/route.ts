@@ -40,15 +40,15 @@ export async function GET(req: NextRequest): Promise<Response> {
       cache: "no-store",
     });
     body = await upstream.text();
-  } catch {
-    console.error("[subscription/status] upstream fetch failed");
+  } catch (error) {
+    console.error("[subscription/status] upstream fetch failed", error);
     return NextResponse.json({ error: "Bad gateway" }, { status: 502 });
   }
 
   const contentType =
     upstream.headers.get("content-type") ?? "application/json";
 
-  return new NextResponse(body, {
+  return new NextResponse([204, 304].includes(upstream.status) ? null : body, {
     status: upstream.status,
     headers: { "Content-Type": contentType },
   });
