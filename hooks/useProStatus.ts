@@ -1,24 +1,26 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
+import { NEW_API_BASE_URL } from "@/lib/consts";
 import { useUserProvider } from "@/providers/UserProvder";
-import { ProStatusResponse } from "@/app/api/subscription/status/route";
+
+export interface ProStatusResponse {
+  isPro: boolean;
+}
 
 /**
- * Fetch pro status via chat BFF → Recoup API /api/subscriptions/status
+ * GET /api/subscriptions/status on Recoup API (requires Privy bearer).
  */
 const fetchProStatus = async (
   accountId: string,
   accessToken: string,
 ): Promise<ProStatusResponse> => {
-  const params = new URLSearchParams({ accountId });
-  const response = await fetch(
-    `/api/subscription/status?${params.toString()}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+  const url = new URL("/api/subscriptions/status", NEW_API_BASE_URL);
+  url.searchParams.set("accountId", accountId);
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
-  );
+  });
   if (!response.ok) {
     throw new Error(`Error: ${response.status}`);
   }
