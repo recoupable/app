@@ -31,13 +31,20 @@ export async function GET(req: NextRequest): Promise<Response> {
     upstreamHeaders.set("x-api-key", apiKey);
   }
 
-  const upstream = await fetch(upstreamUrl, {
-    method: "GET",
-    headers: upstreamHeaders,
-    cache: "no-store",
-  });
+  let upstream: Response;
+  let body: string;
+  try {
+    upstream = await fetch(upstreamUrl, {
+      method: "GET",
+      headers: upstreamHeaders,
+      cache: "no-store",
+    });
+    body = await upstream.text();
+  } catch {
+    console.error("[subscription/status] upstream fetch failed");
+    return NextResponse.json({ error: "Bad gateway" }, { status: 502 });
+  }
 
-  const body = await upstream.text();
   const contentType =
     upstream.headers.get("content-type") ?? "application/json";
 
