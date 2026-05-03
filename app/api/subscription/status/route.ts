@@ -1,40 +1,50 @@
-import { NextRequest } from "next/server";
-import { getActiveSubscriptionDetails } from "@/lib/stripe/getActiveSubscriptionDetails";
-import { getOrgSubscription } from "@/lib/stripe/getOrgSubscription";
-import isActiveSubscription from "@/lib/stripe/isActiveSubscription";
+import { NextRequest, NextResponse } from "next/server";
+import { NEW_API_BASE_URL } from "@/lib/consts";
 
 export interface ProStatusResponse {
   isPro: boolean;
 }
 
 /**
- * GET /api/subscription/status?accountId=xxx
- * Returns whether the account has pro status (via account or org subscription)
+ * GET /api/subscription/status?accountId=...
+ * Proxies to Recoup API GET /api/subscriptions/status with the same query and auth headers.
  */
 export async function GET(req: NextRequest): Promise<Response> {
   const accountId = req.nextUrl.searchParams.get("accountId");
-
-  if (!accountId) {
-    return Response.json({ message: "accountId is required" }, { status: 400 });
+  if (accountId === null || accountId === "") {
+    return NextResponse.json(
+      { error: "accountId is required" },
+      { status: 400 },
+    );
   }
 
-  try {
-    // Check all pro sources in parallel (account subscription or org subscription)
-    const [accountSubscription, orgSubscription] = await Promise.all([
-      getActiveSubscriptionDetails(accountId),
-      getOrgSubscription(accountId),
-    ]);
+  const upstreamUrl = new URL(`${NEW_API_BASE_URL}/api/subscriptions/status`);
+  upstreamUrl.searchParams.set("accountId", accountId);
 
-    const isPro =
-      isActiveSubscription(accountSubscription) ||
-      isActiveSubscription(orgSubscription);
-
-    return Response.json({ isPro }, { status: 200 });
-  } catch (error) {
-    console.error("[Pro Status] Error:", error);
-    const message = error instanceof Error ? error.message : "failed";
-    return Response.json({ message }, { status: 400 });
+  const authorization = req.headers.get("authorization");
+  const apiKey = req.headers.get("x-api-key");
+  const upstreamHeaders = new Headers();
+  if (authorization) {
+    upstreamHeaders.set("authorization", authorization);
   }
+  if (apiKey) {
+    upstreamHeaders.set("x-api-key", apiKey);
+  }
+
+  const upstream = await fetch(upstreamUrl, {
+    method: "GET",
+    headers: upstreamHeaders,
+    cache: "no-store",
+  });
+
+  const body = await upstream.text();
+  const contentType =
+    upstream.headers.get("content-type") ?? "application/json";
+
+  return new NextResponse(body, {
+    status: upstream.status,
+    headers: { "Content-Type": contentType },
+  });
 }
 
 export const dynamic = "force-dynamic";
