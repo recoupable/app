@@ -12,17 +12,25 @@ const useSubscribeClick = () => {
 
   const handleClick = async () => {
     if (isSubscribed) {
-      const accessToken = await getAccessToken();
-      if (!accessToken) {
-        toast.error("Sign in to manage your subscription.");
-        return;
-      }
-      const result = await createClientPortalSession(accessToken);
-      if (result?.error) {
+      try {
+        const accessToken = await getAccessToken();
+        if (!accessToken) {
+          toast.error("Sign in to manage your subscription.");
+          return;
+        }
+        const result = await createClientPortalSession(accessToken);
+        if (result?.error) {
+          const message =
+            result.error instanceof Error
+              ? result.error.message
+              : "Could not open the billing portal.";
+          toast.error(message);
+        }
+      } catch (error) {
         const message =
-          result.error instanceof Error
-            ? result.error.message
-            : "Could not open the billing portal.";
+          error instanceof Error
+            ? error.message
+            : "Could not verify your session. Try signing in again.";
         toast.error(message);
       }
       return;

@@ -42,7 +42,11 @@ const createClientPortalSession = async (accessToken: string) => {
       throw new Error("Invalid portal response");
     }
 
-    window.open((data as { url: string }).url, "_blank");
+    window.open(
+      (data as { url: string }).url,
+      "_blank",
+      "noopener,noreferrer",
+    );
   } catch (error) {
     console.error("Error creating portal session:", error);
     return { error };
