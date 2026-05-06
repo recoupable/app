@@ -10,13 +10,13 @@ interface DeleteScheduledActionParams {
   successMessage?: string;
 }
 
-/** Internal sentinel when delete runs without a session; UI must hide delete until authenticated. */
-const UNAUTHENTICATED_DELETE_ATTEMPT = "UNAUTHENTICATED_DELETE_ATTEMPT";
+/** Internal sentinel when no bearer token is available (caller must not treat delete as success). */
+const DELETE_WITHOUT_ACCESS_TOKEN = "DELETE_WITHOUT_ACCESS_TOKEN";
 
 export const useDeleteScheduledAction = () => {
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
-  const { getAccessToken, authenticated } = usePrivy();
+  const { getAccessToken } = usePrivy();
 
   const deleteAction = async ({
     actionId,
@@ -25,13 +25,9 @@ export const useDeleteScheduledAction = () => {
   }: DeleteScheduledActionParams) => {
     setIsLoading(true);
     try {
-      if (!authenticated) {
-        throw new Error(UNAUTHENTICATED_DELETE_ATTEMPT);
-      }
-
       const accessToken = await getAccessToken();
       if (!accessToken) {
-        throw new Error(UNAUTHENTICATED_DELETE_ATTEMPT);
+        throw new Error(DELETE_WITHOUT_ACCESS_TOKEN);
       }
 
       await deleteTask(accessToken, { id: actionId });
@@ -42,7 +38,7 @@ export const useDeleteScheduledAction = () => {
     } catch (error) {
       if (
         error instanceof Error &&
-        error.message === UNAUTHENTICATED_DELETE_ATTEMPT
+        error.message === DELETE_WITHOUT_ACCESS_TOKEN
       ) {
         throw error;
       }

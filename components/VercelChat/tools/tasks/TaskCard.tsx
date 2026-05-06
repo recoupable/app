@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
 import { Edit, Repeat, MoreHorizontal, Pause, Trash2 } from "lucide-react";
 import { Tables } from "@/types/database.types";
 import { cn } from "@/lib/utils";
@@ -25,7 +24,6 @@ export interface TaskCardProps {
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, isDeleted, ownerEmail }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { authenticated } = usePrivy();
   const { updateAction, isLoading: isUpdating } = useUpdateScheduledAction();
   const { deleteAction, isLoading: isDeleting } = useDeleteScheduledAction();
   const isActive = task.enabled && !isDeleted;
@@ -109,16 +107,14 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, isDeleted, ownerEmail }) => {
                 <Pause className="h-4 w-4" />
                 <span>{isUpdating ? "Pausing..." : "Pause"}</span>
               </DropdownMenuItem>
-              {authenticated && (
-                <DropdownMenuItem
-                  className="flex items-center gap-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
-                  onClick={handleDelete}
-                  disabled={isUpdating || isDeleting}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span>{isDeleting ? "Deleting..." : "Delete"}</span>
-                </DropdownMenuItem>
-              )}
+              <DropdownMenuItem
+                className="flex items-center gap-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                onClick={handleDelete}
+                disabled={isUpdating || isDeleting}
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>{isDeleting ? "Deleting..." : "Delete"}</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           {isActive && (
