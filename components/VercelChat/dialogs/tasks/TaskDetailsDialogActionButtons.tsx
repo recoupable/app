@@ -5,7 +5,7 @@ import { Pause, Trash2 } from "lucide-react";
 import { useUpdateScheduledAction } from "@/hooks/useUpdateScheduledAction";
 import { useDeleteScheduledAction } from "@/hooks/useDeleteScheduledAction";
 
-export interface TaskDetailsDialogActionButtonsProps {
+interface TaskDetailsDialogActionButtonsProps {
   taskId: string;
   editTitle: string;
   editPrompt: string;
@@ -36,9 +36,13 @@ const TaskDetailsDialogActionButtons: React.FC<
 
   const handlePause = async () => {
     if (!canEdit) return;
+
     try {
       await updateAction({
-        updates: { id: taskId, enabled: !isEnabled },
+        updates: {
+          id: taskId,
+          enabled: !isEnabled,
+        },
         successMessage: isEnabled ? "Task paused" : "Task activated",
       });
     } catch (error) {
@@ -48,10 +52,13 @@ const TaskDetailsDialogActionButtons: React.FC<
 
   const handleDelete = async () => {
     if (!canEdit) return;
+
     try {
       await deleteAction({
         actionId: taskId,
-        onSuccess: () => onDeleteSuccess(),
+        onSuccess: () => {
+          onDeleteSuccess();
+        },
       });
     } catch (error) {
       console.error("Failed to delete task:", error);
@@ -60,23 +67,26 @@ const TaskDetailsDialogActionButtons: React.FC<
 
   const handleSave = async () => {
     if (!canEdit) return;
+
     try {
+      const cronExpression = editCron.trim();
       await updateAction({
         updates: {
           id: taskId,
           title: editTitle,
           prompt: editPrompt,
-          schedule: editCron.trim(),
+          schedule: cronExpression,
           model: editModel,
         },
-        onSuccess: () => onSaveSuccess(),
+        onSuccess: () => {
+          onSaveSuccess();
+        },
         successMessage: "Task updated successfully",
       });
     } catch (error) {
       console.error("Failed to save task:", error);
     }
   };
-
   return (
     <div className="flex gap-2 mt-4 pt-4 border-t border-border justify-between shrink-0">
       <div className="flex gap-2">
@@ -93,14 +103,18 @@ const TaskDetailsDialogActionButtons: React.FC<
           variant="outline"
           onClick={handleDelete}
           className="border-red-200 text-red-600 hover:bg-red-50"
-          disabled={isLoading || !canEdit}
+          disabled={isLoading}
           size="sm"
         >
           <Trash2 className="h-4 w-4 mr-2" />
           Delete
         </Button>
       </div>
-      <Button onClick={handleSave} disabled={isLoading} size="sm">
+      <Button
+        onClick={handleSave}
+        disabled={isLoading}
+        size="sm"
+      >
         {isLoading ? "Saving..." : "Save"}
       </Button>
     </div>
