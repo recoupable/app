@@ -8,14 +8,13 @@ export interface ProStatusResponse {
 }
 
 /**
- * GET /api/subscriptions/status on Recoup API (requires Privy bearer).
+ * GET /api/accounts/{id}/subscription on Recoup API (requires Privy bearer).
  */
 const fetchProStatus = async (
   accountId: string,
   accessToken: string,
 ): Promise<ProStatusResponse> => {
-  const url = new URL("/api/subscriptions/status", NEW_API_BASE_URL);
-  url.searchParams.set("accountId", accountId);
+  const url = new URL(`/api/accounts/${accountId}/subscription`, NEW_API_BASE_URL);
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
