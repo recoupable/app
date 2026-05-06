@@ -10,8 +10,12 @@ interface DeleteScheduledActionParams {
   successMessage?: string;
 }
 
-/** Internal sentinel when no bearer token is available (caller must not treat delete as success). */
-const DELETE_WITHOUT_ACCESS_TOKEN = "DELETE_WITHOUT_ACCESS_TOKEN";
+class DeleteWithoutAccessTokenError extends Error {
+  constructor() {
+    super();
+    this.name = "DeleteWithoutAccessTokenError";
+  }
+}
 
 export const useDeleteScheduledAction = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +31,7 @@ export const useDeleteScheduledAction = () => {
     try {
       const accessToken = await getAccessToken();
       if (!accessToken) {
-        throw new Error(DELETE_WITHOUT_ACCESS_TOKEN);
+        throw new DeleteWithoutAccessTokenError();
       }
 
       await deleteTask(accessToken, { id: actionId });
@@ -36,10 +40,7 @@ export const useDeleteScheduledAction = () => {
       toast.success(successMessage);
       return;
     } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message === DELETE_WITHOUT_ACCESS_TOKEN
-      ) {
+      if (error instanceof DeleteWithoutAccessTokenError) {
         throw error;
       }
       console.error("Failed to delete scheduled action:", error);
