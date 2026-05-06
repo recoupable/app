@@ -10,13 +10,6 @@ interface DeleteScheduledActionParams {
   successMessage?: string;
 }
 
-class DeleteWithoutAccessTokenError extends Error {
-  constructor() {
-    super();
-    this.name = "DeleteWithoutAccessTokenError";
-  }
-}
-
 export const useDeleteScheduledAction = () => {
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
@@ -29,20 +22,12 @@ export const useDeleteScheduledAction = () => {
   }: DeleteScheduledActionParams) => {
     setIsLoading(true);
     try {
-      const accessToken = await getAccessToken();
-      if (!accessToken) {
-        throw new DeleteWithoutAccessTokenError();
-      }
-
-      await deleteTask(accessToken, { id: actionId });
+      await deleteTask(await getAccessToken(), { id: actionId });
 
       onSuccess?.();
       toast.success(successMessage);
       return;
     } catch (error) {
-      if (error instanceof DeleteWithoutAccessTokenError) {
-        throw error;
-      }
       console.error("Failed to delete scheduled action:", error);
       toast.error("Failed to delete. Please try again.");
       throw error;

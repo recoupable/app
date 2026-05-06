@@ -11,16 +11,18 @@ interface DeleteTaskResponse {
 
 /**
  * Deletes a task via the Recoup API.
+ * Missing or empty token still issues a request; the API enforces auth.
  * @see https://docs.recoupable.com/tasks/delete
  */
 export async function deleteTask(
-  accessToken: string,
+  accessToken: string | null | undefined,
   params: DeleteTaskParams,
 ): Promise<void> {
+  const token = accessToken ?? "";
   const response = await fetch(`${getClientApiBaseUrl()}/api/tasks`, {
     method: "DELETE",
     headers: {
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({

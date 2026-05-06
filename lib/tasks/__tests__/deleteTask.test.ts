@@ -37,4 +37,23 @@ describe("deleteTask", () => {
     const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
     expect(JSON.parse(String(init.body))).toEqual({ id: "task-1" });
   });
+
+  it("sends Authorization Bearer with empty token when accessToken is null", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      text: vi.fn().mockResolvedValue("{}"),
+    }) as unknown as typeof fetch;
+
+    await expect(deleteTask(null, { id: "task-1" })).rejects.toThrow(/HTTP 401/);
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://api.recoupable.com/api/tasks",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: "Bearer ",
+        }),
+      }),
+    );
+  });
 });
