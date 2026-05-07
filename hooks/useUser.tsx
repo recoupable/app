@@ -2,7 +2,6 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Address } from "viem";
-import useTrackEmail from "./useTrackEmail";
 import { uploadFile } from "@/lib/arweave/uploadFile";
 import { useAccount } from "wagmi";
 import { toast } from "sonner";
@@ -16,7 +15,6 @@ const useUser = () => {
   const address = (user?.wallet?.address as Address) || wagmiAddress;
   const email = user?.email?.address;
   const [userData, setUserData] = useState<AccountWithDetails | null>(null);
-  const { trackId } = useTrackEmail();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [instruction, setInstruction] = useState("");
   const [name, setName] = useState("");
@@ -33,7 +31,7 @@ const useUser = () => {
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
   const handleImageSelected = async (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setImageUploading(true);
     const file = e.target.files?.[0];
@@ -141,7 +139,6 @@ const useUser = () => {
     login,
     isPrepared,
     userData,
-    trackId,
     setIsModalOpen,
     isModalOpen,
     instruction,

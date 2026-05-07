@@ -15,18 +15,13 @@ import { toast } from "sonner";
  * 3. Cleans up the URL params
  * 4. Shows a success toast
  *
- * Follows the same pattern as ConnectorsPage (searchParams + history.replaceState)
- * and useYouTubeLoginSuccess (query param detection → UI trigger).
+ * Follows the same pattern as ConnectorsPage (searchParams + history.replaceState).
  *
  * @returns The default tab to show in Settings ("connectors" if callback detected, otherwise "general")
  */
 export function useArtistConnectorCallback(): string {
   const searchParams = useSearchParams();
-  const {
-    artists,
-    toggleUpdate,
-    setIsOpenSettingModal,
-  } = useArtistProvider();
+  const { artists, toggleUpdate, setIsOpenSettingModal } = useArtistProvider();
   const [defaultTab, setDefaultTab] = useState("general");
 
   useEffect(() => {
