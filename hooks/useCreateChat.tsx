@@ -4,7 +4,6 @@ import {
   CreateChatRequest,
   CreateChatResponse,
 } from "@/types/Chat";
-import type { ArtistAgent } from "@/lib/supabase/getArtistAgents";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useConversationsProvider } from "@/providers/ConversationsProvider";
 import { usePrivy } from "@privy-io/react-auth";
@@ -16,7 +15,7 @@ const useCreateChat = ({
   setDisplayName,
 }: {
   isOptimisticChatItem: boolean;
-  chatRoom: Conversation | ArtistAgent;
+  chatRoom: Conversation;
   setDisplayName: (displayName: string) => void;
 }) => {
   const { selectedArtist } = useArtistProvider();
@@ -32,7 +31,7 @@ const useCreateChat = ({
         if (!accessToken) return;
 
         // Extract first message from optimistic memories
-        const firstMessage = (chatRoom as Conversation).memories?.find(
+        const firstMessage = chatRoom.memories?.find(
           (memory) => {
             const content = memory?.content as {
               optimistic?: boolean;
@@ -65,7 +64,7 @@ const useCreateChat = ({
 
         const requestBody: CreateChatRequest = {
           artistId: selectedArtist?.account_id,
-          chatId: (chatRoom as Conversation).id,
+          chatId: chatRoom.id,
           firstMessage: messageText,
         };
 

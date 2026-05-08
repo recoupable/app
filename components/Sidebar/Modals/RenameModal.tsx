@@ -1,12 +1,11 @@
 import Modal from "@/components/Modal";
 import type { Conversation } from "@/types/Chat";
-import type { ArtistAgent } from "@/lib/supabase/getArtistAgents";
 import { useRenameModal } from "@/hooks/useRenameModal";
 
 interface RenameModalProps {
   isOpen: boolean;
   onClose: () => void;
-  chatRoom: Conversation | ArtistAgent | null;
+  chatRoom: Conversation | null;
 }
 
 const RenameModal = ({
