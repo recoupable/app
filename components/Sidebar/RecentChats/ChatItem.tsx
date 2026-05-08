@@ -1,13 +1,12 @@
 import { useState, useEffect, type RefObject, type MouseEvent } from "react";
 import { MoreHorizontal, Pencil, Trash2, Check } from "lucide-react";
 import type { Conversation } from "@/types/Chat";
-import type { ArtistAgent } from "@/lib/supabase/getArtistAgents";
 import { cn } from "@/lib/utils";
 import useCreateChat from "@/hooks/useCreateChat";
 import { getChatDisplayInfo } from "@/lib/chat/getChatDisplayInfo";
 
 type ChatItemProps = {
-  chatRoom: Conversation | ArtistAgent;
+  chatRoom: Conversation;
   isMobile: boolean;
   isHovered: boolean;
   isMenuOpen: boolean;
@@ -54,9 +53,8 @@ const ChatItem = ({
 
   const showOptions = isMobile || isHovered || isActive;
   const isOptimisticChatItem =
-    "id" in chatRoom &&
-    Array.isArray((chatRoom as Conversation).memories) &&
-    (chatRoom as Conversation).memories.some((memory) => {
+    Array.isArray(chatRoom.memories) &&
+    chatRoom.memories.some((memory) => {
       const content = memory?.content as unknown;
       if (!content || typeof content !== "object") {
         return false;

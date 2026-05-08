@@ -1,21 +1,15 @@
 import { useState, useEffect } from "react";
 import Modal from "@/components/Modal";
 import type { Conversation } from "@/types/Chat";
-import type { ArtistAgent } from "@/lib/supabase/getArtistAgents";
 import { useDeleteChat } from "@/hooks/useDeleteChat";
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  chatRoom: Conversation | ArtistAgent | null;
-  chatRooms?: Array<Conversation | ArtistAgent>;
+  chatRoom: Conversation | null;
+  chatRooms?: Conversation[];
   onDelete: () => void;
 }
-
-// Helper functions for type handling and data extraction
-const isChatRoom = (item: Conversation | ArtistAgent): item is Conversation => 'id' in item;
-const getChatName = (item: Conversation | ArtistAgent): string => isChatRoom(item) ? item.topic : item.type;
-const getChatId = (item: Conversation | ArtistAgent): string => isChatRoom(item) ? item.id : item.agentId;
 
 const DeleteConfirmationModal = ({ isOpen, onClose, chatRoom, chatRooms, onDelete }: DeleteConfirmationModalProps) => {
   const [error, setError] = useState("");
@@ -41,7 +35,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, chatRoom, chatRooms, onDelet
 
   const chatCount = chatsToDelete.length;
   const isSingleDelete = chatCount === 1;
-  const chatName = isSingleDelete ? getChatName(chatsToDelete[0]) : `${chatCount} chats`;
+  const chatName = isSingleDelete ? (chatsToDelete[0].topic || "Chat") : `${chatCount} chats`;
   const buttonText = isDeleting
     ? (deletingProgress ? `Deleting ${deletingProgress.current}/${deletingProgress.total}...` : 'Deleting...')
     : 'Delete';
@@ -58,10 +52,10 @@ const DeleteConfirmationModal = ({ isOpen, onClose, chatRoom, chatRooms, onDelet
         setDeletingProgress({ current: i + 1, total: chatCount });
 
         try {
-          await deleteChat(getChatId(chat));
+          await deleteChat(chat.id);
         } catch (chatError) {
-          console.error(`Error deleting chat ${getChatName(chat)}:`, chatError);
-          failedChats.push(getChatName(chat));
+          console.error(`Error deleting chat ${chat.topic || "Chat"}:`, chatError);
+          failedChats.push(chat.topic || "Chat");
         }
       }
 
