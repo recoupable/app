@@ -5,7 +5,6 @@ import { useConversationsProvider } from "@/providers/ConversationsProvider";
 import { useMobileDetection } from "@/hooks/useMobileDetection";
 import { useOutsideClick } from "@/hooks/useOutsideClick";
 import type { Conversation } from "@/types/Chat";
-import type { ArtistAgent } from "@/lib/supabase/getArtistAgents";
 import { getChatRoomId } from "@/lib/chat/getChatRoomId";
 
 interface UseRecentChatsParams {
@@ -22,11 +21,7 @@ export const useRecentChats = ({ toggleModal }: UseRecentChatsParams) => {
   const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [activeChatId, setActiveChatId] = useState<string | null>(
-    typeof params?.roomId === "string"
-      ? params.roomId
-      : typeof params?.agentId === "string"
-        ? params.agentId
-        : null
+    typeof params?.roomId === "string" ? params.roomId : null
   );
 
   useEffect(() => {
@@ -39,9 +34,7 @@ export const useRecentChats = ({ toggleModal }: UseRecentChatsParams) => {
       }
 
       const roomId = typeof params?.roomId === "string" ? params.roomId : null;
-      const agentId =
-        typeof params?.agentId === "string" ? params.agentId : null;
-      setActiveChatId(roomId || agentId || null);
+      setActiveChatId(roomId || null);
     };
 
     updateActiveChatId();
@@ -49,8 +42,8 @@ export const useRecentChats = ({ toggleModal }: UseRecentChatsParams) => {
 
   const [modalState, setModalState] = useState<{
     type: "rename" | "delete" | null;
-    chatRoom: Conversation | ArtistAgent | null;
-    chatRooms?: Array<Conversation | ArtistAgent>;
+    chatRoom: Conversation | null;
+    chatRooms?: Conversation[];
   }>({ type: null, chatRoom: null });
 
   const [selectedChatIds, setSelectedChatIds] = useState<Set<string>>(
@@ -93,7 +86,7 @@ export const useRecentChats = ({ toggleModal }: UseRecentChatsParams) => {
 
   const openModal = (
     type: "rename" | "delete",
-    chatRoom: Conversation | ArtistAgent
+    chatRoom: Conversation
   ) => {
     setModalState({ type, chatRoom });
     setOpenMenuId(null);
@@ -164,7 +157,7 @@ export const useRecentChats = ({ toggleModal }: UseRecentChatsParams) => {
 
   const clearSelection = () => setSelectedChatIds(new Set());
 
-  const handleChatClick = (chatRoom: Conversation | ArtistAgent) => {
+  const handleChatClick = (chatRoom: Conversation) => {
     handleClick(chatRoom, toggleModal);
   };
 

@@ -1,17 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import type { Conversation } from "@/types/Chat";
-import type { ArtistAgent } from "@/lib/supabase/getArtistAgents";
 import { usePrivy } from "@privy-io/react-auth";
 import { updateChat } from "@/lib/chats/updateChat";
 import { useConversationsProvider } from "@/providers/ConversationsProvider";
-
-type ChatItem = Conversation | ArtistAgent;
-
-const isChatRoom = (item: ChatItem): item is Conversation => "id" in item;
-const getChatName = (item: ChatItem): string =>
-  isChatRoom(item) ? item.topic : item.type;
-const getChatId = (item: ChatItem): string =>
-  isChatRoom(item) ? item.id : item.agentId;
 
 const validateName = (value: string): string => {
   const trimmed = value.trim();
@@ -26,7 +17,7 @@ const validateName = (value: string): string => {
 
 type UseRenameModalParams = {
   isOpen: boolean;
-  chatRoom: ChatItem | null;
+  chatRoom: Conversation | null;
   onClose: () => void;
 };
 
@@ -46,7 +37,7 @@ export function useRenameModal({
   // Reset form when modal opens
   useEffect(() => {
     if (isOpen && chatRoom) {
-      setName(getChatName(chatRoom));
+      setName(chatRoom.topic);
       setError("");
       setTouched(false);
       setIsSubmitting(false);
@@ -99,7 +90,7 @@ export function useRenameModal({
       setIsSubmitting(true);
 
       try {
-        const chatId = getChatId(chatRoom);
+        const chatId = chatRoom.id;
         await updateChat({
           accessToken,
           chatId,
