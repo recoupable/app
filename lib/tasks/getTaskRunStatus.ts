@@ -18,20 +18,29 @@ export interface TaskRunStatus {
   durationMs: number | null;
 }
 
+interface GetTaskRunStatusOptions {
+  accountIdOverride?: string;
+}
+
 /**
  * Fetches the current status of a Trigger.dev task run from the Recoup API.
  */
 export async function getTaskRunStatus(
   runId: string,
-  accessToken: string,
+  accessToken: string | null | undefined,
+  options: GetTaskRunStatusOptions = {},
 ): Promise<TaskRunStatus> {
+  const token = accessToken ?? "";
   const url = new URL(`${TASKS_API_URL}/runs`);
   url.searchParams.set("runId", runId);
+  if (options.accountIdOverride) {
+    url.searchParams.set("account_id", options.accountIdOverride);
+  }
 
   const response = await fetch(url.toString(), {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${token}`,
     },
   });
 
