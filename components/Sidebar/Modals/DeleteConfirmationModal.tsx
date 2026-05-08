@@ -35,7 +35,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, chatRoom, chatRooms, onDelet
 
   const chatCount = chatsToDelete.length;
   const isSingleDelete = chatCount === 1;
-  const chatName = isSingleDelete ? chatsToDelete[0].topic : `${chatCount} chats`;
+  const chatName = isSingleDelete ? (chatsToDelete[0].topic || "Chat") : `${chatCount} chats`;
   const buttonText = isDeleting
     ? (deletingProgress ? `Deleting ${deletingProgress.current}/${deletingProgress.total}...` : 'Deleting...')
     : 'Delete';
@@ -54,8 +54,8 @@ const DeleteConfirmationModal = ({ isOpen, onClose, chatRoom, chatRooms, onDelet
         try {
           await deleteChat(chat.id);
         } catch (chatError) {
-          console.error(`Error deleting chat ${chat.topic}:`, chatError);
-          failedChats.push(chat.topic);
+          console.error(`Error deleting chat ${chat.topic || "Chat"}:`, chatError);
+          failedChats.push(chat.topic || "Chat");
         }
       }
 
