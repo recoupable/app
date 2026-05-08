@@ -40,7 +40,11 @@ const useSubscribeClick = () => {
       toast.error("Account is still loading. Try again in a moment.");
       return;
     }
-    createClientCheckoutSession(userData.account_id);
+
+    const accessToken = await getAccessToken();
+    if (!accessToken) return;
+
+    await createClientCheckoutSession(accessToken);
   };
 
   return {

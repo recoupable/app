@@ -1,18 +1,31 @@
-const createClientCheckoutSession = async (accountId: string) => {
-  try {
-    const response = await fetch(`/api/stripe/session/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        accountId,
-        successUrl: `${window.location.href}`,
-      }),
-    });
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
-    const data = await response.json();
-    window.open(data.data.url, "__blank");
+const createClientCheckoutSession = async (accessToken: string) => {
+  try {
+    const response = await fetch(
+      `${getClientApiBaseUrl()}/api/subscriptions/sessions`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          successUrl: window.location.href,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      return { error: new Error(`HTTP ${response.status}`) };
+    }
+
+    const data: { url?: string } = await response.json();
+    if (!data.url) {
+      return { error: new Error("Checkout URL missing") };
+    }
+
+    window.open(data.url, "_blank", "noopener,noreferrer");
   } catch (error) {
     return { error };
   }
