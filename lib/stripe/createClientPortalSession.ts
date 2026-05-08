@@ -1,9 +1,5 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
-/**
- * Creates a Stripe billing portal session via POST /api/subscriptions/portal.
- * Account is implied by the Bearer token (see API docs).
- */
 const createClientPortalSession = async (accessToken: string) => {
   try {
     const response = await fetch(
@@ -20,35 +16,17 @@ const createClientPortalSession = async (accessToken: string) => {
       },
     );
 
-    const data: unknown = await response.json();
-
     if (!response.ok) {
-      const message =
-        typeof data === "object" &&
-        data !== null &&
-        "error" in data &&
-        typeof (data as { error: unknown }).error === "string"
-          ? (data as { error: string }).error
-          : "Failed to create portal session";
-      throw new Error(message);
+      return { error: new Error(`HTTP ${response.status}`) };
     }
 
-    if (
-      typeof data !== "object" ||
-      data === null ||
-      !("url" in data) ||
-      typeof (data as { url: unknown }).url !== "string"
-    ) {
-      throw new Error("Invalid portal response");
+    const data: { url?: string } = await response.json();
+    if (!data.url) {
+      return { error: new Error("Portal URL missing") };
     }
 
-    window.open(
-      (data as { url: string }).url,
-      "_blank",
-      "noopener,noreferrer",
-    );
+    window.open(data.url, "_blank", "noopener,noreferrer");
   } catch (error) {
-    console.error("Error creating portal session:", error);
     return { error };
   }
 };

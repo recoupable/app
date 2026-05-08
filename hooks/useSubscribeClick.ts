@@ -1,5 +1,4 @@
 import { usePrivy } from "@privy-io/react-auth";
-import { toast } from "sonner";
 import { useUserProvider } from "@/providers/UserProvder";
 import { usePaymentProvider } from "@/providers/PaymentProvider";
 import createClientPortalSession from "@/lib/stripe/createClientPortalSession";
@@ -11,38 +10,15 @@ const useSubscribeClick = () => {
   const { isSubscribed } = usePaymentProvider();
 
   const handleClick = async () => {
-    if (isSubscribed) {
-      try {
-        const accessToken = await getAccessToken();
-        if (!accessToken) {
-          toast.error("Sign in to manage your subscription.");
-          return;
-        }
-        const result = await createClientPortalSession(accessToken);
-        if (result?.error) {
-          const message =
-            result.error instanceof Error
-              ? result.error.message
-              : "Could not open the billing portal.";
-          toast.error(message);
-        }
-      } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Could not verify your session. Try signing in again.";
-        toast.error(message);
-      }
-      return;
-    }
-
-    if (!userData?.account_id) {
-      toast.error("Account is still loading. Try again in a moment.");
-      return;
-    }
+    if (!userData?.account_id) return;
 
     const accessToken = await getAccessToken();
     if (!accessToken) return;
+
+    if (isSubscribed) {
+      await createClientPortalSession(accessToken);
+      return;
+    }
 
     await createClientCheckoutSession(accessToken);
   };
