@@ -22,8 +22,8 @@ export type AgentTemplateRow = {
   created_at: string | null;
   favorites_count: number | null;
   updated_at: string | null;
-  // computed for requesting user
-  is_favourite?: boolean;
+  /** Recoup API sets this per authenticated caller. */
+  is_favourite: boolean;
   // emails the template is shared with (only for private templates)
   shared_emails?: string[];
 };

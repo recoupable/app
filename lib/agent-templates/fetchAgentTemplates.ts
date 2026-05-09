@@ -1,10 +1,15 @@
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import type { AgentTemplateRow } from "@/types/AgentTemplates";
-import type { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
 
 const fetchAgentTemplates = async (
-  userData: AccountWithDetails
+  accessToken: string,
 ): Promise<AgentTemplateRow[]> => {
-  const res = await fetch(`/api/agent-templates?userId=${userData?.id}`);
+  const url = `${getClientApiBaseUrl().replace(/\/+$/, "")}/api/agent-templates`;
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
   if (!res.ok) throw new Error("Failed to fetch agent templates");
   return (await res.json()) as AgentTemplateRow[];
 };

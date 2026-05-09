@@ -1,43 +1,12 @@
 import { NextResponse } from "next/server";
-// Supabase client is used in utilities imported below; no direct use here
-import { getUserAccessibleTemplates } from "@/lib/supabase/agent_templates/getUserAccessibleTemplates";
 import { createAgentTemplate } from "@/lib/supabase/agent_templates/createAgentTemplate";
 import { updateAgentTemplate } from "@/lib/supabase/agent_templates/updateAgentTemplate";
 import { deleteAgentTemplate } from "@/lib/supabase/agent_templates/deleteAgentTemplate";
 import { verifyAgentTemplateOwner } from "@/lib/supabase/agent_templates/verifyAgentTemplateOwner";
-import { getSharedEmailsForTemplates } from "@/lib/supabase/agent_templates/getSharedEmailsForTemplates";
 
 export const runtime = "edge";
 
-export async function GET(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-
-    const templates = await getUserAccessibleTemplates(userId ?? undefined);
-
-    // Get shared emails for private templates
-    const privateTemplateIds = templates
-      .filter(template => template.is_private)
-      .map(template => template.id);
-
-    let sharedEmails: Record<string, string[]> = {};
-    if (privateTemplateIds.length > 0) {
-      sharedEmails = await getSharedEmailsForTemplates(privateTemplateIds);
-    }
-
-    // Add shared emails to templates
-    const templatesWithEmails = templates.map(template => ({
-      ...template,
-      shared_emails: template.is_private ? (sharedEmails[template.id] || []) : []
-    }));
-
-    return NextResponse.json(templatesWithEmails);
-  } catch (error) {
-    console.error('Error fetching agent templates:', error);
-    return NextResponse.json({ error: 'Failed to fetch templates' }, { status: 500 });
-  }
-}
+/** Listing is served by Recoup API (`GET /api/agent-templates`); Chat keeps create/update/delete here. */
 
 export async function POST(request: Request) {
   try {

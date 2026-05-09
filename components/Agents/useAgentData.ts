@@ -1,13 +1,13 @@
-import { useUserProvider } from "@/providers/UserProvder";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { AgentTemplateRow } from "@/types/AgentTemplates";
+import { usePrivy } from "@privy-io/react-auth";
 import fetchAgentTemplates from "@/lib/agent-templates/fetchAgentTemplates";
+import type { AgentTemplateRow } from "@/types/AgentTemplates";
 
 export type Agent = AgentTemplateRow;
 
 export function useAgentData() {
-  const { userData } = useUserProvider();
+  const { authenticated, getAccessToken } = usePrivy();
   const queryClient = useQueryClient();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [selectedTag, setSelectedTag] = useState("Recommended");
@@ -17,9 +17,13 @@ export function useAgentData() {
 
   const { data, isPending } = useQuery<Agent[]>({
     queryKey: ["agent-templates"],
-    queryFn: () => fetchAgentTemplates(userData!),
+    queryFn: async () => {
+      const token = await getAccessToken();
+      if (!token) throw new Error("Missing access token");
+      return fetchAgentTemplates(token);
+    },
     retry: 1,
-    enabled: !!userData?.id,
+    enabled: authenticated,
   });
 
   useEffect(() => {
@@ -38,8 +42,8 @@ export function useAgentData() {
       new Set(
         data
           .flatMap((agent: Agent) => agent.tags || [])
-          .filter((tag: string) => !!tag && !actionTags.includes(tag))
-      )
+          .filter((tag: string) => !!tag && !actionTags.includes(tag)),
+      ),
     );
     const allTags = ["Recommended", ...uniqueTags];
     setTags(Array.from(new Set(allTags)));
@@ -57,20 +61,21 @@ export function useAgentData() {
       (selectedTag === "Recommended"
         ? true
         : agent.tags?.includes(selectedTag)) &&
-      (isPrivate ? agent.is_private === true : agent.is_private !== true)
+      (isPrivate ? agent.is_private === true : agent.is_private !== true),
   );
   // Hide the "Audience Segmentation" card from UI - keep all other logic intact
   const gridAgents = filteredAgents;
 
   // Prefetch agent data for better performance on hover
-  const prefetchAgents = () => {
-    if (userData?.id) {
-      queryClient.prefetchQuery({
-        queryKey: ["agent-templates"],
-        queryFn: () => fetchAgentTemplates(userData),
-        staleTime: 5 * 60 * 1000, // 5 minutes
-      });
-    }
+  const prefetchAgents = async () => {
+    if (!authenticated) return;
+    const token = await getAccessToken();
+    if (!token) return;
+    queryClient.prefetchQuery({
+      queryKey: ["agent-templates"],
+      queryFn: () => fetchAgentTemplates(token),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    });
   };
 
   return {
