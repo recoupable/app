@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
-import getCredits from "@/lib/supabase/getCredits";
+import getCredits from "@/lib/credits/getCredits";
 import { useUserProvider } from "@/providers/UserProvder";
 import { Tables } from "@/types/database.types";
 
