@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
 import { fetchConnectorsApi } from "@/lib/composio/api/fetchConnectorsApi";
 import { authorizeConnectorApi } from "@/lib/composio/api/authorizeConnectorApi";
@@ -21,6 +22,7 @@ export interface ConnectorInfo {
  * Only these connectors will be shown on the settings page.
  */
 const ALLOWED_CONNECTORS = ["googlesheets", "googledrive", "googledocs"];
+const CONNECTORS_QUERY_KEY = "connectors";
 
 interface UseConnectorsConfig {
   accountId?: string;
@@ -29,8 +31,10 @@ interface UseConnectorsConfig {
 }
 
 /**
- * Hook for managing connectors.
- * Works for both user-level and artist-level connectors via optional config.
+ * Hook for managing connectors. Backed by React Query so every instance
+ * (account-level and per-artist) shares one cache — `disconnect` /
+ * `authorize` invalidate the keys, and sibling instances re-render with the
+ * fresh list automatically.
  */
 export function useConnectors(config?: UseConnectorsConfig) {
   const { accountId, allowedSlugs, callbackUrl } = config ?? {};
@@ -41,56 +45,43 @@ export function useConnectors(config?: UseConnectorsConfig) {
     [slugFilterKey],
   );
   const { getAccessToken } = usePrivy();
+  const queryClient = useQueryClient();
 
-  const [connectors, setConnectors] = useState<ConnectorInfo[]>([]);
-  const [isLoading, setIsLoading] = useState(!accountId);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: [CONNECTORS_QUERY_KEY, accountId ?? null],
+    enabled: accountId === undefined || Boolean(accountId),
+    queryFn: async () => {
+      const accessToken = await getAccessToken();
+      if (!accessToken) return [];
+      return fetchConnectorsApi(accessToken, accountId);
+    },
+  });
 
-  const fetchConnectors = useCallback(async () => {
-    if (accountId !== undefined && !accountId) {
-      setConnectors([]);
-      setIsLoading(false);
-      return;
-    }
+  const connectors = useMemo(() => {
+    const allowed = new Set(slugFilter);
+    return (query.data ?? []).filter((c) => allowed.has(c.slug.toLowerCase()));
+  }, [query.data, slugFilter]);
 
-    const accessToken = await getAccessToken();
-    if (!accessToken) {
-      setIsLoading(false);
-      return;
-    }
+  const refetch = useCallback(async () => {
+    await query.refetch();
+  }, [query]);
 
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const allConnectors = await fetchConnectorsApi(accessToken, accountId);
-      const allowed = new Set(slugFilter);
-      const visible = allConnectors.filter((c) =>
-        allowed.has(c.slug.toLowerCase()),
-      );
-      setConnectors(visible);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [getAccessToken, accountId, slugFilter]);
+  const invalidateAll = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: [CONNECTORS_QUERY_KEY] });
+  }, [queryClient]);
 
   const authorize = useCallback(
     async (connector: string): Promise<string | null> => {
       if (accountId !== undefined && !accountId) return null;
-
       const accessToken = await getAccessToken();
       if (!accessToken) return null;
-
       try {
         return await authorizeConnectorApi(accessToken, {
           connector,
           accountId,
           callbackUrl,
         });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
+      } catch {
         return null;
       }
     },
@@ -100,35 +91,28 @@ export function useConnectors(config?: UseConnectorsConfig) {
   const disconnect = useCallback(
     async (connectedAccountId: string): Promise<boolean> => {
       if (accountId !== undefined && !accountId) return false;
-
       const accessToken = await getAccessToken();
       if (!accessToken) return false;
-
       try {
         await disconnectConnectorApi(
           accessToken,
           connectedAccountId,
           accountId,
         );
-        await fetchConnectors();
+        invalidateAll();
         return true;
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
+      } catch {
         return false;
       }
     },
-    [getAccessToken, accountId, fetchConnectors],
+    [getAccessToken, accountId, invalidateAll],
   );
-
-  useEffect(() => {
-    fetchConnectors();
-  }, [fetchConnectors]);
 
   return {
     connectors,
-    isLoading,
-    error,
-    refetch: fetchConnectors,
+    isLoading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch,
     authorize,
     disconnect,
   };

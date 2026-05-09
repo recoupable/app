@@ -16,6 +16,7 @@ export const connectorMetadata: Record<string, ConnectorMeta> = {
   googledocs: { description: "Create and edit documents" },
   tiktok: { description: "Post and manage TikTok content" },
   instagram: { description: "Post and manage Instagram content" },
+  youtube: { description: "Post and manage YouTube content" },
 };
 
 /**

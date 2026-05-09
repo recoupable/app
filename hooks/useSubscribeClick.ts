@@ -1,20 +1,26 @@
+import { usePrivy } from "@privy-io/react-auth";
 import { useUserProvider } from "@/providers/UserProvder";
 import { usePaymentProvider } from "@/providers/PaymentProvider";
 import createClientPortalSession from "@/lib/stripe/createClientPortalSession";
 import createClientCheckoutSession from "@/lib/stripe/createClientCheckoutSession";
 
 const useSubscribeClick = () => {
+  const { getAccessToken } = usePrivy();
   const { userData } = useUserProvider();
   const { isSubscribed } = usePaymentProvider();
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (!userData?.account_id) return;
 
+    const accessToken = await getAccessToken();
+    if (!accessToken) return;
+
     if (isSubscribed) {
-      createClientPortalSession(userData.account_id);
+      await createClientPortalSession(accessToken);
       return;
     }
-    createClientCheckoutSession(userData.account_id);
+
+    await createClientCheckoutSession(accessToken);
   };
 
   return {
