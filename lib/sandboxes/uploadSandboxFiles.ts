@@ -40,7 +40,7 @@ export async function uploadSandboxFiles({
     files.map(async (file) => {
       const blob = await upload(file.name, file, {
         access: "public",
-        handleUploadUrl: "/api/sandbox/upload",
+        handleUploadUrl: `${getClientApiBaseUrl()}/api/sandboxes/staged-files`,
         clientPayload: JSON.stringify({ token: accessToken }),
       });
       return { url: blob.url, name: file.name };
