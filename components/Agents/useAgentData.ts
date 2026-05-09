@@ -7,7 +7,7 @@ import type { AgentTemplateRow } from "@/types/AgentTemplates";
 export type Agent = AgentTemplateRow;
 
 export function useAgentData() {
-  const { authenticated, getAccessToken } = usePrivy();
+  const { authenticated, getAccessToken, ready } = usePrivy();
   const queryClient = useQueryClient();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [selectedTag, setSelectedTag] = useState("Recommended");
@@ -23,7 +23,7 @@ export function useAgentData() {
       return fetchAgentTemplates(token);
     },
     retry: 1,
-    enabled: authenticated,
+    enabled: ready && authenticated,
   });
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export function useAgentData() {
 
   // Prefetch agent data for better performance on hover
   const prefetchAgents = async () => {
-    if (!authenticated) return;
+    if (!ready || !authenticated) return;
     const token = await getAccessToken();
     if (!token) return;
     queryClient.prefetchQuery({
