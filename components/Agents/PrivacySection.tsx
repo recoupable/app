@@ -10,7 +10,11 @@ interface PrivacySectionProps {
   onExistingEmailsChange?: (emails: string[]) => void;
 }
 
-const PrivacySection = ({ form, existingSharedEmails = [], onExistingEmailsChange }: PrivacySectionProps) => {
+const PrivacySection = ({
+  form,
+  existingSharedEmails = [],
+  onExistingEmailsChange,
+}: PrivacySectionProps) => {
   const isPrivate = form.watch("isPrivate");
 
   return (
@@ -29,7 +33,10 @@ const PrivacySection = ({ form, existingSharedEmails = [], onExistingEmailsChang
           emails={form.watch("shareEmails") ?? []}
           existingSharedEmails={existingSharedEmails}
           onEmailsChange={(emails) => {
-            form.setValue("shareEmails", emails, { shouldDirty: true, shouldValidate: true });
+            form.setValue("shareEmails", emails, {
+              shouldDirty: true,
+              shouldValidate: true,
+            });
           }}
           onExistingEmailsChange={onExistingEmailsChange}
         />

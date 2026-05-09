@@ -1,39 +1,20 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import type { AgentTemplateCreator } from "@/types/AgentTemplates";
 
 interface AgentCreatorProps {
-  creatorId: string | null;
+  creator: AgentTemplateCreator | null;
   className?: string;
 }
 
-type CreatorResponse = {
-  creator?: {
-    name?: string | null;
-    image?: string | null;
-    is_admin?: boolean | null;
-  } | null;
-};
+const AgentCreator = ({ creator, className }: AgentCreatorProps) => {
+  const isAdmin = !!creator?.is_admin;
+  const imageUrl = creator?.image || "";
+  const name = creator?.name || "";
 
-const AgentCreator = ({ creatorId, className }: AgentCreatorProps) => {
-  const { data } = useQuery<CreatorResponse>({
-    queryKey: ["agent-creator", creatorId],
-    queryFn: async () => {
-      const res = await fetch(`/api/agent-creator?creatorId=${creatorId}`, { cache: "no-store" });
-      if (!res.ok) throw new Error("failed");
-      return (await res.json()) as CreatorResponse;
-    },
-    enabled: !!creatorId,
-    staleTime: 60_000,
-  });
-
-  const isAdmin = !!data?.creator?.is_admin;
-  const imageUrl = data?.creator?.image || "";
-  const name = data?.creator?.name || "";
-
-  if (!creatorId || isAdmin) {
+  if (!creator || isAdmin) {
     return (
       <div className={className}>
         <Image
@@ -60,5 +41,3 @@ const AgentCreator = ({ creatorId, className }: AgentCreatorProps) => {
 };
 
 export default AgentCreator;
-
-

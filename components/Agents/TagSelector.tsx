@@ -24,32 +24,34 @@ const TagSelector = ({ form }: TagSelectorProps) => {
     <div className="space-y-2">
       <Label htmlFor="tags">Category</Label>
       <div className="flex flex-wrap gap-2" id="tags">
-        {tags.filter((t) => t !== "Recommended").map((tag) => {
-          const isSelected = selectedTags.includes(tag);
-          return (
-            <Badge
-              key={tag}
-              role="button"
-              tabIndex={0}
-              aria-pressed={isSelected}
-              onClick={() => toggleTag(tag)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  toggleTag(tag);
+        {tags
+          .filter((t) => t !== "Recommended")
+          .map((tag) => {
+            const isSelected = selectedTags.includes(tag);
+            return (
+              <Badge
+                key={tag}
+                role="button"
+                tabIndex={0}
+                aria-pressed={isSelected}
+                onClick={() => toggleTag(tag)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    toggleTag(tag);
+                  }
+                }}
+                className={
+                  isSelected
+                    ? "cursor-pointer select-none rounded-full focus:ring-0"
+                    : "cursor-pointer select-none rounded-full bg-transparent border-border text-muted-foreground hover:bg-muted focus:ring-0"
                 }
-              }}
-              className={
-                isSelected
-                  ? "cursor-pointer select-none rounded-full focus:ring-0"
-                  : "cursor-pointer select-none rounded-full bg-transparent border-border text-muted-foreground hover:bg-muted focus:ring-0"
-              }
-              variant={isSelected ? "default" : "outline"}
-            >
-              {tag}
-            </Badge>
-          );
-        })}
+                variant={isSelected ? "default" : "outline"}
+              >
+                {tag}
+              </Badge>
+            );
+          })}
       </div>
       {form.formState.errors.tags && (
         <p className="text-sm text-red-500">

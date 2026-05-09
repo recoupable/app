@@ -6,7 +6,10 @@ interface ExistingSharedEmailsListProps {
   onRemoveEmail?: (email: string) => void;
 }
 
-const ExistingSharedEmailsList = ({ emails, onRemoveEmail }: ExistingSharedEmailsListProps) => {
+const ExistingSharedEmailsList = ({
+  emails,
+  onRemoveEmail,
+}: ExistingSharedEmailsListProps) => {
   if (emails.length === 0) return null;
 
   return (

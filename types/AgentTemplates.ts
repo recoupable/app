@@ -1,14 +1,12 @@
-export type ToggleFavoriteRequest = {
-  templateId: string;
-  userId: string;
-  isFavourite: boolean;
-};
+export type ToggleFavoriteResponse =
+  | { status: "success" }
+  | { status: "error"; error: string };
 
-export type ToggleFavoriteResponse = {
-  success: true;
-  favorites_count: number | null;
-} | {
-  error: string;
+export type AgentTemplateCreator = {
+  id: string;
+  name: string | null;
+  image: string | null;
+  is_admin: boolean | null;
 };
 
 export type AgentTemplateRow = {
@@ -17,7 +15,7 @@ export type AgentTemplateRow = {
   description: string;
   prompt: string;
   tags: string[] | null;
-  creator: string | null;
+  creator: AgentTemplateCreator | null;
   is_private: boolean;
   created_at: string | null;
   favorites_count: number | null;
@@ -27,5 +25,3 @@ export type AgentTemplateRow = {
   // emails the template is shared with (only for private templates)
   shared_emails?: string[];
 };
-
-

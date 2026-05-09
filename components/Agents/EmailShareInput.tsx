@@ -12,7 +12,12 @@ interface EmailShareInputProps {
   onExistingEmailsChange?: (emails: string[]) => void;
 }
 
-const EmailShareInput = ({ emails, existingSharedEmails = [], onEmailsChange, onExistingEmailsChange }: EmailShareInputProps) => {
+const EmailShareInput = ({
+  emails,
+  existingSharedEmails = [],
+  onEmailsChange,
+  onExistingEmailsChange,
+}: EmailShareInputProps) => {
   const [inputValue, setInputValue] = useState("");
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -33,7 +38,10 @@ const EmailShareInput = ({ emails, existingSharedEmails = [], onEmailsChange, on
     }
 
     // Check if email already exists in either existing or new emails
-    if (emails.includes(trimmedEmail) || existingSharedEmails.includes(trimmedEmail)) {
+    if (
+      emails.includes(trimmedEmail) ||
+      existingSharedEmails.includes(trimmedEmail)
+    ) {
       setInputValue("");
       return;
     }
@@ -43,12 +51,14 @@ const EmailShareInput = ({ emails, existingSharedEmails = [], onEmailsChange, on
   };
 
   const removeNewEmail = (emailToRemove: string) => {
-    onEmailsChange(emails.filter(email => email !== emailToRemove));
+    onEmailsChange(emails.filter((email) => email !== emailToRemove));
   };
 
   const removeExistingEmail = (emailToRemove: string) => {
     if (onExistingEmailsChange) {
-      onExistingEmailsChange(existingSharedEmails.filter(email => email !== emailToRemove));
+      onExistingEmailsChange(
+        existingSharedEmails.filter((email) => email !== emailToRemove),
+      );
     }
   };
 
@@ -72,10 +82,7 @@ const EmailShareInput = ({ emails, existingSharedEmails = [], onEmailsChange, on
             emails={existingSharedEmails}
             onRemoveEmail={removeExistingEmail}
           />
-          <NewEmailsList
-            emails={emails}
-            onRemoveEmail={removeNewEmail}
-          />
+          <NewEmailsList emails={emails} onRemoveEmail={removeNewEmail} />
         </div>
       )}
     </div>

@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import CreateAgentForm from "./CreateAgentForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useUserProvider } from "@/providers/UserProvder";
+import { usePrivy } from "@privy-io/react-auth";
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import type { AgentTemplateRow } from "@/types/AgentTemplates";
 import { useState, useEffect } from "react";
 
@@ -21,9 +22,11 @@ interface AgentEditDialogProps {
 
 const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
   const [open, setOpen] = useState(false);
-  const { userData } = useUserProvider();
+  const { getAccessToken } = usePrivy();
   const queryClient = useQueryClient();
-  const [currentSharedEmails, setCurrentSharedEmails] = useState<string[]>(agent.shared_emails || []);
+  const [currentSharedEmails, setCurrentSharedEmails] = useState<string[]>(
+    agent.shared_emails || [],
+  );
 
   const editTemplate = useMutation({
     mutationFn: async (values: {
@@ -35,26 +38,37 @@ const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
       shareEmails?: string[];
     }) => {
       // Combine existing emails (after removals) with new emails
-      const finalShareEmails = values.shareEmails && values.shareEmails.length > 0
-        ? [...currentSharedEmails, ...values.shareEmails]
-        : currentSharedEmails;
+      const finalShareEmails =
+        values.shareEmails && values.shareEmails.length > 0
+          ? [...currentSharedEmails, ...values.shareEmails]
+          : currentSharedEmails;
 
-      const res = await fetch("/api/agent-templates", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: agent.id,
-          userId: userData?.id,
-          title: values.title,
-          description: values.description,
-          prompt: values.prompt,
-          tags: values.tags,
-          isPrivate: values.isPrivate,
-          shareEmails: finalShareEmails,
-        }),
-      });
-      if (!res.ok) throw new Error("Failed to update template");
-      return res.json();
+      const accessToken = await getAccessToken();
+      if (!accessToken) throw new Error("Not authenticated");
+
+      const res = await fetch(
+        `${getClientApiBaseUrl()}/api/agent-templates/${agent.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            title: values.title,
+            description: values.description,
+            prompt: values.prompt,
+            tags: values.tags,
+            is_private: values.isPrivate,
+            share_emails: finalShareEmails,
+          }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok || data.status === "error") {
+        throw new Error(data.error || "Failed to update template");
+      }
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["agent-templates"] });
@@ -87,14 +101,23 @@ const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-xl" aria-label="Edit">
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0 rounded-xl"
+          aria-label="Edit"
+        >
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px] rounded-xl">
         <DialogHeader>
-          <DialogTitle className="font-sans font-medium">Edit Agent</DialogTitle>
-          <DialogDescription>Update the agent template details.</DialogDescription>
+          <DialogTitle className="font-sans font-medium">
+            Edit Agent
+          </DialogTitle>
+          <DialogDescription>
+            Update the agent template details.
+          </DialogDescription>
         </DialogHeader>
         <CreateAgentForm
           onSubmit={onSubmit}
@@ -117,5 +140,3 @@ const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
 };
 
 export default AgentEditDialog;
-
-

@@ -39,7 +39,10 @@ const Agents = () => {
             <span className="text-sm text-muted-foreground dark:text-muted-foreground">
               {isPrivate ? "Private" : "Public"}
             </span>
-            <Switch checked={isPrivate} onCheckedChange={() => togglePrivate()} />
+            <Switch
+              checked={isPrivate}
+              onCheckedChange={() => togglePrivate()}
+            />
           </div>
           <CreateAgentButton />
         </div>
@@ -78,7 +81,9 @@ const Agents = () => {
                   <AgentCard
                     agent={agent}
                     onClick={() => handleAgentClick(agent)}
-                    onToggleFavorite={(id, next) => handleToggleFavorite(id, next)}
+                    onToggleFavorite={(id, next) =>
+                      handleToggleFavorite(id, next)
+                    }
                   />
                 </div>
               ))}

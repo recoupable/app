@@ -1,5 +1,5 @@
 import type React from "react";
-import { ExternalLink, Users} from "lucide-react";
+import { ExternalLink, Users } from "lucide-react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import AgentCreator from "./AgentCreator";
@@ -22,7 +22,7 @@ interface AgentCardProps {
 const AgentCard: React.FC<AgentCardProps> = ({
   agent,
   onClick,
-  onToggleFavorite
+  onToggleFavorite,
 }) => {
   const { userData } = useUserProvider();
 
@@ -31,11 +31,11 @@ const AgentCard: React.FC<AgentCardProps> = ({
     pillTag,
     handleCardKeyDown,
     handleCardClick,
-    handleToggleFavorite
+    handleToggleFavorite,
   } = useAgentCard({
     agent,
     onClick,
-    onToggleFavorite
+    onToggleFavorite,
   });
 
   return (
@@ -62,14 +62,19 @@ const AgentCard: React.FC<AgentCardProps> = ({
                 {pillTag || "General"}
               </Badge>
               {isSharedWithUser && (
-                <Badge variant="outline" className="flex items-center gap-1 text-xs bg-black border-black text-white">
+                <Badge
+                  variant="outline"
+                  className="flex items-center gap-1 text-xs bg-black border-black text-white"
+                >
                   <Users className="h-3 w-3" />
                   Shared
                 </Badge>
               )}
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-balance line-clamp-1">{agent.title}</h3>
+              <h3 className="text-lg font-semibold text-balance line-clamp-1">
+                {agent.title}
+              </h3>
               <p className="text-sm text-muted-foreground mt-1 text-pretty line-clamp-2 min-h-[2.5rem]">
                 {agent.description}
               </p>
@@ -83,22 +88,30 @@ const AgentCard: React.FC<AgentCardProps> = ({
           <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
             <AgentHeart
               isFavorited={!!agent.is_favourite}
-              onToggle={() => handleToggleFavorite(agent.id ?? "", !(agent.is_favourite ?? false))}
+              onToggle={() =>
+                handleToggleFavorite(
+                  agent.id ?? "",
+                  !(agent.is_favourite ?? false),
+                )
+              }
             />
-            {userData?.id && userData.id === agent.creator ? (
+            {userData?.id && userData.id === agent.creator?.id ? (
               <AgentEditDialog agent={agent} />
             ) : (
               <AgentPreviewDialogButton agent={agent} />
             )}
-            <AgentDeleteButton id={agent.id ?? ""} creatorId={agent.creator} />
+            <AgentDeleteButton
+              id={agent.id ?? ""}
+              creatorId={agent.creator?.id ?? null}
+            />
           </div>
 
           {/* Creator avatar or brand */}
-          <AgentCreator creatorId={agent.creator} className="flex items-center" />
+          <AgentCreator creator={agent.creator} className="flex items-center" />
         </div>
       </CardContent>
     </Card>
   );
 };
 
-export default AgentCard; 
+export default AgentCard;
