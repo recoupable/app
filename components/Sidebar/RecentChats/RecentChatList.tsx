@@ -1,12 +1,11 @@
 import { AnimatePresence, motion } from "framer-motion";
 import type { Conversation } from "@/types/Chat";
-import type { ArtistAgent } from "@/lib/supabase/getArtistAgents";
 import ChatItem from "./ChatItem";
 import type { MutableRefObject } from "react";
 import { getChatRoomId } from "@/lib/chat/getChatRoomId";
 
 interface RecentChatListProps {
-  conversations: Array<Conversation | ArtistAgent>;
+  conversations: Conversation[];
   isMobile: boolean;
   hoveredChatId: string | null;
   openMenuId: string | null;
@@ -17,13 +16,10 @@ interface RecentChatListProps {
   menuRef: MutableRefObject<HTMLDivElement | null>;
   buttonRefs: MutableRefObject<Record<string, HTMLButtonElement | null>>;
   setHoveredChatId: (chatId: string | null) => void;
-  handleChatClick: (chatRoom: Conversation | ArtistAgent) => void;
+  handleChatClick: (chatRoom: Conversation) => void;
   handleChatSelection: (chatId: string, isShiftKey: boolean) => void;
   toggleMenu: (roomId: string) => void;
-  openModal: (
-    type: "rename" | "delete",
-    chatRoom: Conversation | ArtistAgent
-  ) => void;
+  openModal: (type: "rename" | "delete", chatRoom: Conversation) => void;
 }
 
 const RecentChatList = ({

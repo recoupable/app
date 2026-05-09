@@ -16,15 +16,17 @@ const createClientPortalSession = async (accessToken: string) => {
       },
     );
 
-    const data = await response.json();
-
-    if (!response.ok || !data.url) {
-      throw new Error(data.error || "Failed to create portal session");
+    if (!response.ok) {
+      return { error: new Error(`HTTP ${response.status}`) };
     }
 
-    window.open(data.url, "_blank");
+    const data: { url?: string } = await response.json();
+    if (!data.url) {
+      return { error: new Error("Portal URL missing") };
+    }
+
+    window.open(data.url, "_blank", "noopener,noreferrer");
   } catch (error) {
-    console.error("Error creating portal session:", error);
     return { error };
   }
 };

@@ -4,14 +4,11 @@ import { useUserProvider } from "@/providers/UserProvder";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import getConversations from "@/lib/getConversations";
 import { Conversation } from "@/types/Chat";
-import useArtistAgents from "./useArtistAgents";
-import { ArtistAgent } from "@/lib/supabase/getArtistAgents";
 import { usePrivy } from "@privy-io/react-auth";
 
 const useConversations = () => {
   const { userData } = useUserProvider();
   const { selectedArtist, artists } = useArtistProvider();
-  const { agents } = useArtistAgents();
   const queryClient = useQueryClient();
   const { getAccessToken, authenticated } = usePrivy();
 
@@ -38,32 +35,24 @@ const useConversations = () => {
     initialData: [],
   });
 
-  const combinedConversations = useMemo<
-    Array<Conversation | ArtistAgent>
-  >(() => {
-    return [...fetchedConversations, ...agents];
-  }, [fetchedConversations, agents]);
-
   const conversations = useMemo(() => {
     // If artist selected, filter to only that artist's conversations
     if (selectedArtist) {
-      return combinedConversations.filter(
-        (item: Conversation | ArtistAgent) =>
-          "artist_id" in item && item.artist_id === selectedArtist.account_id,
+      return fetchedConversations.filter(
+        (item) => item.artist_id === selectedArtist.account_id,
       );
     }
 
     // No artist selected - filter to artists in the current org view
     if (orgArtistIds.size > 0) {
-      return combinedConversations.filter(
-        (item: Conversation | ArtistAgent) =>
-          "artist_id" in item && orgArtistIds.has(item.artist_id),
+      return fetchedConversations.filter((item) =>
+        orgArtistIds.has(item.artist_id),
       );
     }
 
     // Fallback: no artists in org (shouldn't happen normally)
-    return combinedConversations;
-  }, [selectedArtist, combinedConversations, orgArtistIds]);
+    return fetchedConversations;
+  }, [selectedArtist, fetchedConversations, orgArtistIds]);
 
   // Optimistic update helpers for creating a new chat room
   const addOptimisticConversation = (

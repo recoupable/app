@@ -11,18 +11,21 @@ const createClientCheckoutSession = async (accessToken: string) => {
           Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          successUrl: `${window.location.href}`,
+          successUrl: window.location.href,
         }),
       },
     );
 
-    const data = await response.json();
-
-    if (!response.ok || !data.url) {
-      throw new Error(data.error || "Failed to create checkout session");
+    if (!response.ok) {
+      return { error: new Error(`HTTP ${response.status}`) };
     }
 
-    window.open(data.url, "__blank");
+    const data: { url?: string } = await response.json();
+    if (!data.url) {
+      return { error: new Error("Checkout URL missing") };
+    }
+
+    window.open(data.url, "_blank", "noopener,noreferrer");
   } catch (error) {
     return { error };
   }

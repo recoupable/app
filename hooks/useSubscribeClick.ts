@@ -16,10 +16,11 @@ const useSubscribeClick = () => {
     if (!accessToken) return;
 
     if (isSubscribed) {
-      createClientPortalSession(accessToken);
+      await createClientPortalSession(accessToken);
       return;
     }
-    createClientCheckoutSession(accessToken);
+
+    await createClientCheckoutSession(accessToken);
   };
 
   return {
