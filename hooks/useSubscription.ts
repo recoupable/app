@@ -1,15 +1,23 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
+import type Stripe from "stripe";
 import { useUserProvider } from "@/providers/UserProvder";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
-export interface ProStatusResponse {
+export type SubscriptionSource = "account" | "organization" | null;
+
+export interface SubscriptionResponse {
+  /** True when the account or any of its organizations has an active subscription. */
   isPro: boolean;
+  /** Where the active subscription is anchored. `null` when there is no active subscription. */
+  source: SubscriptionSource;
+  /** The active Stripe Subscription (account preferred over organization), or `null`. */
+  subscription: Stripe.Subscription | null;
 }
 
-const fetchProStatus = async (
+const fetchSubscription = async (
   accessToken: string,
-): Promise<ProStatusResponse> => {
+): Promise<SubscriptionResponse> => {
   const response = await fetch(`${getClientApiBaseUrl()}/api/subscription`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -21,14 +29,14 @@ const fetchProStatus = async (
   return response.json();
 };
 
-const useProStatus = (): UseQueryResult<ProStatusResponse> => {
+const useSubscription = (): UseQueryResult<SubscriptionResponse> => {
   const { userData } = useUserProvider();
   const { getAccessToken, authenticated } = usePrivy();
   return useQuery({
-    queryKey: ["proStatus", userData?.account_id],
+    queryKey: ["subscription", userData?.account_id],
     queryFn: async () => {
       const accessToken = await getAccessToken();
-      return fetchProStatus(accessToken!);
+      return fetchSubscription(accessToken!);
     },
     enabled: !!userData?.account_id && authenticated,
     staleTime: 10 * 60 * 1000,
@@ -36,4 +44,4 @@ const useProStatus = (): UseQueryResult<ProStatusResponse> => {
   });
 };
 
-export default useProStatus;
+export default useSubscription;
