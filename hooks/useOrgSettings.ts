@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { uploadFile } from "@/lib/arweave/uploadFile";
+import { uploadFile } from "@/lib/files/uploadFile";
 import { getFileMimeType } from "@/utils/getFileMimeType";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import useAccountOrganizations from "./useAccountOrganizations";

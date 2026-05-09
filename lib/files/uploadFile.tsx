@@ -1,13 +1,11 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
-export type ArweaveUploadResponse = {
+export type UploadFileResponse = {
   id: string;
   uri: string;
 };
 
-export const uploadFile = async (
-  file: File,
-): Promise<ArweaveUploadResponse> => {
+export const uploadFile = async (file: File): Promise<UploadFileResponse> => {
   try {
     const data = new FormData();
     data.set("file", file);
@@ -28,7 +26,7 @@ export const uploadFile = async (
       uri: json.url,
     };
   } catch (error) {
-    console.error("Arweave upload failed:", error);
+    console.error("File upload failed:", error);
     throw error;
   }
 };

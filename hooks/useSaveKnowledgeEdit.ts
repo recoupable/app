@@ -1,6 +1,6 @@
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
-import { uploadFile } from "@/lib/arweave/uploadFile";
+import { uploadFile } from "@/lib/files/uploadFile";
 import { toast } from "react-toastify";
 
 type UseSaveKnowledgeEditArgs = {

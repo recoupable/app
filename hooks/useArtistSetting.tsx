@@ -1,4 +1,4 @@
-import { uploadFile } from "@/lib/arweave/uploadFile";
+import { uploadFile } from "@/lib/files/uploadFile";
 import { useEffect, useRef, useState } from "react";
 import { ArtistRecord } from "@/types/Artist";
 import { getFileMimeType } from "@/utils/getFileMimeType";
