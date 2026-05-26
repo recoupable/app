@@ -1,4 +1,4 @@
-import { Chat } from "@/components/VercelChat/chat";
+import NewChatBootstrap from "@/components/VercelChat/NewChatBootstrap";
 import generateUUID from "@/lib/generateUUID";
 import { getMessages } from "@/lib/messages/getMessages";
 
@@ -15,7 +15,7 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
 
   return (
     <div className="flex flex-col size-full items-center">
-      <Chat id={id} initialMessages={initialMessages} />
+      <NewChatBootstrap id={id} initialMessages={initialMessages} />
     </div>
   );
 }

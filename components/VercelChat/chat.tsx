@@ -22,15 +22,28 @@ import { useOrganization } from "@/providers/OrganizationProvider";
 
 interface ChatProps {
   id: string;
+  /**
+   * Session id from the new-chat bootstrap. When present the chat
+   * routes through recoup-api's `/api/chat/workflow`; when absent it
+   * falls back to the legacy `/api/chat` (existing chats opened from
+   * history — they'll cut over once Phase 2 backfills `session_id`
+   * onto their rows, recoupable/chat#1747).
+   */
+  sessionId?: string;
   initialMessages?: UIMessage[];
 }
 
-export function Chat({ id, initialMessages }: ChatProps) {
+export function Chat({ id, sessionId, initialMessages }: ChatProps) {
   const { selectedOrgId } = useOrganization();
   const providerKey = `${id}-${selectedOrgId ?? "personal"}`;
 
   return (
-    <VercelChatProvider key={providerKey} chatId={id} initialMessages={initialMessages}>
+    <VercelChatProvider
+      key={providerKey}
+      chatId={id}
+      sessionId={sessionId}
+      initialMessages={initialMessages}
+    >
       <ChatContent id={id} />
     </VercelChatProvider>
   );

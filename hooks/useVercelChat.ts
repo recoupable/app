@@ -26,6 +26,14 @@ import getMimeFromPath from "@/lib/files/getMimeFromPath";
 
 interface UseVercelChatProps {
   id: string;
+  /**
+   * Session id from the chat-bootstrap (`createSession`). When present
+   * the transport targets `/api/chat/workflow`; when absent it falls
+   * back to the legacy `/api/chat` for chats opened from history that
+   * haven't been backfilled to the workflow architecture yet
+   * (recoupable/chat#1747 Phase 2).
+   */
+  sessionId?: string;
   initialMessages?: UIMessage[];
   attachments?: FileUIPart[];
   textAttachments?: TextAttachment[];
@@ -38,6 +46,7 @@ interface UseVercelChatProps {
  */
 export function useVercelChat({
   id,
+  sessionId,
   initialMessages,
   attachments = [],
   textAttachments = [],
@@ -55,7 +64,10 @@ export function useVercelChat({
   const [input, setInput] = useState("");
   const [model, setModel] = useLocalStorage("RECOUP_MODEL", DEFAULT_MODEL);
   const { refetchCredits } = usePaymentProvider();
-  const { transport, getHeaders } = useChatTransport();
+  const { transport, getHeaders } = useChatTransport({
+    chatId: id,
+    sessionId,
+  });
   const { authenticated, getAccessToken } = usePrivy();
 
   // Load artist files for mentions (from Supabase)
