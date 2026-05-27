@@ -95,7 +95,8 @@ const AgentCard: React.FC<AgentCardProps> = ({
                 )
               }
             />
-            {userData?.id && userData.id === agent.creator?.id ? (
+            {userData?.account_id &&
+            userData.account_id === agent.creator?.id ? (
               <AgentEditDialog agent={agent} />
             ) : (
               <AgentPreviewDialogButton agent={agent} />

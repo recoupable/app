@@ -29,7 +29,9 @@ const AgentDeleteButton: React.FC<AgentDeleteButtonProps> = ({
   const { userData } = useUserProvider();
   const { getAccessToken } = usePrivy();
   const queryClient = useQueryClient();
-  const isOwner = Boolean(userData?.id && userData.id === creatorId);
+  const isOwner = Boolean(
+    userData?.account_id && userData.account_id === creatorId,
+  );
 
   const del = useMutation({
     mutationFn: async () => {
