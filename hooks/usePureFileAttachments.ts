@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { FileUIPart } from "ai";
+import { usePrivy } from "@privy-io/react-auth";
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
 import { CHAT_INPUT_SUPPORTED_FILE } from "@/lib/chat/config";
 import { isAllowedByExtension } from "@/lib/files/isAllowedByExtension";
@@ -8,6 +9,7 @@ import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
 export function usePureFileAttachments() {
   const { setAttachments, addTextAttachment } = useVercelChatContext();
+  const { getAccessToken } = usePrivy();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const MAX_FILES = 10;
   const allowedTypes = Object.keys(CHAT_INPUT_SUPPORTED_FILE);
@@ -54,23 +56,22 @@ export function usePureFileAttachments() {
     setAttachments((prev: FileUIPart[]) => [...prev, pendingAttachment]);
 
     try {
-      // Upload the file to Arweave
+      const accessToken = await getAccessToken();
+      if (!accessToken) throw new Error("Not authenticated");
+
       const formData = new FormData();
       formData.append("file", file);
 
       const response = await fetch(`${getClientApiBaseUrl()}/api/upload`, {
         method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}` },
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to upload file");
-      }
+      const data = await response.json().catch(() => null);
 
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || "Upload failed");
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.error || "Upload failed");
       }
 
       // Update the attachment with the Arweave URL

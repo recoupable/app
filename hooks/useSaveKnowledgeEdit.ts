@@ -1,4 +1,5 @@
 import { useArtistProvider } from "@/providers/ArtistProvider";
+import { usePrivy } from "@privy-io/react-auth";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { uploadFile } from "@/lib/files/uploadFile";
 import { toast } from "react-toastify";
@@ -14,6 +15,7 @@ export const useSaveKnowledgeEdit = ({
   url,
   editedText,
 }: UseSaveKnowledgeEditArgs) => {
+  const { getAccessToken } = usePrivy();
   const {
     knowledgeUploading,
     setKnowledgeUploading,
@@ -33,8 +35,9 @@ export const useSaveKnowledgeEdit = ({
     }
     try {
       setKnowledgeUploading(true);
+      const accessToken = await getAccessToken();
       const file = new File([editedText], name || "file.txt", { type: mime });
-      const { uri } = await uploadFile(file);
+      const { uri } = await uploadFile(file, accessToken);
       const next = bases.map((b) => ({ ...b }));
       const idx = next.findIndex((b) => b.url === url && b.name === name);
       if (idx >= 0) {

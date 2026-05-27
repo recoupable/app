@@ -5,20 +5,26 @@ export type UploadFileResponse = {
   uri: string;
 };
 
-export const uploadFile = async (file: File): Promise<UploadFileResponse> => {
+export const uploadFile = async (
+  file: File,
+  accessToken: string | null,
+): Promise<UploadFileResponse> => {
+  if (!accessToken) throw new Error("Not authenticated");
+
   try {
     const data = new FormData();
     data.set("file", file);
 
     const res = await fetch(`${getClientApiBaseUrl()}/api/upload`, {
       method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}` },
       body: data,
     });
 
-    const json = await res.json();
+    const json = await res.json().catch(() => null);
 
-    if (!json.success) {
-      throw new Error(json.error || "Upload failed");
+    if (!res.ok || !json?.success) {
+      throw new Error(json?.error || "Upload failed");
     }
 
     return {

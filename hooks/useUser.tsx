@@ -40,7 +40,8 @@ const useUser = () => {
       return;
     }
     try {
-      const { uri } = await uploadFile(file);
+      const accessToken = await getAccessToken();
+      const { uri } = await uploadFile(file, accessToken);
       setImage(uri);
     } catch {
       toast.error("Failed to upload image. Please try again.");
