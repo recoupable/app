@@ -12,10 +12,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { usePrivy } from "@privy-io/react-auth";
 import { useUserProvider } from "@/providers/UserProvder";
-import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import { useDeleteAgentTemplate } from "./useDeleteAgentTemplate";
 
 interface AgentDeleteButtonProps {
   id: string;
@@ -27,42 +25,10 @@ const AgentDeleteButton: React.FC<AgentDeleteButtonProps> = ({
   creatorId,
 }) => {
   const { userData } = useUserProvider();
-  const { getAccessToken } = usePrivy();
-  const queryClient = useQueryClient();
+  const del = useDeleteAgentTemplate(id);
   const isOwner = Boolean(
     userData?.account_id && userData.account_id === creatorId,
   );
-
-  const del = useMutation({
-    mutationFn: async () => {
-      const accessToken = await getAccessToken();
-      if (!accessToken) throw new Error("Not authenticated");
-
-      const res = await fetch(
-        `${getClientApiBaseUrl()}/api/agents/templates/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      );
-      const data = (await res.json().catch(() => null)) as
-        | { status: "success" }
-        | { status: "error"; error: string }
-        | null;
-      if (!res.ok || data?.status !== "success") {
-        throw new Error(
-          (data?.status === "error" && data.error) ||
-            "Failed to delete template",
-        );
-      }
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["agent-templates"] });
-    },
-  });
 
   if (!isOwner) return null;
 

@@ -2,8 +2,7 @@ import { useUserProvider } from "@/providers/UserProvder";
 import { usePrivy } from "@privy-io/react-auth";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
-import type { ToggleFavoriteResponse } from "@/types/AgentTemplates";
+import toggleAgentTemplateFavorite from "@/lib/agent-templates/toggleAgentTemplateFavorite";
 
 export function useAgentToggleFavorite() {
   const { userData } = useUserProvider();
@@ -20,28 +19,7 @@ export function useAgentToggleFavorite() {
       const accessToken = await getAccessToken();
       if (!accessToken) throw new Error("Not authenticated");
 
-      const res = await fetch(
-        `${getClientApiBaseUrl()}/api/agents/templates/${templateId}/favorite`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ is_favourite: nextFavourite }),
-        },
-      );
-
-      const data = (await res
-        .json()
-        .catch(() => null)) as ToggleFavoriteResponse | null;
-
-      if (!res.ok || data?.status !== "success") {
-        throw new Error(
-          (data?.status === "error" && data.error) ||
-            "Failed to toggle favorite",
-        );
-      }
+      await toggleAgentTemplateFavorite(accessToken, templateId, nextFavourite);
 
       toast.success(
         nextFavourite ? "Added to favorites" : "Removed from favorites",

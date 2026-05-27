@@ -10,9 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import CreateAgentForm from "./CreateAgentForm";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { usePrivy } from "@privy-io/react-auth";
-import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import { useUpdateAgentTemplate } from "./useUpdateAgentTemplate";
 import type { AgentTemplateRow } from "@/types/AgentTemplates";
 import { useState, useEffect } from "react";
 
@@ -22,65 +20,10 @@ interface AgentEditDialogProps {
 
 const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
   const [open, setOpen] = useState(false);
-  const { getAccessToken } = usePrivy();
-  const queryClient = useQueryClient();
+  const editTemplate = useUpdateAgentTemplate(agent.id);
   const [currentSharedEmails, setCurrentSharedEmails] = useState<string[]>(
     agent.shared_emails || [],
   );
-
-  const editTemplate = useMutation({
-    mutationFn: async (values: {
-      title?: string;
-      description?: string;
-      prompt?: string;
-      tags?: string[];
-      isPrivate?: boolean;
-      shareEmails?: string[];
-    }) => {
-      // Combine existing emails (after removals) with new emails
-      const finalShareEmails =
-        values.shareEmails && values.shareEmails.length > 0
-          ? [...currentSharedEmails, ...values.shareEmails]
-          : currentSharedEmails;
-
-      const accessToken = await getAccessToken();
-      if (!accessToken) throw new Error("Not authenticated");
-
-      const res = await fetch(
-        `${getClientApiBaseUrl()}/api/agents/templates/${agent.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({
-            title: values.title,
-            description: values.description,
-            prompt: values.prompt,
-            tags: values.tags,
-            is_private: values.isPrivate,
-            share_emails: finalShareEmails,
-          }),
-        },
-      );
-      const data = (await res.json().catch(() => null)) as
-        | { status: "success"; template: unknown }
-        | { status: "error"; error: string }
-        | null;
-      if (!res.ok || data?.status !== "success") {
-        throw new Error(
-          (data?.status === "error" && data.error) ||
-            "Failed to update template",
-        );
-      }
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["agent-templates"] });
-      setOpen(false);
-    },
-  });
 
   const onSubmit = (values: {
     title: string;
@@ -90,7 +33,23 @@ const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
     isPrivate: boolean;
     shareEmails?: string[];
   }) => {
-    editTemplate.mutate(values);
+    // Combine existing emails (after removals) with new emails
+    const finalShareEmails =
+      values.shareEmails && values.shareEmails.length > 0
+        ? [...currentSharedEmails, ...values.shareEmails]
+        : currentSharedEmails;
+
+    editTemplate.mutate(
+      {
+        title: values.title,
+        description: values.description,
+        prompt: values.prompt,
+        tags: values.tags,
+        is_private: values.isPrivate,
+        share_emails: finalShareEmails,
+      },
+      { onSuccess: () => setOpen(false) },
+    );
   };
 
   const handleExistingEmailsChange = (emails: string[]) => {
