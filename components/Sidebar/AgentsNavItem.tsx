@@ -1,4 +1,4 @@
-import { useAgentData } from "../Agents/useAgentData";
+import { useAgentData } from "@/hooks/useAgentData";
 import NavButton from "./NavButton";
 
 const AgentsNavItem = ({
@@ -25,4 +25,4 @@ const AgentsNavItem = ({
   );
 };
 
-export default AgentsNavItem; 
+export default AgentsNavItem;

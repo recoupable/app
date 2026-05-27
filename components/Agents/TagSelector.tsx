@@ -1,7 +1,7 @@
 import { UseFormReturn } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { useAgentData } from "./useAgentData";
+import { useAgentData } from "@/hooks/useAgentData";
 import { CreateAgentFormData } from "./schemas";
 
 interface TagSelectorProps {

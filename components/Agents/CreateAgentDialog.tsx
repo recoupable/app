@@ -9,7 +9,7 @@ import {
 import CreateAgentForm from "./CreateAgentForm";
 import { useState } from "react";
 import { type CreateAgentFormData } from "./schemas";
-import { useCreateAgentTemplate } from "./useCreateAgentTemplate";
+import { useCreateAgentTemplate } from "@/hooks/useCreateAgentTemplate";
 
 interface CreateAgentDialogProps {
   children: React.ReactNode;

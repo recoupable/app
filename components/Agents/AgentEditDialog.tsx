@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import CreateAgentForm from "./CreateAgentForm";
-import { useUpdateAgentTemplate } from "./useUpdateAgentTemplate";
+import { useUpdateAgentTemplate } from "@/hooks/useUpdateAgentTemplate";
 import type { AgentTemplateRow } from "@/types/AgentTemplates";
 import { useState, useEffect } from "react";
 

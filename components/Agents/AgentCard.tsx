@@ -9,7 +9,7 @@ import AgentDeleteButton from "./AgentDeleteButton";
 import AgentHeart from "./AgentHeart";
 import type { AgentTemplateRow } from "@/types/AgentTemplates";
 import { useUserProvider } from "@/providers/UserProvder";
-import { useAgentCard } from "./useAgentCard";
+import { useAgentCard } from "@/hooks/useAgentCard";
 
 type Agent = AgentTemplateRow;
 

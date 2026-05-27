@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { useUserProvider } from "@/providers/UserProvder";
-import { useDeleteAgentTemplate } from "./useDeleteAgentTemplate";
+import { useDeleteAgentTemplate } from "@/hooks/useDeleteAgentTemplate";
 
 interface AgentDeleteButtonProps {
   id: string;
