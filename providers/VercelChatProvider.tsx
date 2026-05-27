@@ -58,6 +58,12 @@ const VercelChatContext = createContext<VercelChatContextType | undefined>(
 interface VercelChatProviderProps {
   children: ReactNode;
   chatId: string;
+  /**
+   * Session id from the new-chat bootstrap. Forwarded into
+   * `useVercelChat` -> `useChatTransport`; presence flips the
+   * transport to recoup-api's `/api/chat/workflow`.
+   */
+  sessionId?: string;
   initialMessages?: UIMessage[];
 }
 
@@ -67,6 +73,7 @@ interface VercelChatProviderProps {
 export function VercelChatProvider({
   children,
   chatId,
+  sessionId,
   initialMessages,
 }: VercelChatProviderProps) {
   const {
@@ -114,6 +121,7 @@ export function VercelChatProvider({
     availableModels,
   } = useVercelChat({
     id: chatId,
+    sessionId,
     initialMessages,
     attachments,
     textAttachments,

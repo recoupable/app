@@ -1,5 +1,4 @@
-import { Chat } from "@/components/VercelChat/chat";
-import generateUUID from "@/lib/generateUUID";
+import NewChatBootstrap from "@/components/VercelChat/NewChatBootstrap";
 import { getMessages } from "@/lib/messages/getMessages";
 
 export const dynamic = "force-dynamic";
@@ -9,13 +8,12 @@ interface ChatPageProps {
 }
 
 export default async function ChatPage({ searchParams }: ChatPageProps) {
-  const id = generateUUID();
   const initialMessage = (await searchParams)?.q as string;
   const initialMessages = getMessages(initialMessage);
 
   return (
     <div className="flex flex-col size-full items-center">
-      <Chat id={id} initialMessages={initialMessages} />
+      <NewChatBootstrap initialMessages={initialMessages} />
     </div>
   );
 }
