@@ -72,9 +72,9 @@ function getFallbackSandboxCreateErrorMessage(status: number): string {
  * `sandbox.exec` calls — which also resolve via recoup-api's OIDC —
  * can reach it without any cross-project credential plumbing.
  *
- * @param cloneUrl - Repo URL to clone into the sandbox. Built via
- *   `buildOrgRepoUrl` (active org selected) or `buildPersonalRepoUrl`
- *   (personal account fallback).
+ * @param cloneUrl - Repo URL to clone into the sandbox. Read off
+ *   `session.cloneUrl` returned by `createSession` (api owns URL
+ *   construction via `ensurePersonalRepo`).
  * @param sessionId - Session UUID created via `createSession`.
  * @param recoupAccessToken - Short-lived Privy JWT. Forwarded as
  *   `Authorization: Bearer …` so recoup-api's `validateAuthContext`

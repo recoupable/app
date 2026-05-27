@@ -3,25 +3,24 @@ import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 /**
  * Body accepted by recoup-api `POST /api/sessions`. Mirrors the
  * server-side Zod schema in `api/lib/sessions/validateCreateSessionBody.ts`.
- * All fields are optional — pass `cloneUrl` so the session row records
- * which repo the sandbox will clone.
+ * Pass `organizationId` to scope the session to an org (api validates
+ * org access and uses `recoupable/<organizationId>` as the workspace
+ * repo); omit it for a personal session against `recoupable/<accountId>`.
+ * The api derives `cloneUrl` server-side via `ensurePersonalRepo` — the
+ * client must not construct GitHub URLs.
  */
 export interface CreateSessionInput {
   title?: string;
-  cloneUrl?: string;
-  branch?: string;
-  sandboxType?: "vercel";
+  organizationId?: string;
 }
 
 /**
- * Session + first-chat shape returned by `POST /api/sessions`. We
- * intentionally type only the fields chat.recoupable.com reads at the
- * call site (the session id, plus the chat id we hand to the workflow
- * transport); the server returns a richer payload that we don't need
- * to model here.
+ * Session + first-chat shape returned by `POST /api/sessions`. The
+ * bootstrap reads `session.cloneUrl` to hand to `createSandbox` so
+ * url construction stays server-side.
  */
 export interface CreateSessionResponse {
-  session: { id: string };
+  session: { id: string; cloneUrl: string };
   chat: { id: string };
 }
 
@@ -36,9 +35,9 @@ interface CreateSessionErrorResponse {
  * use the same recoup-api `POST /api/sessions` so session ownership
  * lives in one place.
  *
- * @param input - Session metadata. Pass `cloneUrl` (built via
- *   `buildOrgRepoUrl` / `buildPersonalRepoUrl`) so the session row
- *   records which workspace repo this chat targets.
+ * @param input - Session metadata. Pass `organizationId` for org
+ *   sessions; omit for personal. The api owns cloneUrl construction
+ *   and returns it on `session.cloneUrl`.
  * @param recoupAccessToken - Short-lived Privy JWT, forwarded as
  *   `Authorization: Bearer …`.
  */

@@ -1,14 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { UIMessage } from "ai";
 import { Loader } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
-import { useUserProvider } from "@/providers/UserProvder";
 import { useOrganization } from "@/providers/OrganizationProvider";
-import useAccountOrganizations from "@/hooks/useAccountOrganizations";
-import { buildOrgRepoUrl } from "@/lib/recoupable/buildOrgRepoUrl";
-import { buildPersonalRepoUrl } from "@/lib/recoupable/buildPersonalRepoUrl";
 import { createSession } from "@/lib/sessions/createSession";
 import { createSandbox } from "@/lib/sandboxes/createSandbox";
 import { Chat } from "@/components/VercelChat/chat";
@@ -28,24 +24,22 @@ type BootstrapState =
  * Client-side bootstrap for new chats. Provisions a session +
  * sandbox on recoup-api before mounting `<Chat>` so the workflow
  * transport (`/api/chat/workflow`) has the `sessionId` its validator
- * requires (recoupable/chat#1747 Phase 1 + 3).
+ * requires (recoupable/chat#1747).
  *
  * Mounted by `app/chat/page.tsx` (server) which generates the chat id
  * and forwards it here; this component owns everything that needs
  * Privy/the API base URL.
  *
- * `cloneUrl` resolution mirrors open-agents' rule: if the
- * `OrganizationProvider` has an active org, build the org repo URL;
- * otherwise fall back to the per-account "personal" repo URL.
+ * Clone URL resolution lives on recoup-api: pass `organizationId`
+ * from `OrganizationProvider` (or omit it for a personal session) and
+ * read `session.cloneUrl` from the response to hand to `createSandbox`.
  */
 export default function NewChatBootstrap({
   id,
   initialMessages,
 }: NewChatBootstrapProps) {
   const { authenticated, getAccessToken } = usePrivy();
-  const { userData } = useUserProvider();
   const { selectedOrgId } = useOrganization();
-  const { data: organizations } = useAccountOrganizations();
   const [state, setState] = useState<BootstrapState>({ status: "idle" });
 
   // Guard against React StrictMode double-mount running the bootstrap
@@ -53,28 +47,8 @@ export default function NewChatBootstrap({
   // idempotent (each POST would mint a fresh row + sandbox).
   const startedRef = useRef(false);
 
-  const cloneUrl = useMemo(() => {
-    if (selectedOrgId) {
-      const org = organizations?.find(
-        (o) => o.organization_id === selectedOrgId,
-      );
-      if (!org?.organization_name) return null;
-      return buildOrgRepoUrl({
-        organizationId: org.organization_id,
-        organizationName: org.organization_name,
-      });
-    }
-    if (userData?.account_id && userData?.name) {
-      return buildPersonalRepoUrl({
-        accountId: userData.account_id,
-        accountName: userData.name,
-      });
-    }
-    return null;
-  }, [selectedOrgId, organizations, userData?.account_id, userData?.name]);
-
   useEffect(() => {
-    if (!authenticated || !cloneUrl) return;
+    if (!authenticated) return;
     if (startedRef.current) return;
     if (state.status !== "idle") return;
 
@@ -88,8 +62,11 @@ export default function NewChatBootstrap({
           throw new Error("Please sign in to start a chat");
         }
 
-        const { session } = await createSession({ cloneUrl }, accessToken);
-        await createSandbox(cloneUrl, session.id, accessToken);
+        const { session } = await createSession(
+          { organizationId: selectedOrgId ?? undefined },
+          accessToken,
+        );
+        await createSandbox(session.cloneUrl, session.id, accessToken);
 
         setState({ status: "ready", sessionId: session.id });
       } catch (error) {
@@ -101,7 +78,7 @@ export default function NewChatBootstrap({
         setState({ status: "error", message });
       }
     })();
-  }, [authenticated, cloneUrl, getAccessToken, state.status]);
+  }, [authenticated, selectedOrgId, getAccessToken, state.status]);
 
   if (state.status === "ready") {
     return (
