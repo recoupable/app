@@ -1,12 +1,16 @@
 /**
  * Error thrown by `createSandbox` when `POST /api/sandbox` fails.
- * Carries the response status and any structured error payload
- * (`reason`, `actionUrl`) so the UI can render a useful message
- * (e.g. "Reconnect GitHub" with a deep link) instead of a generic
- * "request failed".
+ * Carries the HTTP status and the structured error payload recoup-api
+ * returns (`reason`, `actionUrl`) so the UI can render a useful
+ * message (e.g. "Reconnect GitHub" with a deep link) instead of a
+ * generic "request failed".
  *
- * Ported from open-agents
- * `apps/web/lib/sandbox/sandbox-create-request-error.ts`.
+ * Not duplicative of the `@vercel/sandbox` SDK's errors — that SDK
+ * lives server-side inside recoup-api, where it provisions the
+ * underlying Vercel sandbox. This class lives at the chat → recoup-api
+ * HTTP boundary and represents the response shape recoup-api emits,
+ * which intentionally surfaces actionable hints (`actionUrl`) that the
+ * raw SDK error doesn't carry.
  */
 export class SandboxCreateRequestError extends Error {
   readonly reason?: string;

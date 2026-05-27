@@ -1,5 +1,8 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import { getOptionalString } from "@/lib/string/getOptionalString";
 import { SandboxCreateRequestError } from "./SandboxCreateRequestError";
+import { getFallbackSandboxCreateErrorMessage } from "./getFallbackSandboxCreateErrorMessage";
+import { parseCreateSandboxErrorResponse } from "./parseCreateSandboxErrorResponse";
 
 /**
  * Sandbox row shape used by the listing UI (`useSandboxes`,
@@ -26,38 +29,6 @@ export interface CreateSandboxResponse {
   createdAt: number;
   timeout: number | null;
   currentBranch?: string;
-}
-
-interface CreateSandboxErrorResponse {
-  error?: string;
-  reason?: string;
-  actionUrl?: string;
-}
-
-function parseCreateSandboxErrorResponse(
-  rawBody: string,
-): CreateSandboxErrorResponse | null {
-  if (!rawBody) return null;
-  try {
-    const parsed = JSON.parse(rawBody) as unknown;
-    if (!parsed || typeof parsed !== "object") return null;
-    return parsed as CreateSandboxErrorResponse;
-  } catch {
-    return null;
-  }
-}
-
-function getOptionalString(value: unknown): string | undefined {
-  if (typeof value !== "string") return undefined;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : undefined;
-}
-
-function getFallbackSandboxCreateErrorMessage(status: number): string {
-  if (status === 403) {
-    return "Sandbox access denied. Please reconnect GitHub and try again.";
-  }
-  return "Failed to create sandbox. Please try again.";
 }
 
 /**

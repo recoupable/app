@@ -1,83 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import type { UIMessage } from "ai";
 import { Loader } from "lucide-react";
-import { usePrivy } from "@privy-io/react-auth";
-import { useOrganization } from "@/providers/OrganizationProvider";
-import { createSession } from "@/lib/sessions/createSession";
-import { createSandbox } from "@/lib/sandboxes/createSandbox";
+import { useNewChatBootstrap } from "@/hooks/useNewChatBootstrap";
 import { Chat } from "@/components/VercelChat/chat";
 
 interface NewChatBootstrapProps {
   initialMessages?: UIMessage[];
 }
 
-type BootstrapState =
-  | { status: "idle" | "bootstrapping" }
-  | { status: "ready"; sessionId: string; chatId: string }
-  | { status: "error"; message: string };
-
 /**
- * Client-side bootstrap for new chats. Provisions a session +
- * sandbox on recoup-api before mounting `<Chat>` so the workflow
- * transport (`/api/chat/workflow`) has the `sessionId` + `chatId`
- * its validator requires (recoupable/chat#1747).
- *
- * Mounted by `app/chat/page.tsx` (server); this component owns
- * everything that needs Privy / the API base URL.
- *
- * Clone URL resolution lives on recoup-api: pass `organizationId`
- * from `OrganizationProvider` (or omit it for a personal session),
- * read `session.cloneUrl` from the response to hand to `createSandbox`,
- * and use `chat.id` as the surface id so workflow POSTs reference the
- * row api actually persisted (a server-side `generateUUID` would
- * desync from `chat.id` and 404 in `/api/chat/workflow`).
+ * Thin renderer over `useNewChatBootstrap`. Mounted by
+ * `app/chat/page.tsx`; provisions a recoup-api session + sandbox
+ * before mounting `<Chat>` so the workflow transport
+ * (`/api/chat/workflow`) has the `sessionId` + `chatId` its validator
+ * requires (recoupable/chat#1747).
  */
 export default function NewChatBootstrap({
   initialMessages,
 }: NewChatBootstrapProps) {
-  const { authenticated, getAccessToken } = usePrivy();
-  const { selectedOrgId } = useOrganization();
-  const [state, setState] = useState<BootstrapState>({ status: "idle" });
-
-  // Guard against React StrictMode double-mount running the bootstrap
-  // twice — the inner createSession/createSandbox calls are not
-  // idempotent (each POST would mint a fresh row + sandbox).
-  const startedRef = useRef(false);
-
-  useEffect(() => {
-    if (!authenticated) return;
-    if (startedRef.current) return;
-    if (state.status !== "idle") return;
-
-    startedRef.current = true;
-    setState({ status: "bootstrapping" });
-
-    void (async () => {
-      try {
-        const accessToken = await getAccessToken();
-        if (!accessToken) {
-          throw new Error("Please sign in to start a chat");
-        }
-
-        const { session, chat } = await createSession(
-          { organizationId: selectedOrgId ?? undefined },
-          accessToken,
-        );
-        await createSandbox(session.cloneUrl, session.id, accessToken);
-
-        setState({ status: "ready", sessionId: session.id, chatId: chat.id });
-      } catch (error) {
-        startedRef.current = false;
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Failed to start a new chat. Please try again.";
-        setState({ status: "error", message });
-      }
-    })();
-  }, [authenticated, selectedOrgId, getAccessToken, state.status]);
+  const state = useNewChatBootstrap();
 
   if (state.status === "ready") {
     return (
