@@ -12,13 +12,13 @@ const useSubscribeClick = () => {
   const handleClick = async () => {
     if (!userData?.account_id) return;
 
-    if (isSubscribed) {
-      createClientPortalSession(userData.account_id);
-      return;
-    }
-
     const accessToken = await getAccessToken();
     if (!accessToken) return;
+
+    if (isSubscribed) {
+      await createClientPortalSession(accessToken);
+      return;
+    }
 
     await createClientCheckoutSession(accessToken);
   };
