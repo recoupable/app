@@ -47,7 +47,7 @@ const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
       if (!accessToken) throw new Error("Not authenticated");
 
       const res = await fetch(
-        `${getClientApiBaseUrl()}/api/agent-templates/${agent.id}`,
+        `${getClientApiBaseUrl()}/api/agents/templates/${agent.id}`,
         {
           method: "PATCH",
           headers: {
@@ -64,9 +64,15 @@ const AgentEditDialog: React.FC<AgentEditDialogProps> = ({ agent }) => {
           }),
         },
       );
-      const data = await res.json();
-      if (!res.ok || data.status === "error") {
-        throw new Error(data.error || "Failed to update template");
+      const data = (await res.json().catch(() => null)) as
+        | { status: "success"; template: unknown }
+        | { status: "error"; error: string }
+        | null;
+      if (!res.ok || data?.status !== "success") {
+        throw new Error(
+          (data?.status === "error" && data.error) ||
+            "Failed to update template",
+        );
       }
       return data;
     },

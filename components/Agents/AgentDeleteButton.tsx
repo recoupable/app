@@ -37,7 +37,7 @@ const AgentDeleteButton: React.FC<AgentDeleteButtonProps> = ({
       if (!accessToken) throw new Error("Not authenticated");
 
       const res = await fetch(
-        `${getClientApiBaseUrl()}/api/agent-templates/${id}`,
+        `${getClientApiBaseUrl()}/api/agents/templates/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -45,9 +45,15 @@ const AgentDeleteButton: React.FC<AgentDeleteButtonProps> = ({
           },
         },
       );
-      const data = await res.json();
-      if (!res.ok || data.status === "error") {
-        throw new Error(data.error || "Failed to delete template");
+      const data = (await res.json().catch(() => null)) as
+        | { status: "success" }
+        | { status: "error"; error: string }
+        | null;
+      if (!res.ok || data?.status !== "success") {
+        throw new Error(
+          (data?.status === "error" && data.error) ||
+            "Failed to delete template",
+        );
       }
       return data;
     },
