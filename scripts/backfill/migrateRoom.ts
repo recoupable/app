@@ -1,7 +1,7 @@
 import { v5 as uuidv5 } from "uuid";
-import { supabase } from "./client.ts";
-import { paginate } from "./paginate.ts";
-import type { Memory, MigrationResult, Room } from "./types.ts";
+import { supabase } from "./client";
+import { paginate } from "./paginate";
+import { Memory, MigrationResult, Room } from "./types";
 
 // Fixed namespace for deterministic session ID generation.
 // Using uuidv5(room.id, namespace) gives the same sessionId every run,
@@ -68,14 +68,14 @@ export async function migrateRoom(room: Room): Promise<MigrationResult> {
     { id: sessionId, account_id: room.account_id, title, created_at: room.updated_at, updated_at: room.updated_at },
     { onConflict: "id" },
   );
-  if (sessionError) throw new Error(sessionError.message);
+  if (sessionError) throw sessionError;
 
   // Preserve room.id as chat.id so /chat/[roomId] URLs keep working
   const { error: chatError } = await supabase.from("chats").upsert(
     { id: room.id, session_id: sessionId, title, created_at: room.updated_at, updated_at: room.updated_at },
     { onConflict: "id" },
   );
-  if (chatError) throw new Error(chatError.message);
+  if (chatError) throw chatError;
 
   const count = await upsertMessages(room.id);
   console.log(`✅ Migrated room ${room.id} → session ${sessionId} (${count} messages)`);
