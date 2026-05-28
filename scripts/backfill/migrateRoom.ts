@@ -27,12 +27,27 @@ async function upsertMessages(roomId: string): Promise<number> {
     created_at: memory.updated_at,
   }));
 
-  const { error } = await supabase
+  // Fast path: one round-trip for all messages
+  const { error: batchError } = await supabase
     .from("chat_messages")
     .upsert(rows, { onConflict: "id" });
-  if (error) throw error;
 
-  return memories.length;
+  if (!batchError) return memories.length;
+
+  // Fallback: batch failed — retry per-row so bad rows don't block good ones
+  console.warn(`⚠️  Batch upsert failed for room ${roomId}, retrying per-row:`, batchError.message);
+
+  let succeeded = 0;
+  for (const row of rows) {
+    const { error } = await supabase.from("chat_messages").upsert(row, { onConflict: "id" });
+    if (error) {
+      console.error(`  ❌ Skipping message ${row.id}:`, error.message);
+    } else {
+      succeeded++;
+    }
+  }
+
+  return succeeded;
 }
 
 export async function migrateRoom(room: Room): Promise<MigrationResult> {
