@@ -47,6 +47,9 @@ async function upsertMessages(roomId: string): Promise<number> {
     }
   }
 
+  if (succeeded !== rows.length)
+    throw new Error(`Failed to upsert ${rows.length - succeeded} messages for room ${roomId}`);
+
   return succeeded;
 }
 
