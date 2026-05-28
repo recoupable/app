@@ -3,8 +3,8 @@ import { PostgrestResponse } from "@supabase/supabase-js";
 const PAGE_SIZE = 1000;
 
 /**
- * Fetches all rows from a Supabase query by looping with .range() until
- * fewer than PAGE_SIZE rows are returned. Required because PostgREST caps
+ * Fetches all rows from a Supabase query by looping with `.range()` until
+ * fewer than PAGE_SIZE rows come back. Needed because PostgREST caps
  * responses at 1,000 rows by default.
  */
 export async function paginate<T>(

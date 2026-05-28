@@ -1,83 +1,69 @@
 import { v5 as uuidv5 } from "uuid";
-import { supabase } from "./client";
-import { paginate } from "./paginate";
-import { Memory, MigrationResult, Room } from "./types";
+import { selectMemoriesByRoomId } from "@/lib/supabase/memories/selectMemoriesByRoomId";
+import { upsertSession } from "@/lib/supabase/sessions/upsertSession";
+import { upsertChat } from "@/lib/supabase/chats/upsertChat";
+import { upsertChatMessages } from "@/lib/supabase/chat_messages/upsertChatMessages";
+import type { BackfillRoom } from "@/lib/supabase/rooms/selectAllRooms";
+import type { Json } from "@/types/database.types";
+import { MigrationResult } from "./types";
 
 // Fixed namespace for deterministic session ID generation.
-// Using uuidv5(room.id, namespace) gives the same sessionId every run,
-// so retries cannot create orphan sessions after a partial failure.
+// uuidv5(room.id, namespace) yields the same sessionId every run, so
+// retries cannot create orphan sessions after a partial failure.
 const SESSION_NAMESPACE = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
 
-async function upsertMessages(roomId: string): Promise<number> {
-  const memories = await paginate<Memory>((from, to) =>
-    supabase
-      .from("memories")
-      .select("id, room_id, content, updated_at")
-      .eq("room_id", roomId)
-      .range(from, to),
-  );
-
+async function migrateMessages(roomId: string): Promise<number> {
+  const memories = await selectMemoriesByRoomId(roomId);
   if (memories.length === 0) return 0;
 
-  const rows = memories.map((memory) => ({
-    id: memory.id,
-    chat_id: roomId,
-    role: memory.content.role,
-    parts: memory.content.parts,
-    created_at: memory.updated_at,
-  }));
+  const rows = memories.map((memory) => {
+    // Legacy memories store content as { role, parts, content } (see chat's
+    // filterMessageContentForMemories); chat_messages wants role + parts.
+    const content = memory.content as { role: string; parts: Json };
+    return {
+      id: memory.id,
+      chat_id: roomId,
+      role: content.role,
+      parts: content.parts,
+      created_at: memory.updated_at,
+    };
+  });
 
-  // Fast path: one round-trip for all messages
-  const { error: batchError } = await supabase
-    .from("chat_messages")
-    .upsert(rows, { onConflict: "id" });
-
-  if (!batchError) return memories.length;
-
-  // Fallback: batch failed — retry per-row so bad rows don't block good ones
-  console.warn(`⚠️  Batch upsert failed for room ${roomId}, retrying per-row:`, batchError.message);
-
-  let succeeded = 0;
-  for (const row of rows) {
-    const { error } = await supabase.from("chat_messages").upsert(row, { onConflict: "id" });
-    if (error) {
-      console.error(`  ❌ Skipping message ${row.id}:`, error.message);
-    } else {
-      succeeded++;
-    }
-  }
-
-  if (succeeded !== rows.length)
-    throw new Error(`Failed to upsert ${rows.length - succeeded} messages for room ${roomId}`);
-
-  return succeeded;
+  return upsertChatMessages(rows);
 }
 
-export async function migrateRoom(room: Room): Promise<MigrationResult> {
+export async function migrateRoom(
+  room: BackfillRoom,
+): Promise<MigrationResult> {
   if (!room.account_id) {
     console.warn(`⚠️  Skipping room ${room.id} — no account_id`);
     return "skipped";
   }
 
-  // Deterministic ID: same room always produces the same session ID,
-  // making all three upserts fully idempotent across retries.
+  // Deterministic ID makes all three upserts idempotent across retries.
   const sessionId = uuidv5(room.id, SESSION_NAMESPACE);
   const title = room.topic ?? "Untitled";
 
-  const { error: sessionError } = await supabase.from("sessions").upsert(
-    { id: sessionId, account_id: room.account_id, title, created_at: room.updated_at, updated_at: room.updated_at },
-    { onConflict: "id" },
-  );
-  if (sessionError) throw sessionError;
+  await upsertSession({
+    id: sessionId,
+    account_id: room.account_id,
+    title,
+    created_at: room.updated_at,
+    updated_at: room.updated_at,
+  });
 
-  // Preserve room.id as chat.id so /chat/[roomId] URLs keep working
-  const { error: chatError } = await supabase.from("chats").upsert(
-    { id: room.id, session_id: sessionId, title, created_at: room.updated_at, updated_at: room.updated_at },
-    { onConflict: "id" },
-  );
-  if (chatError) throw chatError;
+  // Preserve room.id as chat.id so /chat/[roomId] URLs keep working.
+  await upsertChat({
+    id: room.id,
+    session_id: sessionId,
+    title,
+    created_at: room.updated_at,
+    updated_at: room.updated_at,
+  });
 
-  const count = await upsertMessages(room.id);
-  console.log(`✅ Migrated room ${room.id} → session ${sessionId} (${count} messages)`);
+  const count = await migrateMessages(room.id);
+  console.log(
+    `✅ Migrated room ${room.id} → session ${sessionId} (${count} messages)`,
+  );
   return "migrated";
 }

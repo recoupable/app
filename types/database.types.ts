@@ -166,8 +166,6 @@ export type Database = {
           job_title: string | null
           knowledges: Json | null
           label: string | null
-          onboarding_data: Json | null
-          onboarding_status: Json | null
           organization: string | null
           role_type: string | null
           updated_at: string
@@ -181,8 +179,6 @@ export type Database = {
           job_title?: string | null
           knowledges?: Json | null
           label?: string | null
-          onboarding_data?: Json | null
-          onboarding_status?: Json | null
           organization?: string | null
           role_type?: string | null
           updated_at?: string
@@ -196,8 +192,6 @@ export type Database = {
           job_title?: string | null
           knowledges?: Json | null
           label?: string | null
-          onboarding_data?: Json | null
-          onboarding_status?: Json | null
           organization?: string | null
           role_type?: string | null
           updated_at?: string
@@ -272,6 +266,67 @@ export type Database = {
             foreignKeyName: "account_phone_numbers_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      account_sandboxes: {
+        Row: {
+          account_id: string
+          created_at: string
+          id: string
+          sandbox_id: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          id?: string
+          sandbox_id: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          id?: string
+          sandbox_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_sandboxes_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      account_snapshots: {
+        Row: {
+          account_id: string
+          created_at: string | null
+          expires_at: string | null
+          github_repo: string | null
+          snapshot_id: string | null
+        }
+        Insert: {
+          account_id: string
+          created_at?: string | null
+          expires_at?: string | null
+          github_repo?: string | null
+          snapshot_id?: string | null
+        }
+        Update: {
+          account_id?: string
+          created_at?: string | null
+          expires_at?: string | null
+          github_repo?: string | null
+          snapshot_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_snapshots_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: true
             referencedRelation: "accounts"
             referencedColumns: ["id"]
           },
@@ -1029,6 +1084,118 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          chat_id: string
+          created_at: string
+          id: string
+          parts: Json
+          role: string
+        }
+        Insert: {
+          chat_id: string
+          created_at?: string
+          id: string
+          parts: Json
+          role: string
+        }
+        Update: {
+          chat_id?: string
+          created_at?: string
+          id?: string
+          parts?: Json
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_reads: {
+        Row: {
+          account_id: string
+          chat_id: string
+          created_at: string
+          last_read_at: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          chat_id: string
+          created_at?: string
+          last_read_at?: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          chat_id?: string
+          created_at?: string
+          last_read_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_reads_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_reads_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chats: {
+        Row: {
+          active_stream_id: string | null
+          created_at: string
+          id: string
+          last_assistant_message_at: string | null
+          model_id: string | null
+          session_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active_stream_id?: string | null
+          created_at?: string
+          id: string
+          last_assistant_message_at?: string | null
+          model_id?: string | null
+          session_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active_stream_id?: string | null
+          created_at?: string
+          id?: string
+          last_assistant_message_at?: string | null
+          model_id?: string | null
+          session_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chats_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       config: {
         Row: {
@@ -1927,6 +2094,38 @@ export type Database = {
           },
         ]
       }
+      memory_emails: {
+        Row: {
+          created_at: string
+          email_id: string
+          id: string
+          memory: string
+          message_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_id: string
+          id?: string
+          memory: string
+          message_id: string
+        }
+        Update: {
+          created_at?: string
+          email_id?: string
+          id?: string
+          memory?: string
+          message_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memory_emails_memory_fkey"
+            columns: ["memory"]
+            isOneToOne: false
+            referencedRelation: "memories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           account_id: string
@@ -2214,6 +2413,32 @@ export type Database = {
           timestamp?: number | null
         }
         Relationships: []
+      }
+      pulse_accounts: {
+        Row: {
+          account_id: string
+          active: boolean
+          id: string
+        }
+        Insert: {
+          account_id: string
+          active?: boolean
+          id?: string
+        }
+        Update: {
+          account_id?: string
+          active?: boolean
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pulse_accounts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: true
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       role_permissions: {
         Row: {
@@ -2655,6 +2880,104 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      sessions: {
+        Row: {
+          account_id: string
+          branch: string | null
+          cached_diff: Json | null
+          cached_diff_updated_at: string | null
+          clone_url: string | null
+          created_at: string
+          global_skill_refs: Json
+          hibernate_after: string | null
+          id: string
+          is_new_branch: boolean
+          last_activity_at: string | null
+          lifecycle_error: string | null
+          lifecycle_run_id: string | null
+          lifecycle_state: string | null
+          lifecycle_version: number
+          lines_added: number | null
+          lines_removed: number | null
+          repo_name: string | null
+          repo_owner: string | null
+          sandbox_expires_at: string | null
+          sandbox_state: Json | null
+          snapshot_created_at: string | null
+          snapshot_size_bytes: number | null
+          snapshot_url: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          branch?: string | null
+          cached_diff?: Json | null
+          cached_diff_updated_at?: string | null
+          clone_url?: string | null
+          created_at?: string
+          global_skill_refs?: Json
+          hibernate_after?: string | null
+          id: string
+          is_new_branch?: boolean
+          last_activity_at?: string | null
+          lifecycle_error?: string | null
+          lifecycle_run_id?: string | null
+          lifecycle_state?: string | null
+          lifecycle_version?: number
+          lines_added?: number | null
+          lines_removed?: number | null
+          repo_name?: string | null
+          repo_owner?: string | null
+          sandbox_expires_at?: string | null
+          sandbox_state?: Json | null
+          snapshot_created_at?: string | null
+          snapshot_size_bytes?: number | null
+          snapshot_url?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          branch?: string | null
+          cached_diff?: Json | null
+          cached_diff_updated_at?: string | null
+          clone_url?: string | null
+          created_at?: string
+          global_skill_refs?: Json
+          hibernate_after?: string | null
+          id?: string
+          is_new_branch?: boolean
+          last_activity_at?: string | null
+          lifecycle_error?: string | null
+          lifecycle_run_id?: string | null
+          lifecycle_state?: string | null
+          lifecycle_version?: number
+          lines_added?: number | null
+          lines_removed?: number | null
+          repo_name?: string | null
+          repo_owner?: string | null
+          sandbox_expires_at?: string | null
+          sandbox_state?: Json | null
+          snapshot_created_at?: string | null
+          snapshot_size_bytes?: number | null
+          snapshot_url?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       social_fans: {
         Row: {
@@ -3441,6 +3764,144 @@ export type Database = {
         }
         Relationships: []
       }
+      usage_events: {
+        Row: {
+          account_id: string
+          agent_type: string
+          cached_input_tokens: number
+          created_at: string
+          credits_deducted_cents: number
+          id: string
+          input_tokens: number
+          model_id: string | null
+          output_tokens: number
+          provider: string | null
+          source: string
+          tool_call_count: number
+        }
+        Insert: {
+          account_id: string
+          agent_type?: string
+          cached_input_tokens?: number
+          created_at?: string
+          credits_deducted_cents?: number
+          id: string
+          input_tokens?: number
+          model_id?: string | null
+          output_tokens?: number
+          provider?: string | null
+          source?: string
+          tool_call_count?: number
+        }
+        Update: {
+          account_id?: string
+          agent_type?: string
+          cached_input_tokens?: number
+          created_at?: string
+          credits_deducted_cents?: number
+          id?: string
+          input_tokens?: number
+          model_id?: string | null
+          output_tokens?: number
+          provider?: string | null
+          source?: string
+          tool_call_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_events_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_run_steps: {
+        Row: {
+          created_at: string
+          duration_ms: number
+          finish_reason: string | null
+          finished_at: string
+          id: string
+          raw_finish_reason: string | null
+          started_at: string
+          step_number: number
+          workflow_run_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms: number
+          finish_reason?: string | null
+          finished_at: string
+          id: string
+          raw_finish_reason?: string | null
+          started_at: string
+          step_number: number
+          workflow_run_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number
+          finish_reason?: string | null
+          finished_at?: string
+          id?: string
+          raw_finish_reason?: string | null
+          started_at?: string
+          step_number?: number
+          workflow_run_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_run_steps_workflow_run_id_fkey"
+            columns: ["workflow_run_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_runs: {
+        Row: {
+          chat_id: string
+          created_at: string
+          finished_at: string
+          id: string
+          model_id: string | null
+          started_at: string
+          status: string
+          total_duration_ms: number
+        }
+        Insert: {
+          chat_id: string
+          created_at?: string
+          finished_at: string
+          id: string
+          model_id?: string | null
+          started_at: string
+          status: string
+          total_duration_ms: number
+        }
+        Update: {
+          chat_id?: string
+          created_at?: string
+          finished_at?: string
+          id?: string
+          model_id?: string | null
+          started_at?: string
+          status?: string
+          total_duration_ms?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_runs_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -3504,6 +3965,15 @@ export type Database = {
       }
       deduct_credits: {
         Args: { account_id: string; amount: number }
+        Returns: undefined
+      }
+      deduct_credits_with_audit: {
+        Args: {
+          p_account_id: string
+          p_amount: number
+          p_event: Json
+          p_event_id: string
+        }
         Returns: undefined
       }
       extract_domain: { Args: { email: string }; Returns: string }

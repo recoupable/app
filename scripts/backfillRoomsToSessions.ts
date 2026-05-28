@@ -2,36 +2,32 @@
  * Phase 2 backfill: migrate rooms + memories → sessions + chats + chat_messages
  *
  * Run with:
- *   NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npx tsx scripts/backfillRoomsToSessions.ts
+ *   NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... pnpm backfill:rooms-to-sessions
  *
  * Fully idempotent: safe to re-run after partial failures.
  */
 
-import { supabase } from "./backfill/client";
-import { paginate } from "./backfill/paginate";
+import { selectAllRooms } from "@/lib/supabase/rooms/selectAllRooms";
 import { migrateRoom } from "./backfill/migrateRoom";
-import { MigrationResult, Room } from "./backfill/types";
+import { MigrationResult } from "./backfill/types";
 
 async function main() {
-  console.log("🚀 Starting Phase 2 backfill: rooms → sessions/chats/chat_messages\n");
-
-  const rooms = await paginate<Room>((from, to) =>
-    supabase
-      .from("rooms")
-      .select("id, account_id, topic, updated_at")
-      .order("updated_at", { ascending: true })
-      .order("id", { ascending: true })
-      .range(from, to),
+  console.log(
+    "🚀 Starting Phase 2 backfill: rooms → sessions/chats/chat_messages\n",
   );
 
+  const rooms = await selectAllRooms();
   console.log(`Found ${rooms.length} rooms to process\n`);
 
-  const counts: Record<MigrationResult, number> = { migrated: 0, skipped: 0, failed: 0 };
+  const counts: Record<MigrationResult, number> = {
+    migrated: 0,
+    skipped: 0,
+    failed: 0,
+  };
 
   for (const room of rooms) {
     try {
-      const result = await migrateRoom(room);
-      counts[result]++;
+      counts[await migrateRoom(room)]++;
     } catch (err) {
       console.error(`❌ Failed to migrate room ${room.id}:`, err);
       counts.failed++;
