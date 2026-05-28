@@ -10,7 +10,8 @@
     "format": "prettier --write app components providers types hooks lib && pnpm lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "update-types": "npx supabase gen types typescript --project-id godremdqwajrwazhbrue --schema public > types/database.types.ts"
+    "update-types": "npx supabase gen types typescript --project-id godremdqwajrwazhbrue --schema public > types/database.types.ts",
+    "backfill:rooms-to-sessions": "npx tsx scripts/backfillRoomsToSessions.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "3.0.0-beta.53",
