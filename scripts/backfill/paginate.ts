@@ -1,4 +1,4 @@
-import { PostgrestResponse } from "@supabase/supabase-js";
+import type { PostgrestResponse } from "@supabase/supabase-js";
 
 const PAGE_SIZE = 1000;
 
@@ -15,7 +15,7 @@ export async function paginate<T>(
 
   while (true) {
     const { data, error } = await queryFn(from, from + PAGE_SIZE - 1);
-    if (error) throw error;
+    if (error) throw new Error(error.message);
     rows.push(...(data ?? []));
     if ((data?.length ?? 0) < PAGE_SIZE) break;
     from += PAGE_SIZE;

@@ -2,15 +2,16 @@
  * Phase 2 backfill: migrate rooms + memories → sessions + chats + chat_messages
  *
  * Run with:
- *   NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npx tsx scripts/backfillRoomsToSessions.ts
+ *   pnpm backfill:rooms-to-sessions
+ * (requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env)
  *
  * Fully idempotent: safe to re-run after partial failures.
  */
 
-import { supabase } from "./backfill/client";
-import { paginate } from "./backfill/paginate";
-import { migrateRoom } from "./backfill/migrateRoom";
-import { MigrationResult, Room } from "./backfill/types";
+import { supabase } from "./backfill/client.ts";
+import { paginate } from "./backfill/paginate.ts";
+import { migrateRoom } from "./backfill/migrateRoom.ts";
+import type { MigrationResult, Room } from "./backfill/types.ts";
 
 async function main() {
   console.log("🚀 Starting Phase 2 backfill: rooms → sessions/chats/chat_messages\n");
@@ -45,4 +46,7 @@ async function main() {
   if (counts.failed > 0) process.exit(1);
 }
 
-main();
+main().catch((err: unknown) => {
+  console.error("❌ Fatal:", err instanceof Error ? err.message : err);
+  process.exit(1);
+});

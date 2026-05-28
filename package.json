@@ -11,7 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "update-types": "npx supabase gen types typescript --project-id godremdqwajrwazhbrue --schema public > types/database.types.ts",
-    "backfill:rooms-to-sessions": "npx tsx scripts/backfillRoomsToSessions.ts"
+    "backfill:rooms-to-sessions": "node --env-file=.env --experimental-strip-types --no-warnings=MODULE_TYPELESS_PACKAGE_JSON scripts/backfillRoomsToSessions.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "3.0.0-beta.53",
