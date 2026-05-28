@@ -47,7 +47,7 @@ export async function getSystemPrompt({
   - DO NOT ask the user for any information - you have everything you need
 
   **AUDIO TRANSCRIPTION INSTRUCTIONS:**
-  When the user shares an audio file URL (e.g., arweave.net, or any audio URL) and asks to transcribe, get lyrics, or analyze audio:
+  When the user shares an audio file URL and asks to transcribe, get lyrics, or analyze audio:
   
   **IMMEDIATELY call transcribe_audio with:**
   - audio_url: The audio URL from the message

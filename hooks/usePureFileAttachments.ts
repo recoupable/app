@@ -74,7 +74,7 @@ export function usePureFileAttachments() {
         throw new Error(data?.error || "Upload failed");
       }
 
-      // Update the attachment with the Arweave URL
+      // Update the attachment with the uploaded URL
       setAttachments((prev: FileUIPart[]) =>
         prev.map((attachment: FileUIPart) =>
           // Compare by URL since object references won't match
