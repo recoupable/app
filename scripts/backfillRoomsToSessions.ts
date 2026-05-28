@@ -20,6 +20,7 @@ async function main() {
       .from("rooms")
       .select("id, account_id, topic, updated_at")
       .order("updated_at", { ascending: true })
+      .order("id", { ascending: true })
       .range(from, to),
   );
 

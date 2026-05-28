@@ -17,19 +17,20 @@ async function upsertMessages(roomId: string): Promise<number> {
       .range(from, to),
   );
 
-  for (const memory of memories) {
-    const { error } = await supabase.from("chat_messages").upsert(
-      {
-        id: memory.id,
-        chat_id: roomId,
-        role: memory.content.role,
-        parts: memory.content.parts,
-        created_at: memory.updated_at,
-      },
-      { onConflict: "id" },
-    );
-    if (error) throw error;
-  }
+  if (memories.length === 0) return 0;
+
+  const rows = memories.map((memory) => ({
+    id: memory.id,
+    chat_id: roomId,
+    role: memory.content.role,
+    parts: memory.content.parts,
+    created_at: memory.updated_at,
+  }));
+
+  const { error } = await supabase
+    .from("chat_messages")
+    .upsert(rows, { onConflict: "id" });
+  if (error) throw error;
 
   return memories.length;
 }
