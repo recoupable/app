@@ -4,6 +4,7 @@ import { useConversationsProvider } from "@/providers/ConversationsProvider";
 import { CreateArtistResult } from "@/types/createArtistResult";
 import copyMessages from "@/lib/messages/copyMessages";
 import { usePrivy } from "@privy-io/react-auth";
+import { useRouter } from "next/navigation";
 
 /**
  * Hook for managing the create artist tool result
@@ -13,6 +14,7 @@ export function useCreateArtistTool(result: CreateArtistResult) {
   const { status, id } = useVercelChatContext();
   const { refetchConversations } = useConversationsProvider();
   const { getAccessToken } = usePrivy();
+  const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +56,7 @@ export function useCreateArtistTool(result: CreateArtistResult) {
 
           if (success) {
             // Update the URL to point to the new conversation
-            window.history.replaceState({}, "", `/chat/${result.newRoomId}`);
+            router.replace(`/chat/${result.newRoomId}`);
             setIsSuccess(true);
           } else {
             console.error("Failed to copy messages");
@@ -79,6 +81,7 @@ export function useCreateArtistTool(result: CreateArtistResult) {
     isProcessing,
     refetchConversations,
     getAccessToken,
+    router,
   ]);
 
   return {
