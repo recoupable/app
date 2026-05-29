@@ -1,4 +1,4 @@
-import { Chat } from "@/components/VercelChat/chat";
+import ExistingChatBootstrap from "@/components/VercelChat/ExistingChatBootstrap";
 
 interface PageProps {
   params: Promise<{
@@ -11,7 +11,7 @@ export default async function InstantChatRoom({ params }: PageProps) {
 
   return (
     <div className="flex flex-col size-full items-center">
-      <Chat id={roomId} />
+      <ExistingChatBootstrap key={roomId} roomId={roomId} />
     </div>
   );
 }

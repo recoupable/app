@@ -59,11 +59,11 @@ interface VercelChatProviderProps {
   children: ReactNode;
   chatId: string;
   /**
-   * Session id from the new-chat bootstrap. Forwarded into
-   * `useVercelChat` -> `useChatTransport`; presence flips the
-   * transport to recoup-api's `/api/chat/workflow`.
+   * Session id for the chat. Forwarded into `useVercelChat` ->
+   * `useChatTransport`, which always targets recoup-api's
+   * `/api/chat/workflow` (recoupable/chat#1747).
    */
-  sessionId?: string;
+  sessionId: string;
   initialMessages?: UIMessage[];
 }
 

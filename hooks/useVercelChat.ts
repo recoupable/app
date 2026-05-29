@@ -27,13 +27,13 @@ import getMimeFromPath from "@/lib/files/getMimeFromPath";
 interface UseVercelChatProps {
   id: string;
   /**
-   * Session id from the chat-bootstrap (`createSession`). When present
-   * the transport targets `/api/chat/workflow`; when absent it falls
-   * back to the legacy `/api/chat` for chats opened from history that
-   * haven't been backfilled to the workflow architecture yet
-   * (recoupable/chat#1747 Phase 2).
+   * Session id for the chat. Every chat now routes through recoup-api's
+   * `/api/chat/workflow`: new chats get it from the bootstrap
+   * (`createSession`), existing chats resolve it from the chat row
+   * (recoupable/chat#1747). The legacy `/api/chat` path has been removed,
+   * so this is required.
    */
-  sessionId?: string;
+  sessionId: string;
   initialMessages?: UIMessage[];
   attachments?: FileUIPart[];
   textAttachments?: TextAttachment[];
@@ -283,6 +283,7 @@ export function useVercelChat({
   messagesLengthRef.current = messages.length;
 
   const { isLoading: isMessagesLoading, hasError } = useMessageLoader(
+    sessionId,
     messages.length === 0 ? id : undefined,
     userId,
     setMessages,

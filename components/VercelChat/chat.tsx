@@ -23,13 +23,12 @@ import { useOrganization } from "@/providers/OrganizationProvider";
 interface ChatProps {
   id: string;
   /**
-   * Session id from the new-chat bootstrap. When present the chat
-   * routes through recoup-api's `/api/chat/workflow`; when absent it
-   * falls back to the legacy `/api/chat` (existing chats opened from
-   * history — they'll cut over once Phase 2 backfills `session_id`
-   * onto their rows, recoupable/chat#1747).
+   * Session id for the chat. Both new chats (`NewChatBootstrap`) and
+   * existing chats (`ExistingChatBootstrap`) resolve it before mounting
+   * `<Chat>`, which always routes through recoup-api's
+   * `/api/chat/workflow` (recoupable/chat#1747).
    */
-  sessionId?: string;
+  sessionId: string;
   initialMessages?: UIMessage[];
 }
 
