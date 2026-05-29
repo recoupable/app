@@ -297,8 +297,13 @@ export function useVercelChat({
   const isGeneratingResponse = ["streaming", "submitted"].includes(status);
 
   const silentlyUpdateUrl = useCallback(() => {
-    window.history.replaceState({}, "", `/chat/${id}`);
-  }, [id]);
+    if (!sessionId) return;
+    window.history.replaceState(
+      {},
+      "",
+      `/sessions/${sessionId}/chats/${id}`,
+    );
+  }, [id, sessionId]);
 
   const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
