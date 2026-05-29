@@ -1,6 +1,5 @@
 "use client";
 
-import { useAutoLogin } from "@/hooks/useAutoLogin";
 import CatalogSongsPageContent from "./CatalogSongsPageContent";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -10,7 +9,6 @@ interface CatalogSongsPageProps {
 }
 
 const CatalogSongsPage = ({ catalogId }: CatalogSongsPageProps) => {
-  useAutoLogin();
   const router = useRouter();
 
   const handleBack = () => {
