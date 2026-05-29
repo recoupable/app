@@ -283,6 +283,7 @@ export function useVercelChat({
   messagesLengthRef.current = messages.length;
 
   const { isLoading: isMessagesLoading, hasError } = useMessageLoader(
+    sessionId,
     messages.length === 0 ? id : undefined,
     userId,
     setMessages,

@@ -1,26 +1,27 @@
 import { useState, useEffect } from "react";
 import { UIMessage } from "ai";
 import { usePrivy } from "@privy-io/react-auth";
-import getChatMessages from "@/lib/messages/getChatMessages";
+import { getChatMessages } from "@/lib/messages/getChatMessages";
 
 /**
- * Hook for loading existing messages from a room
- * @param roomId - The room ID to load messages from (undefined to skip loading)
- * @param userId - The current user ID (messages won't load if user is not authenticated)
- * @param setMessages - Callback function to set the loaded messages
- * @returns Loading state and error information
+ * Loads the persisted UI message stream for a session-scoped chat from
+ * recoup-api. Skips entirely when either id is missing — the new-chat
+ * bootstrap path mounts `<Chat>` before a session has been minted, and
+ * the in-transition legacy `/chat/{roomId}` route lacks a sessionId
+ * until track I redirects it.
  */
 export function useMessageLoader(
-  roomId: string | undefined,
+  sessionId: string | undefined,
+  chatId: string | undefined,
   userId: string | undefined,
   setMessages: (messages: UIMessage[]) => void,
 ) {
   const { getAccessToken } = usePrivy();
-  const [isLoading, setIsLoading] = useState(!!roomId);
+  const [isLoading, setIsLoading] = useState(!!(sessionId && chatId));
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!roomId) {
+    if (!sessionId || !chatId) {
       setIsLoading(false);
       return;
     }
@@ -38,9 +39,13 @@ export function useMessageLoader(
         const accessToken = await getAccessToken();
         if (!accessToken) return;
 
-        const initialMessages = await getChatMessages(roomId, accessToken);
+        const initialMessages = await getChatMessages(
+          sessionId,
+          chatId,
+          accessToken,
+        );
         if (initialMessages.length > 0) {
-          setMessages(initialMessages as UIMessage[]);
+          setMessages(initialMessages);
         }
       } catch (err) {
         console.error("Error loading messages:", err);
@@ -53,7 +58,7 @@ export function useMessageLoader(
     };
 
     loadMessages();
-  }, [userId, roomId, getAccessToken, setMessages]);
+  }, [userId, sessionId, chatId, getAccessToken, setMessages]);
 
   return {
     isLoading,
