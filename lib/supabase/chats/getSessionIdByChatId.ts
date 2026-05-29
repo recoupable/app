@@ -12,8 +12,8 @@ export async function getSessionIdByChatId(
     .from("chats")
     .select("session_id")
     .eq("id", chatId)
-    .single();
+    .maybeSingle();
 
-  if (error) return null;
+  if (error) throw error;
   return (data as { session_id: string } | null)?.session_id ?? null;
 }

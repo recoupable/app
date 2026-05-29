@@ -1,6 +1,8 @@
 import { Chat } from "@/components/VercelChat/chat";
 import { getSessionIdByChatId } from "@/lib/supabase/chats/getSessionIdByChatId";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{
     roomId: string;
