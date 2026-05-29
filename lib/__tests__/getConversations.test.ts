@@ -12,20 +12,20 @@ describe("getConversations", () => {
   });
 
   describe("successful responses", () => {
-    it("fetches conversations from NEW_API_BASE_URL without account_id query param", async () => {
-      const mockChats = [
+    it("fetches conversations from NEW_API_BASE_URL and projects the wire shape", async () => {
+      const apiChats = [
         {
           id: "chat-1",
-          account_id: "account-123",
-          artist_id: "artist-456",
-          topic: "Test Chat",
-          updated_at: "2024-01-01T00:00:00Z",
+          title: "Test Chat",
+          accountId: "account-123",
+          sessionId: "session-789",
+          updatedAt: "2024-01-01T00:00:00Z",
         },
       ];
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ status: "success", chats: mockChats }),
+        json: async () => ({ status: "success", chats: apiChats }),
       });
 
       const result = await getConversations("test-token");
@@ -41,7 +41,15 @@ describe("getConversations", () => {
           }),
         })
       );
-      expect(result).toEqual(mockChats);
+      expect(result).toEqual([
+        {
+          id: "chat-1",
+          topic: "Test Chat",
+          sessionId: "session-789",
+          account_id: "account-123",
+          updated_at: "2024-01-01T00:00:00Z",
+        },
+      ]);
     });
 
     it("returns empty array when chats is undefined in response", async () => {

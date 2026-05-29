@@ -1,22 +1,14 @@
 import { useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUserProvider } from "@/providers/UserProvder";
-import { useArtistProvider } from "@/providers/ArtistProvider";
 import getConversations from "@/lib/getConversations";
 import { Conversation } from "@/types/Chat";
 import { usePrivy } from "@privy-io/react-auth";
 
 const useConversations = () => {
   const { userData } = useUserProvider();
-  const { selectedArtist, artists } = useArtistProvider();
   const queryClient = useQueryClient();
   const { getAccessToken, authenticated } = usePrivy();
-
-  // Get artist IDs in the current org/view for filtering
-  const orgArtistIds = useMemo(
-    () => new Set(artists.map((a) => a.account_id)),
-    [artists],
-  );
 
   const queryKey = useMemo(() => ["conversations"] as const, []);
 
@@ -35,46 +27,35 @@ const useConversations = () => {
     initialData: [],
   });
 
-  const conversations = useMemo(() => {
-    // If artist selected, filter to only that artist's conversations
-    if (selectedArtist) {
-      return fetchedConversations.filter(
-        (item) => item.artist_id === selectedArtist.account_id,
-      );
-    }
+  // Artist-scoped filtering is intentionally absent: the session-scoped
+  // listing endpoint doesn't carry artist linkage yet. It returns once
+  // `sessions.artist_id` lands and `POST /api/sessions` threads
+  // `artistId` through.
+  const conversations = fetchedConversations;
 
-    // No artist selected - filter to artists in the current org view
-    if (orgArtistIds.size > 0) {
-      return fetchedConversations.filter((item) =>
-        orgArtistIds.has(item.artist_id),
-      );
-    }
-
-    // Fallback: no artists in org (shouldn't happen normally)
-    return fetchedConversations;
-  }, [selectedArtist, fetchedConversations, orgArtistIds]);
-
-  // Optimistic update helpers for creating a new chat room
+  // Optimistic update for creating a new chat. Only fires when both the
+  // chat row and its parent session are known — legacy chats (without
+  // sessionId) skip the optimistic add and surface on the next refetch.
   const addOptimisticConversation = (
     topic: string,
     chatId: string,
+    sessionId: string | undefined,
     message?: string,
   ) => {
-    if (!userData || !selectedArtist?.account_id) return null;
-    // Avoid adding an optimistic conversation when a chat id already exists in the URL
-    const hasChatIdInUrl =
-      typeof window !== "undefined" &&
-      /\/chat\/[^\/]+/.test(window.location.pathname);
-    if (hasChatIdInUrl) return null;
+    if (!userData) return null;
+    if (!sessionId) return null;
+    // Skip if this chat is already in the sidebar list — otherwise a
+    // message sent from a deep-linked existing chat would render a
+    // duplicate row.
+    if (fetchedConversations.some((c) => c.id === chatId)) return null;
 
     const now = new Date().toISOString();
 
     const tempConversation: Conversation = {
       id: chatId,
       topic,
+      sessionId,
       account_id: userData.id,
-      artist_id: selectedArtist.account_id,
-      // Include one memory so it shows up in RecentChats filter
       memories: [
         {
           id: `${chatId}-m1`,
