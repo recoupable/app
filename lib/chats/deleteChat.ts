@@ -1,26 +1,29 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
 /**
- * Deletes a chat by ID via the API service.
+ * Deletes a session-scoped chat via recoup-api
+ * `DELETE /api/sessions/{sessionId}/chats/{chatId}` — cascades to
+ * `chat_messages` and `chat_reads`.
  */
 export async function deleteChat(
-  roomId: string,
+  sessionId: string,
+  chatId: string,
   accessToken: string,
 ): Promise<void> {
   const url = getClientApiBaseUrl();
 
-  const response = await fetch(`${url}/api/chats`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
+  const response = await fetch(
+    `${url}/api/sessions/${encodeURIComponent(sessionId)}/chats/${encodeURIComponent(chatId)}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     },
-    body: JSON.stringify({ id: roomId }),
-  });
-
-  const result = await response.json();
+  );
 
   if (!response.ok) {
+    const result = await response.json().catch(() => ({}) as { error?: string });
     throw new Error(result.error || "Failed to delete chat");
   }
 }

@@ -52,7 +52,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, chatRoom, chatRooms, onDelet
         setDeletingProgress({ current: i + 1, total: chatCount });
 
         try {
-          await deleteChat(chat.id);
+          await deleteChat({ sessionId: chat.sessionId, chatId: chat.id });
         } catch (chatError) {
           console.error(`Error deleting chat ${chat.topic || "Chat"}:`, chatError);
           failedChats.push(chat.topic || "Chat");
