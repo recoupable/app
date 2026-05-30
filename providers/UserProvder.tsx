@@ -1,6 +1,7 @@
 "use client";
 
 import useUser from "@/hooks/useUser";
+import { useAutoLogin } from "@/hooks/useAutoLogin";
 import React, { createContext, useContext, useMemo } from "react";
 
 const UserContext = createContext<ReturnType<typeof useUser>>(
@@ -9,6 +10,7 @@ const UserContext = createContext<ReturnType<typeof useUser>>(
 
 const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const user = useUser();
+  useAutoLogin();
 
   const value = useMemo(() => ({ ...user }), [user]);
 

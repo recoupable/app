@@ -7,7 +7,6 @@ import ChatSkeleton from "../Chat/ChatSkeleton";
 import ChatGreeting from "../Chat/ChatGreeting";
 import useVisibilityDelay from "@/hooks/useVisibilityDelay";
 import { useParams } from "next/navigation";
-import { useAutoLogin } from "@/hooks/useAutoLogin";
 import { useArtistFromRoom } from "@/hooks/useArtistFromRoom";
 import {
   VercelChatProvider,
@@ -57,7 +56,6 @@ function ChatContentMemoized({
 }) {
   const { messages, status, isLoading, hasError } = useVercelChatContext();
   const { roomId } = useParams();
-  useAutoLogin();
   useArtistFromRoom(id);
   const { getRootProps, isDragActive } = useDropzone();
 
