@@ -11,9 +11,18 @@ interface DeleteConfirmationModalProps {
   onDelete: () => void;
 }
 
-const DeleteConfirmationModal = ({ isOpen, onClose, chatRoom, chatRooms, onDelete }: DeleteConfirmationModalProps) => {
+const DeleteConfirmationModal = ({
+  isOpen,
+  onClose,
+  chatRoom,
+  chatRooms,
+  onDelete,
+}: DeleteConfirmationModalProps) => {
   const [error, setError] = useState("");
-  const [deletingProgress, setDeletingProgress] = useState<{ current: number; total: number } | null>(null);
+  const [deletingProgress, setDeletingProgress] = useState<{
+    current: number;
+    total: number;
+  } | null>(null);
   const { deleteChat, isDeleting } = useDeleteChat();
 
   // Reset state when modal opens/closes
@@ -29,16 +38,20 @@ const DeleteConfirmationModal = ({ isOpen, onClose, chatRoom, chatRooms, onDelet
 
   // Determine if this is bulk delete or single delete
   const isBulkDelete = chatRooms && chatRooms.length > 0;
-  const chatsToDelete = isBulkDelete ? chatRooms : (chatRoom ? [chatRoom] : []);
+  const chatsToDelete = isBulkDelete ? chatRooms : chatRoom ? [chatRoom] : [];
 
   if (!isOpen || chatsToDelete.length === 0) return null;
 
   const chatCount = chatsToDelete.length;
   const isSingleDelete = chatCount === 1;
-  const chatName = isSingleDelete ? (chatsToDelete[0].topic || "Chat") : `${chatCount} chats`;
+  const chatName = isSingleDelete
+    ? chatsToDelete[0].topic || "Chat"
+    : `${chatCount} chats`;
   const buttonText = isDeleting
-    ? (deletingProgress ? `Deleting ${deletingProgress.current}/${deletingProgress.total}...` : 'Deleting...')
-    : 'Delete';
+    ? deletingProgress
+      ? `Deleting ${deletingProgress.current}/${deletingProgress.total}...`
+      : "Deleting..."
+    : "Delete";
 
   const handleDelete = async () => {
     setError("");
@@ -52,15 +65,18 @@ const DeleteConfirmationModal = ({ isOpen, onClose, chatRoom, chatRooms, onDelet
         setDeletingProgress({ current: i + 1, total: chatCount });
 
         try {
-          await deleteChat({ sessionId: chat.sessionId, chatId: chat.id });
+          await deleteChat({ sessionId: chat.sessionId });
         } catch (chatError) {
-          console.error(`Error deleting chat ${chat.topic || "Chat"}:`, chatError);
+          console.error(
+            `Error deleting chat ${chat.topic || "Chat"}:`,
+            chatError,
+          );
           failedChats.push(chat.topic || "Chat");
         }
       }
 
       if (failedChats.length > 0) {
-        setError(`Failed to delete: ${failedChats.join(', ')}`);
+        setError(`Failed to delete: ${failedChats.join(", ")}`);
         setDeletingProgress(null);
         await onDelete();
         return;
@@ -69,8 +85,12 @@ const DeleteConfirmationModal = ({ isOpen, onClose, chatRoom, chatRooms, onDelet
       await onDelete();
       onClose();
     } catch (error) {
-      console.error('Error deleting chats:', error);
-      setError(error instanceof Error ? error.message : 'Failed to delete chats. Please try again.');
+      console.error("Error deleting chats:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to delete chats. Please try again.",
+      );
       setDeletingProgress(null);
     }
   };
@@ -85,10 +105,12 @@ const DeleteConfirmationModal = ({ isOpen, onClose, chatRoom, chatRooms, onDelet
     <Modal onClose={handleModalClose}>
       <div className="p-4 relative">
         <h2 className="text-xl font-semibold mb-4">
-          {isSingleDelete ? 'Delete Chat' : 'Delete Chats'}
+          {isSingleDelete ? "Delete Chat" : "Delete Chats"}
         </h2>
         <p className="mb-5 text-base">
-          Are you sure you want to delete {isSingleDelete ? `"${chatName}"` : chatName}? This action cannot be undone.
+          Are you sure you want to delete{" "}
+          {isSingleDelete ? `"${chatName}"` : chatName}? This action cannot be
+          undone.
         </p>
 
         {error && (
