@@ -283,6 +283,7 @@ export function useVercelChat({
   messagesLengthRef.current = messages.length;
 
   const { isLoading: isMessagesLoading, hasError } = useMessageLoader(
+    sessionId,
     messages.length === 0 ? id : undefined,
     userId,
     setMessages,
@@ -297,8 +298,13 @@ export function useVercelChat({
   const isGeneratingResponse = ["streaming", "submitted"].includes(status);
 
   const silentlyUpdateUrl = useCallback(() => {
-    window.history.replaceState({}, "", `/chat/${id}`);
-  }, [id]);
+    if (!sessionId) return;
+    window.history.replaceState(
+      {},
+      "",
+      `/sessions/${sessionId}/chats/${id}`,
+    );
+  }, [id, sessionId]);
 
   const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

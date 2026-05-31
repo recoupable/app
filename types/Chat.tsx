@@ -13,9 +13,9 @@ export type Conversation = {
   sessionId: string;
   account_id: string;
   /**
-   * Legacy artist linkage from the `rooms` shape. The new session-scoped
-   * listing endpoint doesn't surface artist linkage yet — it returns once
-   * `sessions.artist_id` lands.
+   * Artist account this chat belongs to (mirrors `sessions.artist_id`).
+   * Undefined when the owning session was created without an artist
+   * context.
    */
   artist_id?: string;
   /**
@@ -31,14 +31,16 @@ export type Conversation = {
   updated_at: string;
 };
 
-export type MessageFileAttachment = {
-  type: "file";
-  data: URL;
-  mimeType: string;
-} | {
-  type: "image";
-  image: string;
-};
+export type MessageFileAttachment =
+  | {
+      type: "file";
+      data: URL;
+      mimeType: string;
+    }
+  | {
+      type: "image";
+      image: string;
+    };
 
 export interface CreateChatRequest {
   artistId?: string;

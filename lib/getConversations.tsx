@@ -5,13 +5,16 @@ import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
  * Wire shape of each row from recoup-api `GET /api/chats`. Every chat
  * is joined to its parent session, so `sessionId` is always present
  * and consumers can build the canonical
- * `/sessions/{sessionId}/chats/{id}` URL directly.
+ * `/sessions/{sessionId}/chats/{id}` URL directly. `artistId` reflects
+ * the session's artist linkage (null when the session was created
+ * without an artist context).
  */
 interface ApiChatRow {
   id: string;
   title: string;
   accountId: string;
   sessionId: string;
+  artistId: string | null;
   updatedAt: string;
 }
 
@@ -24,19 +27,27 @@ interface ApiChatRow {
  * is inferred from the token — `account_id` is intentionally not sent
  * (personal tokens 403 on that filter).
  *
+ * Pass `artistAccountId` to scope the response to a single artist
+ * context (filters on `sessions.artist_id` server-side). Omit it to
+ * list every chat the caller owns.
+ *
  * @see https://developers.recoupable.com/api-reference/chat/chats
  */
 const getConversations = async (
   accessToken: string,
+  artistAccountId?: string,
 ): Promise<Conversation[]> => {
   if (!accessToken) {
     return [];
   }
 
   try {
-    const url = `${getClientApiBaseUrl()}/api/chats`;
+    const url = new URL(`${getClientApiBaseUrl()}/api/chats`);
+    if (artistAccountId) {
+      url.searchParams.set("artist_account_id", artistAccountId);
+    }
 
-    const response = await fetch(url, {
+    const response = await fetch(url.toString(), {
       method: "GET",
       cache: "no-store",
       headers: {
@@ -60,6 +71,7 @@ const getConversations = async (
         topic: row.title,
         sessionId: row.sessionId,
         account_id: row.accountId,
+        artist_id: row.artistId ?? undefined,
         updated_at: row.updatedAt,
       }),
     );

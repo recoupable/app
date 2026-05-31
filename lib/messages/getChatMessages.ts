@@ -1,37 +1,26 @@
+import { UIMessage } from "ai";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
-const getChatMessages = async (
+/**
+ * Fetch the persisted UI message stream for a session-scoped chat from
+ * recoup-api `GET /api/sessions/{sessionId}/chats/{chatId}`. Each row's
+ * `parts` blob is the full UIMessage, so the response can be handed
+ * straight to the Vercel AI SDK as initial messages.
+ */
+export async function getChatMessages(
+  sessionId: string,
   chatId: string,
   accessToken: string,
-) => {
-  try {
-    const url = getClientApiBaseUrl();
-    const response = await fetch(
-      `${url}/api/chats/${encodeURIComponent(chatId)}/messages`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      },
-    );
-    const data = await response.json();
+): Promise<UIMessage[]> {
+  const response = await fetch(
+    `${getClientApiBaseUrl()}/api/sessions/${encodeURIComponent(sessionId)}/chats/${encodeURIComponent(chatId)}`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    },
+  );
 
-    const memories = data?.data || [];
+  if (!response.ok) return [];
 
-    return memories.map(
-      (memory: {
-        id: string;
-        content: { role: string; content: string };
-        updated_at: string;
-      }) => ({
-        id: memory.id,
-        ...memory.content,
-      }),
-    );
-  } catch {
-    // Error handling - could be logged to proper error tracking service
-    return [];
-  }
-};
-
-export default getChatMessages;
+  const data = (await response.json()) as { messages?: UIMessage[] };
+  return data.messages ?? [];
+}

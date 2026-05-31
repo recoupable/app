@@ -1,36 +1,51 @@
 import { useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUserProvider } from "@/providers/UserProvder";
+import { useArtistProvider } from "@/providers/ArtistProvider";
 import getConversations from "@/lib/getConversations";
 import { Conversation } from "@/types/Chat";
 import { usePrivy } from "@privy-io/react-auth";
 
 const useConversations = () => {
   const { userData } = useUserProvider();
+  const { selectedArtist, isLoading: isArtistsLoading } = useArtistProvider();
   const queryClient = useQueryClient();
   const { getAccessToken, authenticated } = usePrivy();
 
-  const queryKey = useMemo(() => ["conversations"] as const, []);
+  const artistAccountId = selectedArtist?.account_id;
+
+  // Artist id is part of the cache key so switching artists triggers a
+  // fresh fetch with the new `?artist_account_id` filter rather than
+  // reusing the previous artist's cached list.
+  const queryKey = useMemo(
+    () => ["conversations", artistAccountId ?? null] as const,
+    [artistAccountId],
+  );
 
   const {
     data: fetchedConversations = [],
-    isLoading,
+    isLoading: queryIsLoading,
     isFetching,
     refetch,
   } = useQuery<Conversation[]>({
     queryKey,
     queryFn: async () => {
       const accessToken = await getAccessToken();
-      return getConversations(accessToken as string);
+      return getConversations(accessToken as string, artistAccountId);
     },
-    enabled: authenticated,
+    // Wait for `useArtists` to resolve `selectedArtist` before firing.
+    // Otherwise the first request goes out with no artist filter while
+    // the saved selection is still loading, briefly showing the user
+    // every chat across artists before the refetch swaps in the
+    // correct list.
+    enabled: authenticated && !isArtistsLoading,
     initialData: [],
   });
 
-  // Artist-scoped filtering is intentionally absent: the session-scoped
-  // listing endpoint doesn't carry artist linkage yet. It returns once
-  // `sessions.artist_id` lands and `POST /api/sessions` threads
-  // `artistId` through.
+  // Surface the pre-resolve window as "loading" too, so the sidebar
+  // renders its skeleton instead of an empty list.
+  const isLoading = isArtistsLoading || queryIsLoading;
+
   const conversations = fetchedConversations;
 
   // Optimistic update for creating a new chat. Only fires when both the
