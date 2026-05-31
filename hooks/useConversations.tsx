@@ -1,16 +1,26 @@
 import { useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUserProvider } from "@/providers/UserProvder";
+import { useArtistProvider } from "@/providers/ArtistProvider";
 import getConversations from "@/lib/getConversations";
 import { Conversation } from "@/types/Chat";
 import { usePrivy } from "@privy-io/react-auth";
 
 const useConversations = () => {
   const { userData } = useUserProvider();
+  const { selectedArtist } = useArtistProvider();
   const queryClient = useQueryClient();
   const { getAccessToken, authenticated } = usePrivy();
 
-  const queryKey = useMemo(() => ["conversations"] as const, []);
+  const artistAccountId = selectedArtist?.account_id;
+
+  // Artist id is part of the cache key so switching artists triggers a
+  // fresh fetch with the new `?artist_account_id` filter rather than
+  // reusing the previous artist's cached list.
+  const queryKey = useMemo(
+    () => ["conversations", artistAccountId ?? null] as const,
+    [artistAccountId],
+  );
 
   const {
     data: fetchedConversations = [],
@@ -21,16 +31,12 @@ const useConversations = () => {
     queryKey,
     queryFn: async () => {
       const accessToken = await getAccessToken();
-      return getConversations(accessToken as string);
+      return getConversations(accessToken as string, artistAccountId);
     },
     enabled: authenticated,
     initialData: [],
   });
 
-  // Artist-scoped filtering is intentionally absent: the session-scoped
-  // listing endpoint doesn't carry artist linkage yet. It returns once
-  // `sessions.artist_id` lands and `POST /api/sessions` threads
-  // `artistId` through.
   const conversations = fetchedConversations;
 
   // Optimistic update for creating a new chat. Only fires when both the
