@@ -8,7 +8,7 @@ import { usePrivy } from "@privy-io/react-auth";
 
 const useConversations = () => {
   const { userData } = useUserProvider();
-  const { selectedArtist } = useArtistProvider();
+  const { selectedArtist, isLoading: isArtistsLoading } = useArtistProvider();
   const queryClient = useQueryClient();
   const { getAccessToken, authenticated } = usePrivy();
 
@@ -24,7 +24,7 @@ const useConversations = () => {
 
   const {
     data: fetchedConversations = [],
-    isLoading,
+    isLoading: queryIsLoading,
     isFetching,
     refetch,
   } = useQuery<Conversation[]>({
@@ -33,9 +33,18 @@ const useConversations = () => {
       const accessToken = await getAccessToken();
       return getConversations(accessToken as string, artistAccountId);
     },
-    enabled: authenticated,
+    // Wait for `useArtists` to resolve `selectedArtist` before firing.
+    // Otherwise the first request goes out with no artist filter while
+    // the saved selection is still loading, briefly showing the user
+    // every chat across artists before the refetch swaps in the
+    // correct list.
+    enabled: authenticated && !isArtistsLoading,
     initialData: [],
   });
+
+  // Surface the pre-resolve window as "loading" too, so the sidebar
+  // renders its skeleton instead of an empty list.
+  const isLoading = isArtistsLoading || queryIsLoading;
 
   const conversations = fetchedConversations;
 

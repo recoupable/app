@@ -11,6 +11,7 @@ const RecentChats = ({ toggleModal }: { toggleModal: () => void }) => {
   const { userData } = useUserProvider();
   const {
     conversations,
+    isLoading,
     isFetching,
     hoveredChatId,
     setHoveredChatId,
@@ -35,8 +36,12 @@ const RecentChats = ({ toggleModal }: { toggleModal: () => void }) => {
     isShiftPressed,
   } = useRecentChats({ toggleModal });
 
-  // Only show skeleton on initial load, not during background refetches
-  const showSkeleton = !userData || (isFetching && conversations.length === 0);
+  // Show the skeleton until both the artist context (`isLoading`, gated on
+  // `useArtists`) and the first `/api/chats` fetch have settled. Without
+  // the `isLoading` check the user briefly sees an empty list while the
+  // query waits for the artist selection to resolve.
+  const showSkeleton =
+    !userData || isLoading || (isFetching && conversations.length === 0);
 
   return (
     <div className="w-full flex-grow min-h-0 flex flex-col">
@@ -48,9 +53,7 @@ const RecentChats = ({ toggleModal }: { toggleModal: () => void }) => {
             onDelete={handleBulkDelete}
           />
         ) : (
-          <p className="text-xs text-muted-foreground px-3">
-            Chats
-          </p>
+          <p className="text-xs text-muted-foreground px-3">Chats</p>
         )}
       </div>
       <div className="overflow-y-auto flex-grow">
