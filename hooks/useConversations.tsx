@@ -2,79 +2,75 @@ import { useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUserProvider } from "@/providers/UserProvder";
 import { useArtistProvider } from "@/providers/ArtistProvider";
-import getConversations from "@/lib/getConversations";
+import getConversations from "@/lib/chat/getConversations";
 import { Conversation } from "@/types/Chat";
 import { usePrivy } from "@privy-io/react-auth";
 
 const useConversations = () => {
   const { userData } = useUserProvider();
-  const { selectedArtist, artists } = useArtistProvider();
+  const { selectedArtist, isLoading: isArtistsLoading } = useArtistProvider();
   const queryClient = useQueryClient();
   const { getAccessToken, authenticated } = usePrivy();
 
-  // Get artist IDs in the current org/view for filtering
-  const orgArtistIds = useMemo(
-    () => new Set(artists.map((a) => a.account_id)),
-    [artists],
-  );
+  const artistAccountId = selectedArtist?.account_id;
 
-  const queryKey = useMemo(() => ["conversations"] as const, []);
+  // Artist id is part of the cache key so switching artists triggers a
+  // fresh fetch with the new `?artist_account_id` filter rather than
+  // reusing the previous artist's cached list.
+  const queryKey = useMemo(
+    () => ["conversations", artistAccountId ?? null] as const,
+    [artistAccountId],
+  );
 
   const {
     data: fetchedConversations = [],
-    isLoading,
+    isLoading: queryIsLoading,
     isFetching,
     refetch,
   } = useQuery<Conversation[]>({
     queryKey,
     queryFn: async () => {
       const accessToken = await getAccessToken();
-      return getConversations(accessToken as string);
+      return getConversations(accessToken as string, artistAccountId);
     },
-    enabled: authenticated,
+    // Wait for `useArtists` to resolve `selectedArtist` before firing.
+    // Otherwise the first request goes out with no artist filter while
+    // the saved selection is still loading, briefly showing the user
+    // every chat across artists before the refetch swaps in the
+    // correct list.
+    enabled: authenticated && !isArtistsLoading,
     initialData: [],
   });
 
-  const conversations = useMemo(() => {
-    // If artist selected, filter to only that artist's conversations
-    if (selectedArtist) {
-      return fetchedConversations.filter(
-        (item) => item.artist_id === selectedArtist.account_id,
-      );
-    }
+  // Surface the pre-resolve window as "loading" too, so the sidebar
+  // renders its skeleton instead of an empty list.
+  const isLoading = isArtistsLoading || queryIsLoading;
 
-    // No artist selected - filter to artists in the current org view
-    if (orgArtistIds.size > 0) {
-      return fetchedConversations.filter((item) =>
-        orgArtistIds.has(item.artist_id),
-      );
-    }
+  const conversations = fetchedConversations;
 
-    // Fallback: no artists in org (shouldn't happen normally)
-    return fetchedConversations;
-  }, [selectedArtist, fetchedConversations, orgArtistIds]);
-
-  // Optimistic update helpers for creating a new chat room
+  // Optimistic update for creating a new chat. Only fires when both the
+  // chat row and its parent session are known — legacy chats (without
+  // sessionId) skip the optimistic add and surface on the next refetch.
   const addOptimisticConversation = (
     topic: string,
     chatId: string,
+    sessionId: string | undefined,
     message?: string,
   ) => {
-    if (!userData || !selectedArtist?.account_id) return null;
-    // Avoid adding an optimistic conversation when a chat id already exists in the URL
-    const hasChatIdInUrl =
-      typeof window !== "undefined" &&
-      /\/chat\/[^\/]+/.test(window.location.pathname);
-    if (hasChatIdInUrl) return null;
+    if (!userData) return null;
+    if (!sessionId) return null;
+    // Skip if this chat is already in the sidebar list — otherwise a
+    // message sent from a deep-linked existing chat would render a
+    // duplicate row.
+    if (fetchedConversations.some((c) => c.id === chatId)) return null;
 
     const now = new Date().toISOString();
 
     const tempConversation: Conversation = {
       id: chatId,
       topic,
+      sessionId,
       account_id: userData.id,
-      artist_id: selectedArtist.account_id,
-      // Include one memory so it shows up in RecentChats filter
       memories: [
         {
           id: `${chatId}-m1`,

@@ -2,6 +2,7 @@
 
 import type { UIMessage } from "ai";
 import { Loader } from "lucide-react";
+import { useAutoLogin } from "@/hooks/useAutoLogin";
 import { useNewChatBootstrap } from "@/hooks/useNewChatBootstrap";
 import { Chat } from "@/components/VercelChat/chat";
 
@@ -11,14 +12,15 @@ interface NewChatBootstrapProps {
 
 /**
  * Thin renderer over `useNewChatBootstrap`. Mounted by
- * `app/chat/page.tsx`; provisions a recoup-api session + sandbox
- * before mounting `<Chat>` so the workflow transport
- * (`/api/chat/workflow`) has the `sessionId` + `chatId` its validator
- * requires (recoupable/chat#1747).
+ * `app/page.tsx` (via HomePage) and `app/chat/page.tsx`; provisions
+ * a recoup-api session + sandbox before mounting `<Chat>` so the
+ * workflow transport (`/api/chat/workflow`) has the `sessionId` +
+ * `chatId` its validator requires (recoupable/chat#1747).
  */
 export default function NewChatBootstrap({
   initialMessages,
 }: NewChatBootstrapProps) {
+  useAutoLogin();
   const state = useNewChatBootstrap();
 
   if (state.status === "ready") {
