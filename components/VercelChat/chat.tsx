@@ -7,7 +7,6 @@ import ChatSkeleton from "../Chat/ChatSkeleton";
 import ChatGreeting from "../Chat/ChatGreeting";
 import useVisibilityDelay from "@/hooks/useVisibilityDelay";
 import { useParams } from "next/navigation";
-import { useAutoLogin } from "@/hooks/useAutoLogin";
 import { useArtistFromRoom } from "@/hooks/useArtistFromRoom";
 import {
   VercelChatProvider,
@@ -44,16 +43,9 @@ export function Chat({ id, sessionId, initialMessages }: ChatProps) {
       sessionId={sessionId}
       initialMessages={initialMessages}
     >
-      {!sessionId ? <LegacyAutoLogin /> : null}
       <ChatContent id={id} />
     </VercelChatProvider>
   );
-}
-
-/** Prompts sign-in for legacy `/chat/[roomId]` mounts (no bootstrap wrapper). */
-function LegacyAutoLogin() {
-  useAutoLogin();
-  return null;
 }
 
 // Inner component that uses the context

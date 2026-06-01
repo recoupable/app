@@ -2,7 +2,6 @@
 
 import type { UIMessage } from "ai";
 import { Loader } from "lucide-react";
-import { useAutoLogin } from "@/hooks/useAutoLogin";
 import { useNewChatBootstrap } from "@/hooks/useNewChatBootstrap";
 import { Chat } from "@/components/VercelChat/chat";
 
@@ -20,7 +19,6 @@ interface NewChatBootstrapProps {
 export default function NewChatBootstrap({
   initialMessages,
 }: NewChatBootstrapProps) {
-  useAutoLogin();
   const state = useNewChatBootstrap();
 
   if (state.status === "ready") {
