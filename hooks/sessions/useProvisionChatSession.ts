@@ -7,10 +7,8 @@ import {
   provisionChatSession,
   type ProvisionChatSessionInput,
 } from "@/lib/sessions/provisionChatSession";
-import {
-  provisionInputsMatch,
-  shouldProvisionChatSession,
-} from "@/hooks/sessions/shouldProvisionChatSession";
+import { provisionInputsMatch } from "@/hooks/sessions/provisionInputsMatch";
+import { shouldProvisionChatSession } from "@/hooks/sessions/shouldProvisionChatSession";
 
 /**
  * Discriminated lifecycle state for a chat-session provisioning attempt.
