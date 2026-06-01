@@ -5,8 +5,10 @@ import { useMutation } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
 import { useOrganization } from "@/providers/OrganizationProvider";
 import { useArtistProvider } from "@/providers/ArtistProvider";
-import { createSession } from "@/lib/sessions/createSession";
-import { createSandbox } from "@/lib/sandboxes/createSandbox";
+import {
+  provisionChatSession,
+  type ProvisionChatSessionInput,
+} from "@/lib/sessions/provisionChatSession";
 
 /**
  * Discriminated state for a new chat bootstrap. The `ready` variant
@@ -18,16 +20,15 @@ export type NewChatBootstrapState =
   | { status: "ready"; sessionId: string; chatId: string }
   | { status: "error"; message: string };
 
-interface BootstrapInputs {
-  artistId: string | undefined;
-  orgId: string | undefined;
-}
-
 /**
- * Provisions a session + sandbox for a new chat, stamping
- * `sessions.artist_id` with the currently-selected artist. Re-fires on
- * artist or org change; the `sameInputs` guard makes incidental
- * re-renders idempotent.
+ * Drives the new-chat provisioning lifecycle. Delegates the actual
+ * `POST /api/sessions` + `POST /api/sandbox` work to
+ * `provisionChatSession`; this hook owns the trigger conditions, the
+ * input-change re-fire semantics, and the state derivation.
+ *
+ * Re-fires on artist or org change so each context switch mints a
+ * fresh session. The `sameInputs` guard inside the effect protects
+ * against incidental re-renders firing the mutation a second time.
  */
 export function useNewChatBootstrap(): NewChatBootstrapState {
   const { authenticated, getAccessToken } = usePrivy();
@@ -38,17 +39,12 @@ export function useNewChatBootstrap(): NewChatBootstrapState {
   const orgId = selectedOrgId ?? undefined;
 
   const mutation = useMutation({
-    mutationFn: async (input: BootstrapInputs) => {
+    mutationFn: async (input: ProvisionChatSessionInput) => {
       const accessToken = await getAccessToken();
       if (!accessToken) {
         throw new Error("Please sign in to start a chat");
       }
-      const { session, chat } = await createSession(
-        { artistId: input.artistId, organizationId: input.orgId },
-        accessToken,
-      );
-      await createSandbox(session.cloneUrl, session.id, accessToken);
-      return { sessionId: session.id, chatId: chat.id };
+      return provisionChatSession(input, accessToken);
     },
   });
 

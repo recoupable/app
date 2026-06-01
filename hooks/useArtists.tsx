@@ -6,15 +6,13 @@ import useArtistSetting from "./useArtistSetting";
 import useArtistMode from "./useArtistMode";
 import saveArtist from "@/lib/saveArtist";
 import useCreateArtists from "./useCreateArtists";
+import { useArtistSelection } from "./artists/useArtistSelection";
 import { usePrivy } from "@privy-io/react-auth";
 import { fetchArtists } from "@/lib/artists/fetchArtists";
 import { sortArtistsWithPinnedFirst } from "@/lib/artists/sortArtistsWithPinnedFirst";
-import { useLocalStorage } from "usehooks-ts";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-type ArtistSelections = Record<string, ArtistRecord>;
-
-/** Roster via react-query; selection derived from (artists, saved, orgKey, override). */
+/** Roster via react-query; selection delegated to `useArtistSelection`. */
 const useArtists = () => {
   const artistSetting = useArtistSetting();
   const { userData } = useUserProvider();
@@ -33,18 +31,6 @@ const useArtists = () => {
 
   const orgKey = selectedOrgId || "personal";
 
-  const [selections, setSelections] = useLocalStorage<ArtistSelections>(
-    "RECOUP_ARTIST_SELECTIONS",
-    {},
-  );
-
-  // Explicit pick/deselect for this session. null means user-deselected
-  // (saved selection ignored); undefined means user hasn't interacted.
-  const [userOverride, setUserOverride] = useState<{
-    orgKey: string;
-    artist: ArtistRecord | null;
-  } | null>(null);
-
   const artistsQueryKey = useMemo(
     () => ["artists", userData?.id, selectedOrgId] as const,
     [userData?.id, selectedOrgId],
@@ -60,24 +46,10 @@ const useArtists = () => {
     enabled: !!userData?.id,
   });
 
-  // Precedence: override → saved → artists[0]. Re-look-up in fresh
-  // `artists` so we surface latest server-side fields, not snapshots.
-  const selectedArtist = useMemo<ArtistRecord | null>(() => {
-    if (userOverride && userOverride.orgKey === orgKey) {
-      if (!userOverride.artist) return null;
-      return (
-        artists.find((a) => a.account_id === userOverride.artist!.account_id) ??
-        null
-      );
-    }
-    if (artists.length === 0) return null;
-    const saved = selections[orgKey];
-    if (saved && Object.keys(saved).length > 0) {
-      const found = artists.find((a) => a.account_id === saved.account_id);
-      if (found) return found;
-    }
-    return artists[0];
-  }, [artists, selections, orgKey, userOverride]);
+  const { selectedArtist, setSelectedArtist } = useArtistSelection(
+    orgKey,
+    artists,
+  );
 
   const sorted = useMemo(() => {
     if (!selectedArtist) {
@@ -95,22 +67,6 @@ const useArtists = () => {
     ];
     return [selectedArtist, ...sortArtistsWithPinnedFirst(rest)];
   }, [artists, selectedArtist]);
-
-  const setSelectedArtist = useCallback(
-    (artist: ArtistRecord | null) => {
-      setUserOverride({ orgKey, artist });
-      if (artist) {
-        setSelections((prev) => ({ ...prev, [orgKey]: artist }));
-      } else {
-        setSelections((prev) => {
-          const next = { ...prev };
-          delete next[orgKey];
-          return next;
-        });
-      }
-    },
-    [orgKey, setSelections],
-  );
 
   // Mirrors `setState` so `setArtists(list)` and `setArtists(prev => ...)` both work.
   const setArtists = useCallback(
