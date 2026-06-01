@@ -12,6 +12,8 @@ import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 export interface CreateSessionInput {
   title?: string;
   organizationId?: string;
+  /** Persisted on `sessions.artist_id`; backs the sidebar's artist filter. */
+  artistId?: string;
 }
 
 /**

@@ -2,7 +2,7 @@ import { useArtistProvider } from "@/providers/ArtistProvider";
 import { ArtistRecord } from "@/types/Artist";
 import ImageWithFallback from "../ImageWithFallback";
 import { EllipsisVertical, Pin, PinOff } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -32,23 +32,27 @@ const Artist = ({
   const shouldHighlight = !isAnyArtistSelected; // Highlight when no artist is selected
 
   const pathname = usePathname();
-  const { replace } = useRouter();
+
+  // True on a specific-chat URL, not bare `/chat`. We hard-nav rather
+  // than `router.replace` because `silentlyUpdateUrl` desyncs Next's
+  // router from the URL bar.
+  const isOnExistingChat =
+    /^\/sessions\/[^/]+\/chats\/[^/]+/.test(pathname) ||
+    /^\/chat\/[^/]+/.test(pathname);
 
   const handleClick = () => {
     toggleDropDown();
-    
-    // If clicking the already selected artist, unselect it
+
     if (isSelectedArtist) {
       setSelectedArtist(null);
+      if (isOnExistingChat) window.location.href = "/chat";
       return;
     }
-    
-    if (pathname.includes("/chat/") && selectedArtist) {
-      if (selectedArtist.account_id !== artist?.account_id) {
-        replace("/chat");
-      }
-    }
+
     setSelectedArtist(artist);
+    if (isOnExistingChat && selectedArtist?.account_id !== artist?.account_id) {
+      window.location.href = "/chat";
+    }
   };
 
 
