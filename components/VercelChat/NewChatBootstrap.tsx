@@ -2,7 +2,10 @@
 
 import type { UIMessage } from "ai";
 import { useRef } from "react";
-import { useNewChatBootstrap } from "@/hooks/useNewChatBootstrap";
+import {
+  isNewChatBootstrapPreparing,
+  useNewChatBootstrap,
+} from "@/hooks/useNewChatBootstrap";
 import { Chat } from "@/components/VercelChat/chat";
 import { generateUUID } from "@/lib/generateUUID";
 
@@ -26,7 +29,7 @@ export default function NewChatBootstrap({
   const state = useNewChatBootstrap();
   const placeholderChatId = useRef(generateUUID()).current;
 
-  const isBootstrapPreparing = state.status !== "ready";
+  const isBootstrapPreparing = isNewChatBootstrapPreparing(state);
 
   if (state.status === "error") {
     return (

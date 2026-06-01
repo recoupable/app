@@ -16,6 +16,13 @@ export type NewChatBootstrapState =
   | { status: "ready"; sessionId: string; chatId: string }
   | { status: "error"; message: string };
 
+/** True until api session + sandbox ids are available (incl. pre-auth idle). */
+export function isNewChatBootstrapPreparing(
+  state: NewChatBootstrapState,
+): boolean {
+  return state.status !== "ready";
+}
+
 /**
  * Runs the new-chat provisioning flow: read `selectedOrgId` from
  * `OrganizationProvider`, `POST /api/sessions` (api derives `cloneUrl`
