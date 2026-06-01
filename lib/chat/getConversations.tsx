@@ -1,22 +1,29 @@
+import { z } from "zod";
 import type { Conversation } from "@/types/Chat";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
 /**
- * Wire shape of each row from recoup-api `GET /api/chats`. Every chat
- * is joined to its parent session, so `sessionId` is always present
- * and consumers can build the canonical
+ * Wire shape of each row from recoup-api `GET /api/chats`, validated at
+ * the boundary. Mirrors the `ChatRoom` schema in
+ * recoupable/docs#227 — every chat is joined to its parent session, so
+ * `sessionId` is always present and consumers can build the canonical
  * `/sessions/{sessionId}/chats/{id}` URL directly. `artistId` reflects
  * the session's artist linkage (null when the session was created
  * without an artist context).
  */
-interface ApiChatRow {
-  id: string;
-  title: string;
-  accountId: string;
-  sessionId: string;
-  artistId: string | null;
-  updatedAt: string;
-}
+const apiChatRowSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  accountId: z.string(),
+  sessionId: z.string(),
+  artistId: z.string().nullable(),
+  updatedAt: z.string(),
+});
+
+const apiChatsResponseSchema = z.object({
+  status: z.string().optional(),
+  chats: z.array(apiChatRowSchema).default([]),
+});
 
 /**
  * Fetches the caller's chats and projects each row into the local
@@ -30,6 +37,10 @@ interface ApiChatRow {
  * Pass `artistAccountId` to scope the response to a single artist
  * context (filters on `sessions.artist_id` server-side). Omit it to
  * list every chat the caller owns.
+ *
+ * Response payload is validated against the documented schema at the
+ * boundary — a malformed row (missing/wrongly typed field) raises and
+ * we fall back to `[]` rather than letting bad data flow into the UI.
  *
  * @see https://developers.recoupable.com/api-reference/chat/chats
  */
@@ -64,8 +75,8 @@ const getConversations = async (
       return [];
     }
 
-    const data: { chats?: ApiChatRow[] } = await response.json();
-    return (data.chats ?? []).map(
+    const parsed = apiChatsResponseSchema.parse(await response.json());
+    return parsed.chats.map(
       (row): Conversation => ({
         id: row.id,
         topic: row.title,
