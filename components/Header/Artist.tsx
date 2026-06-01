@@ -2,7 +2,7 @@ import { useArtistProvider } from "@/providers/ArtistProvider";
 import { ArtistRecord } from "@/types/Artist";
 import ImageWithFallback from "../ImageWithFallback";
 import { EllipsisVertical, Pin, PinOff } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -33,23 +33,24 @@ const Artist = ({
   const shouldHighlight = !isAnyArtistSelected; // Highlight when no artist is selected
 
   const pathname = usePathname();
-  const { replace } = useRouter();
 
   const handleClick = () => {
     toggleDropDown();
-    
-    // If clicking the already selected artist, unselect it
+
     if (isSelectedArtist) {
       setSelectedArtist(null);
+      // Hard-nav on existing chat URLs — `silentlyUpdateUrl` desyncs Next's router.
+      if (isActiveChatRoomPath(pathname)) window.location.href = "/chat";
       return;
     }
-    
-    if (isActiveChatRoomPath(pathname) && selectedArtist) {
-      if (selectedArtist.account_id !== artist?.account_id) {
-        replace("/chat");
-      }
-    }
+
     setSelectedArtist(artist);
+    if (
+      isActiveChatRoomPath(pathname) &&
+      selectedArtist?.account_id !== artist?.account_id
+    ) {
+      window.location.href = "/chat";
+    }
   };
 
 
