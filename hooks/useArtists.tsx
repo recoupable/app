@@ -1,24 +1,21 @@
 import { useUserProvider } from "@/providers/UserProvder";
 import { useOrganization } from "@/providers/OrganizationProvider";
-import { ArtistRecord } from "@/types/Artist";
 import { useCallback, useMemo, useState } from "react";
 import useArtistSetting from "./useArtistSetting";
 import useArtistMode from "./useArtistMode";
 import saveArtist from "@/lib/saveArtist";
 import useCreateArtists from "./useCreateArtists";
 import { useArtistSelection } from "./artists/useArtistSelection";
+import { useArtistsRoster } from "./artists/useArtistsRoster";
 import { usePrivy } from "@privy-io/react-auth";
-import { fetchArtists } from "@/lib/artists/fetchArtists";
 import { sortArtistsWithPinnedFirst } from "@/lib/artists/sortArtistsWithPinnedFirst";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-/** Roster via react-query; selection delegated to `useArtistSelection`. */
+/** Composes the roster (`useArtistsRoster`) + selection (`useArtistSelection`) + per-artist settings. */
 const useArtists = () => {
   const artistSetting = useArtistSetting();
   const { userData } = useUserProvider();
   const { selectedOrgId } = useOrganization();
   const { getAccessToken } = usePrivy();
-  const queryClient = useQueryClient();
   const [updating, setUpdating] = useState(false);
   const [menuVisibleArtistId, setMenuVisibleArtistId] = useState<any>("");
   const { isCreatingArtist, setIsCreatingArtist, updateChatState } =
@@ -31,23 +28,9 @@ const useArtists = () => {
 
   const orgKey = selectedOrgId || "personal";
 
-  const artistsQueryKey = useMemo(
-    () => ["artists", userData?.id, selectedOrgId] as const,
-    [userData?.id, selectedOrgId],
-  );
-
-  const { data: artists = [], isLoading } = useQuery({
-    queryKey: artistsQueryKey,
-    queryFn: async () => {
-      const accessToken = await getAccessToken();
-      // Throw rather than resolve to `[]` so `isLoading` stays true on
-      // a transient missing token — otherwise `useNewChatBootstrap`
-      // would see "settled, empty roster" and POST with
-      // `artistId: undefined`.
-      if (!accessToken) throw new Error("Missing Privy access token");
-      return fetchArtists(accessToken, selectedOrgId);
-    },
-    enabled: !!userData?.id,
+  const { artists, isLoading, setArtists, refetchArtists } = useArtistsRoster({
+    userId: userData?.id,
+    orgId: selectedOrgId,
   });
 
   const { selectedArtist, setSelectedArtist } = useArtistSelection(
@@ -72,42 +55,17 @@ const useArtists = () => {
     return [selectedArtist, ...sortArtistsWithPinnedFirst(rest)];
   }, [artists, selectedArtist]);
 
-  // Mirrors `setState` so `setArtists(list)` and `setArtists(prev => ...)` both work.
-  const setArtists = useCallback(
-    (next: ArtistRecord[] | ((prev: ArtistRecord[]) => ArtistRecord[])) => {
-      queryClient.setQueryData<ArtistRecord[]>(artistsQueryKey, (prev) =>
-        typeof next === "function" ? next(prev ?? []) : next,
-      );
-    },
-    [queryClient, artistsQueryKey],
-  );
-
+  // Imperative refresh + optional select-by-id. Used after create/update.
   const getArtists = useCallback(
     async (artistId?: string) => {
       if (!userData?.id) return;
-
-      const fresh = await queryClient.fetchQuery({
-        queryKey: artistsQueryKey,
-        queryFn: async () => {
-          const accessToken = await getAccessToken();
-          if (!accessToken) throw new Error("Missing Privy access token");
-          return fetchArtists(accessToken, selectedOrgId);
-        },
-      });
-
+      const fresh = await refetchArtists();
       if (artistId) {
         const found = fresh.find((a) => a.account_id === artistId);
         if (found) setSelectedArtist(found);
       }
     },
-    [
-      userData?.id,
-      selectedOrgId,
-      getAccessToken,
-      queryClient,
-      artistsQueryKey,
-      setSelectedArtist,
-    ],
+    [userData?.id, refetchArtists, setSelectedArtist],
   );
 
   const saveSetting = async (
