@@ -7,6 +7,7 @@ import {
   provisionChatSession,
   type ProvisionChatSessionInput,
 } from "@/lib/sessions/provisionChatSession";
+import { shouldProvisionChatSession } from "@/hooks/sessions/shouldProvisionChatSession";
 
 /**
  * Discriminated lifecycle state for a chat-session provisioning attempt.
@@ -58,15 +59,23 @@ export function useProvisionChatSession({
   });
 
   useEffect(() => {
-    if (!enabled) return;
-    const last = mutation.variables;
-    const sameInputs =
-      last !== undefined && last.artistId === artistId && last.orgId === orgId;
-    if (sameInputs && (mutation.isPending || mutation.isSuccess)) return;
+    if (
+      !shouldProvisionChatSession({
+        enabled,
+        artistId,
+        orgId,
+        lastVariables: mutation.variables,
+        isPending: mutation.isPending,
+        isSuccess: mutation.isSuccess,
+      })
+    ) {
+      return;
+    }
     mutation.mutate({ artistId, orgId });
     // `mutation.*` are read inside the body, not declared as deps. The
-    // dep array is the real input set; the effect bails idempotently
-    // when those inputs already match the in-flight or completed call.
+    // dep array is the real input set; `shouldProvisionChatSession` bails
+    // idempotently when those inputs already match the in-flight or
+    // completed call, or when a mismatched call is still pending.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, artistId, orgId]);
 

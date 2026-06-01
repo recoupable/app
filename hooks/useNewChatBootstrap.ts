@@ -16,17 +16,17 @@ export type NewChatBootstrapState = ProvisionChatSessionState;
 
 /**
  * Wires Privy + Organization + Artist providers into
- * `useProvisionChatSession`. This hook contains no provisioning logic
- * — it just resolves the inputs (auth state, selected org, selected
- * artist) and delegates to the provisioner.
+ * `useProvisionChatSession`. Waits for org localStorage hydration
+ * (`isOrgReady`) and artist roster load before enabling provision so
+ * artist/org switches mint one session, not several.
  */
 export function useNewChatBootstrap(): NewChatBootstrapState {
   const { authenticated } = usePrivy();
-  const { selectedOrgId } = useOrganization();
+  const { selectedOrgId, isOrgReady } = useOrganization();
   const { selectedArtist, isLoading: isArtistsLoading } = useArtistProvider();
 
   return useProvisionChatSession({
-    enabled: authenticated && !isArtistsLoading,
+    enabled: authenticated && isOrgReady && !isArtistsLoading,
     artistId: selectedArtist?.account_id,
     orgId: selectedOrgId ?? undefined,
   });

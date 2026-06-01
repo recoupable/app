@@ -5,6 +5,8 @@ import { isActiveChatRoomPath } from "@/lib/chat/isActiveChatRoomPath";
 
 interface OrganizationContextType {
   selectedOrgId: string | null;
+  /** False until localStorage org selection has been read on mount. */
+  isOrgReady: boolean;
   setSelectedOrgId: (orgId: string | null) => void;
   isOrgSettingsOpen: boolean;
   openOrgSettings: (orgId: string) => void;
@@ -79,6 +81,7 @@ const OrganizationProvider = ({ children }: { children: React.ReactNode }) => {
   const value = useMemo(
     () => ({
       selectedOrgId: isInitialized ? selectedOrgId : null,
+      isOrgReady: isInitialized,
       setSelectedOrgId,
       isOrgSettingsOpen,
       openOrgSettings,
