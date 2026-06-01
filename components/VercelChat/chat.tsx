@@ -43,16 +43,9 @@ export function Chat({ id, sessionId, initialMessages }: ChatProps) {
       sessionId={sessionId}
       initialMessages={initialMessages}
     >
-      {!sessionId ? <LegacyAutoLogin /> : null}
       <ChatContent id={id} />
     </VercelChatProvider>
   );
-}
-
-/** Prompts sign-in for legacy `/chat/[roomId]` mounts (no bootstrap wrapper). */
-function LegacyAutoLogin() {
-  useAutoLogin();
-  return null;
 }
 
 // Inner component that uses the context
