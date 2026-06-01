@@ -58,10 +58,12 @@ export function useArtistsRoster({
   }, [getAccessToken, orgId]);
 
   // Gate on `authenticated` so the query doesn't fire before Privy
-  // issues a token — matches `useConversations` / `useCredits`. Without
-  // it, a transient null token would resolve the query empty and let
-  // `useNewChatBootstrap` POST with `artistId: undefined`.
-  const { data: artists = [], isLoading } = useQuery({
+  // issues a token — matches `useConversations` / `useCredits`.
+  // Expose `isPending` (true while disabled too) as `isLoading`:
+  // v5's `isLoading` flips false while `enabled` is false, which would
+  // let `useNewChatBootstrap` fire with `artistId: undefined` during
+  // the user-data-loading window.
+  const { data: artists = [], isPending } = useQuery({
     queryKey,
     queryFn,
     enabled: !!userId && authenticated,
@@ -81,5 +83,5 @@ export function useArtistsRoster({
     [queryClient, queryKey, queryFn],
   );
 
-  return { artists, isLoading, setArtists, refetchArtists };
+  return { artists, isLoading: isPending, setArtists, refetchArtists };
 }
