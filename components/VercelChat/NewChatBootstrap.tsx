@@ -1,9 +1,10 @@
 "use client";
 
 import type { UIMessage } from "ai";
-import { Loader } from "lucide-react";
+import { useRef } from "react";
 import { useNewChatBootstrap } from "@/hooks/useNewChatBootstrap";
 import { Chat } from "@/components/VercelChat/chat";
+import { generateUUID } from "@/lib/generateUUID";
 
 interface NewChatBootstrapProps {
   initialMessages?: UIMessage[];
@@ -12,24 +13,20 @@ interface NewChatBootstrapProps {
 /**
  * Thin renderer over `useNewChatBootstrap`. Mounted by
  * `app/page.tsx` (via HomePage) and `app/chat/page.tsx`; provisions
- * a recoup-api session + sandbox before mounting `<Chat>` so the
- * workflow transport (`/api/chat/workflow`) has the `sessionId` +
- * `chatId` its validator requires (recoupable/chat#1747).
+ * a recoup-api session + sandbox in parallel while `<Chat>` is visible.
+ * Send stays disabled until bootstrap resolves so the workflow transport
+ * has the api-minted `sessionId` + `chatId` (recoupable/chat#1747).
+ *
+ * Auto-login is handled app-wide by `<UserAutoLogin />` in `UserProvider`
+ * (chat#1761) — do not call `useAutoLogin()` here.
  */
 export default function NewChatBootstrap({
   initialMessages,
 }: NewChatBootstrapProps) {
   const state = useNewChatBootstrap();
+  const placeholderChatId = useRef(generateUUID()).current;
 
-  if (state.status === "ready") {
-    return (
-      <Chat
-        id={state.chatId}
-        sessionId={state.sessionId}
-        initialMessages={initialMessages}
-      />
-    );
-  }
+  const isBootstrapPreparing = state.status !== "ready";
 
   if (state.status === "error") {
     return (
@@ -40,8 +37,12 @@ export default function NewChatBootstrap({
   }
 
   return (
-    <div className="flex size-full items-center justify-center">
-      <Loader className="size-5 animate-spin text-muted-foreground" />
-    </div>
+    <Chat
+      id={placeholderChatId}
+      sessionId={state.status === "ready" ? state.sessionId : undefined}
+      workflowChatId={state.status === "ready" ? state.chatId : undefined}
+      isBootstrapPreparing={isBootstrapPreparing}
+      initialMessages={initialMessages}
+    />
   );
 }

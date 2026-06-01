@@ -26,6 +26,7 @@ export function ChatInput() {
     setInput,
     input,
     textAttachments,
+    isBootstrapPreparing,
   } = useVercelChatContext();
   // Allow typing regardless of artist selection
   const isDisabled = false;
@@ -38,6 +39,8 @@ export function ChatInput() {
       stop();
       return;
     }
+
+    if (isBootstrapPreparing) return;
 
     // Only check input requirements for sending new messages
     // Allow sending if there are text attachments even without typed input
@@ -82,17 +85,32 @@ export function ChatInput() {
               {/* YouTube connect button removed from ChatInput UI intentionally; preserved for future reuse */}
               <ModelSelect />
             </PromptInputTools>
-            <PromptInputSubmit
-              disabled={isDisabled || hasPendingUploads || isLoadingSignedUrls}
-              status={status}
-              className={cn(
-                "rounded-full hover:scale-105 active:scale-95 transition-all",
-                {
-                  "cursor-not-allowed opacity-50":
-                    isDisabled || hasPendingUploads || isLoadingSignedUrls,
+            <div className="flex items-center gap-2">
+              {isBootstrapPreparing ? (
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  Preparing…
+                </span>
+              ) : null}
+              <PromptInputSubmit
+                disabled={
+                  isDisabled ||
+                  hasPendingUploads ||
+                  isLoadingSignedUrls ||
+                  isBootstrapPreparing
                 }
-              )}
-            />
+                status={status}
+                className={cn(
+                  "rounded-full hover:scale-105 active:scale-95 transition-all",
+                  {
+                    "cursor-not-allowed opacity-50":
+                      isDisabled ||
+                      hasPendingUploads ||
+                      isLoadingSignedUrls ||
+                      isBootstrapPreparing,
+                  }
+                )}
+              />
+            </div>
           </PromptInputToolbar>
         </PromptInput>
       </motion.div>

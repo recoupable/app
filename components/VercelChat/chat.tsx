@@ -29,10 +29,23 @@ interface ChatProps {
    * onto their rows, recoupable/chat#1747).
    */
   sessionId?: string;
+  /**
+   * Api-minted chat id from bootstrap. When the mount `id` is a client
+   * placeholder, this is the row id the workflow transport must send.
+   */
+  workflowChatId?: string;
+  /** True while session + sandbox provisioning is in flight on `/` or `/chat`. */
+  isBootstrapPreparing?: boolean;
   initialMessages?: UIMessage[];
 }
 
-export function Chat({ id, sessionId, initialMessages }: ChatProps) {
+export function Chat({
+  id,
+  sessionId,
+  workflowChatId,
+  isBootstrapPreparing,
+  initialMessages,
+}: ChatProps) {
   const { selectedOrgId } = useOrganization();
   const providerKey = `${id}-${selectedOrgId ?? "personal"}`;
 
@@ -41,6 +54,8 @@ export function Chat({ id, sessionId, initialMessages }: ChatProps) {
       key={providerKey}
       chatId={id}
       sessionId={sessionId}
+      workflowChatId={workflowChatId}
+      isBootstrapPreparing={isBootstrapPreparing}
       initialMessages={initialMessages}
     >
       <ChatContent id={id} />

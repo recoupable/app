@@ -47,6 +47,7 @@ interface VercelChatContextType {
   removeTextAttachment: (index: number) => void;
   model: string;
   setModel: (model: string) => void;
+  isBootstrapPreparing: boolean;
 }
 
 // Create the context
@@ -64,6 +65,8 @@ interface VercelChatProviderProps {
    * transport to recoup-api's `/api/chat/workflow`.
    */
   sessionId?: string;
+  workflowChatId?: string;
+  isBootstrapPreparing?: boolean;
   initialMessages?: UIMessage[];
 }
 
@@ -74,6 +77,8 @@ export function VercelChatProvider({
   children,
   chatId,
   sessionId,
+  workflowChatId,
+  isBootstrapPreparing = false,
   initialMessages,
 }: VercelChatProviderProps) {
   const {
@@ -122,6 +127,7 @@ export function VercelChatProvider({
   } = useVercelChat({
     id: chatId,
     sessionId,
+    workflowChatId,
     initialMessages,
     attachments,
     textAttachments,
@@ -170,6 +176,7 @@ export function VercelChatProvider({
     setTextAttachments,
     addTextAttachment,
     removeTextAttachment,
+    isBootstrapPreparing,
   };
 
   // Send chat status and messages to ArtistProvider

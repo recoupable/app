@@ -34,6 +34,11 @@ interface UseVercelChatProps {
    * (recoupable/chat#1747 Phase 2).
    */
   sessionId?: string;
+  /**
+   * Api-minted chat id from bootstrap when the mount `id` is a client
+   * placeholder. Used for workflow transport, message load, and URL.
+   */
+  workflowChatId?: string;
   initialMessages?: UIMessage[];
   attachments?: FileUIPart[];
   textAttachments?: TextAttachment[];
@@ -47,6 +52,7 @@ interface UseVercelChatProps {
 export function useVercelChat({
   id,
   sessionId,
+  workflowChatId,
   initialMessages,
   attachments = [],
   textAttachments = [],
@@ -64,8 +70,9 @@ export function useVercelChat({
   const [input, setInput] = useState("");
   const [model, setModel] = useLocalStorage("RECOUP_MODEL", DEFAULT_MODEL);
   const { refetchCredits } = usePaymentProvider();
+  const transportChatId = workflowChatId ?? id;
   const { transport, getHeaders } = useChatTransport({
-    chatId: id,
+    chatId: transportChatId,
     sessionId,
   });
   const { authenticated, getAccessToken } = usePrivy();
@@ -284,7 +291,7 @@ export function useVercelChat({
 
   const { isLoading: isMessagesLoading, hasError } = useMessageLoader(
     sessionId,
-    messages.length === 0 ? id : undefined,
+    messages.length === 0 ? transportChatId : undefined,
     userId,
     setMessages,
   );
@@ -302,9 +309,9 @@ export function useVercelChat({
     window.history.replaceState(
       {},
       "",
-      `/sessions/${sessionId}/chats/${id}`,
+      `/sessions/${sessionId}/chats/${transportChatId}`,
     );
-  }, [id, sessionId]);
+  }, [transportChatId, sessionId]);
 
   const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -325,7 +332,12 @@ export function useVercelChat({
     if (!roomId) {
       // Optimistically append a temporary conversation so it appears in Recent Chats
       // It will be replaced by the real conversation after the updates/refetch
-      addOptimisticConversation("New Chat", id, sessionId, messageContent);
+      addOptimisticConversation(
+        "New Chat",
+        transportChatId,
+        sessionId,
+        messageContent,
+      );
       silentlyUpdateUrl();
     }
   };
@@ -345,12 +357,14 @@ export function useVercelChat({
     const hasMessages = messages.length > 1;
     const hasInitialMessages = initialMessages && initialMessages.length > 0;
     // Wait for authentication before sending initial message to avoid 401 errors
+    // New-chat bootstrap mounts before sessionId exists; defer until workflow ids land.
     if (
       !hasInitialMessages ||
       !isReady ||
       hasMessages ||
       !isFullyLoggedIn ||
-      !authenticated
+      !authenticated ||
+      (!roomId && !sessionId)
     )
       return;
     handleSendQueryMessages(initialMessages[0]);
@@ -361,6 +375,8 @@ export function useVercelChat({
     handleSendQueryMessages,
     messages.length,
     authenticated,
+    roomId,
+    sessionId,
   ]);
 
   return {
