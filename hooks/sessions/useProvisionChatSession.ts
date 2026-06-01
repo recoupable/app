@@ -7,7 +7,10 @@ import {
   provisionChatSession,
   type ProvisionChatSessionInput,
 } from "@/lib/sessions/provisionChatSession";
-import { shouldProvisionChatSession } from "@/hooks/sessions/shouldProvisionChatSession";
+import {
+  provisionInputsMatch,
+  shouldProvisionChatSession,
+} from "@/hooks/sessions/shouldProvisionChatSession";
 
 /**
  * Discriminated lifecycle state for a chat-session provisioning attempt.
@@ -72,14 +75,28 @@ export function useProvisionChatSession({
       return;
     }
     mutation.mutate({ artistId, orgId });
-    // `mutation.*` are read inside the body, not declared as deps. The
-    // dep array is the real input set; `shouldProvisionChatSession` bails
-    // idempotently when those inputs already match the in-flight or
-    // completed call, or when a mismatched call is still pending.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, artistId, orgId]);
+  }, [
+    enabled,
+    artistId,
+    orgId,
+    mutation.isPending,
+    mutation.isSuccess,
+    mutation.variables,
+    mutation.mutate,
+  ]);
 
-  if (!enabled || mutation.isIdle || mutation.isPending) {
+  const provisionMatchesInputs = provisionInputsMatch(
+    mutation.variables,
+    artistId,
+    orgId,
+  );
+
+  if (
+    !enabled ||
+    mutation.isIdle ||
+    mutation.isPending ||
+    (mutation.isSuccess && !provisionMatchesInputs)
+  ) {
     return { status: "bootstrapping" };
   }
   if (mutation.isError) {
