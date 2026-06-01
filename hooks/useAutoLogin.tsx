@@ -5,6 +5,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useUserProvider } from "@/providers/UserProvder";
 import { useMiniAppContext } from "@/providers/MiniAppProvider";
 
+/** Prompts anonymous visitors to sign in via Privy. Must run under `UserProvider`. */
 export function useAutoLogin() {
   const { login } = usePrivy();
   const { email } = useUserProvider();

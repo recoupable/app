@@ -1,9 +1,20 @@
 import Link from "next/link";
 import { MessageSquare, CheckCircle2, ChevronRight } from "lucide-react";
-import { Tables } from "@/types/database.types";
+
+/**
+ * Row shape returned by the `get_chats` MCP tool — the session-scoped
+ * projection emitted by recoup-api `GET /api/chats`.
+ */
+interface GetChatsResultRow {
+  id: string;
+  title: string;
+  accountId: string;
+  sessionId: string;
+  updatedAt: string;
+}
 
 export interface GetChatsResultType {
-  chats?: Tables<"rooms">[];
+  chats?: GetChatsResultRow[];
   status?: string;
   message?: string;
 }
@@ -33,22 +44,22 @@ const GetChatsResult = ({ result }: GetChatsResultProps) => {
         <div className="p-2 max-h-72 overflow-y-auto">
           <ul className="space-y-1">
             {chats.map((chat) => {
-              const displayTopic =
-                chat.topic && chat.topic.trim().length > 0
-                  ? chat.topic
+              const displayTitle =
+                chat.title && chat.title.trim().length > 0
+                  ? chat.title
                   : "Untitled Chat";
 
               return (
                 <li key={chat.id}>
                   <Link
-                    href={`/chat/${chat.id}`}
+                    href={`/sessions/${chat.sessionId}/chats/${chat.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 p-2 rounded-md hover:bg-muted transition-colors group"
                   >
                     <MessageSquare className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span className="text-sm text-foreground truncate flex-1">
-                      {displayTopic}
+                      {displayTitle}
                     </span>
                     <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                   </Link>

@@ -26,6 +26,14 @@ import getMimeFromPath from "@/lib/files/getMimeFromPath";
 
 interface UseVercelChatProps {
   id: string;
+  /**
+   * Session id from the chat-bootstrap (`createSession`). When present
+   * the transport targets `/api/chat/workflow`; when absent it falls
+   * back to the legacy `/api/chat` for chats opened from history that
+   * haven't been backfilled to the workflow architecture yet
+   * (recoupable/chat#1747 Phase 2).
+   */
+  sessionId?: string;
   initialMessages?: UIMessage[];
   attachments?: FileUIPart[];
   textAttachments?: TextAttachment[];
@@ -38,6 +46,7 @@ interface UseVercelChatProps {
  */
 export function useVercelChat({
   id,
+  sessionId,
   initialMessages,
   attachments = [],
   textAttachments = [],
@@ -55,7 +64,10 @@ export function useVercelChat({
   const [input, setInput] = useState("");
   const [model, setModel] = useLocalStorage("RECOUP_MODEL", DEFAULT_MODEL);
   const { refetchCredits } = usePaymentProvider();
-  const { transport, getHeaders } = useChatTransport();
+  const { transport, getHeaders } = useChatTransport({
+    chatId: id,
+    sessionId,
+  });
   const { authenticated, getAccessToken } = usePrivy();
 
   // Load artist files for mentions (from Supabase)
@@ -271,6 +283,7 @@ export function useVercelChat({
   messagesLengthRef.current = messages.length;
 
   const { isLoading: isMessagesLoading, hasError } = useMessageLoader(
+    sessionId,
     messages.length === 0 ? id : undefined,
     userId,
     setMessages,
@@ -285,8 +298,13 @@ export function useVercelChat({
   const isGeneratingResponse = ["streaming", "submitted"].includes(status);
 
   const silentlyUpdateUrl = useCallback(() => {
-    window.history.replaceState({}, "", `/chat/${id}`);
-  }, [id]);
+    if (!sessionId) return;
+    window.history.replaceState(
+      {},
+      "",
+      `/sessions/${sessionId}/chats/${id}`,
+    );
+  }, [id, sessionId]);
 
   const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -307,7 +325,7 @@ export function useVercelChat({
     if (!roomId) {
       // Optimistically append a temporary conversation so it appears in Recent Chats
       // It will be replaced by the real conversation after the updates/refetch
-      addOptimisticConversation("New Chat", id, messageContent);
+      addOptimisticConversation("New Chat", id, sessionId, messageContent);
       silentlyUpdateUrl();
     }
   };
