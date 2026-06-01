@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUserProvider } from "@/providers/UserProvder";
 import { useArtistProvider } from "@/providers/ArtistProvider";
-import getConversations from "@/lib/getConversations";
+import getConversations from "@/lib/chat/getConversations";
 import { Conversation } from "@/types/Chat";
 import { usePrivy } from "@privy-io/react-auth";
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import getConversations from "../getConversations";
-import { NEW_API_BASE_URL } from "../consts";
+import { NEW_API_BASE_URL } from "../../consts";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
