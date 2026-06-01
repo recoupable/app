@@ -59,7 +59,7 @@ export function useVercelChatProviderValue({
     setInput,
     input,
     setMessages,
-    reload: originalReload,
+    reload,
     append,
     model,
     setModel,
@@ -73,15 +73,14 @@ export function useVercelChatProviderValue({
     textAttachments,
   });
 
-  const reload = useCallback(() => {
-    return originalReload();
-  }, [originalReload]);
-
   const handleSendMessageWithClear = async (
     event: React.FormEvent<HTMLFormElement>,
   ) => {
-    await handleSendMessage(event);
-    clearAttachments();
+    try {
+      await handleSendMessage(event);
+    } finally {
+      clearAttachments();
+    }
   };
 
   useEffect(() => {
