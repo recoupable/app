@@ -23,6 +23,7 @@ import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
 import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
+import { getChatPath } from "@/lib/chat/chatPaths";
 
 interface UseVercelChatProps {
   id: string;
@@ -291,11 +292,7 @@ export function useVercelChat({
   const isGeneratingResponse = ["streaming", "submitted"].includes(status);
 
   const silentlyUpdateUrl = useCallback(() => {
-    window.history.replaceState(
-      {},
-      "",
-      `/sessions/${sessionId}/chats/${id}`,
-    );
+    window.history.replaceState({}, "", getChatPath(sessionId, id));
   }, [id, sessionId]);
 
   const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {

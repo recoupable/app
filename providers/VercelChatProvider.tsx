@@ -17,6 +17,7 @@ import { TextAttachment } from "@/types/textAttachment";
 // Interface for the context data
 interface VercelChatContextType {
   id: string | undefined;
+  sessionId: string;
   messages: UIMessage[];
   availableModels: GatewayLanguageModelEntry[];
   status: ChatStatus;
@@ -142,6 +143,7 @@ export function VercelChatProvider({
   // Create the context value object
   const contextValue: VercelChatContextType = {
     id: chatId,
+    sessionId,
     messages,
     model,
     availableModels,

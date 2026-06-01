@@ -1,5 +1,6 @@
 import generateText from "@/lib/ai/generateText";
 import sendEmail from "@/lib/email/sendEmail";
+import { getChatUrl } from "@/lib/chat/chatPaths";
 import { RECOUP_FROM_EMAIL } from "../consts";
 import { getFetchableUrl } from "../arweave/gateway";
 
@@ -13,15 +14,17 @@ export default async function generateTxtFileEmail({
   rawTextFile,
   arweaveFile,
   emails,
+  sessionId,
   conversationId,
 }: {
   rawTextFile: string;
   arweaveFile: string;
   emails: string[];
+  sessionId: string;
   conversationId: string;
 }) {
   if (!emails?.length) return null;
-  const ctaUrl = `https://chat.recoupable.com/chat/${conversationId}`;
+  const ctaUrl = getChatUrl(sessionId, conversationId);
   const prompt = `You have a newly generated TXT file. Here is the data:
 
 Key Data

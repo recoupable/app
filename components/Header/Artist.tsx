@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useArtistPinToggle } from "@/hooks/useArtistPinToggle";
 import ArtistActionButton from "./ArtistActionButton";
+import { isActiveChatRoomPath } from "@/lib/chat/chatPaths";
 
 const Artist = ({
   artist,
@@ -43,7 +44,7 @@ const Artist = ({
       return;
     }
     
-    if (pathname.includes("/chat/") && selectedArtist) {
+    if (isActiveChatRoomPath(pathname) && selectedArtist) {
       if (selectedArtist.account_id !== artist?.account_id) {
         replace("/chat");
       }

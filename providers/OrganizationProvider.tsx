@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { isActiveChatRoomPath } from "@/lib/chat/chatPaths";
 
 interface OrganizationContextType {
   selectedOrgId: string | null;
@@ -54,8 +55,8 @@ const OrganizationProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.removeItem(STORAGE_KEY);
     }
     
-    // Navigate to home when org changes (if on a chat room page)
-    if (isActualChange && pathname?.startsWith("/chat/")) {
+    // Navigate to home when org changes (if on an existing chat room page)
+    if (isActualChange && isActiveChatRoomPath(pathname)) {
       router.push("/");
     }
   }, [pathname, router]);
