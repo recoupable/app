@@ -2,7 +2,6 @@ import { useArtistProvider } from "@/providers/ArtistProvider";
 import { ArtistRecord } from "@/types/Artist";
 import ImageWithFallback from "../ImageWithFallback";
 import { EllipsisVertical, Pin, PinOff } from "lucide-react";
-import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -32,10 +31,9 @@ const Artist = ({
   const isAnyArtistSelected = !!selectedArtist;
   const shouldHighlight = !isAnyArtistSelected; // Highlight when no artist is selected
 
-  const pathname = usePathname();
-
   const handleClick = () => {
     toggleDropDown();
+    const pathname = window.location.pathname;
 
     if (isSelectedArtist) {
       setSelectedArtist(null);

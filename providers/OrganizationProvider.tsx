@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { useRouter, usePathname } from "next/navigation";
 import { isActiveChatRoomPath } from "@/lib/chat/chatPaths";
 
 interface OrganizationContextType {
@@ -28,8 +27,6 @@ const OrganizationProvider = ({ children }: { children: React.ReactNode }) => {
   const [isOrgSettingsOpen, setIsOrgSettingsOpen] = useState(false);
   const [editingOrgId, setEditingOrgId] = useState<string | null>(null);
   const [isCreateOrgOpen, setIsCreateOrgOpen] = useState(false);
-  const router = useRouter();
-  const pathname = usePathname();
   const previousOrgId = useRef<string | null>(null);
 
   // Load from localStorage on mount
@@ -55,11 +52,11 @@ const OrganizationProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.removeItem(STORAGE_KEY);
     }
     
-    // Navigate to home when org changes (if on an existing chat room page)
-    if (isActualChange && isActiveChatRoomPath(pathname)) {
-      router.push("/");
+    // Hard-nav — `silentlyUpdateUrl` updates the URL bar without syncing Next's router.
+    if (isActualChange && isActiveChatRoomPath(window.location.pathname)) {
+      window.location.href = "/";
     }
-  }, [pathname, router]);
+  }, []);
 
   const openOrgSettings = useCallback((orgId: string) => {
     setEditingOrgId(orgId);
