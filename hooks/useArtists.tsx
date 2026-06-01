@@ -40,7 +40,11 @@ const useArtists = () => {
     queryKey: artistsQueryKey,
     queryFn: async () => {
       const accessToken = await getAccessToken();
-      if (!accessToken) return [];
+      // Throw rather than resolve to `[]` so `isLoading` stays true on
+      // a transient missing token — otherwise `useNewChatBootstrap`
+      // would see "settled, empty roster" and POST with
+      // `artistId: undefined`.
+      if (!accessToken) throw new Error("Missing Privy access token");
       return fetchArtists(accessToken, selectedOrgId);
     },
     enabled: !!userData?.id,
@@ -86,7 +90,7 @@ const useArtists = () => {
         queryKey: artistsQueryKey,
         queryFn: async () => {
           const accessToken = await getAccessToken();
-          if (!accessToken) return [];
+          if (!accessToken) throw new Error("Missing Privy access token");
           return fetchArtists(accessToken, selectedOrgId);
         },
       });
