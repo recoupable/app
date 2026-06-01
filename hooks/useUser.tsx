@@ -2,7 +2,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Address } from "viem";
-import { uploadFile } from "@/lib/arweave/uploadFile";
+import { uploadFile } from "@/lib/files/uploadFile";
 import { useAccount } from "wagmi";
 import { toast } from "sonner";
 import { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
@@ -40,7 +40,8 @@ const useUser = () => {
       return;
     }
     try {
-      const { uri } = await uploadFile(file);
+      const accessToken = await getAccessToken();
+      const { uri } = await uploadFile(file, accessToken);
       setImage(uri);
     } catch {
       toast.error("Failed to upload image. Please try again.");

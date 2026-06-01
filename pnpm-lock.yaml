@@ -140,9 +140,6 @@ importers:
       apify-client:
         specifier: ^2.9.7
         version: 2.20.0
-      arweave:
-        specifier: ^1.15.7
-        version: 1.15.7
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -4434,9 +4431,6 @@ packages:
   apify-client@2.20.0:
     resolution: {integrity: sha512-oEMTImVVRZ5n8JkFV6dgbBFL3Xqz+GTwjUCjn/hwSNkow31Q8VNGk4qYDfRjkoqNQJ3ZirhtCwTnhkSXn1Tf+g==}
 
-  arconnect@0.4.2:
-    resolution: {integrity: sha512-Jkpd4QL3TVqnd3U683gzXmZUVqBUy17DdJDuL/3D9rkysLgX6ymJ2e+sR+xyZF5Rh42CBqDXWNMmCjBXeP7Gbw==}
-
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
@@ -4498,13 +4492,6 @@ packages:
   arraybuffer.prototype.slice@1.0.4:
     resolution: {integrity: sha512-BNoCY6SXXPQ7gF2opIP4GBE+Xw7U+pHMYKuzjgCN3GwiaIR09UUeKfheyIry77QtrCBlC0KK0q5/TER/tYh3PQ==}
     engines: {node: '>= 0.4'}
-
-  arweave@1.15.7:
-    resolution: {integrity: sha512-F+Y4iWU1qea9IsKQ/YNmLsY4DHQVsaJBuhEbFxQn9cfGHOmtXE+bwo14oY8xqymsqSNf/e1PeIfLk7G7qN/hVA==}
-    engines: {node: '>=18'}
-
-  asn1.js@5.4.1:
-    resolution: {integrity: sha512-+I//4cYPccV8LdmBLiX8CYvf9Sp3vQsrqu2QNXRcrbiWvcx/UdlFiqUJJzxRQxgsZmvhXhn4cSKeSmoFjVdupA==}
 
   asn1@0.2.6:
     resolution: {integrity: sha512-ix/FxPn0MDjeyJ7i/yoHGFt/EX6LyNbxSEhPPXODPL+KB0VPk86UYfL0lMdy+KCnv+fmvIzySwaK5COwqVbWTQ==}
@@ -14836,7 +14823,7 @@ snapshots:
       '@vitest/pretty-format': 4.0.15
       tinyrainbow: 3.0.3
 
-  '@wagmi/connectors@6.2.0(34c7fdd01b715715548043cbba06572f)':
+  '@wagmi/connectors@6.2.0(znuhikr6vncq2ajqjte5hoasy4)':
     dependencies:
       '@base-org/account': 2.4.0(@types/react@18.3.27)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react@19.2.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.1))(utf-8-validate@5.0.10)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
       '@coinbase/wallet-sdk': 4.3.6(@types/react@18.3.27)(bufferutil@4.0.9)(react@19.2.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.1))(utf-8-validate@5.0.10)(zod@3.25.76)
@@ -16147,10 +16134,6 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  arconnect@0.4.2:
-    dependencies:
-      arweave: 1.15.7
-
   argparse@2.0.1: {}
 
   aria-hidden@1.2.6:
@@ -16246,20 +16229,6 @@ snapshots:
       es-errors: 1.3.0
       get-intrinsic: 1.3.0
       is-array-buffer: 3.0.5
-
-  arweave@1.15.7:
-    dependencies:
-      arconnect: 0.4.2
-      asn1.js: 5.4.1
-      base64-js: 1.5.1
-      bignumber.js: 9.3.1
-
-  asn1.js@5.4.1:
-    dependencies:
-      bn.js: 4.12.2
-      inherits: 2.0.4
-      minimalistic-assert: 1.0.1
-      safer-buffer: 2.1.2
 
   asn1@0.2.6:
     dependencies:
@@ -22112,7 +22081,7 @@ snapshots:
   wagmi@2.19.5(@tanstack/query-core@5.90.12)(@tanstack/react-query@5.90.12(react@19.2.1))(@types/react@18.3.27)(@vercel/blob@2.3.2)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react@19.2.1)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.41.2(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76):
     dependencies:
       '@tanstack/react-query': 5.90.12(react@19.2.1)
-      '@wagmi/connectors': 6.2.0(34c7fdd01b715715548043cbba06572f)
+      '@wagmi/connectors': 6.2.0(znuhikr6vncq2ajqjte5hoasy4)
       '@wagmi/core': 2.22.1(@tanstack/query-core@5.90.12)(@types/react@18.3.27)(react@19.2.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.1))(viem@2.41.2(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))
       react: 19.2.1
       use-sync-external-store: 1.4.0(react@19.2.1)

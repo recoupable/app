@@ -6,10 +6,7 @@ import { Download } from "lucide-react";
 
 export interface TxtFileGenerationResult {
   success: boolean;
-  arweaveUrl: string | null;
-  smartAccountAddress?: string;
-  transactionHash?: string | null;
-  blockExplorerUrl?: string | null;
+  txtUrl: string | null;
   message?: string;
   error?: string;
 }
@@ -24,12 +21,12 @@ export function TxtFileResult({ result }: TxtFileResultProps) {
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (result.arweaveUrl && !fileContent) {
+    if (result.txtUrl && !fileContent) {
       setLoading(true);
       setFetchError(null);
-      fetch(result.arweaveUrl)
+      fetch(result.txtUrl)
         .then((res) => {
-          if (!res.ok) throw new Error("Failed to fetch file from Arweave");
+          if (!res.ok) throw new Error("Failed to fetch file");
           return res.text();
         })
         .then((text) => {
@@ -42,7 +39,7 @@ export function TxtFileResult({ result }: TxtFileResultProps) {
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [result.arweaveUrl]);
+  }, [result.txtUrl]);
 
   if (!result.success) {
     return (
@@ -60,13 +57,13 @@ export function TxtFileResult({ result }: TxtFileResultProps) {
   }
 
   const handleDownload = () => {
-    if (result.arweaveUrl) {
-      window.open(result.arweaveUrl, "_blank");
+    if (result.txtUrl) {
+      window.open(result.txtUrl, "_blank");
     }
   };
 
   let displayText: string | JSX.Element = "TXT file generated.";
-  if (result.arweaveUrl) {
+  if (result.txtUrl) {
     if (loading) {
       displayText = "Loading file contents...";
     } else if (fetchError) {
@@ -88,7 +85,7 @@ export function TxtFileResult({ result }: TxtFileResultProps) {
               variant="outline"
               size="sm"
               onClick={handleDownload}
-              disabled={!result.arweaveUrl}
+              disabled={!result.txtUrl}
               className="h-8 px-3 text-xs rounded-xl ml-auto"
             >
               <Download className="w-4 h-4" />{" "}
@@ -101,7 +98,7 @@ export function TxtFileResult({ result }: TxtFileResultProps) {
           <div
             className={cn(
               "mb-4 whitespace-pre-wrap font-mono text-sm p-3 bg-muted/50 rounded-md overflow-auto",
-              "max-h-[200px] md:max-h-[400px] scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
+              "max-h-[200px] md:max-h-[400px] scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600",
             )}
             style={{
               transition: "max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",

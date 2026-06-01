@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { uploadFile } from "@/lib/arweave/uploadFile";
+import { uploadFile } from "@/lib/files/uploadFile";
 import { getFileMimeType } from "@/utils/getFileMimeType";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import useAccountOrganizations from "./useAccountOrganizations";
@@ -50,7 +50,7 @@ const useOrgSettings = (orgId: string | null) => {
 
     // Find the organization from the list (same as button does)
     const selectedOrg = organizations.find(
-      (org) => org.organization_id === orgId
+      (org) => org.organization_id === orgId,
     );
 
     if (!selectedOrg) {
@@ -67,7 +67,7 @@ const useOrgSettings = (orgId: string | null) => {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `${getClientApiBaseUrl()}/api/accounts/${orgId}`
+          `${getClientApiBaseUrl()}/api/accounts/${orgId}`,
         );
         if (response.ok) {
           const data = await response.json();
@@ -94,13 +94,14 @@ const useOrgSettings = (orgId: string | null) => {
 
       setImageUploading(true);
       try {
-        const { uri } = await uploadFile(file);
+        const accessToken = await getAccessToken();
+        const { uri } = await uploadFile(file, accessToken);
         setImage(uri);
       } finally {
         setImageUploading(false);
       }
     },
-    []
+    [getAccessToken],
   );
 
   const removeImage = useCallback(() => {
@@ -118,10 +119,11 @@ const useOrgSettings = (orgId: string | null) => {
       setKnowledgeUploading(true);
       const newKnowledges: KnowledgeItem[] = [];
       try {
+        const accessToken = await getAccessToken();
         for (const file of files) {
           const name = file.name;
           const type = getFileMimeType(file);
-          const { uri } = await uploadFile(file);
+          const { uri } = await uploadFile(file, accessToken);
           newKnowledges.push({ name, url: uri, type });
         }
         setKnowledges((prev) => [...prev, ...newKnowledges]);
@@ -132,7 +134,7 @@ const useOrgSettings = (orgId: string | null) => {
         }
       }
     },
-    []
+    [getAccessToken],
   );
 
   const handleDeleteKnowledge = useCallback((index: number) => {
@@ -158,12 +160,22 @@ const useOrgSettings = (orgId: string | null) => {
         knowledges,
       });
       setOrgData(data);
-      await queryClient.invalidateQueries({ queryKey: ["accountOrganizations"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["accountOrganizations"],
+      });
       return true;
     } finally {
       setIsSaving(false);
     }
-  }, [orgId, name, image, instruction, knowledges, queryClient, getAccessToken]);
+  }, [
+    orgId,
+    name,
+    image,
+    instruction,
+    knowledges,
+    queryClient,
+    getAccessToken,
+  ]);
 
   return {
     orgData,

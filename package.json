@@ -57,7 +57,6 @@
     "@vercel/blob": "^2.3.2",
     "ai": "6.0.165",
     "apify-client": "^2.9.7",
-    "arweave": "^1.15.7",
     "class-variance-authority": "^0.7.1",
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
