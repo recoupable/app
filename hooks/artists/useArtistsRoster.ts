@@ -44,7 +44,7 @@ export function useArtistsRoster({
   userId,
   orgId,
 }: UseArtistsRosterInput): UseArtistsRosterResult {
-  const { getAccessToken } = usePrivy();
+  const { authenticated, getAccessToken } = usePrivy();
   const queryClient = useQueryClient();
 
   const queryKey = useMemo(
@@ -54,17 +54,17 @@ export function useArtistsRoster({
 
   const queryFn = useCallback(async () => {
     const accessToken = await getAccessToken();
-    // Throw rather than resolve to `[]` so `isLoading` stays true on a
-    // transient missing token — otherwise `useNewChatBootstrap` would
-    // see "settled, empty roster" and POST with `artistId: undefined`.
-    if (!accessToken) throw new Error("Missing Privy access token");
-    return fetchArtists(accessToken, orgId);
+    return fetchArtists(accessToken as string, orgId);
   }, [getAccessToken, orgId]);
 
+  // Gate on `authenticated` so the query doesn't fire before Privy
+  // issues a token — matches `useConversations` / `useCredits`. Without
+  // it, a transient null token would resolve the query empty and let
+  // `useNewChatBootstrap` POST with `artistId: undefined`.
   const { data: artists = [], isLoading } = useQuery({
     queryKey,
     queryFn,
-    enabled: !!userId,
+    enabled: !!userId && authenticated,
   });
 
   const setArtists = useCallback<UseArtistsRosterResult["setArtists"]>(
