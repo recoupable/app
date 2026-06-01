@@ -90,11 +90,11 @@ export function useRenameModal({
       setIsSubmitting(true);
 
       try {
-        const chatId = chatRoom.id;
         await updateChat({
           accessToken,
-          chatId,
-          topic: name,
+          sessionId: chatRoom.sessionId,
+          chatId: chatRoom.id,
+          title: name,
         });
 
         await refetchConversations();
