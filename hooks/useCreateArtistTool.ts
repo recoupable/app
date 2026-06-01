@@ -58,7 +58,7 @@ export function useCreateArtistTool(result: CreateArtistResult) {
             window.history.replaceState(
               {},
               "",
-              getChatPath(sessionId, result.newRoomId),
+              getChatPath(sessionId, result.newRoomId as string),
             );
             setIsSuccess(true);
           } else {
