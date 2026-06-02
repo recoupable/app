@@ -201,14 +201,19 @@ export function useVercelChat({
       },
     });
 
-  // Stop both the local stream (AI SDK abort) and the durable workflow
-  // run server-side. The backend cancel is fire-and-forget so the UI
-  // stops instantly; it only applies to workflow chats (sessionId set).
+  // Producer-level stop for workflow chats: await the backend cancel so the
+  // server has time to run its cancellation, close the workflow writable, and
+  // drain SSE to the client. Once SSE closes naturally, the AI SDK
+  // transitions to "ready" on its own — calling `aiStop()` here would tear
+  // down the local fetch before in-flight chunks (which the server persists)
+  // reach the UI, so frontend and DB would disagree on reload.
+  //
+  // Legacy chats keep the AI-SDK local abort: no backend endpoint to call.
   const stop = useCallback(async () => {
     if (sessionId) {
-      void getAccessToken()
-        .catch(() => null)
-        .then((token) => stopChatWorkflow(id, token));
+      const token = await getAccessToken().catch(() => null);
+      await stopChatWorkflow(id, token);
+      return;
     }
     await aiStop();
   }, [aiStop, sessionId, id, getAccessToken]);
