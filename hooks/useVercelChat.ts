@@ -23,6 +23,7 @@ import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
 import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
+import { stopChatWorkflow } from "@/lib/chat/stopChatWorkflow";
 
 interface UseVercelChatProps {
   id: string;
@@ -184,7 +185,7 @@ export function useVercelChat({
     [id, artistId, organizationId, accountIdOverride, model],
   );
 
-  const { messages, status, stop, sendMessage, setMessages, regenerate } =
+  const { messages, status, stop: aiStop, sendMessage, setMessages, regenerate } =
     useChat({
       id,
       transport,
@@ -199,6 +200,18 @@ export function useVercelChat({
         await refetchCredits();
       },
     });
+
+  // Stop both the local stream (AI SDK abort) and the durable workflow
+  // run server-side. The backend cancel is fire-and-forget so the UI
+  // stops instantly; it only applies to workflow chats (sessionId set).
+  const stop = useCallback(async () => {
+    if (sessionId) {
+      void getAccessToken()
+        .catch(() => null)
+        .then((token) => stopChatWorkflow(id, token));
+    }
+    await aiStop();
+  }, [aiStop, sessionId, id, getAccessToken]);
 
   const earliestFailedUserMessageId = useMemo(
     () => getEarliestFailedUserMessageId(messages),
