@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { UIMessage } from "ai";
 import { usePrivy } from "@privy-io/react-auth";
-import { getChatMessages } from "@/lib/messages/getChatMessages";
+import { getChatSnapshot } from "@/lib/messages/getChatSnapshot";
 
 /**
  * Loads the persisted UI message stream for a session-scoped chat from
@@ -9,12 +9,16 @@ import { getChatMessages } from "@/lib/messages/getChatMessages";
  * bootstrap path mounts `<Chat>` before a session has been minted, and
  * the in-transition legacy `/chat/{roomId}` route lacks a sessionId
  * until track I redirects it.
+ *
+ * When the loaded chat still has a workflow run in flight, `onActiveStream`
+ * fires once so the caller can reconnect to the live stream.
  */
 export function useMessageLoader(
   sessionId: string | undefined,
   chatId: string | undefined,
   userId: string | undefined,
   setMessages: (messages: UIMessage[]) => void,
+  onActiveStream?: () => void,
 ) {
   const { getAccessToken } = usePrivy();
   const [isLoading, setIsLoading] = useState(!!(sessionId && chatId));
@@ -39,13 +43,16 @@ export function useMessageLoader(
         const accessToken = await getAccessToken();
         if (!accessToken) return;
 
-        const initialMessages = await getChatMessages(
+        const { messages, isStreaming } = await getChatSnapshot(
           sessionId,
           chatId,
           accessToken,
         );
-        if (initialMessages.length > 0) {
-          setMessages(initialMessages);
+        if (messages.length > 0) {
+          setMessages(messages);
+        }
+        if (isStreaming) {
+          onActiveStream?.();
         }
       } catch (err) {
         console.error("Error loading messages:", err);
@@ -58,7 +65,7 @@ export function useMessageLoader(
     };
 
     loadMessages();
-  }, [userId, sessionId, chatId, getAccessToken, setMessages]);
+  }, [userId, sessionId, chatId, getAccessToken, setMessages, onActiveStream]);
 
   return {
     isLoading,

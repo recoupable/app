@@ -184,7 +184,7 @@ export function useVercelChat({
     [id, artistId, organizationId, accountIdOverride, model],
   );
 
-  const { messages, status, stop, sendMessage, setMessages, regenerate } =
+  const { messages, status, stop, sendMessage, setMessages, regenerate, resumeStream } =
     useChat({
       id,
       transport,
@@ -282,11 +282,19 @@ export function useVercelChat({
   // Keep messagesRef in sync with messages
   messagesLengthRef.current = messages.length;
 
+  // Reconnect to an in-flight workflow run when the loaded chat is still
+  // streaming (e.g. reopened mid-generation). Routes through the
+  // transport's prepareReconnectToStreamRequest → GET /api/chat/{id}/stream.
+  const resumeActiveStream = useCallback(() => {
+    void resumeStream();
+  }, [resumeStream]);
+
   const { isLoading: isMessagesLoading, hasError } = useMessageLoader(
     sessionId,
     messages.length === 0 ? id : undefined,
     userId,
     setMessages,
+    resumeActiveStream,
   );
 
   // Only show loading state if:
