@@ -74,6 +74,12 @@ export function useChatTransport({
         if (recoupAccessToken) body.recoupAccessToken = recoupAccessToken;
         return body;
       },
+      // Resume/reconnect targets recoup-api's dedicated GET stream route
+      // (POST /api/chat/workflow never resumes). The transport `headers`
+      // above carry the Privy bearer on this request too.
+      prepareReconnectToStreamRequest: ({ id }) => ({
+        api: `${baseUrl}/api/chat/${encodeURIComponent(id)}/stream`,
+      }),
     });
   }, [baseUrl, chatId, sessionId, getAccessToken]);
 
