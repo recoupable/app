@@ -47,12 +47,29 @@ describe("getChatSnapshot", () => {
     expect(result).toEqual({ messages: [], isStreaming: false });
   });
 
-  it("returns an empty, non-streaming snapshot on a non-ok response", async () => {
-    mockFetch.mockResolvedValueOnce({ ok: false, json: async () => ({}) });
+  it("throws with the server's error text on a non-ok response", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      text: async () => "Chat not found",
+      json: async () => ({}),
+    });
 
-    const result = await getChatSnapshot("sess-1", "chat-1", "tok");
+    await expect(getChatSnapshot("sess-1", "chat-1", "tok")).rejects.toThrow(
+      "Chat not found",
+    );
+  });
 
-    expect(result).toEqual({ messages: [], isStreaming: false });
+  it("throws a generic HTTP error when the body has no text", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      text: async () => "",
+    });
+
+    await expect(getChatSnapshot("sess-1", "chat-1", "tok")).rejects.toThrow(
+      "HTTP 500",
+    );
   });
 
   it("url-encodes both ids", async () => {

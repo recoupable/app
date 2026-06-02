@@ -26,7 +26,12 @@ export async function getChatSnapshot(
     },
   );
 
-  if (!response.ok) return { messages: [], isStreaming: false };
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "");
+    throw new Error(
+      errorText || `Failed to fetch chat snapshot: HTTP ${response.status}`,
+    );
+  }
 
   const data = (await response.json()) as {
     messages?: UIMessage[];
