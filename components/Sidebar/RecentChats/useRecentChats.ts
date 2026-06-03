@@ -21,20 +21,23 @@ export const useRecentChats = ({ toggleModal }: UseRecentChatsParams) => {
   const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [activeChatId, setActiveChatId] = useState<string | null>(
-    typeof params?.roomId === "string" ? params.roomId : null
+    typeof params?.chatId === "string" ? params.chatId : null,
   );
 
   useEffect(() => {
     const updateActiveChatId = () => {
-      const urlChatId = window.location.pathname.match(/\/chat\/([^\/]+)/);
+      const match = window.location.pathname.match(
+        /\/sessions\/[^/]+\/chats\/([^/]+)/,
+      );
 
-      if (urlChatId && urlChatId[1]) {
-        setActiveChatId(urlChatId[1]);
+      if (match?.[1]) {
+        setActiveChatId(match[1]);
         return;
       }
 
-      const roomId = typeof params?.roomId === "string" ? params.roomId : null;
-      setActiveChatId(roomId || null);
+      setActiveChatId(
+        typeof params?.chatId === "string" ? params.chatId : null,
+      );
     };
 
     updateActiveChatId();

@@ -3,6 +3,7 @@ import { useVercelChatContext } from "@/providers/VercelChatProvider";
 import { useConversationsProvider } from "@/providers/ConversationsProvider";
 import { CreateArtistResult } from "@/types/createArtistResult";
 import copyMessages from "@/lib/messages/copyMessages";
+import { getChatPath } from "@/lib/chat/getChatPath";
 import { usePrivy } from "@privy-io/react-auth";
 
 /**
@@ -10,7 +11,7 @@ import { usePrivy } from "@privy-io/react-auth";
  * Handles refreshing artists, copying messages, and navigation
  */
 export function useCreateArtistTool(result: CreateArtistResult) {
-  const { status, id } = useVercelChatContext();
+  const { status, id, sessionId } = useVercelChatContext();
   const { refetchConversations } = useConversationsProvider();
   const { getAccessToken } = usePrivy();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -54,7 +55,11 @@ export function useCreateArtistTool(result: CreateArtistResult) {
 
           if (success) {
             // Update the URL to point to the new conversation
-            window.history.replaceState({}, "", `/chat/${result.newRoomId}`);
+            window.history.replaceState(
+              {},
+              "",
+              getChatPath(sessionId, result.newRoomId as string),
+            );
             setIsSuccess(true);
           } else {
             console.error("Failed to copy messages");
@@ -79,6 +84,7 @@ export function useCreateArtistTool(result: CreateArtistResult) {
     isProcessing,
     refetchConversations,
     getAccessToken,
+    sessionId,
   ]);
 
   return {
