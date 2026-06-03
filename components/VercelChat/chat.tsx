@@ -70,7 +70,6 @@ export function Chat({
 
 // Inner component that uses the context
 function ChatContentMemoized({
-  id,
   sessionId,
 }: {
   id: string;
@@ -78,7 +77,7 @@ function ChatContentMemoized({
 }) {
   const { messages, status, isLoading, hasError } = useVercelChatContext();
   const { chatId: routeChatId } = useParams<{ chatId?: string }>();
-  useArtistFromChat({ chatId: id, sessionId });
+  useArtistFromChat({ sessionId });
   const { getRootProps, isDragActive } = useDropzone();
 
   const { isVisible } = useVisibilityDelay({

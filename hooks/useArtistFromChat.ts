@@ -1,43 +1,32 @@
-import { useEffect, useSyncExternalStore } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useUserProvider } from "@/providers/UserProvder";
 import type { ArtistRecord } from "@/types/Artist";
 import { getSessionById } from "@/lib/sessions/getSessionById";
-import { findArtistIdInConversationsCache } from "@/lib/chat/findArtistIdInConversationsCache";
 
 interface UseArtistFromChatParams {
-  chatId: string;
   sessionId?: string;
 }
 
 /**
- * Re-reads the conversations react-query cache whenever any query updates,
- * so legacy `/chat/:id` deep links pick up `artist_id` after the sidebar fetch.
+ * Selects the artist linked to the open chat from its session's `artistId`
+ * (`GET /api/sessions/{sessionId}`), so opening a chat switches the active
+ * artist to that chat's artist. Replaces the legacy
+ * `GET /api/chats/{chatId}/artist` call, which 404s on workflow chats.
+ *
+ * Every chat is reached via the canonical
+ * `/sessions/{sessionId}/chats/{chatId}` route, so `sessionId` is always
+ * available — no chatId-only fallback is needed (the legacy `/chat/:id`
+ * route was removed in chat#1765).
  */
-function useReactiveCachedChatArtistId(chatId: string, enabled: boolean) {
-  const queryClient = useQueryClient();
-
-  return useSyncExternalStore(
-    (onStoreChange) => queryClient.getQueryCache().subscribe(onStoreChange),
-    () =>
-      enabled ? findArtistIdInConversationsCache(queryClient, chatId) : undefined,
-    () => undefined,
-  );
-}
-
-/**
- * Selects the artist linked to the open chat without calling the legacy
- * `GET /api/chats/{chatId}/artist` endpoint (404 on workflow chats).
- * Uses `GET /api/sessions/{sessionId}` when available, otherwise the
- * sidebar conversations cache.
- */
-export function useArtistFromChat({ chatId, sessionId }: UseArtistFromChatParams) {
+export function useArtistFromChat({ sessionId }: UseArtistFromChatParams) {
   const { getAccessToken } = usePrivy();
   const { userData } = useUserProvider();
   const userId = userData?.id;
-  const { selectedArtist, artists, setSelectedArtist, getArtists } = useArtistProvider();
+  const { selectedArtist, artists, setSelectedArtist, getArtists } =
+    useArtistProvider();
 
   const { data: sessionData } = useQuery({
     queryKey: ["session", userId, sessionId],
@@ -53,11 +42,7 @@ export function useArtistFromChat({ chatId, sessionId }: UseArtistFromChatParams
     retry: 1,
   });
 
-  const cachedArtistId = useReactiveCachedChatArtistId(chatId, !sessionId && !!userId);
-
-  const artistAccountId = sessionId
-    ? sessionData?.session.artistId ?? undefined
-    : cachedArtistId;
+  const artistAccountId = sessionData?.session.artistId ?? undefined;
 
   useEffect(() => {
     if (!artistAccountId || selectedArtist?.account_id === artistAccountId) {
@@ -65,7 +50,9 @@ export function useArtistFromChat({ chatId, sessionId }: UseArtistFromChatParams
     }
 
     const artistList = artists as ArtistRecord[];
-    const artist = artistList.find((entry) => entry.account_id === artistAccountId);
+    const artist = artistList.find(
+      (entry) => entry.account_id === artistAccountId,
+    );
 
     if (artist) {
       setSelectedArtist(artist);
@@ -73,11 +60,5 @@ export function useArtistFromChat({ chatId, sessionId }: UseArtistFromChatParams
     }
 
     getArtists(artistAccountId);
-  }, [
-    artistAccountId,
-    selectedArtist,
-    artists,
-    setSelectedArtist,
-    getArtists,
-  ]);
+  }, [artistAccountId, selectedArtist, artists, setSelectedArtist, getArtists]);
 }
