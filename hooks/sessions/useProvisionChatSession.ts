@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
 import {
@@ -52,6 +52,7 @@ export function useProvisionChatSession({
   orgId,
 }: UseProvisionChatSessionInput): UseProvisionChatSessionResult {
   const { getAccessToken } = usePrivy();
+  const [mintGeneration, setMintGeneration] = useState(0);
 
   const mutation = useMutation({
     mutationFn: async (input: ProvisionChatSessionInput) => {
@@ -63,6 +64,11 @@ export function useProvisionChatSession({
     },
   });
 
+  const reset = useCallback(() => {
+    mutation.reset();
+    setMintGeneration((generation) => generation + 1);
+  }, [mutation]);
+
   useEffect(() => {
     if (!enabled) return;
     const last = mutation.variables;
@@ -70,11 +76,11 @@ export function useProvisionChatSession({
       last !== undefined && last.artistId === artistId && last.orgId === orgId;
     if (sameInputs && (mutation.isPending || mutation.isSuccess)) return;
     mutation.mutate({ artistId, orgId });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- mutation.* read for idempotency; inputs are [enabled, artistId, orgId]
-  }, [enabled, artistId, orgId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mutation.* read for idempotency; inputs are [enabled, artistId, orgId, mintGeneration]
+  }, [enabled, artistId, orgId, mintGeneration]);
 
   if (!enabled || mutation.isIdle || mutation.isPending) {
-    return { state: { status: "bootstrapping" }, reset: mutation.reset };
+    return { state: { status: "bootstrapping" }, reset };
   }
   if (mutation.isError) {
     return {
@@ -85,7 +91,7 @@ export function useProvisionChatSession({
             ? mutation.error.message
             : "Failed to start a new chat. Please try again.",
       },
-      reset: mutation.reset,
+      reset,
     };
   }
   return {
@@ -94,6 +100,6 @@ export function useProvisionChatSession({
       sessionId: mutation.data.sessionId,
       chatId: mutation.data.chatId,
     },
-    reset: mutation.reset,
+    reset,
   };
 }

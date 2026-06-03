@@ -1,7 +1,7 @@
 "use client";
 
 import type { UIMessage } from "ai";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useChatSessionProvision } from "@/providers/ChatSessionProvisionProvider";
 import { Chat } from "@/components/VercelChat/chat";
 import NewChatPreparingShell from "@/components/VercelChat/NewChatPreparingShell";
@@ -21,25 +21,31 @@ export default function NewChatBootstrap({
 }: NewChatBootstrapProps) {
   const { state, consumedChatId, resetProvision } = useChatSessionProvision();
   const [draftInput, setDraftInput] = useState("");
+  const staleResetStartedRef = useRef(false);
 
-  const isConsumedReady =
-    state.status === "ready" &&
-    consumedChatId !== null &&
-    state.chatId === consumedChatId;
-
+  // Returning to `/` or `/chat` after a prior first-send still has a
+  // successful mutation in the root provider — reset once on mount so
+  // we mint a fresh session instead of appending to the old chat.
   useEffect(() => {
-    if (isConsumedReady) {
+    if (staleResetStartedRef.current) return;
+    if (
+      state.status === "ready" &&
+      consumedChatId !== null &&
+      state.chatId === consumedChatId
+    ) {
+      staleResetStartedRef.current = true;
       resetProvision();
     }
-  }, [isConsumedReady, resetProvision]);
+  }, [state, consumedChatId, resetProvision]);
 
   useEffect(() => {
     if (state.status === "bootstrapping" || state.status === "idle") {
       setDraftInput("");
+      staleResetStartedRef.current = false;
     }
   }, [state.status]);
 
-  if (state.status === "ready" && !isConsumedReady) {
+  if (state.status === "ready") {
     return (
       <Chat
         id={state.chatId}
