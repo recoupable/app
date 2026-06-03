@@ -23,7 +23,7 @@ import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
 import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
-import { stopChatWorkflow } from "@/lib/chat/stopChatWorkflow";
+import { useStopChatWorkflow } from "./useStopChatWorkflow";
 
 interface UseVercelChatProps {
   id: string;
@@ -203,26 +203,16 @@ export function useVercelChat({
 
   // Workflow chats: await the backend cancel and let SSE close naturally —
   // calling aiStop here would tear down SSE before in-flight chunks reach
-  // the UI and frontend/DB would disagree on reload. Legacy chats abort locally.
-  //
-  // `isStopping` is set the moment the user clicks so the submit button can
-  // flip to a clear "stopping" state without waiting for the backend round
-  // trip — otherwise the UI looks dead for ~1-2s while the workflow detects
-  // the cancel and the SSE watcher closes the stream.
-  const [isStopping, setIsStopping] = useState(false);
+  // the UI and frontend/DB would disagree on reload. Legacy chats abort
+  // locally via the AI SDK's `stop()`.
+  const { stop: stopWorkflow, isStopping } = useStopChatWorkflow(id);
   const stop = useCallback(async () => {
     if (sessionId) {
-      setIsStopping(true);
-      try {
-        const token = await getAccessToken().catch(() => null);
-        await stopChatWorkflow(id, token);
-      } finally {
-        setIsStopping(false);
-      }
+      await stopWorkflow();
       return;
     }
     await aiStop();
-  }, [aiStop, sessionId, id, getAccessToken]);
+  }, [aiStop, sessionId, stopWorkflow]);
 
   const earliestFailedUserMessageId = useMemo(
     () => getEarliestFailedUserMessageId(messages),
