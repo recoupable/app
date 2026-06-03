@@ -13,6 +13,7 @@ import {
 } from "../ai-elements/prompt-input";
 import ModelSelect from "@/components/ModelSelect";
 import FileMentionsInput from "./FileMentionsInput";
+import WorkspaceStatusIndicator from "./WorkspaceStatusIndicator";
 
 export function ChatInput() {
   const {
@@ -22,7 +23,7 @@ export function ChatInput() {
     isLoadingSignedUrls,
     handleSendMessage,
     isGeneratingResponse,
-    isBootstrapPreparing,
+    workspaceStatus,
     stop,
     setInput,
     input,
@@ -30,10 +31,13 @@ export function ChatInput() {
   } = useVercelChatContext();
   // Allow typing regardless of artist selection
   const isDisabled = false;
-  // Block sending until the new-chat session + sandbox finish provisioning;
-  // the input stays typeable so users aren't stuck on a spinner meanwhile.
+  // Block sending until the workspace (session + sandbox) is ready; the
+  // input stays typeable so users aren't stuck on a spinner meanwhile.
   const isSendDisabled =
-    isDisabled || hasPendingUploads || isLoadingSignedUrls || isBootstrapPreparing;
+    isDisabled ||
+    hasPendingUploads ||
+    isLoadingSignedUrls ||
+    workspaceStatus !== "ready";
 
   const handleSend = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -67,6 +71,9 @@ export function ChatInput() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
       >
+        <div className="absolute right-3 top-3 z-20">
+          <WorkspaceStatusIndicator status={workspaceStatus} />
+        </div>
         <PromptInput
           onSubmit={handleSend}
           className={cn(
@@ -85,11 +92,6 @@ export function ChatInput() {
               <PureAttachmentsButton />
               {/* YouTube connect button removed from ChatInput UI intentionally; preserved for future reuse */}
               <ModelSelect />
-              {isBootstrapPreparing && (
-                <span className="text-xs text-muted-foreground animate-pulse">
-                  Preparing your workspace…
-                </span>
-              )}
             </PromptInputTools>
             <PromptInputSubmit
               disabled={isSendDisabled}

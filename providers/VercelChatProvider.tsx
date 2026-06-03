@@ -13,6 +13,7 @@ import { ChatStatus, FileUIPart, UIMessage } from "ai";
 import { useArtistProvider } from "./ArtistProvider";
 import { GatewayLanguageModelEntry } from "@ai-sdk/gateway";
 import { TextAttachment } from "@/types/textAttachment";
+import type { WorkspaceStatus } from "@/components/VercelChat/WorkspaceStatusIndicator";
 
 // Interface for the context data
 interface VercelChatContextType {
@@ -48,8 +49,8 @@ interface VercelChatContextType {
   removeTextAttachment: (index: number) => void;
   model: string;
   setModel: (model: string) => void;
-  /** True while the new-chat session + sandbox are still provisioning. */
-  isBootstrapPreparing: boolean;
+  /** Workspace (session + sandbox) lifecycle; gates Send + drives the status dot. */
+  workspaceStatus: WorkspaceStatus;
 }
 
 // Create the context
@@ -69,8 +70,8 @@ interface VercelChatProviderProps {
   sessionId?: string;
   /** Api-minted chat id from bootstrap when `chatId` is a placeholder. */
   workflowChatId?: string;
-  /** True while session + sandbox provisioning is in flight; gates Send. */
-  isBootstrapPreparing?: boolean;
+  /** Workspace (session + sandbox) lifecycle; gates Send + drives the status dot. */
+  workspaceStatus?: WorkspaceStatus;
   initialMessages?: UIMessage[];
 }
 
@@ -82,7 +83,7 @@ export function VercelChatProvider({
   chatId,
   sessionId,
   workflowChatId,
-  isBootstrapPreparing = false,
+  workspaceStatus = "ready",
   initialMessages,
 }: VercelChatProviderProps) {
   const {
@@ -181,7 +182,7 @@ export function VercelChatProvider({
     setTextAttachments,
     addTextAttachment,
     removeTextAttachment,
-    isBootstrapPreparing,
+    workspaceStatus,
   };
 
   // Send chat status and messages to ArtistProvider
