@@ -1,31 +1,33 @@
 "use client";
 
 import type { UIMessage } from "ai";
-import { Loader } from "lucide-react";
+import { useState } from "react";
 import { useNewChatBootstrap } from "@/hooks/useNewChatBootstrap";
 import { Chat } from "@/components/VercelChat/chat";
+import NewChatPreparingShell from "@/components/VercelChat/NewChatPreparingShell";
 
 interface NewChatBootstrapProps {
   initialMessages?: UIMessage[];
 }
 
 /**
- * Thin renderer over `useNewChatBootstrap`. Mounted by
- * `app/page.tsx` (via HomePage) and `app/chat/page.tsx`; provisions
- * a recoup-api session + sandbox before mounting `<Chat>` so the
- * workflow transport (`/api/chat/workflow`) has the `sessionId` +
- * `chatId` its validator requires (recoupable/chat#1747).
+ * New-chat entry for `/` and `/chat`. Provisioning runs at app level
+ * (`ChatSessionProvisionProvider`); while ids are pending this shows a
+ * typeable input instead of a full-screen spinner. `<Chat>` mounts only
+ * when `sessionId` + `chatId` are ready (#1765).
  */
 export default function NewChatBootstrap({
   initialMessages,
 }: NewChatBootstrapProps) {
   const state = useNewChatBootstrap();
+  const [draftInput, setDraftInput] = useState("");
 
   if (state.status === "ready") {
     return (
       <Chat
         id={state.chatId}
         sessionId={state.sessionId}
+        initialInput={draftInput}
         initialMessages={initialMessages}
       />
     );
@@ -40,8 +42,6 @@ export default function NewChatBootstrap({
   }
 
   return (
-    <div className="flex size-full items-center justify-center">
-      <Loader className="size-5 animate-spin text-muted-foreground" />
-    </div>
+    <NewChatPreparingShell input={draftInput} onInputChange={setDraftInput} />
   );
 }

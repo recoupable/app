@@ -12,6 +12,7 @@ import WagmiProvider from "./WagmiProvider";
 import { MiniAppProvider } from "./MiniAppProvider";
 import { ThemeProvider } from "./ThemeProvider";
 import { OrganizationProvider } from "./OrganizationProvider";
+import { ChatSessionProvisionProvider } from "./ChatSessionProvisionProvider";
 import ApiOverrideSync from "./ApiOverrideSync";
 import { AccountOverrideProvider } from "./AccountOverrideProvider";
 
@@ -34,11 +35,13 @@ const Providers = ({ children }: { children: React.ReactNode }) => (
               <UserProvider>
                 <OrganizationProvider>
                   <ArtistProvider>
-                    <SidebarExpansionProvider>
-                      <ConversationsProvider>
-                        <PaymentProvider>{children}</PaymentProvider>
-                      </ConversationsProvider>
-                    </SidebarExpansionProvider>
+                    <ChatSessionProvisionProvider>
+                      <SidebarExpansionProvider>
+                        <ConversationsProvider>
+                          <PaymentProvider>{children}</PaymentProvider>
+                        </ConversationsProvider>
+                      </SidebarExpansionProvider>
+                    </ChatSessionProvisionProvider>
                   </ArtistProvider>
                 </OrganizationProvider>
               </UserProvider>

@@ -29,6 +29,7 @@ interface UseVercelChatProps {
   id: string;
   /** Session id from bootstrap or `/sessions/[sessionId]/chats/[chatId]`. */
   sessionId: string;
+  initialInput?: string;
   initialMessages?: UIMessage[];
   attachments?: FileUIPart[];
   textAttachments?: TextAttachment[];
@@ -42,6 +43,7 @@ interface UseVercelChatProps {
 export function useVercelChat({
   id,
   sessionId,
+  initialInput,
   initialMessages,
   attachments = [],
   textAttachments = [],
@@ -56,7 +58,7 @@ export function useVercelChat({
   const messagesLengthRef = useRef<number>();
   const { addOptimisticConversation } = useConversationsProvider();
   const { data: availableModels = [] } = useAvailableModels();
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(() => initialInput ?? "");
   const [model, setModel] = useLocalStorage("RECOUP_MODEL", DEFAULT_MODEL);
   const { refetchCredits } = usePaymentProvider();
   const { transport, getHeaders } = useChatTransport({

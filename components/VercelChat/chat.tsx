@@ -23,10 +23,17 @@ interface ChatProps {
   id: string;
   /** Session id from bootstrap or canonical session-scoped route. */
   sessionId: string;
+  /** Text typed while bootstrap was preparing, restored on first mount. */
+  initialInput?: string;
   initialMessages?: UIMessage[];
 }
 
-export function Chat({ id, sessionId, initialMessages }: ChatProps) {
+export function Chat({
+  id,
+  sessionId,
+  initialInput,
+  initialMessages,
+}: ChatProps) {
   const { selectedOrgId } = useOrganization();
   const providerKey = `${id}-${selectedOrgId ?? "personal"}`;
 
@@ -35,6 +42,7 @@ export function Chat({ id, sessionId, initialMessages }: ChatProps) {
       key={providerKey}
       chatId={id}
       sessionId={sessionId}
+      initialInput={initialInput}
       initialMessages={initialMessages}
     >
       <ChatContent id={id} />

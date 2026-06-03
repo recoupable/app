@@ -63,6 +63,7 @@ interface VercelChatProviderProps {
    * Session id for recoup-api `/api/chat/workflow` (required on every mount).
    */
   sessionId: string;
+  initialInput?: string;
   initialMessages?: UIMessage[];
 }
 
@@ -73,6 +74,7 @@ export function VercelChatProvider({
   children,
   chatId,
   sessionId,
+  initialInput,
   initialMessages,
 }: VercelChatProviderProps) {
   const {
@@ -121,6 +123,7 @@ export function VercelChatProvider({
   } = useVercelChat({
     id: chatId,
     sessionId,
+    initialInput,
     initialMessages,
     attachments,
     textAttachments,
