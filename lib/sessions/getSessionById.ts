@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import { safeJsonParse } from "@/lib/api/safeJsonParse";
 
 /**
  * Wire shape of recoup-api `GET /api/sessions/{sessionId}`, validated at
@@ -46,12 +47,4 @@ export async function getSessionById(
   }
 
   return sessionResponseSchema.parse(await response.json());
-}
-
-function safeJsonParse(raw: string): unknown {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
 }
