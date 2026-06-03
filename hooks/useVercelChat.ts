@@ -27,8 +27,18 @@ import { getChatPath } from "@/lib/chat/getChatPath";
 
 interface UseVercelChatProps {
   id: string;
-  /** Session id from bootstrap or `/sessions/[sessionId]/chats/[chatId]`. */
-  sessionId: string;
+  /**
+   * Session id from `/sessions/[sessionId]/chats/[chatId]` (always
+   * present) or the new-chat bootstrap (absent until provisioning
+   * resolves). Send is gated upstream while it's absent, so the transport
+   * never fires without it.
+   */
+  sessionId?: string;
+  /**
+   * Api-minted chat id from bootstrap when `id` is a client placeholder.
+   * Used as the transport / message-load / URL target; falls back to `id`.
+   */
+  workflowChatId?: string;
   initialMessages?: UIMessage[];
   attachments?: FileUIPart[];
   textAttachments?: TextAttachment[];
@@ -42,6 +52,7 @@ interface UseVercelChatProps {
 export function useVercelChat({
   id,
   sessionId,
+  workflowChatId,
   initialMessages,
   attachments = [],
   textAttachments = [],
@@ -59,8 +70,12 @@ export function useVercelChat({
   const [input, setInput] = useState("");
   const [model, setModel] = useLocalStorage("RECOUP_MODEL", DEFAULT_MODEL);
   const { refetchCredits } = usePaymentProvider();
+  // The api-minted chat id once bootstrap resolves; before then `id` is a
+  // client placeholder. Drives the transport, message load, and URL so
+  // sends/persistence target the row recoup-api actually created.
+  const transportChatId = workflowChatId ?? id;
   const { transport, getHeaders } = useChatTransport({
-    chatId: id,
+    chatId: transportChatId,
     sessionId,
   });
   const { authenticated, getAccessToken } = usePrivy();
@@ -277,9 +292,14 @@ export function useVercelChat({
   // Keep messagesRef in sync with messages
   messagesLengthRef.current = messages.length;
 
+  // Only load persisted history for an existing chat opened from a
+  // canonical `/sessions/[sessionId]/chats/[chatId]` URL (route `chatId`
+  // present). A new chat from the bootstrap has nothing to load, so we
+  // skip the fetch — avoiding a spinner flashing over the input the user
+  // is already typing into while provisioning resolves.
   const { isLoading: isMessagesLoading, hasError } = useMessageLoader(
     sessionId,
-    messages.length === 0 ? id : undefined,
+    messages.length === 0 && chatId ? transportChatId : undefined,
     userId,
     setMessages,
   );
@@ -290,8 +310,13 @@ export function useVercelChat({
   const isGeneratingResponse = ["streaming", "submitted"].includes(status);
 
   const silentlyUpdateUrl = useCallback(() => {
-    window.history.replaceState({}, "", getChatPath(sessionId, id));
-  }, [id, sessionId]);
+    if (!sessionId) return;
+    window.history.replaceState(
+      {},
+      "",
+      getChatPath(sessionId, transportChatId),
+    );
+  }, [transportChatId, sessionId]);
 
   const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -311,7 +336,12 @@ export function useVercelChat({
 
     if (!chatId) {
       // New chat from `/` or `/chat` — sidebar + URL update on first send.
-      addOptimisticConversation("New Chat", id, sessionId, messageContent);
+      addOptimisticConversation(
+        "New Chat",
+        transportChatId,
+        sessionId,
+        messageContent,
+      );
       silentlyUpdateUrl();
     }
   };

@@ -18,15 +18,39 @@ import FileDragOverlay from "./FileDragOverlay";
 import { Loader } from "lucide-react";
 import { memo } from "react";
 import { useOrganization } from "@/providers/OrganizationProvider";
+import type { WorkspaceStatus } from "./WorkspaceStatusIndicator";
 
 interface ChatProps {
   id: string;
-  /** Session id from bootstrap or canonical session-scoped route. */
-  sessionId: string;
+  /**
+   * Session id. Always present from the canonical session-scoped route;
+   * absent on the new-chat bootstrap path until provisioning resolves
+   * (see `NewChatBootstrap`). Send is gated while `workspaceStatus` is not
+   * `ready`, so the workflow transport never fires without it.
+   */
+  sessionId?: string;
+  /**
+   * Api-minted chat id from bootstrap, used when `id` is a client
+   * placeholder. Becomes the transport/URL target once provisioning
+   * resolves; falls back to `id` otherwise.
+   */
+  workflowChatId?: string;
+  /**
+   * Workspace (session + sandbox) lifecycle; gates Send and drives the
+   * status indicator. Defaults to `ready` for existing chats opened from
+   * the canonical route.
+   */
+  workspaceStatus?: WorkspaceStatus;
   initialMessages?: UIMessage[];
 }
 
-export function Chat({ id, sessionId, initialMessages }: ChatProps) {
+export function Chat({
+  id,
+  sessionId,
+  workflowChatId,
+  workspaceStatus,
+  initialMessages,
+}: ChatProps) {
   const { selectedOrgId } = useOrganization();
   const providerKey = `${id}-${selectedOrgId ?? "personal"}`;
 
@@ -35,6 +59,8 @@ export function Chat({ id, sessionId, initialMessages }: ChatProps) {
       key={providerKey}
       chatId={id}
       sessionId={sessionId}
+      workflowChatId={workflowChatId}
+      workspaceStatus={workspaceStatus}
       initialMessages={initialMessages}
     >
       <ChatContent id={id} />

@@ -13,6 +13,7 @@ import {
 } from "../ai-elements/prompt-input";
 import ModelSelect from "@/components/ModelSelect";
 import FileMentionsInput from "./FileMentionsInput";
+import WorkspaceStatusIndicator from "./WorkspaceStatusIndicator";
 
 export function ChatInput() {
   const {
@@ -22,6 +23,7 @@ export function ChatInput() {
     isLoadingSignedUrls,
     handleSendMessage,
     isGeneratingResponse,
+    workspaceStatus,
     stop,
     setInput,
     input,
@@ -29,6 +31,13 @@ export function ChatInput() {
   } = useVercelChatContext();
   // Allow typing regardless of artist selection
   const isDisabled = false;
+  // Block sending until the workspace (session + sandbox) is ready; the
+  // input stays typeable so users aren't stuck on a spinner meanwhile.
+  const isSendDisabled =
+    isDisabled ||
+    hasPendingUploads ||
+    isLoadingSignedUrls ||
+    workspaceStatus !== "ready";
 
   const handleSend = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -42,8 +51,7 @@ export function ChatInput() {
     // Only check input requirements for sending new messages
     // Allow sending if there are text attachments even without typed input
     const hasContent = input !== "" || textAttachments.length > 0;
-    if (!hasContent || isDisabled || hasPendingUploads || isLoadingSignedUrls)
-      return;
+    if (!hasContent || isSendDisabled) return;
 
     handleSendMessage(event);
   };
@@ -63,6 +71,9 @@ export function ChatInput() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
       >
+        <div className="absolute right-3 top-3 z-20">
+          <WorkspaceStatusIndicator status={workspaceStatus} />
+        </div>
         <PromptInput
           onSubmit={handleSend}
           className={cn(
@@ -83,13 +94,12 @@ export function ChatInput() {
               <ModelSelect />
             </PromptInputTools>
             <PromptInputSubmit
-              disabled={isDisabled || hasPendingUploads || isLoadingSignedUrls}
+              disabled={isSendDisabled}
               status={status}
               className={cn(
                 "rounded-full hover:scale-105 active:scale-95 transition-all",
                 {
-                  "cursor-not-allowed opacity-50":
-                    isDisabled || hasPendingUploads || isLoadingSignedUrls,
+                  "cursor-not-allowed opacity-50": isSendDisabled,
                 }
               )}
             />

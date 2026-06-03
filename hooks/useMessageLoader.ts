@@ -7,7 +7,7 @@ import { getChatMessages } from "@/lib/messages/getChatMessages";
  * Loads persisted UI messages for a session-scoped chat from recoup-api.
  */
 export function useMessageLoader(
-  sessionId: string,
+  sessionId: string | undefined,
   chatId: string | undefined,
   userId: string | undefined,
   setMessages: (messages: UIMessage[]) => void,
@@ -17,7 +17,7 @@ export function useMessageLoader(
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!chatId) {
+    if (!chatId || !sessionId) {
       setIsLoading(false);
       return;
     }

@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useRef } from "react";
 import { DefaultChatTransport } from "ai";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import { usePrivy } from "@privy-io/react-auth";
@@ -6,8 +6,12 @@ import { usePrivy } from "@privy-io/react-auth";
 interface UseChatTransportOptions {
   /** Chat row id (also the AI SDK `useChat({ id })` instance id). */
   chatId: string;
-  /** Session id from bootstrap or canonical route — required for workflow transport. */
-  sessionId: string;
+  /**
+   * Session id from bootstrap or canonical route. Absent only while a new
+   * chat is still provisioning; Send is gated until it lands, so the
+   * transport is never invoked without it.
+   */
+  sessionId?: string;
 }
 
 /**
@@ -22,6 +26,17 @@ export function useChatTransport({
 }: UseChatTransportOptions) {
   const { getAccessToken } = usePrivy();
   const baseUrl = getClientApiBaseUrl();
+
+  // Read the latest ids at request time via refs. `useChat` captures the
+  // transport from the mount render and does not swap it when `chatId` /
+  // `sessionId` change — so a new chat that mounts during provisioning
+  // (sessionId still undefined, chatId a placeholder) would otherwise POST
+  // those stale values on first send. Refs keep the transport instance
+  // stable while always sending the ids current as of the request.
+  const chatIdRef = useRef(chatId);
+  const sessionIdRef = useRef(sessionId);
+  chatIdRef.current = chatId;
+  sessionIdRef.current = sessionId;
 
   const getHeaders = useCallback(async () => {
     const accessToken = await getAccessToken();
@@ -39,15 +54,15 @@ export function useChatTransport({
         body: async () => {
           const recoupAccessToken = await getAccessToken().catch(() => null);
           const body: {
-            sessionId: string;
+            sessionId: string | undefined;
             chatId: string;
             recoupAccessToken?: string;
-          } = { sessionId, chatId };
+          } = { sessionId: sessionIdRef.current, chatId: chatIdRef.current };
           if (recoupAccessToken) body.recoupAccessToken = recoupAccessToken;
           return body;
         },
       }),
-    [baseUrl, chatId, sessionId, getAccessToken],
+    [baseUrl, getAccessToken],
   );
 
   return { transport, getHeaders };
