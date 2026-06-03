@@ -23,17 +23,12 @@ import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
 import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
+import { getChatPath } from "@/lib/chat/getChatPath";
 
 interface UseVercelChatProps {
   id: string;
-  /**
-   * Session id from the chat-bootstrap (`createSession`). When present
-   * the transport targets `/api/chat/workflow`; when absent it falls
-   * back to the legacy `/api/chat` for chats opened from history that
-   * haven't been backfilled to the workflow architecture yet
-   * (recoupable/chat#1747 Phase 2).
-   */
-  sessionId?: string;
+  /** Session id from bootstrap or `/sessions/[sessionId]/chats/[chatId]`. */
+  sessionId: string;
   initialMessages?: UIMessage[];
   attachments?: FileUIPart[];
   textAttachments?: TextAttachment[];
@@ -54,7 +49,7 @@ export function useVercelChat({
   const { userData } = useUserProvider();
   const { selectedArtist } = useArtistProvider();
   const { selectedOrgId: organizationId } = useOrganization();
-  const { roomId } = useParams();
+  const { chatId } = useParams<{ chatId?: string }>();
 
   const userId = userData?.account_id || userData?.id; // Use account_id if available, fallback to id
   const artistId = selectedArtist?.account_id;
@@ -289,21 +284,13 @@ export function useVercelChat({
     setMessages,
   );
 
-  // Only show loading state if:
-  // 1. We're loading messages
-  // 2. We have a roomId (meaning we're intentionally loading a chat)
-  // 3. We don't already have messages (important for redirects)
+  // Only show loading state when fetching persisted history for an existing chat.
   const isLoading = isMessagesLoading && !!id && messages.length === 0;
 
   const isGeneratingResponse = ["streaming", "submitted"].includes(status);
 
   const silentlyUpdateUrl = useCallback(() => {
-    if (!sessionId) return;
-    window.history.replaceState(
-      {},
-      "",
-      `/sessions/${sessionId}/chats/${id}`,
-    );
+    window.history.replaceState({}, "", getChatPath(sessionId, id));
   }, [id, sessionId]);
 
   const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -322,9 +309,8 @@ export function useVercelChat({
     // Submit the message
     handleSubmit(event);
 
-    if (!roomId) {
-      // Optimistically append a temporary conversation so it appears in Recent Chats
-      // It will be replaced by the real conversation after the updates/refetch
+    if (!chatId) {
+      // New chat from `/` or `/chat` — sidebar + URL update on first send.
       addOptimisticConversation("New Chat", id, sessionId, messageContent);
       silentlyUpdateUrl();
     }

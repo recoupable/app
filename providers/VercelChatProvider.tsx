@@ -17,6 +17,7 @@ import { TextAttachment } from "@/types/textAttachment";
 // Interface for the context data
 interface VercelChatContextType {
   id: string | undefined;
+  sessionId: string;
   messages: UIMessage[];
   availableModels: GatewayLanguageModelEntry[];
   status: ChatStatus;
@@ -59,11 +60,9 @@ interface VercelChatProviderProps {
   children: ReactNode;
   chatId: string;
   /**
-   * Session id from the new-chat bootstrap. Forwarded into
-   * `useVercelChat` -> `useChatTransport`; presence flips the
-   * transport to recoup-api's `/api/chat/workflow`.
+   * Session id for recoup-api `/api/chat/workflow` (required on every mount).
    */
-  sessionId?: string;
+  sessionId: string;
   initialMessages?: UIMessage[];
 }
 
@@ -144,6 +143,7 @@ export function VercelChatProvider({
   // Create the context value object
   const contextValue: VercelChatContextType = {
     id: chatId,
+    sessionId,
     messages,
     model,
     availableModels,

@@ -21,14 +21,8 @@ import { useOrganization } from "@/providers/OrganizationProvider";
 
 interface ChatProps {
   id: string;
-  /**
-   * Session id from the new-chat bootstrap. When present the chat
-   * routes through recoup-api's `/api/chat/workflow`; when absent it
-   * falls back to the legacy `/api/chat` (existing chats opened from
-   * history — they'll cut over once Phase 2 backfills `session_id`
-   * onto their rows, recoupable/chat#1747).
-   */
-  sessionId?: string;
+  /** Session id from bootstrap or canonical session-scoped route. */
+  sessionId: string;
   initialMessages?: UIMessage[];
 }
 
@@ -55,7 +49,7 @@ function ChatContentMemoized({
   id: string;
 }) {
   const { messages, status, isLoading, hasError } = useVercelChatContext();
-  const { roomId } = useParams();
+  const { chatId: routeChatId } = useParams<{ chatId?: string }>();
   useArtistFromRoom(id);
   const { getRootProps, isDragActive } = useDropzone();
 
@@ -65,7 +59,7 @@ function ChatContentMemoized({
   });
 
   if (isLoading) {
-    return roomId ? (
+    return routeChatId ? (
       <ChatSkeleton />
     ) : (
       <div className="flex size-full items-center justify-center">
