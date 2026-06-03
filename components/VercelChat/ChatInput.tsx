@@ -22,6 +22,7 @@ export function ChatInput() {
     isLoadingSignedUrls,
     handleSendMessage,
     isGeneratingResponse,
+    isStopping,
     stop,
     setInput,
     input,
@@ -32,6 +33,10 @@ export function ChatInput() {
 
   const handleSend = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    // Already cancelling — ignore further clicks until the backend
+    // round-trip resolves and the SSE watcher closes the stream.
+    if (isStopping) return;
 
     // Allow stop action regardless of input state
     if (isGeneratingResponse) {
@@ -83,13 +88,18 @@ export function ChatInput() {
               <ModelSelect />
             </PromptInputTools>
             <PromptInputSubmit
-              disabled={isDisabled || hasPendingUploads || isLoadingSignedUrls}
-              status={status}
+              disabled={
+                isDisabled || hasPendingUploads || isLoadingSignedUrls || isStopping
+              }
+              // Override status to "submitted" while we're awaiting the
+              // backend stop so the button flips to a spinner immediately
+              // instead of holding the streaming square for ~1-2s.
+              status={isStopping ? "submitted" : status}
               className={cn(
                 "rounded-full hover:scale-105 active:scale-95 transition-all",
                 {
                   "cursor-not-allowed opacity-50":
-                    isDisabled || hasPendingUploads || isLoadingSignedUrls,
+                    isDisabled || hasPendingUploads || isLoadingSignedUrls || isStopping,
                 }
               )}
             />

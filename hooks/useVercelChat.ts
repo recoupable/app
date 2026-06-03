@@ -204,10 +204,21 @@ export function useVercelChat({
   // Workflow chats: await the backend cancel and let SSE close naturally —
   // calling aiStop here would tear down SSE before in-flight chunks reach
   // the UI and frontend/DB would disagree on reload. Legacy chats abort locally.
+  //
+  // `isStopping` is set the moment the user clicks so the submit button can
+  // flip to a clear "stopping" state without waiting for the backend round
+  // trip — otherwise the UI looks dead for ~1-2s while the workflow detects
+  // the cancel and the SSE watcher closes the stream.
+  const [isStopping, setIsStopping] = useState(false);
   const stop = useCallback(async () => {
     if (sessionId) {
-      const token = await getAccessToken().catch(() => null);
-      await stopChatWorkflow(id, token);
+      setIsStopping(true);
+      try {
+        const token = await getAccessToken().catch(() => null);
+        await stopChatWorkflow(id, token);
+      } finally {
+        setIsStopping(false);
+      }
       return;
     }
     await aiStop();
@@ -384,6 +395,7 @@ export function useVercelChat({
     isLoading,
     hasError,
     isGeneratingResponse,
+    isStopping,
     model,
     isLoadingSignedUrls,
 
