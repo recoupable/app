@@ -24,7 +24,7 @@ const STATUS_CONFIG: Record<
   provisioning: {
     dotClassName: "bg-yellow-500",
     pulse: true,
-    tooltip: "Preparing your workspace — type now; send unlocks when it's ready.",
+    tooltip: "Preparing your workspace",
   },
   ready: {
     dotClassName: "bg-green-500",
