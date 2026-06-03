@@ -13,10 +13,12 @@ import { ChatStatus, FileUIPart, UIMessage } from "ai";
 import { useArtistProvider } from "./ArtistProvider";
 import { GatewayLanguageModelEntry } from "@ai-sdk/gateway";
 import { TextAttachment } from "@/types/textAttachment";
+import type { WorkspaceStatus } from "@/components/VercelChat/WorkspaceStatusIndicator";
 
 // Interface for the context data
 interface VercelChatContextType {
   id: string | undefined;
+  sessionId: string | undefined;
   messages: UIMessage[];
   availableModels: GatewayLanguageModelEntry[];
   status: ChatStatus;
@@ -48,6 +50,8 @@ interface VercelChatContextType {
   removeTextAttachment: (index: number) => void;
   model: string;
   setModel: (model: string) => void;
+  /** Workspace (session + sandbox) lifecycle; gates Send + drives the status dot. */
+  workspaceStatus: WorkspaceStatus;
 }
 
 // Create the context
@@ -60,11 +64,15 @@ interface VercelChatProviderProps {
   children: ReactNode;
   chatId: string;
   /**
-   * Session id from the new-chat bootstrap. Forwarded into
-   * `useVercelChat` -> `useChatTransport`; presence flips the
-   * transport to recoup-api's `/api/chat/workflow`.
+   * Session id for recoup-api `/api/chat/workflow`. Absent only on the
+   * new-chat bootstrap path until provisioning resolves; Send is gated on
+   * `isBootstrapPreparing` until it lands.
    */
   sessionId?: string;
+  /** Api-minted chat id from bootstrap when `chatId` is a placeholder. */
+  workflowChatId?: string;
+  /** Workspace (session + sandbox) lifecycle; gates Send + drives the status dot. */
+  workspaceStatus?: WorkspaceStatus;
   initialMessages?: UIMessage[];
 }
 
@@ -75,6 +83,8 @@ export function VercelChatProvider({
   children,
   chatId,
   sessionId,
+  workflowChatId,
+  workspaceStatus = "ready",
   initialMessages,
 }: VercelChatProviderProps) {
   const {
@@ -124,6 +134,7 @@ export function VercelChatProvider({
   } = useVercelChat({
     id: chatId,
     sessionId,
+    workflowChatId,
     initialMessages,
     attachments,
     textAttachments,
@@ -146,6 +157,7 @@ export function VercelChatProvider({
   // Create the context value object
   const contextValue: VercelChatContextType = {
     id: chatId,
+    sessionId,
     messages,
     model,
     availableModels,
@@ -173,6 +185,7 @@ export function VercelChatProvider({
     setTextAttachments,
     addTextAttachment,
     removeTextAttachment,
+    workspaceStatus,
   };
 
   // Send chat status and messages to ArtistProvider

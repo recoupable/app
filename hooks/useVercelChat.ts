@@ -24,17 +24,22 @@ import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { useStopChatWorkflow } from "./useStopChatWorkflow";
+import { getChatPath } from "@/lib/chat/getChatPath";
 
 interface UseVercelChatProps {
   id: string;
   /**
-   * Session id from the chat-bootstrap (`createSession`). When present
-   * the transport targets `/api/chat/workflow`; when absent it falls
-   * back to the legacy `/api/chat` for chats opened from history that
-   * haven't been backfilled to the workflow architecture yet
-   * (recoupable/chat#1747 Phase 2).
+   * Session id from `/sessions/[sessionId]/chats/[chatId]` (always
+   * present) or the new-chat bootstrap (absent until provisioning
+   * resolves). Send is gated upstream while it's absent, so the transport
+   * never fires without it.
    */
   sessionId?: string;
+  /**
+   * Api-minted chat id from bootstrap when `id` is a client placeholder.
+   * Used as the transport / message-load / URL target; falls back to `id`.
+   */
+  workflowChatId?: string;
   initialMessages?: UIMessage[];
   attachments?: FileUIPart[];
   textAttachments?: TextAttachment[];
@@ -48,6 +53,7 @@ interface UseVercelChatProps {
 export function useVercelChat({
   id,
   sessionId,
+  workflowChatId,
   initialMessages,
   attachments = [],
   textAttachments = [],
@@ -55,7 +61,7 @@ export function useVercelChat({
   const { userData } = useUserProvider();
   const { selectedArtist } = useArtistProvider();
   const { selectedOrgId: organizationId } = useOrganization();
-  const { roomId } = useParams();
+  const { chatId } = useParams<{ chatId?: string }>();
 
   const userId = userData?.account_id || userData?.id; // Use account_id if available, fallback to id
   const artistId = selectedArtist?.account_id;
@@ -65,8 +71,12 @@ export function useVercelChat({
   const [input, setInput] = useState("");
   const [model, setModel] = useLocalStorage("RECOUP_MODEL", DEFAULT_MODEL);
   const { refetchCredits } = usePaymentProvider();
+  // The api-minted chat id once bootstrap resolves; before then `id` is a
+  // client placeholder. Drives the transport, message load, and URL so
+  // sends/persistence target the row recoup-api actually created.
+  const transportChatId = workflowChatId ?? id;
   const { transport, getHeaders } = useChatTransport({
-    chatId: id,
+    chatId: transportChatId,
     sessionId,
   });
   const { authenticated, getAccessToken } = usePrivy();
@@ -205,7 +215,7 @@ export function useVercelChat({
   // calling aiStop here would tear down SSE before in-flight chunks reach
   // the UI and frontend/DB would disagree on reload. Legacy chats abort
   // locally via the AI SDK's `stop()`.
-  const { stop: stopWorkflow, isStopping } = useStopChatWorkflow(id);
+  const { stop: stopWorkflow, isStopping } = useStopChatWorkflow(transportChatId);
   const stop = useCallback(async () => {
     if (sessionId) {
       await stopWorkflow();
@@ -296,17 +306,19 @@ export function useVercelChat({
   // Keep messagesRef in sync with messages
   messagesLengthRef.current = messages.length;
 
+  // Only load persisted history for an existing chat opened from a
+  // canonical `/sessions/[sessionId]/chats/[chatId]` URL (route `chatId`
+  // present). A new chat from the bootstrap has nothing to load, so we
+  // skip the fetch — avoiding a spinner flashing over the input the user
+  // is already typing into while provisioning resolves.
   const { isLoading: isMessagesLoading, hasError } = useMessageLoader(
     sessionId,
-    messages.length === 0 ? id : undefined,
+    messages.length === 0 && chatId ? transportChatId : undefined,
     userId,
     setMessages,
   );
 
-  // Only show loading state if:
-  // 1. We're loading messages
-  // 2. We have a roomId (meaning we're intentionally loading a chat)
-  // 3. We don't already have messages (important for redirects)
+  // Only show loading state when fetching persisted history for an existing chat.
   const isLoading = isMessagesLoading && !!id && messages.length === 0;
 
   const isGeneratingResponse = ["streaming", "submitted"].includes(status);
@@ -316,9 +328,9 @@ export function useVercelChat({
     window.history.replaceState(
       {},
       "",
-      `/sessions/${sessionId}/chats/${id}`,
+      getChatPath(sessionId, transportChatId),
     );
-  }, [id, sessionId]);
+  }, [transportChatId, sessionId]);
 
   const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -336,10 +348,14 @@ export function useVercelChat({
     // Submit the message
     handleSubmit(event);
 
-    if (!roomId) {
-      // Optimistically append a temporary conversation so it appears in Recent Chats
-      // It will be replaced by the real conversation after the updates/refetch
-      addOptimisticConversation("New Chat", id, sessionId, messageContent);
+    if (!chatId) {
+      // New chat from `/` or `/chat` — sidebar + URL update on first send.
+      addOptimisticConversation(
+        "New Chat",
+        transportChatId,
+        sessionId,
+        messageContent,
+      );
       silentlyUpdateUrl();
     }
   };

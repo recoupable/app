@@ -18,21 +18,39 @@ import FileDragOverlay from "./FileDragOverlay";
 import { Loader } from "lucide-react";
 import { memo } from "react";
 import { useOrganization } from "@/providers/OrganizationProvider";
+import type { WorkspaceStatus } from "./WorkspaceStatusIndicator";
 
 interface ChatProps {
   id: string;
   /**
-   * Session id from the new-chat bootstrap. When present the chat
-   * routes through recoup-api's `/api/chat/workflow`; when absent it
-   * falls back to the legacy `/api/chat` (existing chats opened from
-   * history — they'll cut over once Phase 2 backfills `session_id`
-   * onto their rows, recoupable/chat#1747).
+   * Session id. Always present from the canonical session-scoped route;
+   * absent on the new-chat bootstrap path until provisioning resolves
+   * (see `NewChatBootstrap`). Send is gated while `workspaceStatus` is not
+   * `ready`, so the workflow transport never fires without it.
    */
   sessionId?: string;
+  /**
+   * Api-minted chat id from bootstrap, used when `id` is a client
+   * placeholder. Becomes the transport/URL target once provisioning
+   * resolves; falls back to `id` otherwise.
+   */
+  workflowChatId?: string;
+  /**
+   * Workspace (session + sandbox) lifecycle; gates Send and drives the
+   * status indicator. Defaults to `ready` for existing chats opened from
+   * the canonical route.
+   */
+  workspaceStatus?: WorkspaceStatus;
   initialMessages?: UIMessage[];
 }
 
-export function Chat({ id, sessionId, initialMessages }: ChatProps) {
+export function Chat({
+  id,
+  sessionId,
+  workflowChatId,
+  workspaceStatus,
+  initialMessages,
+}: ChatProps) {
   const { selectedOrgId } = useOrganization();
   const providerKey = `${id}-${selectedOrgId ?? "personal"}`;
 
@@ -41,6 +59,8 @@ export function Chat({ id, sessionId, initialMessages }: ChatProps) {
       key={providerKey}
       chatId={id}
       sessionId={sessionId}
+      workflowChatId={workflowChatId}
+      workspaceStatus={workspaceStatus}
       initialMessages={initialMessages}
     >
       <ChatContent id={id} />
@@ -55,7 +75,7 @@ function ChatContentMemoized({
   id: string;
 }) {
   const { messages, status, isLoading, hasError } = useVercelChatContext();
-  const { roomId } = useParams();
+  const { chatId: routeChatId } = useParams<{ chatId?: string }>();
   useArtistFromRoom(id);
   const { getRootProps, isDragActive } = useDropzone();
 
@@ -65,7 +85,7 @@ function ChatContentMemoized({
   });
 
   if (isLoading) {
-    return roomId ? (
+    return routeChatId ? (
       <ChatSkeleton />
     ) : (
       <div className="flex size-full items-center justify-center">
