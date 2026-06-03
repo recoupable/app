@@ -10,7 +10,11 @@ import { Dispatch, SetStateAction } from "react";
 import { cn } from "@/lib/utils";
 import ViewingMessage from "./ViewingMessage";
 import EditingMessage from "./EditingMessage";
-import { getToolCallComponent, getToolResultComponent } from "./ToolComponents";
+import {
+  getCancelledToolComponent,
+  getToolCallComponent,
+  getToolResultComponent,
+} from "./ToolComponents";
 import MessageFileViewer from "./message-file-viewer";
 import { EnhancedReasoning } from "@/components/reasoning/EnhancedReasoning";
 import { Actions, Action } from "@/components/actions";
@@ -107,11 +111,17 @@ export function MessageParts({ message, mode, setMode }: MessagePartsProps) {
 
           if (isToolOrDynamicToolUIPart(part)) {
             const { state } = part as ToolUIPart;
+            // Terminal-error states (user-cancel via stop, approval-denied,
+            // tool-thrown errors) need their own renderer — falling through
+            // to getToolCallComponent paints the spinning skeleton, which
+            // makes a cancelled tool look like it's still running.
+            if (state === "output-error" || state === "output-denied") {
+              return getCancelledToolComponent(part as ToolUIPart);
+            }
             if (state !== "output-available") {
               return getToolCallComponent(part as ToolUIPart);
-            } else {
-              return getToolResultComponent(part as ToolUIPart);
             }
+            return getToolResultComponent(part as ToolUIPart);
           }
         }
       )}
