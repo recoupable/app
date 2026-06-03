@@ -15,5 +15,5 @@ export type NewChatBootstrapState = ProvisionChatSessionState;
  * trigger POSTs itself.
  */
 export function useNewChatBootstrap(): NewChatBootstrapState {
-  return useChatSessionProvision();
+  return useChatSessionProvision().state;
 }

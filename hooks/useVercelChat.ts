@@ -24,6 +24,7 @@ import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { getChatPath } from "@/lib/chat/getChatPath";
+import { useChatSessionProvision } from "@/providers/ChatSessionProvisionProvider";
 
 interface UseVercelChatProps {
   id: string;
@@ -57,6 +58,7 @@ export function useVercelChat({
   const artistId = selectedArtist?.account_id;
   const messagesLengthRef = useRef<number>();
   const { addOptimisticConversation } = useConversationsProvider();
+  const { markProvisionConsumed } = useChatSessionProvision();
   const { data: availableModels = [] } = useAvailableModels();
   const [input, setInput] = useState(() => initialInput ?? "");
   const [model, setModel] = useLocalStorage("RECOUP_MODEL", DEFAULT_MODEL);
@@ -314,17 +316,29 @@ export function useVercelChat({
     if (!chatId) {
       // New chat from `/` or `/chat` — sidebar + URL update on first send.
       addOptimisticConversation("New Chat", id, sessionId, messageContent);
+      markProvisionConsumed(id);
       silentlyUpdateUrl();
     }
   };
 
   const handleSendQueryMessages = useCallback(
     async (initialMessage: UIMessage) => {
+      if (!chatId) {
+        markProvisionConsumed(id);
+      }
       silentlyUpdateUrl();
       const headers = await getHeaders();
       sendMessage(initialMessage, { body: chatRequestBody, headers });
     },
-    [silentlyUpdateUrl, sendMessage, chatRequestBody, getHeaders],
+    [
+      chatId,
+      id,
+      markProvisionConsumed,
+      silentlyUpdateUrl,
+      sendMessage,
+      chatRequestBody,
+      getHeaders,
+    ],
   );
 
   useEffect(() => {

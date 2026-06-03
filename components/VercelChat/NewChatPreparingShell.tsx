@@ -51,7 +51,10 @@ export default function NewChatPreparingShell({
                 disabled={false}
               />
               <PromptInputToolbar className="justify-end gap-2">
-                <span className="text-xs text-muted-foreground">
+                <span
+                  aria-live="polite"
+                  className="text-xs text-muted-foreground"
+                >
                   Preparing…
                 </span>
                 <PromptInputSubmit

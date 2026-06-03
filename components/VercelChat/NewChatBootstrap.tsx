@@ -1,8 +1,8 @@
 "use client";
 
 import type { UIMessage } from "ai";
-import { useState } from "react";
-import { useNewChatBootstrap } from "@/hooks/useNewChatBootstrap";
+import { useEffect, useState } from "react";
+import { useChatSessionProvision } from "@/providers/ChatSessionProvisionProvider";
 import { Chat } from "@/components/VercelChat/chat";
 import NewChatPreparingShell from "@/components/VercelChat/NewChatPreparingShell";
 
@@ -19,10 +19,27 @@ interface NewChatBootstrapProps {
 export default function NewChatBootstrap({
   initialMessages,
 }: NewChatBootstrapProps) {
-  const state = useNewChatBootstrap();
+  const { state, consumedChatId, resetProvision } = useChatSessionProvision();
   const [draftInput, setDraftInput] = useState("");
 
-  if (state.status === "ready") {
+  const isConsumedReady =
+    state.status === "ready" &&
+    consumedChatId !== null &&
+    state.chatId === consumedChatId;
+
+  useEffect(() => {
+    if (isConsumedReady) {
+      resetProvision();
+    }
+  }, [isConsumedReady, resetProvision]);
+
+  useEffect(() => {
+    if (state.status === "bootstrapping" || state.status === "idle") {
+      setDraftInput("");
+    }
+  }, [state.status]);
+
+  if (state.status === "ready" && !isConsumedReady) {
     return (
       <Chat
         id={state.chatId}

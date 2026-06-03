@@ -30,6 +30,12 @@ interface UseProvisionChatSessionInput {
   orgId: string | undefined;
 }
 
+export interface UseProvisionChatSessionResult {
+  state: ProvisionChatSessionState;
+  /** Clears the mutation so the next enabled cycle mints a fresh session. */
+  reset: () => void;
+}
+
 /**
  * Wraps `provisionChatSession` in a react-query mutation that re-fires
  * whenever `(artistId, orgId)` change — so each artist/org switch mints
@@ -44,7 +50,7 @@ export function useProvisionChatSession({
   enabled,
   artistId,
   orgId,
-}: UseProvisionChatSessionInput): ProvisionChatSessionState {
+}: UseProvisionChatSessionInput): UseProvisionChatSessionResult {
   const { getAccessToken } = usePrivy();
 
   const mutation = useMutation({
@@ -64,27 +70,30 @@ export function useProvisionChatSession({
       last !== undefined && last.artistId === artistId && last.orgId === orgId;
     if (sameInputs && (mutation.isPending || mutation.isSuccess)) return;
     mutation.mutate({ artistId, orgId });
-    // `mutation.*` are read inside the body, not declared as deps. The
-    // dep array is the real input set; the effect bails idempotently
-    // when those inputs already match the in-flight or completed call.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mutation.* read for idempotency; inputs are [enabled, artistId, orgId]
   }, [enabled, artistId, orgId]);
 
   if (!enabled || mutation.isIdle || mutation.isPending) {
-    return { status: "bootstrapping" };
+    return { state: { status: "bootstrapping" }, reset: mutation.reset };
   }
   if (mutation.isError) {
     return {
-      status: "error",
-      message:
-        mutation.error instanceof Error
-          ? mutation.error.message
-          : "Failed to start a new chat. Please try again.",
+      state: {
+        status: "error",
+        message:
+          mutation.error instanceof Error
+            ? mutation.error.message
+            : "Failed to start a new chat. Please try again.",
+      },
+      reset: mutation.reset,
     };
   }
   return {
-    status: "ready",
-    sessionId: mutation.data.sessionId,
-    chatId: mutation.data.chatId,
+    state: {
+      status: "ready",
+      sessionId: mutation.data.sessionId,
+      chatId: mutation.data.chatId,
+    },
+    reset: mutation.reset,
   };
 }

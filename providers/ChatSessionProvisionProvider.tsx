@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useOrganization } from "@/providers/OrganizationProvider";
 import { useArtistProvider } from "@/providers/ArtistProvider";
@@ -9,8 +16,15 @@ import {
   type ProvisionChatSessionState,
 } from "@/hooks/sessions/useProvisionChatSession";
 
+interface ChatSessionProvisionContextValue {
+  state: ProvisionChatSessionState;
+  consumedChatId: string | null;
+  resetProvision: () => void;
+  markProvisionConsumed: (chatId: string) => void;
+}
+
 const ChatSessionProvisionContext =
-  createContext<ProvisionChatSessionState | null>(null);
+  createContext<ChatSessionProvisionContextValue | null>(null);
 
 /**
  * Starts session + sandbox provisioning as soon as auth, org, and artist
@@ -27,26 +41,46 @@ export function ChatSessionProvisionProvider({
   const { authenticated } = usePrivy();
   const { selectedOrgId } = useOrganization();
   const { selectedArtist, isLoading: isArtistsLoading } = useArtistProvider();
+  const [consumedChatId, setConsumedChatId] = useState<string | null>(null);
 
-  const state = useProvisionChatSession({
+  const { state, reset: resetMutation } = useProvisionChatSession({
     enabled: authenticated && !isArtistsLoading,
     artistId: selectedArtist?.account_id,
     orgId: selectedOrgId ?? undefined,
   });
 
+  const resetProvision = useCallback(() => {
+    resetMutation();
+    setConsumedChatId(null);
+  }, [resetMutation]);
+
+  const markProvisionConsumed = useCallback((chatId: string) => {
+    setConsumedChatId(chatId);
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      state,
+      consumedChatId,
+      resetProvision,
+      markProvisionConsumed,
+    }),
+    [state, consumedChatId, resetProvision, markProvisionConsumed],
+  );
+
   return (
-    <ChatSessionProvisionContext.Provider value={state}>
+    <ChatSessionProvisionContext.Provider value={value}>
       {children}
     </ChatSessionProvisionContext.Provider>
   );
 }
 
-export function useChatSessionProvision(): ProvisionChatSessionState {
-  const state = useContext(ChatSessionProvisionContext);
-  if (state === null) {
+export function useChatSessionProvision(): ChatSessionProvisionContextValue {
+  const context = useContext(ChatSessionProvisionContext);
+  if (context === null) {
     throw new Error(
       "useChatSessionProvision must be used within ChatSessionProvisionProvider",
     );
   }
-  return state;
+  return context;
 }
