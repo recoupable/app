@@ -7,7 +7,7 @@ import ChatSkeleton from "../Chat/ChatSkeleton";
 import ChatGreeting from "../Chat/ChatGreeting";
 import useVisibilityDelay from "@/hooks/useVisibilityDelay";
 import { useParams } from "next/navigation";
-import { useArtistFromRoom } from "@/hooks/useArtistFromRoom";
+import { useArtistFromChat } from "@/hooks/useArtistFromChat";
 import {
   VercelChatProvider,
   useVercelChatContext,
@@ -63,20 +63,21 @@ export function Chat({
       workspaceStatus={workspaceStatus}
       initialMessages={initialMessages}
     >
-      <ChatContent id={id} />
+      <ChatContent id={id} sessionId={sessionId} />
     </VercelChatProvider>
   );
 }
 
 // Inner component that uses the context
 function ChatContentMemoized({
-  id,
+  sessionId,
 }: {
   id: string;
+  sessionId?: string;
 }) {
   const { messages, status, isLoading, hasError } = useVercelChatContext();
   const { chatId: routeChatId } = useParams<{ chatId?: string }>();
-  useArtistFromRoom(id);
+  useArtistFromChat({ sessionId });
   const { getRootProps, isDragActive } = useDropzone();
 
   const { isVisible } = useVisibilityDelay({
@@ -144,5 +145,7 @@ function ChatContentMemoized({
 }
 
 const ChatContent = memo(ChatContentMemoized, (prevProps, nextProps) => {
-  return prevProps.id === nextProps.id;
+  return (
+    prevProps.id === nextProps.id && prevProps.sessionId === nextProps.sessionId
+  );
 });
