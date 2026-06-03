@@ -23,7 +23,7 @@ import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
 import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
-import { getChatPath } from "@/lib/chat/chatPaths";
+import { getChatPath } from "@/lib/chat/getChatPath";
 
 interface UseVercelChatProps {
   id: string;
@@ -49,9 +49,7 @@ export function useVercelChat({
   const { userData } = useUserProvider();
   const { selectedArtist } = useArtistProvider();
   const { selectedOrgId: organizationId } = useOrganization();
-  const params = useParams();
-  const routeChatId =
-    typeof params?.chatId === "string" ? params.chatId : null;
+  const { chatId } = useParams<{ chatId?: string }>();
 
   const userId = userData?.account_id || userData?.id; // Use account_id if available, fallback to id
   const artistId = selectedArtist?.account_id;
@@ -311,7 +309,7 @@ export function useVercelChat({
     // Submit the message
     handleSubmit(event);
 
-    if (!routeChatId) {
+    if (!chatId) {
       // New chat from `/` or `/chat` — sidebar + URL update on first send.
       addOptimisticConversation("New Chat", id, sessionId, messageContent);
       silentlyUpdateUrl();

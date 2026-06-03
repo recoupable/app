@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { isActiveChatRoomPath } from "@/lib/chat/chatPaths";
+import { isActiveChatRoomPath } from "@/lib/chat/isActiveChatRoomPath";
 
 interface OrganizationContextType {
   selectedOrgId: string | null;

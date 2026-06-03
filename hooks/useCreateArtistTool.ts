@@ -3,7 +3,7 @@ import { useVercelChatContext } from "@/providers/VercelChatProvider";
 import { useConversationsProvider } from "@/providers/ConversationsProvider";
 import { CreateArtistResult } from "@/types/createArtistResult";
 import copyMessages from "@/lib/messages/copyMessages";
-import { getChatPath } from "@/lib/chat/chatPaths";
+import { getChatPath } from "@/lib/chat/getChatPath";
 import { usePrivy } from "@privy-io/react-auth";
 
 /**

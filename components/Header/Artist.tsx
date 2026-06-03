@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useArtistPinToggle } from "@/hooks/useArtistPinToggle";
 import ArtistActionButton from "./ArtistActionButton";
-import { isActiveChatRoomPath } from "@/lib/chat/chatPaths";
+import { isActiveChatRoomPath } from "@/lib/chat/isActiveChatRoomPath";
 
 const Artist = ({
   artist,

@@ -1,6 +1,6 @@
 import generateText from "@/lib/ai/generateText";
 import sendEmail from "@/lib/email/sendEmail";
-import { getChatUrl } from "@/lib/chat/chatPaths";
+import { getChatUrl } from "@/lib/chat/getChatUrl";
 import { RECOUP_FROM_EMAIL } from "../consts";
 import { getFetchableUrl } from "../arweave/gateway";
 
