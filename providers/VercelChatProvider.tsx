@@ -17,7 +17,7 @@ import { TextAttachment } from "@/types/textAttachment";
 // Interface for the context data
 interface VercelChatContextType {
   id: string | undefined;
-  sessionId: string;
+  sessionId: string | undefined;
   messages: UIMessage[];
   availableModels: GatewayLanguageModelEntry[];
   status: ChatStatus;
@@ -48,6 +48,8 @@ interface VercelChatContextType {
   removeTextAttachment: (index: number) => void;
   model: string;
   setModel: (model: string) => void;
+  /** True while the new-chat session + sandbox are still provisioning. */
+  isBootstrapPreparing: boolean;
 }
 
 // Create the context
@@ -60,9 +62,15 @@ interface VercelChatProviderProps {
   children: ReactNode;
   chatId: string;
   /**
-   * Session id for recoup-api `/api/chat/workflow` (required on every mount).
+   * Session id for recoup-api `/api/chat/workflow`. Absent only on the
+   * new-chat bootstrap path until provisioning resolves; Send is gated on
+   * `isBootstrapPreparing` until it lands.
    */
-  sessionId: string;
+  sessionId?: string;
+  /** Api-minted chat id from bootstrap when `chatId` is a placeholder. */
+  workflowChatId?: string;
+  /** True while session + sandbox provisioning is in flight; gates Send. */
+  isBootstrapPreparing?: boolean;
   initialMessages?: UIMessage[];
 }
 
@@ -73,6 +81,8 @@ export function VercelChatProvider({
   children,
   chatId,
   sessionId,
+  workflowChatId,
+  isBootstrapPreparing = false,
   initialMessages,
 }: VercelChatProviderProps) {
   const {
@@ -121,6 +131,7 @@ export function VercelChatProvider({
   } = useVercelChat({
     id: chatId,
     sessionId,
+    workflowChatId,
     initialMessages,
     attachments,
     textAttachments,
@@ -170,6 +181,7 @@ export function VercelChatProvider({
     setTextAttachments,
     addTextAttachment,
     removeTextAttachment,
+    isBootstrapPreparing,
   };
 
   // Send chat status and messages to ArtistProvider

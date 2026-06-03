@@ -54,12 +54,16 @@ export function useCreateArtistTool(result: CreateArtistResult) {
           await refetchConversations();
 
           if (success) {
-            // Update the URL to point to the new conversation
-            window.history.replaceState(
-              {},
-              "",
-              getChatPath(sessionId, result.newRoomId as string),
-            );
+            // Update the URL to point to the new conversation. sessionId is
+            // always set on an active (post-bootstrap) chat where this tool
+            // runs; guarded only to satisfy the optional context type.
+            if (sessionId) {
+              window.history.replaceState(
+                {},
+                "",
+                getChatPath(sessionId, result.newRoomId as string),
+              );
+            }
             setIsSuccess(true);
           } else {
             console.error("Failed to copy messages");

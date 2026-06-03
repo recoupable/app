@@ -6,8 +6,12 @@ import { usePrivy } from "@privy-io/react-auth";
 interface UseChatTransportOptions {
   /** Chat row id (also the AI SDK `useChat({ id })` instance id). */
   chatId: string;
-  /** Session id from bootstrap or canonical route — required for workflow transport. */
-  sessionId: string;
+  /**
+   * Session id from bootstrap or canonical route. Absent only while a new
+   * chat is still provisioning; Send is gated until it lands, so the
+   * transport is never invoked without it.
+   */
+  sessionId?: string;
 }
 
 /**
@@ -39,7 +43,7 @@ export function useChatTransport({
         body: async () => {
           const recoupAccessToken = await getAccessToken().catch(() => null);
           const body: {
-            sessionId: string;
+            sessionId: string | undefined;
             chatId: string;
             recoupAccessToken?: string;
           } = { sessionId, chatId };

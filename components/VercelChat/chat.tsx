@@ -21,12 +21,31 @@ import { useOrganization } from "@/providers/OrganizationProvider";
 
 interface ChatProps {
   id: string;
-  /** Session id from bootstrap or canonical session-scoped route. */
-  sessionId: string;
+  /**
+   * Session id. Always present from the canonical session-scoped route;
+   * absent on the new-chat bootstrap path until provisioning resolves
+   * (see `NewChatBootstrap`). Send is gated on `isBootstrapPreparing`
+   * while it's absent, so the workflow transport never fires without it.
+   */
+  sessionId?: string;
+  /**
+   * Api-minted chat id from bootstrap, used when `id` is a client
+   * placeholder. Becomes the transport/URL target once provisioning
+   * resolves; falls back to `id` otherwise.
+   */
+  workflowChatId?: string;
+  /** True while session + sandbox provisioning is in flight; gates Send. */
+  isBootstrapPreparing?: boolean;
   initialMessages?: UIMessage[];
 }
 
-export function Chat({ id, sessionId, initialMessages }: ChatProps) {
+export function Chat({
+  id,
+  sessionId,
+  workflowChatId,
+  isBootstrapPreparing,
+  initialMessages,
+}: ChatProps) {
   const { selectedOrgId } = useOrganization();
   const providerKey = `${id}-${selectedOrgId ?? "personal"}`;
 
@@ -35,6 +54,8 @@ export function Chat({ id, sessionId, initialMessages }: ChatProps) {
       key={providerKey}
       chatId={id}
       sessionId={sessionId}
+      workflowChatId={workflowChatId}
+      isBootstrapPreparing={isBootstrapPreparing}
       initialMessages={initialMessages}
     >
       <ChatContent id={id} />

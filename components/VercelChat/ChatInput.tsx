@@ -22,6 +22,7 @@ export function ChatInput() {
     isLoadingSignedUrls,
     handleSendMessage,
     isGeneratingResponse,
+    isBootstrapPreparing,
     stop,
     setInput,
     input,
@@ -29,6 +30,10 @@ export function ChatInput() {
   } = useVercelChatContext();
   // Allow typing regardless of artist selection
   const isDisabled = false;
+  // Block sending until the new-chat session + sandbox finish provisioning;
+  // the input stays typeable so users aren't stuck on a spinner meanwhile.
+  const isSendDisabled =
+    isDisabled || hasPendingUploads || isLoadingSignedUrls || isBootstrapPreparing;
 
   const handleSend = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -42,8 +47,7 @@ export function ChatInput() {
     // Only check input requirements for sending new messages
     // Allow sending if there are text attachments even without typed input
     const hasContent = input !== "" || textAttachments.length > 0;
-    if (!hasContent || isDisabled || hasPendingUploads || isLoadingSignedUrls)
-      return;
+    if (!hasContent || isSendDisabled) return;
 
     handleSendMessage(event);
   };
@@ -81,15 +85,19 @@ export function ChatInput() {
               <PureAttachmentsButton />
               {/* YouTube connect button removed from ChatInput UI intentionally; preserved for future reuse */}
               <ModelSelect />
+              {isBootstrapPreparing && (
+                <span className="text-xs text-muted-foreground animate-pulse">
+                  Preparing your workspace…
+                </span>
+              )}
             </PromptInputTools>
             <PromptInputSubmit
-              disabled={isDisabled || hasPendingUploads || isLoadingSignedUrls}
+              disabled={isSendDisabled}
               status={status}
               className={cn(
                 "rounded-full hover:scale-105 active:scale-95 transition-all",
                 {
-                  "cursor-not-allowed opacity-50":
-                    isDisabled || hasPendingUploads || isLoadingSignedUrls,
+                  "cursor-not-allowed opacity-50": isSendDisabled,
                 }
               )}
             />
