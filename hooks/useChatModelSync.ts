@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import { getSessionChat } from "@/lib/chats/getSessionChat";
-import { updateChat } from "@/lib/chats/updateChat";
+import { useHydrateChatModelFromDb } from "@/hooks/useHydrateChatModelFromDb";
+import { usePersistChatModelToDb } from "@/hooks/usePersistChatModelToDb";
 
 interface UseChatModelSyncInput {
   sessionId: string | undefined;
@@ -40,74 +40,23 @@ export function useChatModelSync({
     setHydrated(!hydrateFromDatabase);
   }, [sessionId, chatId, hydrateFromDatabase]);
 
-  useEffect(() => {
-    if (!hydrateFromDatabase || !sessionId) {
-      return;
-    }
+  useHydrateChatModelFromDb({
+    sessionId,
+    chatId,
+    hydrateFromDatabase,
+    setModel,
+    setHydrated,
+    lastSyncedRef,
+    getAccessToken,
+  });
 
-    const scope = `${sessionId}:${chatId}`;
-    let cancelled = false;
-
-    void (async () => {
-      const accessToken = await getAccessToken();
-      if (!accessToken || cancelled) {
-        return;
-      }
-
-      try {
-        const { chat } = await getSessionChat(sessionId, chatId, accessToken);
-        if (cancelled) {
-          return;
-        }
-        if (chat.modelId) {
-          lastSyncedRef.current = { scope, model: chat.modelId };
-          setModel(chat.modelId);
-        }
-      } catch (error) {
-        console.error("[useChatModelSync] Failed to hydrate model:", error);
-      } finally {
-        if (!cancelled) {
-          setHydrated(true);
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [hydrateFromDatabase, sessionId, chatId, getAccessToken, setModel]);
-
-  useEffect(() => {
-    if (!sessionId || !hydrated) {
-      return;
-    }
-
-    const scope = `${sessionId}:${chatId}`;
-    if (
-      lastSyncedRef.current?.scope === scope &&
-      lastSyncedRef.current.model === model
-    ) {
-      return;
-    }
-
-    const modelToWrite = model;
-
-    persistChainRef.current = persistChainRef.current
-      .then(async () => {
-        const accessToken = await getAccessToken();
-        if (!accessToken) {
-          return;
-        }
-        await updateChat({
-          accessToken,
-          sessionId,
-          chatId,
-          modelId: modelToWrite,
-        });
-        lastSyncedRef.current = { scope, model: modelToWrite };
-      })
-      .catch((error) => {
-        console.error("[useChatModelSync] Failed to persist model:", error);
-      });
-  }, [sessionId, chatId, model, hydrated, getAccessToken]);
+  usePersistChatModelToDb({
+    sessionId,
+    chatId,
+    model,
+    hydrated,
+    lastSyncedRef,
+    persistChainRef,
+    getAccessToken,
+  });
 }
