@@ -346,7 +346,7 @@ export function useVercelChat({
     // Submit the message
     handleSubmit(event);
 
-    if (!chatId) {
+    if (!routeChatId) {
       // New chat from `/` or `/chat` — sidebar + URL update on first send.
       addOptimisticConversation(
         "New Chat",
