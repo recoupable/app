@@ -8,7 +8,10 @@ export type ChatModelSyncState = { scope: string; model: string };
 interface UseHydrateChatModelFromDbInput {
   sessionId: string | undefined;
   chatId: string;
+  /** Current picker value; used to block auto-PATCH if hydrate fails. */
+  model: string;
   hydrateFromDatabase: boolean;
+  authenticated: boolean;
   setModel: (model: string) => void;
   setHydrated: (hydrated: boolean) => void;
   lastSyncedRef: MutableRefObject<ChatModelSyncState | null>;
@@ -19,14 +22,16 @@ interface UseHydrateChatModelFromDbInput {
 export function useHydrateChatModelFromDb({
   sessionId,
   chatId,
+  model,
   hydrateFromDatabase,
+  authenticated,
   setModel,
   setHydrated,
   lastSyncedRef,
   getAccessToken,
 }: UseHydrateChatModelFromDbInput): void {
   useEffect(() => {
-    if (!hydrateFromDatabase || !sessionId) {
+    if (!hydrateFromDatabase || !sessionId || !authenticated) {
       return;
     }
 
@@ -36,7 +41,10 @@ export function useHydrateChatModelFromDb({
     void (async () => {
       try {
         const accessToken = await getAccessToken();
-        if (!accessToken || cancelled) {
+        if (cancelled) {
+          return;
+        }
+        if (!accessToken) {
           return;
         }
 
@@ -49,11 +57,14 @@ export function useHydrateChatModelFromDb({
           setModel(chat.modelId);
         }
 
-        if (!cancelled) {
-          setHydrated(true);
-        }
+        setHydrated(true);
       } catch (error) {
         console.error("[useHydrateChatModelFromDb] Failed to hydrate model:", error);
+        if (!cancelled) {
+          // Unblock user-initiated persist without auto-PATCHing this picker value.
+          lastSyncedRef.current = { scope, model };
+          setHydrated(true);
+        }
       }
     })();
 
@@ -62,8 +73,10 @@ export function useHydrateChatModelFromDb({
     };
   }, [
     hydrateFromDatabase,
+    authenticated,
     sessionId,
     chatId,
+    model,
     getAccessToken,
     setModel,
     setHydrated,

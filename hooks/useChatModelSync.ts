@@ -29,7 +29,7 @@ export function useChatModelSync({
   setModel,
   hydrateFromDatabase,
 }: UseChatModelSyncInput): void {
-  const { getAccessToken } = usePrivy();
+  const { authenticated, getAccessToken } = usePrivy();
   const [hydrated, setHydrated] = useState(!hydrateFromDatabase);
   const lastSyncedRef = useRef<{ scope: string; model: string } | null>(null);
   const persistChainRef = useRef(Promise.resolve());
@@ -43,7 +43,9 @@ export function useChatModelSync({
   useHydrateChatModelFromDb({
     sessionId,
     chatId,
+    model,
     hydrateFromDatabase,
+    authenticated,
     setModel,
     setHydrated,
     lastSyncedRef,

@@ -51,7 +51,6 @@ export function usePersistChatModelToDb({
       .then(async () => {
         const accessToken = await getAccessToken();
         if (!accessToken) {
-          clearPendingSync();
           return;
         }
         await updateChat({
