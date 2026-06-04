@@ -9,10 +9,7 @@ import { useVercelChatContext } from "@/providers/VercelChatProvider";
 import { TextUIPart, UIMessage } from "ai";
 
 export function MessageEditor({ message, setMode }: EditingMessageProps) {
-  const { id, setMessages, reload } = useVercelChatContext();
-  if (!id) {
-    throw new Error("MessageEditor requires an active chat id");
-  }
+  const { transportChatId, setMessages, reload } = useVercelChatContext();
   const text = (message.parts[0] as TextUIPart)?.text || "";
   const [draftContent, setDraftContent] = useState<string>(text);
   const { deleteTrailingMessages, isDeletingTrailingMessages } =
@@ -83,7 +80,7 @@ export function MessageEditor({ message, setMode }: EditingMessageProps) {
           disabled={isDeletingTrailingMessages}
           onClick={() => {
             void deleteTrailingMessages({
-              chatId: id,
+              chatId: transportChatId,
               fromMessageId: message.id,
             });
           }}
