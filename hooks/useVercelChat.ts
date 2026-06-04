@@ -24,7 +24,7 @@ import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { getChatPath } from "@/lib/chat/getChatPath";
-import { usePersistChatModelId } from "@/hooks/usePersistChatModelId";
+import { useChatModelSync } from "@/hooks/useChatModelSync";
 
 interface UseVercelChatProps {
   id: string;
@@ -61,7 +61,7 @@ export function useVercelChat({
   const { userData } = useUserProvider();
   const { selectedArtist } = useArtistProvider();
   const { selectedOrgId: organizationId } = useOrganization();
-  const { chatId } = useParams<{ chatId?: string }>();
+  const { chatId: routeChatId } = useParams<{ chatId?: string }>();
 
   const userId = userData?.account_id || userData?.id; // Use account_id if available, fallback to id
   const artistId = selectedArtist?.account_id;
@@ -81,10 +81,15 @@ export function useVercelChat({
   });
   const { authenticated, getAccessToken } = usePrivy();
 
-  usePersistChatModelId({
+  const hydrateModelFromDatabase =
+    Boolean(routeChatId) && routeChatId === transportChatId;
+
+  useChatModelSync({
     sessionId,
     chatId: transportChatId,
     model,
+    setModel,
+    hydrateFromDatabase: hydrateModelFromDatabase,
   });
 
   // Load artist files for mentions (from Supabase)
@@ -306,7 +311,7 @@ export function useVercelChat({
   // is already typing into while provisioning resolves.
   const { isLoading: isMessagesLoading, hasError } = useMessageLoader(
     sessionId,
-    messages.length === 0 && chatId ? transportChatId : undefined,
+    messages.length === 0 && routeChatId ? transportChatId : undefined,
     userId,
     setMessages,
   );
