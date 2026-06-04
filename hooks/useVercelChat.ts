@@ -24,6 +24,11 @@ import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { getChatPath } from "@/lib/chat/getChatPath";
+import { updateChat } from "@/lib/chats/updateChat";
+import {
+  shouldPersistChatModel,
+  type PersistedChatModel,
+} from "@/lib/chats/shouldPersistChatModel";
 
 interface UseVercelChatProps {
   id: string;
@@ -65,6 +70,9 @@ export function useVercelChat({
   const userId = userData?.account_id || userData?.id; // Use account_id if available, fallback to id
   const artistId = selectedArtist?.account_id;
   const messagesLengthRef = useRef<number>();
+  // The {chatId, model} we last wrote to chats.model_id, so we only PATCH
+  // when the selection actually changes for the active chat.
+  const lastPersistedModelRef = useRef<PersistedChatModel>(null);
   const { addOptimisticConversation } = useConversationsProvider();
   const { data: availableModels = [] } = useAvailableModels();
   const [input, setInput] = useState("");
@@ -274,6 +282,31 @@ export function useVercelChat({
       text: messageText,
       files: nonAudioAttachments.length > 0 ? nonAudioAttachments : undefined,
     };
+
+    // Persist the picker's model to chats.model_id before sending. The
+    // chat-workflow path bills the model it reads from chats.model_id at
+    // request time, so the write must land first — awaited here so a new
+    // chat's very first turn bills the selected model, not the default.
+    if (
+      sessionId &&
+      transportChatId &&
+      shouldPersistChatModel(lastPersistedModelRef.current, transportChatId, model)
+    ) {
+      try {
+        const accessToken = await getAccessToken();
+        if (accessToken) {
+          await updateChat({
+            accessToken,
+            sessionId,
+            chatId: transportChatId,
+            modelId: model,
+          });
+          lastPersistedModelRef.current = { chatId: transportChatId, model };
+        }
+      } catch (error) {
+        console.error("Failed to persist selected model before send:", error);
+      }
+    }
 
     sendMessage(payload, { body: chatRequestBody, headers });
     setInput("");
