@@ -38,11 +38,20 @@ export function usePersistChatModelToDb({
     }
 
     const modelToWrite = model;
+    lastSyncedRef.current = { scope, model: modelToWrite };
+
+    const clearPendingSync = () => {
+      const synced = lastSyncedRef.current;
+      if (synced?.scope === scope && synced.model === modelToWrite) {
+        lastSyncedRef.current = null;
+      }
+    };
 
     persistChainRef.current = persistChainRef.current
       .then(async () => {
         const accessToken = await getAccessToken();
         if (!accessToken) {
+          clearPendingSync();
           return;
         }
         await updateChat({
@@ -51,10 +60,10 @@ export function usePersistChatModelToDb({
           chatId,
           modelId: modelToWrite,
         });
-        lastSyncedRef.current = { scope, model: modelToWrite };
       })
       .catch((error) => {
         console.error("[usePersistChatModelToDb] Failed to persist model:", error);
+        clearPendingSync();
       });
   }, [sessionId, chatId, model, hydrated, getAccessToken, lastSyncedRef, persistChainRef]);
 }

@@ -48,12 +48,12 @@ export function useHydrateChatModelFromDb({
           lastSyncedRef.current = { scope, model: chat.modelId };
           setModel(chat.modelId);
         }
-      } catch (error) {
-        console.error("[useHydrateChatModelFromDb] Failed to hydrate model:", error);
-      } finally {
+
         if (!cancelled) {
           setHydrated(true);
         }
+      } catch (error) {
+        console.error("[useHydrateChatModelFromDb] Failed to hydrate model:", error);
       }
     })();
 
