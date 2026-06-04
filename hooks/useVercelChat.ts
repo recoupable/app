@@ -24,6 +24,7 @@ import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { getChatPath } from "@/lib/chat/getChatPath";
+import { usePersistChatModelId } from "@/hooks/usePersistChatModelId";
 
 interface UseVercelChatProps {
   id: string;
@@ -79,6 +80,12 @@ export function useVercelChat({
     sessionId,
   });
   const { authenticated, getAccessToken } = usePrivy();
+
+  usePersistChatModelId({
+    sessionId,
+    chatId: transportChatId,
+    model,
+  });
 
   // Load artist files for mentions (from Supabase)
   const { files: allArtistFiles = [] } = useArtistFilesForMentions();

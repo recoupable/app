@@ -1,10 +1,12 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import { buildPatchChatBody } from "@/lib/chats/buildPatchChatBody";
 
 export type UpdateChatParams = {
   accessToken: string;
   sessionId: string;
   chatId: string;
-  title: string;
+  title?: string;
+  modelId?: string;
 };
 
 export type UpdateChatResponse = {
@@ -31,6 +33,7 @@ export async function updateChat({
   sessionId,
   chatId,
   title,
+  modelId,
 }: UpdateChatParams): Promise<UpdateChatResponse> {
   const response = await fetch(
     `${getClientApiBaseUrl()}/api/sessions/${encodeURIComponent(sessionId)}/chats/${encodeURIComponent(chatId)}`,
@@ -40,7 +43,7 @@ export async function updateChat({
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ title }),
+      body: JSON.stringify(buildPatchChatBody({ title, modelId })),
     },
   );
 
