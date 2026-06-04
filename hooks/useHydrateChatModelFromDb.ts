@@ -8,7 +8,7 @@ export type ChatModelSyncState = { scope: string; model: string };
 interface UseHydrateChatModelFromDbInput {
   sessionId: string | undefined;
   chatId: string;
-  /** Current picker value; used to block auto-PATCH if hydrate fails. */
+  /** Picker value when this chat scope opens; blocks auto-PATCH if hydrate fails. */
   model: string;
   hydrateFromDatabase: boolean;
   authenticated: boolean;
@@ -36,6 +36,7 @@ export function useHydrateChatModelFromDb({
     }
 
     const scope = `${sessionId}:${chatId}`;
+    const pickerModelOnOpen = model;
     let cancelled = false;
 
     void (async () => {
@@ -62,7 +63,7 @@ export function useHydrateChatModelFromDb({
         console.error("[useHydrateChatModelFromDb] Failed to hydrate model:", error);
         if (!cancelled) {
           // Unblock user-initiated persist without auto-PATCHing this picker value.
-          lastSyncedRef.current = { scope, model };
+          lastSyncedRef.current = { scope, model: pickerModelOnOpen };
           setHydrated(true);
         }
       }
@@ -76,7 +77,6 @@ export function useHydrateChatModelFromDb({
     authenticated,
     sessionId,
     chatId,
-    model,
     getAccessToken,
     setModel,
     setHydrated,
