@@ -295,13 +295,20 @@ export function useVercelChat({
 
   const append = async (message: UIMessage) => {
     const headers = await getHeaders();
+    // Retry/Edit and programmatic sends bypass handleSubmit, so persist the
+    // selected model here too before the workflow reads chats.model_id.
+    await persistSelectedModel();
     sendMessage(message, { body: chatRequestBody, headers });
   };
 
   const handleReload = useCallback(async () => {
     const headers = await getHeaders();
+    // Retry/Edit (MessageParts + message-editor) call reload() → regenerate,
+    // bypassing handleSubmit; persist the selected model first so the
+    // regenerated turn bills it, not the previous/default model.
+    await persistSelectedModel();
     await regenerate({ body: chatRequestBody, headers });
-  }, [getHeaders, regenerate, chatRequestBody]);
+  }, [getHeaders, regenerate, chatRequestBody, persistSelectedModel]);
 
   // Keep messagesRef in sync with messages
   messagesLengthRef.current = messages.length;

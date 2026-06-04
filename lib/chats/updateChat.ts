@@ -24,7 +24,7 @@ export type UpdateChatResponse = {
 };
 
 /**
- * Renames (or otherwise patches) a session-scoped chat via recoup-api
+ * Patches a session-scoped chat (title and/or modelId) via recoup-api
  * `PATCH /api/sessions/{sessionId}/chats/{chatId}`. Returns the updated
  * row under `{ chat }`.
  */
