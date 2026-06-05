@@ -63,7 +63,7 @@ interface VercelChatProviderProps {
   children: ReactNode;
   chatId: string;
   /**
-   * Session id for recoup-api `/api/chat/workflow`. Absent only on the
+   * Session id for recoup-api `/api/chat`. Absent only on the
    * new-chat bootstrap path until provisioning resolves; Send is gated on
    * `isBootstrapPreparing` until it lands.
    */
