@@ -16,7 +16,7 @@ interface UseChatTransportOptions {
 
 /**
  * Chat transport for chat.recoupable.com → recoup-api
- * `POST /api/chat/workflow`. Injects `sessionId`, `chatId`, and
+ * `POST /api/chat`. Injects `sessionId`, `chatId`, and
  * `recoupAccessToken` at the transport boundary so callers only pass
  * per-message fields (model, etc.) via `sendMessage`.
  */
@@ -46,7 +46,7 @@ export function useChatTransport({
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
-        api: `${baseUrl}/api/chat/workflow`,
+        api: `${baseUrl}/api/chat`,
         headers: async (): Promise<Record<string, string>> => {
           const accessToken = await getAccessToken().catch(() => null);
           return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
