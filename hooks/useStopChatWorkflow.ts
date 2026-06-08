@@ -1,29 +1,24 @@
-import { useMutation } from "@tanstack/react-query";
+import { useCallback } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { stopChatWorkflow } from "@/lib/chat/stopChatWorkflow";
 
 /**
- * Wraps the `POST /api/chat/{chatId}/stop` round-trip with a React Query
- * mutation. Consumers read `isStopping` (`mutation.isPending`) to flip
- * the submit button to a "stopping" state the instant the user clicks,
- * so the UI doesn't sit dead for the 1–2s while the backend cancels the
- * workflow and the SSE watcher closes the stream.
+ * Returns a fire-and-forget trigger for `POST /api/chat/{chatId}/stop`.
  *
- * Workflow-chat-only: legacy `/api/chat` aborts locally via the AI SDK's
- * `stop()` and never hits this hook.
+ * Matches open-agents: the instant UI stop comes from the AI SDK's local
+ * `stop()`, so we deliberately do not await the backend cancel. Correct
+ * persisted state on reload is guaranteed server-side (api#590 persists the
+ * assistant message per step and closes open tool-calls on abort).
+ *
+ * Workflow-chat-only: legacy `/api/chat` aborts locally and never hits this.
  */
 export function useStopChatWorkflow(chatId: string) {
   const { getAccessToken } = usePrivy();
 
-  const mutation = useMutation({
-    mutationFn: async () => {
+  return useCallback(() => {
+    void (async () => {
       const token = await getAccessToken().catch(() => null);
-      await stopChatWorkflow(chatId, token);
-    },
-  });
-
-  return {
-    stop: mutation.mutateAsync,
-    isStopping: mutation.isPending,
-  };
+      await stopChatWorkflow(chatId, token).catch(() => {});
+    })();
+  }, [chatId, getAccessToken]);
 }
