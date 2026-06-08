@@ -25,6 +25,7 @@ import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { useStopChatWorkflow } from "./useStopChatWorkflow";
 import { getChatPath } from "@/lib/chat/getChatPath";
+import { usePersistSelectedModel } from "./usePersistSelectedModel";
 
 interface UseVercelChatProps {
   id: string;
@@ -80,6 +81,16 @@ export function useVercelChat({
     sessionId,
   });
   const { authenticated, getAccessToken } = usePrivy();
+
+  // Persists the picker's selected model to chats.model_id; awaited before
+  // send so the workflow bills the selected model (it reads chats.model_id
+  // at request time), not the default.
+  const persistSelectedModel = usePersistSelectedModel({
+    sessionId,
+    chatId: transportChatId,
+    model,
+    getAccessToken,
+  });
 
   // Load artist files for mentions (from Supabase)
   const { files: allArtistFiles = [] } = useArtistFilesForMentions();
@@ -289,19 +300,29 @@ export function useVercelChat({
       files: nonAudioAttachments.length > 0 ? nonAudioAttachments : undefined,
     };
 
+    // Land the selected model in chats.model_id before the send fires.
+    await persistSelectedModel();
+
     sendMessage(payload, { body: chatRequestBody, headers });
     setInput("");
   };
 
   const append = async (message: UIMessage) => {
     const headers = await getHeaders();
+    // Retry/Edit and programmatic sends bypass handleSubmit, so persist the
+    // selected model here too before the workflow reads chats.model_id.
+    await persistSelectedModel();
     sendMessage(message, { body: chatRequestBody, headers });
   };
 
   const handleReload = useCallback(async () => {
     const headers = await getHeaders();
+    // Retry/Edit (MessageParts + message-editor) call reload() → regenerate,
+    // bypassing handleSubmit; persist the selected model first so the
+    // regenerated turn bills it, not the previous/default model.
+    await persistSelectedModel();
     await regenerate({ body: chatRequestBody, headers });
-  }, [getHeaders, regenerate, chatRequestBody]);
+  }, [getHeaders, regenerate, chatRequestBody, persistSelectedModel]);
 
   // Keep messagesRef in sync with messages
   messagesLengthRef.current = messages.length;
