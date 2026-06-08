@@ -21,6 +21,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { TextAttachment } from "@/types/textAttachment";
 import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
 import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
+import { deleteTrailingMessages as deleteTrailingMessagesApi } from "@/lib/messages/deleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { getChatPath } from "@/lib/chat/getChatPath";
@@ -307,8 +308,38 @@ export function useVercelChat({
     // bypassing handleSubmit; persist the selected model first so the
     // regenerated turn bills it, not the previous/default model.
     await persistSelectedModel();
+
+    const lastMessage = messages.at(-1);
+    if (lastMessage?.role === "assistant") {
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        toast.error("Please sign in to regenerate.");
+        return;
+      }
+
+      try {
+        await deleteTrailingMessagesApi({
+          chatId: transportChatId,
+          fromMessageId: lastMessage.id,
+          accessToken,
+        });
+      } catch (error) {
+        console.error("Failed to delete trailing messages before regenerate:", error);
+        toast.error("Failed to regenerate. Please try again.");
+        return;
+      }
+    }
+
     await regenerate({ body: chatRequestBody, headers });
-  }, [getHeaders, regenerate, chatRequestBody, persistSelectedModel]);
+  }, [
+    getHeaders,
+    getAccessToken,
+    regenerate,
+    chatRequestBody,
+    persistSelectedModel,
+    messages,
+    transportChatId,
+  ]);
 
   // Keep messagesRef in sync with messages
   messagesLengthRef.current = messages.length;
@@ -344,7 +375,7 @@ export function useVercelChat({
 
     if (earliestFailedUserMessageId) {
       await deleteTrailingMessages({
-        chatId: id,
+        chatId: transportChatId,
         fromMessageId: earliestFailedUserMessageId,
       });
     }
@@ -403,6 +434,7 @@ export function useVercelChat({
   return {
     // States
     messages,
+    transportChatId,
     status,
     input,
     isLoading,
