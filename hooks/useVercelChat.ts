@@ -344,7 +344,7 @@ export function useVercelChat({
 
     if (earliestFailedUserMessageId) {
       await deleteTrailingMessages({
-        chatId: transportChatId,
+        chatId: id,
         fromMessageId: earliestFailedUserMessageId,
       });
     }
@@ -403,7 +403,6 @@ export function useVercelChat({
   return {
     // States
     messages,
-    transportChatId,
     status,
     input,
     isLoading,
