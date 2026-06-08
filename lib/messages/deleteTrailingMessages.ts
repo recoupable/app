@@ -1,5 +1,15 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
+export class TrailingDeleteError extends Error {
+  readonly status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "TrailingDeleteError";
+    this.status = status;
+  }
+}
+
 /**
  * Deletes trailing messages in a chat from a given message ID onward.
  */
@@ -24,6 +34,9 @@ export async function deleteTrailingMessages({
   );
 
   if (!response.ok) {
-    throw new Error("Failed to delete trailing messages");
+    throw new TrailingDeleteError(
+      "Failed to delete trailing messages",
+      response.status,
+    );
   }
 }

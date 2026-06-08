@@ -21,7 +21,11 @@ import { usePrivy } from "@privy-io/react-auth";
 import { TextAttachment } from "@/types/textAttachment";
 import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
 import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
-import { deleteTrailingMessages as deleteTrailingMessagesApi } from "@/lib/messages/deleteTrailingMessages";
+import {
+  deleteTrailingMessages as deleteTrailingMessagesApi,
+  TrailingDeleteError,
+} from "@/lib/messages/deleteTrailingMessages";
+import type { ReloadOptions } from "./reloadOptions";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { getChatPath } from "@/lib/chat/getChatPath";
@@ -302,31 +306,44 @@ export function useVercelChat({
     sendMessage(message, { body: chatRequestBody, headers });
   };
 
-  const handleReload = useCallback(async () => {
+  const handleReload = useCallback(async (options?: ReloadOptions) => {
     const headers = await getHeaders();
-    // Retry/Edit (MessageParts + message-editor) call reload() → regenerate,
-    // bypassing handleSubmit; persist the selected model first so the
-    // regenerated turn bills it, not the previous/default model.
+    // MessageParts Retry calls reload() to delete the assistant tail then
+    // regenerate. MessageEditor already deleted trailing server-side and
+    // passes skipTrailingDelete (messages state may still list the assistant).
     await persistSelectedModel();
 
-    const lastMessage = messages.at(-1);
-    if (lastMessage?.role === "assistant") {
-      const accessToken = await getAccessToken();
-      if (!accessToken) {
-        toast.error("Please sign in to regenerate.");
-        return;
-      }
+    if (!options?.skipTrailingDelete) {
+      const lastMessage = messages.at(-1);
+      if (lastMessage?.role === "assistant") {
+        const accessToken = await getAccessToken();
+        if (!accessToken) {
+          toast.error("Please sign in to regenerate.");
+          return;
+        }
 
-      try {
-        await deleteTrailingMessagesApi({
-          chatId: transportChatId,
-          fromMessageId: lastMessage.id,
-          accessToken,
-        });
-      } catch (error) {
-        console.error("Failed to delete trailing messages before regenerate:", error);
-        toast.error("Failed to regenerate. Please try again.");
-        return;
+        try {
+          await deleteTrailingMessagesApi({
+            chatId: transportChatId,
+            fromMessageId: lastMessage.id,
+            accessToken,
+          });
+        } catch (error) {
+          // Boundary already removed (e.g. race) — still regenerate.
+          if (
+            error instanceof TrailingDeleteError &&
+            error.status === 404
+          ) {
+            // no-op
+          } else {
+            console.error(
+              "Failed to delete trailing messages before regenerate:",
+              error,
+            );
+            toast.error("Failed to regenerate. Please try again.");
+            return;
+          }
+        }
       }
     }
 

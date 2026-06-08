@@ -14,6 +14,7 @@ import { useArtistProvider } from "./ArtistProvider";
 import { GatewayLanguageModelEntry } from "@ai-sdk/gateway";
 import { TextAttachment } from "@/types/textAttachment";
 import type { WorkspaceStatus } from "@/components/VercelChat/WorkspaceStatusIndicator";
+import type { ReloadOptions } from "@/hooks/reloadOptions";
 
 // Interface for the context data
 interface VercelChatContextType {
@@ -33,7 +34,7 @@ interface VercelChatContextType {
   setInput: (input: string) => void;
   input: string;
   setMessages: UseChatHelpers<UIMessage>["setMessages"];
-  reload: () => void;
+  reload: (options?: ReloadOptions) => Promise<void>;
   append: (message: UIMessage) => void;
   attachments: FileUIPart[];
   pendingAttachments: FileUIPart[];
@@ -141,9 +142,10 @@ export function VercelChatProvider({
     textAttachments,
   });
 
-  const reload = useCallback(() => {
-    return originalReload();
-  }, [originalReload]);
+  const reload = useCallback(
+    (options?: ReloadOptions) => originalReload(options),
+    [originalReload],
+  );
 
   // When a message is sent successfully, clear the attachments
   const handleSendMessageWithClear = async (

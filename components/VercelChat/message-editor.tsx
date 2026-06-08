@@ -31,7 +31,7 @@ export function MessageEditor({ message, setMode }: EditingMessageProps) {
         });
         setMode("view");
         if (text !== draftContent) {
-          reload();
+          void reload({ skipTrailingDelete: true });
         }
       },
     });
