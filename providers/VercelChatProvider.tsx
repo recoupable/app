@@ -18,8 +18,6 @@ import type { WorkspaceStatus } from "@/components/VercelChat/WorkspaceStatusInd
 // Interface for the context data
 interface VercelChatContextType {
   id: string | undefined;
-  /** Recoup API chat id (`workflowChatId ?? id`). Use for trailing delete and other API calls. */
-  transportChatId: string;
   sessionId: string | undefined;
   messages: UIMessage[];
   availableModels: GatewayLanguageModelEntry[];
@@ -116,7 +114,6 @@ export function VercelChatProvider({
   // Use the useVercelChat hook to get the chat state and functions
   const {
     messages,
-    transportChatId,
     status,
     isLoading,
     hasError,
@@ -158,7 +155,6 @@ export function VercelChatProvider({
   // Create the context value object
   const contextValue: VercelChatContextType = {
     id: chatId,
-    transportChatId,
     sessionId,
     messages,
     model,
