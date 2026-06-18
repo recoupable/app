@@ -10,6 +10,7 @@ export const ALLOWED_ARTIST_CONNECTORS = [
   "tiktok",
   "instagram",
   "youtube",
+  "twitter",
 ] as const;
 
 export type AllowedArtistConnector = (typeof ALLOWED_ARTIST_CONNECTORS)[number];
