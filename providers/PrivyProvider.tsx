@@ -30,8 +30,11 @@ export default function PrivyProvider({
           logo: "/Recoup_Icon_Wordmark_Black.svg",
         },
         loginMethods: ["email"],
+        // v3 moved createOnLogin under a per-chain key (was top-level in v1/v2).
         embeddedWallets: {
-          createOnLogin: "users-without-wallets",
+          ethereum: {
+            createOnLogin: "users-without-wallets",
+          },
         },
       }}
     >
