@@ -2,6 +2,7 @@
 
 import useCatalogs from "@/hooks/useCatalogs";
 import CatalogCard from "./CatalogCard";
+import EmptyCatalogsState from "./EmptyCatalogsState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserProvider } from "@/providers/UserProvder";
 
@@ -35,7 +36,7 @@ const CatalogsPageContent = () => {
   const catalogs = data?.catalogs || [];
 
   if (!catalogs.length) {
-    return <p className="text-sm text-muted-foreground">No catalogs found.</p>;
+    return <EmptyCatalogsState />;
   }
 
   return (

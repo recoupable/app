@@ -1,6 +1,7 @@
 "use client";
 
 import CatalogSongsPageContent from "./CatalogSongsPageContent";
+import CatalogLandingHeader from "./CatalogLandingHeader";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
@@ -27,7 +28,7 @@ const CatalogSongsPage = ({ catalogId }: CatalogSongsPageProps) => {
           Back to Catalogs
         </button>
       </div>
-      <h1 className="text-lg md:text-xl font-medium pb-4">Catalog Songs</h1>
+      <CatalogLandingHeader catalogId={catalogId} />
       <CatalogSongsPageContent catalogId={catalogId} />
     </div>
   );
