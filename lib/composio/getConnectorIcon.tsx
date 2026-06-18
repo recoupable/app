@@ -4,8 +4,11 @@ import {
   SiGoogledocs,
   SiTiktok,
   SiInstagram,
+  SiYoutube,
+  SiX,
 } from "@icons-pack/react-simple-icons";
-import { Link2 } from "lucide-react";
+// LinkedIn was removed from Simple Icons on brand request, so use Lucide's glyph.
+import { Link2, Linkedin } from "lucide-react";
 
 /**
  * Get branded icon for a connector.
@@ -20,6 +23,9 @@ export function getConnectorIcon(slug: string, size = 24): React.ReactNode {
     googledocs: <SiGoogledocs {...iconProps} color="#4285F4" />,
     tiktok: <SiTiktok {...iconProps} />,
     instagram: <SiInstagram {...iconProps} color="#E4405F" />,
+    youtube: <SiYoutube {...iconProps} color="#FF0000" />,
+    twitter: <SiX {...iconProps} />,
+    linkedin: <Linkedin {...iconProps} color="#0A66C2" />,
   };
 
   return (
