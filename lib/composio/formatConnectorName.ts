@@ -12,6 +12,8 @@ const CONNECTOR_DISPLAY_NAMES: Record<string, string> = {
   tiktok: "TikTok",
   instagram: "Instagram",
   youtube: "YouTube",
+  twitter: "X (Twitter)",
+  linkedin: "LinkedIn",
 };
 
 export function formatConnectorName(name: string, slug?: string): string {
