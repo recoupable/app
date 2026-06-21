@@ -33,8 +33,9 @@ export function ToolStatusPill({
       {/* shimmer sweep */}
       <motion.span
         aria-hidden
-        className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-foreground/[0.07] to-transparent"
-        animate={{ translateX: ["-100%", "200%"] }}
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-foreground/[0.07] to-transparent"
+        initial={{ x: "-100%" }}
+        animate={{ x: "200%" }}
         transition={{
           duration: 1.6,
           repeat: Infinity,

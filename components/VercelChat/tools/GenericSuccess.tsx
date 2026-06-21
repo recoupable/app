@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import { ToolCard } from "./shared/ToolCard";
+import { humanizeToolName } from "@/lib/utils/humanizeToolName";
 
 /**
  * Default success surface for tools without a bespoke result component.
@@ -17,11 +18,7 @@ const GenericSuccess = ({
   message: string;
   children?: React.ReactNode;
 }) => {
-  const prettyName = name
-    .replace(/^COMPOSIO_/, "")
-    .replace(/[_-]+/g, " ")
-    .trim()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  const prettyName = humanizeToolName(name);
 
   return (
     <ToolCard

@@ -3,6 +3,7 @@
 import { AlertTriangle, RefreshCcw } from "lucide-react";
 import { ToolCard, ToolCardBody } from "./ToolCard";
 import { cn } from "@/lib/utils";
+import { humanizeToolName } from "@/lib/utils/humanizeToolName";
 
 /**
  * Unified error state for any chat tool response.
@@ -19,15 +20,6 @@ interface ToolErrorProps {
   message?: string;
   onRetry?: () => void;
   className?: string;
-}
-
-function humanizeToolName(name?: string) {
-  if (!name) return "Action";
-  return name
-    .replace(/^COMPOSIO_/, "")
-    .replace(/[_-]+/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export function ToolError({

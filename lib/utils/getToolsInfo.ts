@@ -1,16 +1,10 @@
+import { humanizeToolName } from "./humanizeToolName";
+
 interface ToolInfo {
   /** Past-tense summary shown on the success card. */
   message: string;
   /** Present-tense label shown while the tool is running. */
   runningLabel: string;
-}
-
-function humanize(toolName: string): string {
-  return toolName
-    .replace(/^COMPOSIO_/, "")
-    .replace(/[_-]+/g, " ")
-    .trim()
-    .toLowerCase();
 }
 
 function getToolInfo(toolName: string): ToolInfo {
@@ -71,7 +65,7 @@ function getToolInfo(toolName: string): ToolInfo {
   else {
     return {
       message: "Data processed",
-      runningLabel: `Running ${humanize(toolName)}`,
+      runningLabel: `Running ${humanizeToolName(toolName)}`,
     };
   }
 }

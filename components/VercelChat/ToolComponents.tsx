@@ -99,6 +99,7 @@ export function getToolErrorComponent(
 ) {
   const { toolCallId } = part;
   const toolName = getToolOrDynamicToolName(part);
+  // `errorText` is a runtime-populated field not yet in ToolUIPart's public type.
   const errorText = (part as { errorText?: string }).errorText;
   return (
     <div key={toolCallId}>
@@ -107,8 +108,8 @@ export function getToolErrorComponent(
   );
 }
 
-export function getToolCallComponent(part: ToolUIPart) {
-  const { toolCallId } = part as ToolUIPart;
+export function getToolCallComponent(part: ToolUIPart | DynamicToolUIPart) {
+  const { toolCallId } = part;
   const toolName = getToolOrDynamicToolName(part);
   const isSearchWebTool = toolName === "search_web";
 
