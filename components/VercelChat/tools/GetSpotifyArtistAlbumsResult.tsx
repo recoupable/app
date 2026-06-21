@@ -3,7 +3,7 @@ import { Disc3 } from "lucide-react";
 import { SpotifyArtistAlbumsResultUIType } from "@/types/spotify";
 import SpotifyContentCard from "./SpotifyContentCard";
 import { ToolCard, ToolCardBody } from "./shared/ToolCard";
-import ToolEmpty from "./shared/ToolEmpty";
+import { ToolEmpty } from "./shared/ToolEmpty";
 
 const GetSpotifyArtistAlbumsResult: React.FC<{
   result: SpotifyArtistAlbumsResultUIType;

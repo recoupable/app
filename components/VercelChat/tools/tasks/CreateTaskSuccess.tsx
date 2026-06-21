@@ -4,7 +4,7 @@ import TaskCard from "./TaskCard";
 import TaskError from "./TaskError";
 import { CalendarClock, Plus } from "lucide-react";
 import { ToolCard } from "../shared/ToolCard";
-import ToolEmpty from "../shared/ToolEmpty";
+import { ToolEmpty } from "../shared/ToolEmpty";
 import TaskDetailsDialog from "../../dialogs/tasks/TaskDetailsDialog";
 
 interface CreateTaskSuccessProps {

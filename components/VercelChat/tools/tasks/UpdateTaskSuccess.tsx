@@ -2,7 +2,7 @@ import React from "react";
 import TaskCard from "./TaskCard";
 import { CalendarClock, Pencil } from "lucide-react";
 import { ToolCard } from "../shared/ToolCard";
-import ToolEmpty from "../shared/ToolEmpty";
+import { ToolEmpty } from "../shared/ToolEmpty";
 import TaskDetailsDialog from "@/components/VercelChat/dialogs/tasks/TaskDetailsDialog";
 import { ScheduledAction } from "@/components/VercelChat/types";
 import TaskError from "./TaskError";

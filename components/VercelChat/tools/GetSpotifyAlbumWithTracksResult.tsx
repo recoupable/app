@@ -10,7 +10,7 @@ import Link from "next/link";
 import SpotifyAlbumWithTracksHero from "./SpotifyAlbumWithTracksHero";
 import { toolCardMotion } from "./shared/toolCardTokens";
 import { ToolCard } from "./shared/ToolCard";
-import ToolEmpty from "./shared/ToolEmpty";
+import { ToolEmpty } from "./shared/ToolEmpty";
 
 interface GetSpotifyAlbumWithTracksResultProps {
   result: SpotifyAlbum;

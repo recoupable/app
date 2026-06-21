@@ -23,7 +23,7 @@ const PLATFORM_ICONS: Record<string, LucideIcon> = {
   TWITTER: Twitter,
   FACEBOOK: Facebook,
   THREADS: Twitter,
-  APPPLE: Music2,
+  APPLE: Music2,
 };
 
 /** Compact follower-count formatter (1.2K / 3.4M). */

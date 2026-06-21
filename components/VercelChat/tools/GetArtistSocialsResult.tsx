@@ -3,8 +3,8 @@ import { Share2, Users } from "lucide-react";
 import { ReactNode } from "react";
 import { ArtistSocial } from "./ArtistSocial";
 import { ToolCard, ToolCardBody } from "./shared/ToolCard";
-import ToolEmpty from "./shared/ToolEmpty";
-import ToolError from "./shared/ToolError";
+import { ToolEmpty } from "./shared/ToolEmpty";
+import { ToolError } from "./shared/ToolError";
 
 export default function GetArtistSocialsResult({
   result,

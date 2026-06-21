@@ -4,7 +4,7 @@ import { SpotifySearchResponse } from "@/types/spotify";
 import SpotifyContentCard from "./SpotifyContentCard";
 import { type SpotifyContent } from "@/lib/spotify/spotifyContentUtils";
 import { ToolCard, ToolCardBody } from "./shared/ToolCard";
-import ToolEmpty from "./shared/ToolEmpty";
+import { ToolEmpty } from "./shared/ToolEmpty";
 
 const typeLabels: Record<string, string> = {
   artists: "Artists",

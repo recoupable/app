@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { CreateArtistResult } from "@/types/createArtistResult";
 import useCreateArtistTool from "@/hooks/useCreateArtistTool";
 import GenericSuccess from "./GenericSuccess";
-import ToolError from "./shared/ToolError";
+import { ToolError } from "./shared/ToolError";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 
 /**

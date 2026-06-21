@@ -2,8 +2,8 @@ import { Mic2, Share2 } from "lucide-react";
 import { SpotifyDeepResearchResultUIType } from "@/types/spotify";
 import { ArtistSocial } from "./ArtistSocial";
 import { ToolCard, ToolCardBody } from "./shared/ToolCard";
-import ToolError from "./shared/ToolError";
-import ToolEmpty from "./shared/ToolEmpty";
+import { ToolError } from "./shared/ToolError";
+import { ToolEmpty } from "./shared/ToolEmpty";
 
 export default function SpotifyDeepResearchResult({
   result,

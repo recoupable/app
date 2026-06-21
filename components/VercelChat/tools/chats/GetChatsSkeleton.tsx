@@ -1,5 +1,5 @@
 import { MessageSquare } from "lucide-react";
-import ToolCardSkeleton from "../shared/ToolCardSkeleton";
+import { ToolCardSkeleton } from "../shared/ToolCardSkeleton";
 
 const GetChatsSkeleton = () => {
   return (

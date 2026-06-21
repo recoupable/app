@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Check, FileEdit } from "lucide-react";
 import Link from "next/link";
 import { ToolCard, ToolCardBody, ToolCardRow } from "../shared/ToolCard";
-import ToolError from "../shared/ToolError";
+import { ToolError } from "../shared/ToolError";
 
 /**
  * Result type returned by the update_file tool

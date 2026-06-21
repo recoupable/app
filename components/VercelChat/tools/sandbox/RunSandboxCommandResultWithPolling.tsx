@@ -5,7 +5,7 @@ import { Terminal } from "lucide-react";
 import { useTaskRunStatus } from "@/hooks/useTaskRunStatus";
 import RunDetails from "@/components/TasksPage/Run/RunDetails";
 import { toolCardMotion } from "../shared/toolCardTokens";
-import ToolError from "../shared/ToolError";
+import { ToolError } from "../shared/ToolError";
 
 /**
  * Terminal-style loading frame shown while the sandbox run is polling.

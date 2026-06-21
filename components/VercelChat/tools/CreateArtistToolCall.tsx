@@ -1,6 +1,6 @@
 import React from "react";
 import { Sparkles } from "lucide-react";
-import ToolCardSkeleton from "./shared/ToolCardSkeleton";
+import { ToolCardSkeleton } from "./shared/ToolCardSkeleton";
 
 /**
  * Component that displays when the create_new_artist tool is being called.

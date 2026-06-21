@@ -9,7 +9,7 @@ const getPlatformDisplayName = (platformType: string): string => {
     TWITTER: "Twitter",
     INSTAGRAM: "Instagram",
     TIKTOK: "TikTok",
-    APPPLE: "Apple Music",
+    APPLE: "Apple Music",
     YOUTUBE: "YouTube",
     FACEBOOK: "Facebook",
     THREADS: "Threads",

@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { ListTodo } from "lucide-react";
-import ToolCardSkeleton from "@/components/VercelChat/tools/shared/ToolCardSkeleton";
+import { ToolCardSkeleton } from "@/components/VercelChat/tools/shared/ToolCardSkeleton";
 
 export interface TasksSkeletonProps {
   numberOfTasks?: number;

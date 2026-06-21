@@ -1,5 +1,5 @@
 import React from "react";
-import ToolError from "../shared/ToolError";
+import { ToolError } from "../shared/ToolError";
 
 interface YouTubeRevenueErrorProps {
   message?: string;

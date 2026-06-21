@@ -2,8 +2,8 @@ import React from "react";
 import { Globe, Search } from "lucide-react";
 import SearchResultItem from "./SearchResultItem";
 import { ToolCard } from "../shared/ToolCard";
-import ToolEmpty from "../shared/ToolEmpty";
-import ToolError from "../shared/ToolError";
+import { ToolEmpty } from "../shared/ToolEmpty";
+import { ToolError } from "../shared/ToolError";
 
 export interface ParsedSearchResult {
   title: string;

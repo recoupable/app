@@ -2,7 +2,7 @@ import { FileMusic } from "lucide-react";
 import { CatalogSongsResponse } from "@/lib/catalog/getCatalogSongs";
 import { formatArtists } from "@/lib/catalog/formatArtists";
 import CatalogSongRow from "./CatalogSongRow";
-import ToolEmpty from "../shared/ToolEmpty";
+import { ToolEmpty } from "../shared/ToolEmpty";
 
 interface InsertCatalogSongsListProps {
   songs: CatalogSongsResponse["songs"];

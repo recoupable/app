@@ -9,7 +9,7 @@ import getPlatformDisplayName from "@/lib/socials/getPlatformDisplayName";
 import { useEffect } from "react";
 import { ToolCard } from "./shared/ToolCard";
 import { ToolCardRow } from "./shared/ToolCard";
-import ToolEmpty from "./shared/ToolEmpty";
+import { ToolEmpty } from "./shared/ToolEmpty";
 
 export interface UpdateArtistSocialsResult {
   success: boolean;

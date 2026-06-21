@@ -6,7 +6,7 @@ import {
   ToolCard,
   ToolCardBody,
 } from "@/components/VercelChat/tools/shared/ToolCard";
-import ToolError from "@/components/VercelChat/tools/shared/ToolError";
+import { ToolError } from "@/components/VercelChat/tools/shared/ToolError";
 
 export interface TxtFileGenerationResult {
   success: boolean;

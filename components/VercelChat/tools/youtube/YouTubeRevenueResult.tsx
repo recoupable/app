@@ -1,7 +1,7 @@
 import React from "react";
 import { DollarSign, Calendar, BarChart3 } from "lucide-react";
 import { ToolCard, ToolCardBody } from "../shared/ToolCard";
-import ToolEmpty from "../shared/ToolEmpty";
+import { ToolEmpty } from "../shared/ToolEmpty";
 import YouTubeRevenueError from "./YouTubeRevenueError";
 import YouTubeRevenueStats from "./YouTubeRevenueStats";
 import YouTubeRevenueDaily from "./YouTubeRevenueDaily";

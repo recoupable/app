@@ -6,7 +6,7 @@ import PulseToggleSkeleton from "@/components/Pulse/PulseToggleSkeleton";
 import { Activity, Bell, ArrowUpRight } from "lucide-react";
 import type { Pulse } from "@/lib/pulse/getPulse";
 import { ToolCard, ToolCardBody } from "../shared/ToolCard";
-import ToolError from "../shared/ToolError";
+import { ToolError } from "../shared/ToolError";
 
 type PulseSuccessResult = {
   status: "success";

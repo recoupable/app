@@ -2,7 +2,7 @@ import { TrendingUp, Mic2 } from "lucide-react";
 import { SpotifyArtistTopTracksResultType } from "@/types/spotify";
 import SpotifyTrackCard from "./SpotifyTrackCard";
 import { ToolCard, ToolCardBody } from "./shared/ToolCard";
-import ToolEmpty from "./shared/ToolEmpty";
+import { ToolEmpty } from "./shared/ToolEmpty";
 
 const SpotifyArtistTopTracksResult = ({
   result,

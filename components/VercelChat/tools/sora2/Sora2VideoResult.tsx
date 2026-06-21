@@ -5,8 +5,8 @@ import { Download, Video, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { ToolCard, ToolCardBody } from "../shared/ToolCard";
-import ToolError from "../shared/ToolError";
-import ToolEmpty from "../shared/ToolEmpty";
+import { ToolError } from "../shared/ToolError";
+import { ToolEmpty } from "../shared/ToolEmpty";
 
 interface Sora2VideoResultProps {
   result: RetrieveVideoContentResult;

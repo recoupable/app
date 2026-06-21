@@ -10,11 +10,9 @@ import { Dispatch, SetStateAction } from "react";
 import { cn } from "@/lib/utils";
 import ViewingMessage from "./ViewingMessage";
 import EditingMessage from "./EditingMessage";
-import {
-  getToolCallComponent,
-  getToolResultComponent,
-  getToolErrorComponent,
-} from "./ToolComponents";
+import { getToolCallComponent } from "./getToolCallComponent";
+import { getToolResultComponent } from "./getToolResultComponent";
+import { getToolErrorComponent } from "./getToolErrorComponent";
 import MessageFileViewer from "./message-file-viewer";
 import { EnhancedReasoning } from "@/components/reasoning/EnhancedReasoning";
 import { Actions, Action } from "@/components/actions";

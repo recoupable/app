@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { MessageSquare, ChevronRight } from "lucide-react";
 import { ToolCard, ToolCardBody } from "../shared/ToolCard";
-import ToolEmpty from "../shared/ToolEmpty";
+import { ToolEmpty } from "../shared/ToolEmpty";
 
 /**
  * Row shape returned by the `get_chats` MCP tool — the session-scoped
