@@ -1,7 +1,12 @@
+"use client";
+
 import { RetrieveVideoContentResult } from "@/components/VercelChat/types";
-import { Download, Video } from "lucide-react";
+import { Download, Video, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { ToolCard, ToolCardBody } from "../shared/ToolCard";
+import ToolError from "../shared/ToolError";
+import ToolEmpty from "../shared/ToolEmpty";
 
 interface Sora2VideoResultProps {
   result: RetrieveVideoContentResult;
@@ -12,15 +17,15 @@ export function Sora2VideoResult({ result }: Sora2VideoResultProps) {
 
   if (!result.success) {
     return (
-      <div className="flex flex-col gap-2 py-2 text-sm text-destructive">
-        <p>{result.error || "Failed to retrieve video"}</p>
-      </div>
+      <ToolError
+        title="Video generation"
+        message={result.error || "Failed to retrieve video"}
+      />
     );
   }
 
   const handleDownload = () => {
     if (!result.videoUrl) {
-      console.error("No video URL available for download");
       return;
     }
 
@@ -31,55 +36,64 @@ export function Sora2VideoResult({ result }: Sora2VideoResultProps) {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } catch (error) {
-      console.error("Download failed:", error);
+    } catch {
+      // Swallow — the browser will surface its own download failure UI.
     }
   };
 
   const handleVideoError = () => {
     setVideoError(
-      "Failed to load video. Please try refreshing or downloading the file."
+      "Failed to load video. Please try refreshing or downloading the file.",
     );
   };
 
   return (
-    <div className="flex flex-col gap-3 py-2">
-      <div className="flex items-center gap-2 text-sm">
-        <Video className="h-4 w-4 text-primary" />
-        <span className="font-medium">Video Generated</span>
-        <span className="text-muted-foreground">• {result.sizeInMB}</span>
-      </div>
-
-      {result.videoUrl ? (
-        <>
-          {videoError ? (
-            <div className="w-full max-w-2xl rounded-lg border shadow-sm bg-muted p-4 text-center">
+    <ToolCard
+      icon={Video}
+      tone="accent"
+      title="Video generated"
+      subtitle={result.sizeInMB ? `${result.sizeInMB} • Sora 2` : "Sora 2"}
+      trailing={
+        result.videoUrl ? (
+          <Button
+            onClick={handleDownload}
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 rounded-lg px-2.5 text-xs"
+          >
+            <Download className="size-3.5" />
+            <span className="hidden sm:inline">Download</span>
+          </Button>
+        ) : null
+      }
+    >
+      <ToolCardBody>
+        {result.videoUrl ? (
+          videoError ? (
+            <div className="flex aspect-video w-full items-center justify-center rounded-xl border border-border bg-muted p-4 text-center">
               <p className="text-sm text-muted-foreground">{videoError}</p>
             </div>
           ) : (
             <video
               controls
-              className="w-full max-w-2xl rounded-lg border shadow-sm"
+              className="aspect-video w-full rounded-xl border border-border bg-black object-contain shadow-sm"
               src={result.videoUrl}
               onError={handleVideoError}
               preload="metadata"
             >
               Your browser does not support the video tag.
             </video>
-          )}
-          <Button
-            onClick={handleDownload}
-            variant="outline"
-            size="sm"
-            className="w-fit"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Download Video
-          </Button>
-        </>
-      ) : (
-        <p className="text-sm text-muted-foreground">{result.message}</p>
-      )}
-    </div>
+          )
+        ) : (
+          <ToolEmpty
+            icon={Film}
+            title="No video to preview"
+            description={result.message || "The video content is unavailable."}
+          />
+        )}
+      </ToolCardBody>
+    </ToolCard>
   );
 }
+
+export default Sora2VideoResult;

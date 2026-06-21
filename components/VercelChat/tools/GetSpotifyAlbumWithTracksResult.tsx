@@ -1,10 +1,15 @@
+"use client";
+
 import React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Play, ExternalLink } from "lucide-react";
+import { motion } from "framer-motion";
+import { Play, ExternalLink, Disc3, ListMusic } from "lucide-react";
 import { SpotifyAlbum } from "@/types/spotify";
 import { formatDuration } from "@/lib/spotify/formatDuration";
 import Link from "next/link";
 import SpotifyAlbumWithTracksHero from "./SpotifyAlbumWithTracksHero";
+import { toolCardMotion } from "./shared/toolCardTokens";
+import { ToolCard, ToolCardBody } from "./shared/ToolCard";
+import ToolEmpty from "./shared/ToolEmpty";
 
 interface GetSpotifyAlbumWithTracksResultProps {
   result: SpotifyAlbum;
@@ -13,79 +18,94 @@ interface GetSpotifyAlbumWithTracksResultProps {
 const GetSpotifyAlbumWithTracksResult: React.FC<
   GetSpotifyAlbumWithTracksResultProps
 > = ({ result }) => {
-  const totalDuration = result.tracks.items.reduce(
+  const tracks = result.tracks?.items ?? [];
+
+  if (tracks.length === 0) {
+    return (
+      <ToolCard
+        icon={Disc3}
+        tone="success"
+        title={result.name || "Album"}
+        subtitle="No tracks"
+      >
+        <ToolEmpty
+          icon={ListMusic}
+          title="No tracks available"
+          description="This album has no playable tracks on Spotify."
+        />
+      </ToolCard>
+    );
+  }
+
+  const totalDuration = tracks.reduce(
     (acc, track) => acc + track.duration_ms,
-    0
+    0,
   );
 
   return (
-    <div className="bg-gradient-to-b from-gray-900 to-black rounded-2xl overflow-hidden max-w-2xl w-full my-4">
+    <motion.div
+      initial={toolCardMotion.initial}
+      animate={toolCardMotion.animate}
+      transition={toolCardMotion.transition}
+      className="my-4 w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+    >
       {/* Hero Section */}
-      <SpotifyAlbumWithTracksHero
-        result={result}
-        totalDuration={totalDuration}
-      />
+      <SpotifyAlbumWithTracksHero result={result} totalDuration={totalDuration} />
 
       {/* Track Listing */}
-      <div className="bg-black/40 backdrop-blur-sm rounded-b-2xl opacity-[0.999]">
-        <div className="p-3 sm:p-4">
-          <div className="space-y-0.5">
-            {result.tracks.items.map((track) => (
-              <Link
-                href={track.external_urls.spotify}
-                key={track.id}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-xl hover:bg-white/10 transition-colors group cursor-pointer">
-                  {/* Track Number */}
-                  <div className="w-4 sm:w-5 text-center">
-                    <span className="text-muted-foreground text-xs group-hover:hidden">
-                      {track.track_number}
+      <div className="border-t border-border/60 p-2 sm:p-3">
+        <div className="space-y-0.5">
+          {tracks.map((track) => (
+            <Link
+              href={track.external_urls.spotify}
+              key={track.id}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
+            >
+              <div className="group flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted/60 sm:px-3">
+                {/* Track Number / Play */}
+                <div className="w-5 text-center">
+                  <span className="text-xs text-muted-foreground group-hover:hidden">
+                    {track.track_number}
+                  </span>
+                  <Play className="mx-auto hidden size-3 text-foreground group-hover:block" />
+                </div>
+
+                {/* Track Info */}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate text-sm font-medium text-foreground">
+                      {track.name}
                     </span>
-                    <Play className="w-3 h-3 text-white hidden group-hover:block" />
-                  </div>
-
-                  {/* Track Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-white text-sm truncate">
-                        {track.name}
+                    {track.explicit && (
+                      <span className="hidden shrink-0 items-center rounded bg-muted px-1 text-[10px] font-semibold text-muted-foreground sm:inline-flex">
+                        E
                       </span>
-                      {track.explicit && (
-                        <Badge
-                          variant="secondary"
-                          className="bg-muted text-white text-xs px-1 py-0 hidden sm:inline-flex"
-                        >
-                          E
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="text-xs text-muted-foreground truncate">
-                      {track.artists.map((artist) => artist.name).join(", ")}
-                    </div>
-                  </div>
-
-                  {/* Track Duration */}
-                  <div className="text-xs text-muted-foreground min-w-0">
-                    {formatDuration(track.duration_ms)}
-                  </div>
-
-                  {/* Track Actions - Hidden on mobile */}
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">
-                    {track.external_urls?.spotify && (
-                      <p className="text-muted-foreground hover:text-white">
-                        <ExternalLink className="w-3 h-3" />
-                      </p>
                     )}
                   </div>
+                  <div className="truncate text-xs text-muted-foreground">
+                    {track.artists.map((artist) => artist.name).join(", ")}
+                  </div>
                 </div>
-              </Link>
-            ))}
-          </div>
+
+                {/* Duration */}
+                <div className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                  {formatDuration(track.duration_ms)}
+                </div>
+
+                {/* External link affordance */}
+                {track.external_urls?.spotify && (
+                  <div className="hidden text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 sm:block">
+                    <ExternalLink className="size-3.5" />
+                  </div>
+                )}
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -3,9 +3,13 @@ import ArtistHeroSection from "./ArtistHeroSection";
 import { ArtistProfile } from "@/lib/supabase/artist/updateArtistProfile";
 import { AccountSocialWithSocial } from "@/lib/supabase/account_socials/getAccountSocials";
 import Link from "next/link";
-import { ExternalLink, Globe } from "lucide-react";
+import { ExternalLink, Globe, Share2 } from "lucide-react";
 import getSocialPlatformByLink from "@/lib/getSocialPlatformByLink";
+import getPlatformDisplayName from "@/lib/socials/getPlatformDisplayName";
 import { useEffect } from "react";
+import { ToolCard } from "./shared/ToolCard";
+import { ToolCardRow } from "./shared/ToolCard";
+import ToolEmpty from "./shared/ToolEmpty";
 
 export interface UpdateArtistSocialsResult {
   success: boolean;
@@ -17,62 +21,90 @@ export interface UpdateArtistSocialsSuccessProps {
   result: UpdateArtistSocialsResult;
 }
 
+const normalizeUrl = (url: string) =>
+  url.startsWith("http://") || url.startsWith("https://")
+    ? url
+    : `https://${url}`;
+
 const UpdateArtistSocialsSuccess: React.FC<UpdateArtistSocialsSuccessProps> = ({
   result,
 }) => {
-  const { getArtists } = useArtistProvider();
-  const { selectedArtist } = useArtistProvider();
+  const { getArtists, selectedArtist } = useArtistProvider();
 
   useEffect(() => {
     getArtists();
   }, []);
 
+  const socials = result.socials ?? [];
+  const hasSocials = socials.length > 0;
+
   return (
-    <div className="bg-gradient-to-b from-gray-900 to-black rounded-2xl overflow-hidden max-w-2xl w-full my-4">
-      <ArtistHeroSection
-        artistProfile={selectedArtist as ArtistProfile}
-        message={result.message || "Artist socials updated successfully."}
-      />
-      <div className="bg-black/40 backdrop-blur-sm rounded-b-xl overflow-hidden">
-        <div className="p-4 sm:p-6 space-y-2">
-          {result.socials?.map((social) => (
-            <Link
-              href={
-                social.social.profile_url.startsWith("http://") ||
-                social.social.profile_url.startsWith("https://")
-                  ? social.social.profile_url
-                  : `https://${social.social.profile_url}`
-              }
-              key={social.social.id}
-              target="_blank"
-              rel="noopener noreferrer"
-              passHref
-            >
-              <div className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-accent transition-colors group cursor-pointer">
-                <div className="w-8 h-8 bg-muted rounded flex items-center justify-center">
-                  <Globe className="w-4 h-4 text-muted-foreground" />
-                </div>
+    <ToolCard
+      icon={Share2}
+      tone="success"
+      title="Artist socials updated"
+      subtitle={result.message || "Artist socials updated successfully."}
+      trailing={
+        hasSocials ? (
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+            {socials.length}
+          </span>
+        ) : undefined
+      }
+      className="max-w-xl"
+    >
+      {selectedArtist ? (
+        <ArtistHeroSection
+          artistProfile={selectedArtist as ArtistProfile}
+          message={result.message || "Artist socials updated successfully."}
+        />
+      ) : null}
 
-                <div className="flex-1 min-w-0">
-                  <div className="text-white text-sm font-medium truncate">
-                    {social.social.profile_url}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {getSocialPlatformByLink(
-                      social.social.profile_url
-                    ).toLowerCase() || "Social Link"}
-                  </div>
-                </div>
+      {hasSocials ? (
+        <div className="space-y-1 border-t border-border/60 p-2">
+          {socials.map((social) => {
+            const platformType = getSocialPlatformByLink(
+              social.social.profile_url,
+            );
+            const platform =
+              platformType !== "NONE"
+                ? getPlatformDisplayName(platformType)
+                : "Social link";
 
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                </div>
-              </div>
-            </Link>
-          ))}
+            return (
+              <Link
+                href={normalizeUrl(social.social.profile_url)}
+                key={social.social.id}
+                target="_blank"
+                rel="noopener noreferrer"
+                passHref
+              >
+                <ToolCardRow className="group/row cursor-pointer">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground/70">
+                    <Globe className="size-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium text-foreground">
+                      {social.social.profile_url}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {platform}
+                    </div>
+                  </div>
+                  <ExternalLink className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/row:opacity-100" />
+                </ToolCardRow>
+              </Link>
+            );
+          })}
         </div>
-      </div>
-    </div>
+      ) : (
+        <ToolEmpty
+          icon={Share2}
+          title="No socials linked"
+          description="No social profiles were attached to this update."
+        />
+      )}
+    </ToolCard>
   );
 };
 

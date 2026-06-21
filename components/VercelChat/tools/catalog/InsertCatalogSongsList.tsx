@@ -1,52 +1,41 @@
+import { FileMusic } from "lucide-react";
 import { CatalogSongsResponse } from "@/lib/catalog/getCatalogSongs";
 import CatalogSongRow from "./CatalogSongRow";
+import ToolEmpty from "../shared/ToolEmpty";
 
 interface InsertCatalogSongsListProps {
   songs: CatalogSongsResponse["songs"];
 }
 
 /**
- * Displays catalog songs in a table format
- * Shows full metadata: title, artist, album, ISRC, and notes
+ * Displays catalog songs as a polished list of rows.
+ * Each row shows artwork placeholder, title, artist/album and metadata pills.
  */
 export default function InsertCatalogSongsList({
   songs,
 }: InsertCatalogSongsListProps) {
-  if (!songs || songs.length === 0) return null;
+  if (!songs || songs.length === 0) {
+    return (
+      <div className="rounded-2xl border border-border bg-card">
+        <ToolEmpty
+          icon={FileMusic}
+          title="No songs to show"
+          description="Songs matching the current filter will appear here."
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className="mt-2 overflow-x-auto">
-      <table className="w-full text-xs border-collapse">
-        <thead>
-          <tr className="border-b border-border">
-            <th className="text-left py-2 px-3 font-semibold text-foreground">
-              Title
-            </th>
-            <th className="text-left py-2 px-3 font-semibold text-foreground">
-              Artist
-            </th>
-            <th className="text-left py-2 px-3 font-semibold text-foreground">
-              Album
-            </th>
-            <th className="text-left py-2 px-3 font-semibold text-foreground">
-              ISRC
-            </th>
-            <th className="text-left py-2 px-3 font-semibold text-foreground">
-              Notes
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {songs.map((song, index) => (
-            <CatalogSongRow key={song.isrc || index} song={song} />
-          ))}
-        </tbody>
-      </table>
-      {songs.length > 0 && (
-        <div className="text-xs text-muted-foreground mt-2 px-3">
-          Showing {songs.length} song{songs.length !== 1 ? "s" : ""}
-        </div>
-      )}
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <ul className="divide-y divide-border/60 p-1.5">
+        {songs.map((song, index) => (
+          <CatalogSongRow key={song.isrc || index} song={song} />
+        ))}
+      </ul>
+      <div className="border-t border-border/60 px-3 py-2 text-xs text-muted-foreground">
+        Showing {songs.length} song{songs.length !== 1 ? "s" : ""}
+      </div>
     </div>
   );
 }

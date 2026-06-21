@@ -1,18 +1,28 @@
 import React from "react";
 import { Search } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface SearchQueryPillProps {
   query: string;
+  /** Show an animated pulse on the icon while the query is in flight. */
+  active?: boolean;
 }
 
-const SearchQueryPill: React.FC<SearchQueryPillProps> = ({ query }) => {
+const SearchQueryPill: React.FC<SearchQueryPillProps> = ({
+  query,
+  active = false,
+}) => {
   return (
-    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-muted dark:bg-zinc-900 rounded-full">
-      <Search className="h-3.5 w-3.5 text-muted-foreground" />
-      <span className="text-sm text-muted-foreground dark:text-muted-foreground">{query}</span>
+    <div className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-muted/60 px-3 py-1 text-sm text-foreground">
+      <Search
+        className={cn(
+          "size-3.5 shrink-0 text-muted-foreground",
+          active && "animate-pulse text-blue-500",
+        )}
+      />
+      <span className="truncate">{query}</span>
     </div>
   );
 };
 
 export default SearchQueryPill;
-

@@ -9,37 +9,31 @@ const ArtistSocialDisplayText = ({ social }: { social: SocialType }) => {
 
   // For Spotify, we don't have a display-friendly username (only the ID), so skip username display
   const hasUsername = Boolean(
-    social.username &&
-    social.username.length > 0 &&
-    !isYoutube &&
-    !isSpotify
+    social.username && social.username.length > 0 && !isYoutube && !isSpotify,
   );
 
-  const username = hasUsername && social.username
-    ? (social.username.startsWith("@") ? social.username : `@${social.username}`)
+  const username =
+    hasUsername && social.username
+      ? social.username.startsWith("@")
+        ? social.username
+        : `@${social.username}`
+      : "";
+
+  const youtubeChannelName = isYoutube
+    ? getYoutubeChannelNameFromURL(social.profile_url)
     : "";
 
-  const youtubeChannelName = isYoutube ? getYoutubeChannelNameFromURL(social.profile_url) : "";
+  const display = hasUsername
+    ? username
+    : isYoutube && youtubeChannelName
+      ? youtubeChannelName
+      : social.profile_url;
 
-  if (hasUsername) {
-    return (
-      <span className="text-xs text-muted-foreground dark:text-muted-foreground truncate max-w-full">
-        {username}
-      </span>
-    );
-  } else if (isYoutube && youtubeChannelName) {
-    return (
-      <span className="text-xs text-muted-foreground dark:text-muted-foreground truncate max-w-full">
-        {youtubeChannelName}
-      </span>
-    );
-  } else {
-    return (
-      <span className="text-xs text-muted-foreground truncate max-w-full">
-        {social.profile_url}
-      </span>
-    );
-  }
+  return (
+    <span className="block max-w-full truncate text-xs text-muted-foreground">
+      {display}
+    </span>
+  );
 };
 
 export default ArtistSocialDisplayText;

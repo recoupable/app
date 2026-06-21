@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Download } from "lucide-react";
+import { Download, FileText } from "lucide-react";
+import {
+  ToolCard,
+  ToolCardBody,
+} from "@/components/VercelChat/tools/shared/ToolCard";
+import ToolError from "@/components/VercelChat/tools/shared/ToolError";
 
 export interface TxtFileGenerationResult {
   success: boolean;
@@ -46,16 +50,10 @@ export function TxtFileResult({ result }: TxtFileResultProps) {
 
   if (!result.success) {
     return (
-      <Card className="w-full bg-destructive/10 border-destructive/30">
-        <CardContent className="pt-6">
-          <p className="text-destructive font-medium">
-            Error generating TXT file
-          </p>
-          <p className="text-sm text-destructive/80">
-            {result.error || "Unknown error occurred"}
-          </p>
-        </CardContent>
-      </Card>
+      <ToolError
+        title="Text file"
+        message={result.error || "Unknown error occurred"}
+      />
     );
   }
 
@@ -68,7 +66,7 @@ export function TxtFileResult({ result }: TxtFileResultProps) {
   let displayText: string | JSX.Element = "TXT file generated.";
   if (result.arweaveUrl) {
     if (loading) {
-      displayText = "Loading file contents...";
+      displayText = "Loading file contents…";
     } else if (fetchError) {
       displayText = fetchError;
     } else if (fileContent) {
@@ -79,45 +77,45 @@ export function TxtFileResult({ result }: TxtFileResultProps) {
   }
 
   return (
-    <Card className="w-full">
-      <CardContent className="pt-4 p-4 space-y-4">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4 w-full">
-            <h3 className="text-lg font-medium">Text File Generated</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDownload}
-              disabled={!result.arweaveUrl}
-              className="h-8 px-3 text-xs rounded-xl ml-auto"
-            >
-              <Download className="w-4 h-4" />{" "}
-              <span className="hidden sm:block">Download</span>
-            </Button>
-          </div>
+    <ToolCard
+      icon={FileText}
+      tone="info"
+      title="Text file generated"
+      subtitle={result.arweaveUrl ? "Stored on Arweave" : undefined}
+      className="max-w-xl"
+      trailing={
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleDownload}
+          disabled={!result.arweaveUrl}
+          className="h-8 gap-1.5 rounded-lg px-2.5 text-xs"
+        >
+          <Download className="size-3.5" />
+          <span className="hidden sm:inline">Download</span>
+        </Button>
+      }
+    >
+      <ToolCardBody>
+        <div
+          className={cn(
+            "max-h-[200px] overflow-auto whitespace-pre-wrap rounded-xl border border-border bg-muted/50 p-3 font-mono text-sm md:max-h-[400px]",
+            "scrollbar-thin scrollbar-thumb-rounded",
+          )}
+          style={{
+            transition: "max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+        >
+          {loading ? (
+            <p className="text-muted-foreground">Loading file contents…</p>
+          ) : fetchError ? (
+            <p className="text-destructive">{fetchError}</p>
+          ) : (
+            displayText
+          )}
         </div>
-
-        <div className="prose prose-sm dark:prose-invert max-w-none">
-          <div
-            className={cn(
-              "mb-4 whitespace-pre-wrap font-mono text-sm p-3 bg-muted/50 rounded-md overflow-auto",
-              "max-h-[200px] md:max-h-[400px] scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
-            )}
-            style={{
-              transition: "max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
-            {loading ? (
-              <p className="text-muted-foreground">Loading file contents...</p>
-            ) : fetchError ? (
-              <p className="text-destructive">{fetchError}</p>
-            ) : (
-              displayText
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+      </ToolCardBody>
+    </ToolCard>
   );
 }
 

@@ -1,20 +1,34 @@
 "use client";
 
+import { motion } from "framer-motion";
+import { Activity } from "lucide-react";
 import PulseToggleSkeleton from "@/components/Pulse/PulseToggleSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toolCardMotion } from "../shared/toolCardTokens";
 
 export default function PulseToolSkeleton() {
   return (
-    <div className="bg-card border border-border rounded-xl p-4 max-w-sm shadow-sm">
-      <div className="flex items-start space-x-3 mb-3">
-        <Skeleton className="h-5 w-5 rounded-full" />
-        <Skeleton className="h-5 w-24" />
+    <motion.div
+      initial={toolCardMotion.initial}
+      animate={toolCardMotion.animate}
+      transition={toolCardMotion.transition}
+      className="w-full max-w-sm overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+    >
+      <div className="flex items-center gap-3 px-4 py-3">
+        <div className="flex size-9 shrink-0 animate-pulse items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+          <Activity className="size-[18px]" />
+        </div>
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <Skeleton className="h-3.5 w-20" />
+          <Skeleton className="h-3 w-32" />
+        </div>
       </div>
-
-      <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-        <Skeleton className="h-4 w-32" />
-        <PulseToggleSkeleton />
+      <div className="border-t border-border/60 p-3">
+        <div className="flex items-center justify-between rounded-xl bg-muted/50 px-3 py-2.5">
+          <Skeleton className="h-4 w-32" />
+          <PulseToggleSkeleton />
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

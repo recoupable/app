@@ -1,8 +1,12 @@
 import React from "react";
-import { CheckCircle, Calendar } from "lucide-react";
+import { CheckCircle2, Calendar, Tag } from "lucide-react";
 import { formatDate } from "date-fns";
 import { ArtistProfile } from "@/lib/supabase/artist/updateArtistProfile";
 
+/**
+ * Compact, token-safe artist identity header used inside success tool cards.
+ * Shows the artist avatar, name, a success confirmation, label and last-updated.
+ */
 const ArtistHeroSection = ({
   artistProfile,
   message,
@@ -11,63 +15,46 @@ const ArtistHeroSection = ({
   message?: string;
 }) => {
   return (
-    <div className="relative">
-      {artistProfile.image && (
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{
-            backgroundImage: `url(${artistProfile.image})`,
-          }}
-        />
-      )}
+    <div className="flex items-center gap-4 p-4">
+      {artistProfile?.image ? (
+        <div className="size-16 shrink-0 overflow-hidden rounded-xl bg-muted shadow-sm">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={artistProfile.image}
+            alt={artistProfile?.name || "Artist"}
+            className="size-full object-cover"
+          />
+        </div>
+      ) : null}
 
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black" />
+      <div className="min-w-0 flex-1">
+        <h2 className="truncate text-lg font-semibold leading-tight text-foreground">
+          {artistProfile?.name || "Artist"}
+        </h2>
 
-      <div className="relative p-6 sm:p-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 sm:gap-6">
-          {artistProfile.image && (
-            <div className="flex-shrink-0">
-              {/* eslint-disable */}
-              <img
-                src={artistProfile.image}
-                alt={artistProfile.name || "Artist"}
-                className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg object-cover shadow-2xl"
-              />
-            </div>
-          )}
+        <div className="mt-1 flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+          <CheckCircle2 className="size-3.5 shrink-0" />
+          <span className="truncate text-xs font-medium">
+            {message || "Profile updated successfully"}
+          </span>
+        </div>
 
-          <div className="flex-1 min-w-0">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-medium text-white mb-2 leading-tight">
-              {artistProfile.name}
-            </h1>
-
-            <div className="flex items-center gap-2 mb-3">
-              <CheckCircle className="w-4 h-4 text-green-500" />
-              <span className="text-green-400 text-sm font-medium">
-                {message || "Profile Updated Successfully!"}
-              </span>
-            </div>
-
-            {artistProfile.label && (
-              <div className="text-sm text-muted-foreground mb-2">
-                <span className="text-muted-foreground">Label:</span>{" "}
-                {artistProfile.label}
-              </div>
-            )}
-
-            {artistProfile.updated_at && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Calendar className="w-3 h-3" />
-                <span>
-                  Updated{" "}
-                  {formatDate(
-                    new Date(artistProfile.updated_at),
-                    "MMM d, yyyy, h:mm a"
-                  )}
-                </span>
-              </div>
-            )}
-          </div>
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          {artistProfile?.label ? (
+            <span className="flex items-center gap-1">
+              <Tag className="size-3" />
+              <span className="truncate">{artistProfile.label}</span>
+            </span>
+          ) : null}
+          {artistProfile?.updated_at ? (
+            <span className="flex items-center gap-1">
+              <Calendar className="size-3" />
+              {formatDate(
+                new Date(artistProfile.updated_at),
+                "MMM d, yyyy, h:mm a",
+              )}
+            </span>
+          ) : null}
         </div>
       </div>
     </div>

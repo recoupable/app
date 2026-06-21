@@ -16,17 +16,17 @@ export default function CatalogCsvUploadButton({
   hasCatalogId = true,
 }: CatalogCsvUploadButtonProps) {
   return (
-    <div className="mt-2 pt-3 border-t">
-      <label htmlFor="csv-upload">
+    <div className="rounded-xl border border-dashed border-border bg-muted/30 p-3">
+      <label htmlFor="csv-upload" className="block">
         <Button
           type="button"
           variant="outline"
           size="sm"
           disabled={!hasCatalogId}
-          className="w-full"
+          className="w-full bg-card"
           onClick={() => document.getElementById("csv-upload")?.click()}
         >
-          <Upload className="h-4 w-4 mr-2" />
+          <Upload className="mr-2 size-4" />
           Upload CSV File
         </Button>
         <input
@@ -37,21 +37,19 @@ export default function CatalogCsvUploadButton({
           className="hidden"
         />
       </label>
-      <p className="text-xs text-muted-foreground mt-1.5 px-1">
+      <p className="mt-2 px-0.5 text-xs text-muted-foreground">
         {hasCatalogId ? (
           <>
             CSV must include an{" "}
-            <code className="text-[10px] bg-muted px-1 py-0.5 rounded">
+            <code className="rounded bg-muted px-1 py-0.5 text-[10px] text-foreground">
               isrc
             </code>{" "}
             column (case-insensitive)
           </>
         ) : (
-          <>
-            <span className="text-destructive">
-              No catalog selected. Please select a catalog first.
-            </span>
-          </>
+          <span className="text-destructive">
+            No catalog selected. Please select a catalog first.
+          </span>
         )}
       </p>
     </div>

@@ -2,6 +2,7 @@ import Image from "next/image";
 import { ImageGenerationResult } from "@/components/VercelChat/types";
 import { useImageDownloader } from "@/hooks/useImageDownloader";
 import MessageMediaDownloadButton from "@/components/VercelChat/MessageMediaDownloadButton";
+import ToolError from "../shared/ToolError";
 
 interface ImageResultProps {
   result: ImageGenerationResult;
@@ -17,42 +18,40 @@ export function ImageResult({ result }: ImageResultProps) {
 
   if (!imageUrl) {
     return (
-      <div className="w-full max-w-md mx-auto p-4 border border-red-200 rounded-md bg-red-50">
-        <p className="text-sm font-medium text-red-600">
-          Error generating image
-        </p>
-        <p className="text-sm text-red-500">Unknown error occurred</p>
-      </div>
+      <ToolError
+        title="Image generation"
+        message="The image couldn't be generated. Please try again with a different prompt."
+      />
     );
   }
 
   return (
     <div className="flex justify-start my-3">
-      <div className="border border-border rounded-2xl group cursor-pointer relative overflow-hidden max-w-md max-h-md">
-        <div className="relative w-full h-full max-h-[28rem]">
+      <div className="group relative cursor-pointer overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-shadow duration-200 hover:shadow-md">
+        <div className="relative h-full w-full max-h-[28rem] max-w-md">
           {/* Top gradient overlay */}
-          <div className="absolute z-10 transition-opacity duration-300 opacity-0 group-hover:opacity-100 group-focus:opacity-100 focus-within:opacity-100 end-0 top-0 w-full">
-            <div className="bg-gradient-to-t from-transparent to-black/30 h-20 w-full md:rounded-t-2xl" />
+          <div className="pointer-events-none absolute end-0 top-0 z-10 w-full opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus:opacity-100 focus-within:opacity-100">
+            <div className="h-20 w-full bg-gradient-to-t from-transparent to-black/30 md:rounded-t-2xl" />
           </div>
 
           {/* Bottom gradient overlay */}
-          <div className="absolute z-10 transition-opacity duration-300 opacity-0 group-hover:opacity-100 group-focus:opacity-100 focus-within:opacity-100 end-0 bottom-0 w-full">
-            <div className="bg-gradient-to-b from-transparent to-black/30 h-20 w-full md:rounded-b-2xl" />
+          <div className="pointer-events-none absolute bottom-0 end-0 z-10 w-full opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus:opacity-100 focus-within:opacity-100">
+            <div className="h-20 w-full bg-gradient-to-b from-transparent to-black/30 md:rounded-b-2xl" />
           </div>
 
           {/* Download Image Button */}
           <MessageMediaDownloadButton
             onClick={handleDownload}
-            overrideButtonClassName="hover:bg-muted/10"
+            overrideButtonClassName="hover:bg-white/10"
             overrideIconClassName="text-white"
             isReady={isReady}
             isDownloading={isDownloading}
           />
 
-          <div className="w-full h-auto max-w-md max-h-md">
+          <div className="h-auto w-full max-w-md max-h-md">
             <Image
               src={imageUrl}
-              alt="Generated image"
+              alt="AI-generated image"
               width={448}
               height={448}
               style={{
@@ -70,3 +69,5 @@ export function ImageResult({ result }: ImageResultProps) {
     </div>
   );
 }
+
+export default ImageResult;

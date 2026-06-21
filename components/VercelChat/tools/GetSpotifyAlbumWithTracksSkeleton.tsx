@@ -1,85 +1,57 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { toolCardMotion } from "./shared/toolCardTokens";
+
 const GetSpotifyAlbumWithTracksSkeleton = () => {
   return (
-    <div className="bg-gradient-to-b from-gray-900 to-black rounded-2xl overflow-hidden max-w-2xl w-full my-4 animate-pulse">
-      {/* Hero Section Skeleton */}
-      <div className="relative rounded-2xl">
-        {/* Background placeholder */}
-        <div className="absolute inset-0 bg-card rounded-t-2xl opacity-[0.999]">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-        </div>
+    <motion.div
+      initial={toolCardMotion.initial}
+      animate={toolCardMotion.animate}
+      transition={toolCardMotion.transition}
+      className="my-4 w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+    >
+      {/* Hero Section Skeleton — mirrors the resolved immersive hero */}
+      <div className="relative bg-gradient-to-b from-zinc-800 to-zinc-950 p-4 sm:p-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-6">
+          {/* Album Cover */}
+          <div className="size-32 shrink-0 animate-pulse rounded-xl bg-white/10 sm:size-48" />
 
-        {/* Content Overlay */}
-        <div className="relative z-10 p-4 sm:p-8">
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
-            {/* Album Cover Skeleton - Hidden on mobile */}
-            <div className="flex-shrink-0 hidden sm:block">
-              <div className="w-48 h-48 bg-card rounded-lg" />
+          {/* Album Info */}
+          <div className="min-w-0 flex-1 space-y-3">
+            <div className="h-5 w-16 animate-pulse rounded-full bg-white/15" />
+            <div className="h-9 w-3/4 animate-pulse rounded-lg bg-white/15" />
+            <div className="h-5 w-1/2 animate-pulse rounded bg-white/10" />
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="h-4 w-12 animate-pulse rounded bg-white/10" />
+              <div className="h-4 w-16 animate-pulse rounded bg-white/10" />
+              <div className="h-4 w-14 animate-pulse rounded bg-white/10" />
             </div>
-
-            {/* Album Info Skeleton */}
-            <div className="flex-1 text-white">
-              {/* Badge skeleton */}
-              <div className="flex items-center gap-2 mb-2">
-                <div className="h-5 w-16 bg-muted rounded-full" />
-              </div>
-
-              {/* Title skeleton */}
-              <div className="h-10 w-3/4 bg-muted rounded mb-2" />
-
-              {/* Artist skeleton */}
-              <div className="h-5 w-1/2 bg-muted rounded mb-3" />
-
-              {/* Meta info skeleton */}
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4">
-                <div className="h-4 w-12 bg-muted rounded" />
-                <div className="h-4 w-16 bg-muted rounded" />
-                <div className="h-4 w-14 bg-muted rounded" />
-              </div>
-
-              {/* Button skeleton */}
-              <div className="h-10 w-32 bg-muted rounded-full mb-3" />
-
-              {/* Tags skeleton */}
-              <div className="flex flex-wrap gap-1.5">
-                <div className="h-6 w-20 bg-muted rounded-full" />
-                <div className="h-6 w-16 bg-muted rounded-full" />
-              </div>
-            </div>
+            <div className="h-9 w-32 animate-pulse rounded-full bg-white/15" />
           </div>
         </div>
       </div>
 
       {/* Track Listing Skeleton */}
-      <div className="bg-black/40 backdrop-blur-sm rounded-b-2xl opacity-[0.999]">
-        <div className="p-3 sm:p-4">
-          <div className="space-y-0.5">
-            {/* Generate 8-12 track skeletons */}
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-xl"
-              >
-                {/* Track Number */}
-                <div className="w-4 sm:w-5 h-4 bg-muted rounded" />
-
-                {/* Track Info */}
-                <div className="flex-1 min-w-0 space-y-1">
-                  <div className="h-4 bg-muted rounded w-3/4" />
-                  <div className="h-3 bg-card rounded w-1/2" />
-                </div>
-
-                {/* Duration */}
-                <div className="w-8 h-3 bg-muted rounded" />
-
-                {/* Action button skeleton - Hidden on mobile */}
-                <div className="w-3 h-3 bg-muted rounded hidden sm:block" />
+      <div className="border-t border-border/60 p-2 sm:p-3">
+        <div className="space-y-0.5">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div
+              key={index}
+              className="flex items-center gap-3 px-2 py-2 sm:px-3"
+            >
+              <div className="size-4 w-5 animate-pulse rounded bg-muted" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <div className="h-3.5 w-3/4 animate-pulse rounded-md bg-muted" />
+                <div className="h-3 w-1/2 animate-pulse rounded-md bg-muted/70" />
               </div>
-            ))}
-          </div>
+              <div className="h-3 w-8 animate-pulse rounded bg-muted" />
+            </div>
+          ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-export default GetSpotifyAlbumWithTracksSkeleton; 
+export default GetSpotifyAlbumWithTracksSkeleton;

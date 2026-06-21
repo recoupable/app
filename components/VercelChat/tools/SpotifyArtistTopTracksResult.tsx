@@ -1,43 +1,48 @@
+import { TrendingUp, Mic2 } from "lucide-react";
 import { SpotifyArtistTopTracksResultType } from "@/types/spotify";
-import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
 import SpotifyTrackCard from "./SpotifyTrackCard";
+import { ToolCard, ToolCardBody } from "./shared/ToolCard";
+import ToolEmpty from "./shared/ToolEmpty";
 
 const SpotifyArtistTopTracksResult = ({
   result,
 }: {
   result: SpotifyArtistTopTracksResultType;
 }) => {
-  if (result.tracks.length === 0) {
-    return <div>Failed to get Spotify artist top tracks</div>;
+  const tracks = result.tracks ?? [];
+
+  if (tracks.length === 0) {
+    return (
+      <ToolCard
+        icon={TrendingUp}
+        tone="success"
+        title="Top tracks"
+        subtitle="No tracks"
+      >
+        <ToolEmpty
+          icon={Mic2}
+          title="No top tracks available"
+          description="We couldn't find popular tracks for this artist on Spotify."
+        />
+      </ToolCard>
+    );
   }
 
-  const tracks = result.tracks;
-
   return (
-    <div className="w-full my-4">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Image
-            src="/brand-logos/spotify.png"
-            alt="Spotify"
-            width={24}
-            height={24}
-            className="rounded-full"
-          />
-          <h3 className="font-semibold text-lg">Top Tracks</h3>
+    <ToolCard
+      icon={TrendingUp}
+      tone="success"
+      title="Top tracks"
+      subtitle={`${tracks.length} most popular`}
+    >
+      <ToolCardBody>
+        <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-4">
+          {tracks.map((track) => (
+            <SpotifyTrackCard key={track.id} track={track} />
+          ))}
         </div>
-        <Badge className="bg-[#1DB954] hover:bg-[#1DB954]/90 rounded-xl">
-          Spotify
-        </Badge>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {tracks.map((track) => (
-          <SpotifyTrackCard key={track.id} track={track} />
-        ))}
-      </div>
-    </div>
+      </ToolCardBody>
+    </ToolCard>
   );
 };
 

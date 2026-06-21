@@ -1,7 +1,10 @@
 import { SocialsResponse } from "@/types/Social";
-import { Music } from "lucide-react";
+import { Share2, Users } from "lucide-react";
 import { ReactNode } from "react";
 import { ArtistSocial } from "./ArtistSocial";
+import { ToolCard, ToolCardBody } from "./shared/ToolCard";
+import ToolEmpty from "./shared/ToolEmpty";
+import ToolError from "./shared/ToolError";
 
 export default function GetArtistSocialsResult({
   result,
@@ -16,42 +19,56 @@ export default function GetArtistSocialsResult({
 }) {
   if (result.status !== "success") {
     return (
-      <div className="flex items-center gap-2 p-3 bg-destructive/10 text-destructive rounded-md">
-        <span>{errorText ?? "Artist socials failed"}</span>
-      </div>
+      <ToolError
+        title="Artist socials"
+        message={errorText ?? "We couldn't load this artist's social profiles."}
+      />
     );
   }
 
-  const hasSocials = result.socials.length > 0;
-  const socials = hasSocials ? result.socials : [];
+  const socials = result.socials ?? [];
+  const hasSocials = socials.length > 0;
 
   return (
-    <div className="flex flex-col gap-4 p-5 border rounded-xl bg-background shadow-sm">
-      <div className="flex items-center gap-2 text-primary border-b pb-3">
-        {icon ?? <Music />}
-        <h3 className="font-semibold text-foreground">
-          {title ?? "Artist Socials Found"}
-        </h3>
-      </div>
-
-      {hasSocials && (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium text-foreground dark:text-muted-foreground">
-              Artist Socials
-            </h4>
-            <span className="text-xs text-muted-foreground">
-              {socials.length} {socials.length === 1 ? "platform" : "platforms"}
-            </span>
+    <ToolCard
+      icon={icon ? undefined : Users}
+      media={
+        icon ? (
+          <div className="flex size-9 items-center justify-center rounded-xl bg-muted text-foreground/70">
+            {icon}
           </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        ) : undefined
+      }
+      tone="accent"
+      title={title ?? "Artist socials"}
+      subtitle={
+        hasSocials
+          ? `${socials.length} ${socials.length === 1 ? "platform" : "platforms"} connected`
+          : "No platforms connected"
+      }
+      trailing={
+        hasSocials ? (
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+            {socials.length}
+          </span>
+        ) : undefined
+      }
+    >
+      {hasSocials ? (
+        <ToolCardBody>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {socials.map((social) => (
               <ArtistSocial key={social.id} social={social} />
             ))}
           </div>
-        </div>
+        </ToolCardBody>
+      ) : (
+        <ToolEmpty
+          icon={Share2}
+          title="No socials found"
+          description="We couldn't find any linked social profiles for this artist."
+        />
       )}
-    </div>
+    </ToolCard>
   );
 }

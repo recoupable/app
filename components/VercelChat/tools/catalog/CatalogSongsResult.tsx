@@ -53,7 +53,7 @@ export default function CatalogSongsResult({
 
   const isSuccess = displayResult?.songs && displayResult.songs?.length > 0;
   return (
-    <div className="flex flex-col gap-3 py-2">
+    <div className="flex w-full max-w-xl flex-col gap-2.5 py-2">
       <InsertCatalogSongsStatus
         hasError={hasError}
         errorMessage={uploadError || result.error}
@@ -82,10 +82,10 @@ export default function CatalogSongsResult({
       )}
 
       {isUploading && uploadProgress.total > 0 ? (
-        <div className="space-y-1">
+        <div className="space-y-1.5 rounded-xl border border-border bg-muted/40 px-3 py-2.5">
           <Progress value={progressPercentage} className="h-2" />
-          <p className="text-xs text-muted-foreground text-center">
-            {Math.round(progressPercentage)}%
+          <p className="text-center text-xs tabular-nums text-muted-foreground">
+            Uploading… {Math.round(progressPercentage)}%
           </p>
         </div>
       ) : (

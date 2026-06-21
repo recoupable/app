@@ -1,77 +1,96 @@
 import React from "react";
-import { Loader } from "lucide-react";
+import { Search, Globe, Sparkles } from "lucide-react";
 import { Response } from "@/components/ai-elements/response";
 import { SearchProgress } from "@/lib/search/searchProgressUtils";
 import SearchResultItem from "./SearchResultItem";
 import SearchQueryPill from "./SearchQueryPill";
+import { ToolCard, ToolCardBody } from "../shared/ToolCard";
 
 interface SearchWebProgressProps {
   progress: SearchProgress;
 }
 
-export const SearchWebProgress: React.FC<SearchWebProgressProps> = ({ progress }) => {
-  // Searching state: Display the query being searched
-  if (progress.status === 'searching') {
+export const SearchWebProgress: React.FC<SearchWebProgressProps> = ({
+  progress,
+}) => {
+  // Searching state: Display the query being searched.
+  if (progress.status === "searching") {
     return (
-      <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">Searching</p>
-        <div className="space-y-1">
-          <SearchQueryPill query={progress.query || ''} />
-        </div>
-      </div>
+      <ToolCard
+        icon={Search}
+        tone="info"
+        loading
+        title="Searching the web"
+        subtitle="Looking for relevant sources…"
+      >
+        {progress.query ? (
+          <ToolCardBody>
+            <SearchQueryPill query={progress.query} active />
+          </ToolCardBody>
+        ) : null}
+      </ToolCard>
     );
   }
 
-  // Reviewing state: Display query pill AND list of sources being reviewed
-  if (progress.status === 'reviewing') {
+  // Reviewing state: Display query pill AND list of sources being reviewed.
+  if (progress.status === "reviewing") {
     const searchResults = progress.searchResults || [];
 
     return (
-      <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">Searching</p>
-        <div className="space-y-1">
-          <SearchQueryPill query={progress.query || ''} />
-        </div>
-        
-        <p className="text-sm text-muted-foreground">
-          Reviewing sources · {searchResults.length}
-        </p>
-        
-        <div className="border border-border dark:border-zinc-800 rounded-lg overflow-hidden bg-card">
-          {searchResults.map((item, index) => (
-            <SearchResultItem 
-              key={index} 
-              result={item}
-            />
-          ))}
-        </div>
-      </div>
+      <ToolCard
+        icon={Globe}
+        tone="info"
+        loading
+        title="Reviewing sources"
+        subtitle={`${searchResults.length} ${searchResults.length === 1 ? "source" : "sources"} found`}
+        trailing={
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+            {searchResults.length}
+          </span>
+        }
+      >
+        <ToolCardBody className="space-y-3">
+          {progress.query ? (
+            <SearchQueryPill query={progress.query} active />
+          ) : null}
+          <div className="space-y-0.5">
+            {searchResults.map((item, index) => (
+              <SearchResultItem key={index} result={item} />
+            ))}
+          </div>
+        </ToolCardBody>
+      </ToolCard>
     );
   }
 
-  // Streaming state: Display accumulated content as it streams
-  if (progress.status === 'streaming') {
+  // Streaming state: Display accumulated content as it streams.
+  if (progress.status === "streaming") {
     return (
-      <div className="flex flex-col gap-3 py-3 px-4 bg-primary/5 rounded-lg border">
-        <div className="flex items-center gap-2">
-          <Loader className="h-4 w-4 animate-spin text-primary" />
-          <span className="text-sm font-medium">{progress.message}</span>
-        </div>
-        {progress.accumulatedContent && (
-          <Response className="w-full">{progress.accumulatedContent}</Response>
-        )}
-      </div>
+      <ToolCard
+        icon={Sparkles}
+        tone="info"
+        loading
+        title="Synthesizing answer"
+        subtitle={progress.message || "Writing a response from your sources…"}
+      >
+        {progress.accumulatedContent ? (
+          <ToolCardBody>
+            <Response className="w-full">
+              {progress.accumulatedContent}
+            </Response>
+          </ToolCardBody>
+        ) : null}
+      </ToolCard>
     );
   }
 
-  // Complete state: Don't show anything (final result handled by SearchWebResult)
-  if (progress.status === 'complete') {
+  // Complete state: Don't show anything (final result handled by SearchWebResult).
+  if (progress.status === "complete") {
     return null;
   }
 
-  // Fallback for unknown status
+  // Fallback for unknown status.
   return null;
 };
 
 export default SearchWebProgress;
-

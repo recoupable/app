@@ -1,31 +1,46 @@
-import { Loader } from "lucide-react";
+"use client";
+
+import { motion } from "framer-motion";
+import { Users } from "lucide-react";
 
 const GetArtistSocialsSkeleton = ({ title }: { title?: string }) => {
   return (
-    <div className="flex flex-col gap-4 p-4 border border-border rounded-lg animate-pulse bg-card">
-      <div className="flex items-center gap-2">
-        <Loader className="h-5 w-5 animate-spin text-primary dark:text-white" />
-        <h3 className="font-medium text-sm md:text-base dark:text-white">
-          {title ?? "Getting Artist Socials..."}
-        </h3>
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.28 }}
+      className="w-full max-w-xl overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+    >
+      <div className="flex items-center gap-3 px-4 py-3">
+        <div className="flex size-9 shrink-0 animate-pulse items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400">
+          <Users className="size-[18px] opacity-60" />
+        </div>
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <span className="text-sm font-medium text-muted-foreground">
+            {title ?? "Getting artist socials…"}
+          </span>
+          <div className="h-3 w-24 animate-pulse rounded-md bg-muted/70" />
+        </div>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <h4 className="text-sm font-medium dark:text-white">Artist Socials</h4>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+      <div className="border-t border-border/60 p-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {[...Array(4)].map((_, i) => (
             <div
               key={i}
-              className="flex flex-col items-center p-3 border border-border rounded-lg"
+              className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3"
             >
-              <div className="w-12 h-12 mb-2 bg-muted rounded-md"></div>
-              <div className="h-4 w-16 bg-muted rounded mb-1"></div>
-              <div className="h-3 w-12 bg-muted rounded"></div>
+              <div className="flex items-center gap-2">
+                <div className="size-7 shrink-0 animate-pulse rounded-lg bg-muted" />
+                <div className="h-3.5 w-16 animate-pulse rounded-md bg-muted" />
+              </div>
+              <div className="h-3 w-20 animate-pulse rounded-md bg-muted/70" />
+              <div className="h-3 w-12 animate-pulse rounded-md bg-muted/70" />
             </div>
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
