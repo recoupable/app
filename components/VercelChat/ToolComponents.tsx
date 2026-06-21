@@ -23,7 +23,6 @@ import UpdateArtistSocialsSuccess from "./tools/UpdateArtistSocialsSuccess";
 import { UpdateArtistSocialsResult } from "./tools/UpdateArtistSocialsSuccess";
 import { TxtFileResult } from "@/components/ui/TxtFileResult";
 import { TxtFileGenerationResult } from "@/components/ui/TxtFileResult";
-import { Loader } from "lucide-react";
 import GenericSuccess from "./tools/GenericSuccess";
 import getToolInfo from "@/lib/utils/getToolsInfo";
 import { isSearchProgressUpdate } from "@/lib/search/searchProgressUtils";
@@ -82,10 +81,31 @@ import GetChatsResult, {
 } from "./tools/chats/GetChatsResult";
 import RunPageSkeleton from "@/components/TasksPage/Run/RunPageSkeleton";
 import RunSandboxCommandResultWithPolling from "./tools/sandbox/RunSandboxCommandResultWithPolling";
+import ToolError from "./tools/shared/ToolError";
+import ToolStatusPill from "./tools/shared/ToolStatusPill";
 
 type CallToolResult = {
   content: TextContent[];
 };
+
+/**
+ * Unified error surface for any tool that resolves to `output-error`.
+ * Without this, failed tools fell through to the loading skeleton and
+ * appeared to hang forever.
+ */
+export function getToolErrorComponent(
+  part: ToolUIPart | DynamicToolUIPart,
+  onRetry?: () => void,
+) {
+  const { toolCallId } = part;
+  const toolName = getToolOrDynamicToolName(part);
+  const errorText = (part as { errorText?: string }).errorText;
+  return (
+    <div key={toolCallId}>
+      <ToolError title={toolName} message={errorText} onRetry={onRetry} />
+    </div>
+  );
+}
 
 export function getToolCallComponent(part: ToolUIPart) {
   const { toolCallId } = part as ToolUIPart;
@@ -210,12 +230,8 @@ export function getToolCallComponent(part: ToolUIPart) {
 
   // Default for other tools
   return (
-    <div
-      key={toolCallId}
-      className="flex items-center gap-1 py-1 px-2 bg-muted/50 rounded-sm border border-border w-fit text-xs text-muted-foreground"
-    >
-      <Loader className="h-3 w-3 animate-spin text-foreground" />
-      <span>Using {toolName}</span>
+    <div key={toolCallId}>
+      <ToolStatusPill label={getToolInfo(toolName).runningLabel} />
     </div>
   );
 }

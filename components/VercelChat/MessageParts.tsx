@@ -10,7 +10,11 @@ import { Dispatch, SetStateAction } from "react";
 import { cn } from "@/lib/utils";
 import ViewingMessage from "./ViewingMessage";
 import EditingMessage from "./EditingMessage";
-import { getToolCallComponent, getToolResultComponent } from "./ToolComponents";
+import {
+  getToolCallComponent,
+  getToolResultComponent,
+  getToolErrorComponent,
+} from "./ToolComponents";
 import MessageFileViewer from "./message-file-viewer";
 import { EnhancedReasoning } from "@/components/reasoning/EnhancedReasoning";
 import { Actions, Action } from "@/components/actions";
@@ -107,7 +111,9 @@ export function MessageParts({ message, mode, setMode }: MessagePartsProps) {
 
           if (isToolOrDynamicToolUIPart(part)) {
             const { state } = part as ToolUIPart;
-            if (state !== "output-available") {
+            if (state === "output-error") {
+              return getToolErrorComponent(part as ToolUIPart, () => reload());
+            } else if (state !== "output-available") {
               return getToolCallComponent(part as ToolUIPart);
             } else {
               return getToolResultComponent(part as ToolUIPart);
