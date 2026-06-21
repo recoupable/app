@@ -29,7 +29,11 @@ interface MessagePartsProps {
 }
 
 export function MessageParts({ message, mode, setMode }: MessagePartsProps) {
-  const { status, reload } = useVercelChatContext();
+  const { status, reload, messages } = useVercelChatContext();
+  // `reload()` regenerates the latest assistant turn, so a tool-error retry
+  // only makes sense on the most recent message — older historical tool
+  // failures would otherwise regenerate the wrong turn.
+  const isLatestMessage = messages[messages.length - 1]?.id === message.id;
   return (
     <div className={cn("flex flex-col gap-4 w-full group")}>
       {message.parts?.map(
@@ -112,7 +116,12 @@ export function MessageParts({ message, mode, setMode }: MessagePartsProps) {
           if (isToolOrDynamicToolUIPart(part)) {
             const { state } = part as ToolUIPart;
             if (state === "output-error") {
-              return getToolErrorComponent(part as ToolUIPart, () => reload());
+              return getToolErrorComponent(
+                part as ToolUIPart,
+                isLatestMessage && status !== "streaming"
+                  ? () => reload()
+                  : undefined,
+              );
             } else if (state !== "output-available") {
               return getToolCallComponent(part as ToolUIPart);
             } else {
