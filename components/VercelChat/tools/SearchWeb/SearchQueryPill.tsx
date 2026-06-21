@@ -17,10 +17,12 @@ const SearchQueryPill: React.FC<SearchQueryPillProps> = ({
       <Search
         className={cn(
           "size-3.5 shrink-0 text-muted-foreground",
-          active && "animate-pulse text-blue-500",
+          active && "animate-pulse text-foreground",
         )}
       />
-      <span className="truncate">{query}</span>
+      <span className="truncate" title={query}>
+        {query}
+      </span>
     </div>
   );
 };

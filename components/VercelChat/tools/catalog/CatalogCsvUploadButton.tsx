@@ -1,3 +1,6 @@
+"use client";
+
+import { useId, useRef } from "react";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -15,22 +18,25 @@ export default function CatalogCsvUploadButton({
   onFileSelect,
   hasCatalogId = true,
 }: CatalogCsvUploadButtonProps) {
+  const inputId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
   return (
     <div className="rounded-xl border border-dashed border-border bg-muted/30 p-3">
-      <label htmlFor="csv-upload" className="block">
+      <label htmlFor={inputId} className="block">
         <Button
           type="button"
           variant="outline"
           size="sm"
           disabled={!hasCatalogId}
           className="w-full bg-card"
-          onClick={() => document.getElementById("csv-upload")?.click()}
+          onClick={() => inputRef.current?.click()}
         >
           <Upload className="mr-2 size-4" />
           Upload CSV File
         </Button>
         <input
-          id="csv-upload"
+          id={inputId}
+          ref={inputRef}
           type="file"
           accept=".csv"
           onChange={onFileSelect}

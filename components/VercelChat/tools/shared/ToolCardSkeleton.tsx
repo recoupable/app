@@ -20,6 +20,7 @@ export function ToolCardSkeleton({
   rows?: number;
   className?: string;
 }) {
+  const safeRows = Math.max(0, rows);
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -45,9 +46,9 @@ export function ToolCardSkeleton({
           <div className="h-3 w-20 animate-pulse rounded-md bg-muted/70" />
         </div>
       </div>
-      {rows > 0 ? (
+      {safeRows > 0 ? (
         <div className="space-y-2 border-t border-border/60 p-3">
-          {Array.from({ length: rows }).map((_, i) => (
+          {Array.from({ length: safeRows }).map((_, i) => (
             <div key={i} className="flex items-center gap-3">
               <div className="size-8 shrink-0 animate-pulse rounded-lg bg-muted" />
               <div className="flex-1 space-y-1.5">

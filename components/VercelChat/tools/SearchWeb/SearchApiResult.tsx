@@ -51,8 +51,8 @@ const SearchApiResult = ({ result }: { result: SearchApiResultType }) => {
     >
       {hasResults ? (
         <div className="space-y-0.5 p-2">
-          {searchResults.map((item, index) => (
-            <SearchResultItem key={index} result={item} />
+          {searchResults.map((item) => (
+            <SearchResultItem key={item.url} result={item} />
           ))}
         </div>
       ) : (

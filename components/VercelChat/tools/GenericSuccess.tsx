@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 import { ToolCard } from "./shared/ToolCard";
-import { humanizeToolName } from "@/lib/utils/humanizeToolName";
+import { humanizeToolName } from "@/lib/tools/humanizeToolName";
 
 /**
  * Default success surface for tools without a bespoke result component.

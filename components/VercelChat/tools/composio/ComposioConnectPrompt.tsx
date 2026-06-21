@@ -23,6 +23,15 @@ function resolveIcon(connector: string): LucideIcon {
   return Link2;
 }
 
+/** Only allow https redirect targets; otherwise return "#" as a safe no-op. */
+function toSafeRedirect(redirectUrl: string): string {
+  try {
+    return new URL(redirectUrl).protocol === "https:" ? redirectUrl : "#";
+  } catch {
+    return "#";
+  }
+}
+
 /**
  * Component shown when a connector needs to be connected.
  */
@@ -32,6 +41,8 @@ export function ComposioConnectPrompt({
   connector,
 }: ComposioConnectPromptProps) {
   const Icon = resolveIcon(connector);
+  const safeRedirect = toSafeRedirect(redirectUrl);
+  const isUnsafe = safeRedirect === "#";
 
   return (
     <ToolCard
@@ -48,7 +59,8 @@ export function ComposioConnectPrompt({
         </p>
 
         <a
-          href={redirectUrl}
+          href={safeRedirect}
+          aria-disabled={isUnsafe || undefined}
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
         >
           <Icon className="size-4" />

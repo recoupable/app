@@ -28,11 +28,19 @@ const PLATFORM_ICONS: Record<string, LucideIcon> = {
 
 /** Compact follower-count formatter (1.2K / 3.4M). */
 function formatCount(value: number): string {
-  if (value >= 1_000_000)
+  // Round up to "M" near the boundary so e.g. 999_950 renders "1M" not "1000.0K".
+  if (value >= 999_950)
     return `${(value / 1_000_000).toFixed(value % 1_000_000 === 0 ? 0 : 1)}M`;
   if (value >= 1_000)
     return `${(value / 1_000).toFixed(value % 1_000 === 0 ? 0 : 1)}K`;
   return `${value}`;
+}
+
+/** Ensure the profile URL has a protocol before using it as an href. */
+function toSocialHref(profileUrl: string): string {
+  if (profileUrl.startsWith("http://") || profileUrl.startsWith("https://"))
+    return profileUrl;
+  return `https://${profileUrl}`;
 }
 
 export const ArtistSocial = ({ social }: { social: SocialType }) => {
@@ -51,7 +59,7 @@ export const ArtistSocial = ({ social }: { social: SocialType }) => {
   return (
     <Link
       key={social.id}
-      href={`https://${social.profile_url}`}
+      href={toSocialHref(social.profile_url)}
       target="_blank"
       rel="noopener noreferrer"
       className={cn(

@@ -50,7 +50,7 @@ export default function InsertCatalogSongsStatus({
             : "text-foreground",
         )}
         title={
-          (isError ? errorMessage : successMessage) ?? undefined
+          (isError ? errorMessage : successMessage) || undefined
         }
       >
         {isError

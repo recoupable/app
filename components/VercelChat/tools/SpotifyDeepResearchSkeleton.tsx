@@ -15,7 +15,7 @@ export default function SpotifyDeepResearchSkeleton() {
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="flex flex-col gap-2 rounded-xl border border-border p-4"
+              className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3"
             >
               <div className="h-4 w-16 animate-pulse rounded bg-muted" />
               <div className="h-3 w-12 animate-pulse rounded bg-muted/70" />

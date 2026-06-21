@@ -24,7 +24,7 @@ import { UpdateArtistSocialsResult } from "./tools/UpdateArtistSocialsSuccess";
 import { TxtFileResult } from "@/components/ui/TxtFileResult";
 import { TxtFileGenerationResult } from "@/components/ui/TxtFileResult";
 import GenericSuccess from "./tools/GenericSuccess";
-import getToolInfo from "@/lib/utils/getToolsInfo";
+import getToolInfo from "@/lib/tools/getToolInfo";
 import { isSearchProgressUpdate } from "@/lib/search/searchProgressUtils";
 import YouTubeRevenueResult, {
   type YouTubeRevenueResult as YouTubeRevenueResultType,

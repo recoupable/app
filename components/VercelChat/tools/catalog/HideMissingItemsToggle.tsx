@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Filter } from "lucide-react";
@@ -13,6 +14,7 @@ export default function HideMissingItemsToggle({
   checked,
   onCheckedChange,
 }: HideMissingItemsToggleProps) {
+  const toggleId = useId();
   return (
     <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 px-3 py-2">
       <div className="flex min-w-0 items-center gap-2">
@@ -23,13 +25,13 @@ export default function HideMissingItemsToggle({
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <Label
-          htmlFor="hide-incomplete"
+          htmlFor={toggleId}
           className="cursor-pointer text-xs text-foreground"
         >
           Hide incomplete
         </Label>
         <Switch
-          id="hide-incomplete"
+          id={toggleId}
           checked={checked}
           onCheckedChange={onCheckedChange}
         />

@@ -47,9 +47,10 @@ const GetSpotifyArtistAlbumsResult: React.FC<{
             // Surface the release year as the card subtitle (in place of artist).
             const displayAlbum = {
               ...album,
-              artists: releaseYear
-                ? [{ ...album.artists[0], name: releaseYear.toString() }]
-                : album.artists,
+              artists:
+                releaseYear && album.artists.length > 0
+                  ? [{ ...album.artists[0], name: releaseYear.toString() }]
+                  : album.artists,
             };
 
             return (

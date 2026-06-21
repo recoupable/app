@@ -18,13 +18,14 @@ function formatDate(value?: string): string | null {
     year: "numeric",
     month: "short",
     day: "numeric",
+    timeZone: "UTC",
   });
 }
 
 const SearchResultItem: React.FC<SearchResultItemProps> = ({ result }) => {
   const domain = getDomain(result.url);
   const faviconUrl = getFaviconUrl(domain);
-  const date = formatDate(result.date ?? result.last_updated);
+  const date = formatDate(result.date) ?? formatDate(result.last_updated);
 
   return (
     <a

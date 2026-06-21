@@ -1,5 +1,6 @@
 import { FileMusic } from "lucide-react";
 import { CatalogSongsResponse } from "@/lib/catalog/getCatalogSongs";
+import { formatArtists } from "@/lib/catalog/formatArtists";
 import CatalogSongRow from "./CatalogSongRow";
 import ToolEmpty from "../shared/ToolEmpty";
 
@@ -29,8 +30,11 @@ export default function InsertCatalogSongsList({
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card">
       <ul className="divide-y divide-border/60 p-1.5">
-        {songs.map((song, index) => (
-          <CatalogSongRow key={song.isrc || index} song={song} />
+        {songs.map((song) => (
+          <CatalogSongRow
+            key={song.isrc || `${song.name}-${formatArtists(song.artists)}`}
+            song={song}
+          />
         ))}
       </ul>
       <div className="border-t border-border/60 px-3 py-2 text-xs text-muted-foreground">

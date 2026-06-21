@@ -110,52 +110,55 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, isDeleted, ownerEmail }) => {
       </div>
 
       <div className="relative flex shrink-0 items-center justify-end gap-1">
-        {/* Hover actions */}
-        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-          <button
-            type="button"
-            aria-label="Edit task"
-            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <Edit className="size-4" />
-          </button>
-          <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                aria-label="Task options"
-                className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                onClick={(e) => e.stopPropagation()} // Prevent opening the edit dialog
-              >
-                <MoreHorizontal className="size-4" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-32">
-              <DropdownMenuItem
-                className="flex items-center gap-2"
-                onClick={handlePause}
-                disabled={isUpdating || isDeleting}
-              >
-                <Pause className="h-4 w-4" />
-                <span>{isUpdating ? "Pausing..." : "Pause"}</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="flex items-center gap-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
-                onClick={handleDelete}
-                disabled={isUpdating || isDeleting}
-              >
-                <Trash2 className="h-4 w-4" />
-                <span>{isDeleting ? "Deleting..." : "Delete"}</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        {/* Hover actions — only for non-deleted tasks */}
+        {!isDeleted && (
+          <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+            <button
+              type="button"
+              aria-label="Edit task"
+              className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <Edit className="size-4" />
+            </button>
+            <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Task options"
+                  className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  onClick={(e) => e.stopPropagation()} // Prevent opening the edit dialog
+                >
+                  <MoreHorizontal className="size-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-32">
+                <DropdownMenuItem
+                  className="flex items-center gap-2"
+                  onClick={handlePause}
+                  disabled={isUpdating || isDeleting}
+                >
+                  <Pause className="h-4 w-4" />
+                  <span>{isUpdating ? "Pausing..." : "Pause"}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="flex items-center gap-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                  onClick={handleDelete}
+                  disabled={isUpdating || isDeleting}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>{isDeleting ? "Deleting..." : "Delete"}</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
 
-        {/* Status pill — hidden on hover to reveal actions */}
+        {/* Status pill — hidden on hover to reveal actions (deleted keeps showing) */}
         {statusLabel && (
           <span
             className={cn(
-              "rounded-full border px-2 py-0.5 text-xs font-medium group-hover:hidden",
+              "rounded-full border px-2 py-0.5 text-xs font-medium",
+              !isDeleted && "group-hover:hidden",
               statusClasses,
             )}
           >

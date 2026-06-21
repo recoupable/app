@@ -5,6 +5,7 @@ import { Terminal } from "lucide-react";
 import { useTaskRunStatus } from "@/hooks/useTaskRunStatus";
 import RunDetails from "@/components/TasksPage/Run/RunDetails";
 import { toolCardMotion } from "../shared/toolCardTokens";
+import ToolError from "../shared/ToolError";
 
 /**
  * Terminal-style loading frame shown while the sandbox run is polling.
@@ -55,8 +56,19 @@ export default function RunSandboxCommandResultWithPolling({
 }) {
   const { data, isLoading } = useTaskRunStatus(runId);
 
-  if (isLoading || !data) {
+  if (isLoading) {
     return <SandboxRunningSkeleton />;
+  }
+
+  // Polling finished but no run data is available — surface an error instead of
+  // spinning the skeleton forever.
+  if (!data) {
+    return (
+      <ToolError
+        title="Sandbox"
+        message="We couldn't load the sandbox run results. Please try again."
+      />
+    );
   }
 
   return <RunDetails runId={runId} data={data} />;

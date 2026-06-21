@@ -32,6 +32,15 @@ function formatBytes(bytes: number): string {
 }
 
 /**
+ * Only allow app-relative ("/...") or https URLs to be used as link targets.
+ */
+function toSafeHref(path?: string): string | null {
+  if (!path) return null;
+  if (path.startsWith("/") || path.startsWith("https://")) return path;
+  return null;
+}
+
+/**
  * Component to display update_file tool results
  * Automatically invalidates the file content cache to refresh the UI
  */
@@ -58,6 +67,7 @@ export function UpdateFileResult({ result }: UpdateFileResultProps) {
   }
 
   const fileName = result.fileName?.trim();
+  const safeHref = toSafeHref(result.path);
   const meta: string[] = [];
   if (result.verified) meta.push("Verified");
   if (result.sizeBytes !== undefined) meta.push(formatBytes(result.sizeBytes));
@@ -76,10 +86,10 @@ export function UpdateFileResult({ result }: UpdateFileResultProps) {
         </span>
       }
     >
-      {result.path ? (
+      {safeHref ? (
         <ToolCardBody>
           <Link
-            href={result.path}
+            href={safeHref}
             target="_blank"
             rel="noopener noreferrer"
             className="block"

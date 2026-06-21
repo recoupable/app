@@ -44,7 +44,16 @@ const UpdateArtistInfoSuccess: React.FC<UpdateArtistInfoSuccessProps> = ({
   }
 
   const knowledges = Array.isArray(artistProfile.knowledges)
-    ? (artistProfile.knowledges as unknown as Knowledge[])
+    ? artistProfile.knowledges.filter(
+        (item): item is Knowledge =>
+          Boolean(
+            item &&
+              typeof item === "object" &&
+              "url" in item &&
+              "name" in item &&
+              "type" in item,
+          ),
+      )
     : [];
 
   const avatar = artistProfile.image ? (

@@ -55,14 +55,10 @@ const GetSpotifyAlbumWithTracksResult: React.FC<
       {/* Track Listing */}
       <div className="border-t border-border/60 p-2 sm:p-3">
         <div className="space-y-0.5">
-          {tracks.map((track) => (
-            <Link
-              href={track.external_urls.spotify}
-              key={track.id}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block"
-            >
+          {tracks.map((track) => {
+            const spotifyUrl = track.external_urls?.spotify;
+
+            const rowContent = (
               <div className="group flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted/60 sm:px-3">
                 {/* Track Number / Play */}
                 <div className="w-5 text-center">
@@ -95,14 +91,30 @@ const GetSpotifyAlbumWithTracksResult: React.FC<
                 </div>
 
                 {/* External link affordance */}
-                {track.external_urls?.spotify && (
+                {spotifyUrl && (
                   <div className="hidden text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 sm:block">
                     <ExternalLink className="size-3.5" />
                   </div>
                 )}
               </div>
-            </Link>
-          ))}
+            );
+
+            return spotifyUrl ? (
+              <Link
+                href={spotifyUrl}
+                key={track.id}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+              >
+                {rowContent}
+              </Link>
+            ) : (
+              <div key={track.id} className="block">
+                {rowContent}
+              </div>
+            );
+          })}
         </div>
       </div>
     </motion.div>

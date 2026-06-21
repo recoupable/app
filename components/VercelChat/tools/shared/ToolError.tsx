@@ -3,7 +3,7 @@
 import { AlertTriangle, RefreshCcw } from "lucide-react";
 import { ToolCard, ToolCardBody } from "./ToolCard";
 import { cn } from "@/lib/utils";
-import { humanizeToolName } from "@/lib/utils/humanizeToolName";
+import { humanizeToolName } from "@/lib/tools/humanizeToolName";
 
 /**
  * Unified error state for any chat tool response.

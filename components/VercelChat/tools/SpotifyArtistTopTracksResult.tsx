@@ -33,7 +33,7 @@ const SpotifyArtistTopTracksResult = ({
       icon={TrendingUp}
       tone="success"
       title="Top tracks"
-      subtitle={`${tracks.length} most popular`}
+      subtitle={`${tracks.length} popular track${tracks.length === 1 ? "" : "s"}`}
     >
       <ToolCardBody>
         <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-4">
