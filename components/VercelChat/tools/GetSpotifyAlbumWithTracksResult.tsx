@@ -8,7 +8,7 @@ import { formatDuration } from "@/lib/spotify/formatDuration";
 import Link from "next/link";
 import SpotifyAlbumWithTracksHero from "./SpotifyAlbumWithTracksHero";
 import { toolCardMotion } from "./shared/toolCardTokens";
-import { ToolCard, ToolCardBody } from "./shared/ToolCard";
+import { ToolCard } from "./shared/ToolCard";
 import ToolEmpty from "./shared/ToolEmpty";
 
 interface GetSpotifyAlbumWithTracksResultProps {
