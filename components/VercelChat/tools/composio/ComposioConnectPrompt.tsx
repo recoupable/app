@@ -8,6 +8,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { ToolCard, ToolCardBody } from "../shared/ToolCard";
+import { cn } from "@/lib/utils";
 
 interface ComposioConnectPromptProps {
   displayName: string;
@@ -61,7 +62,13 @@ export function ComposioConnectPrompt({
         <a
           href={safeRedirect}
           aria-disabled={isUnsafe || undefined}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
+          // aria-disabled alone doesn't block navigation; also prevent the
+          // click and pointer interaction when the redirect URL isn't safe.
+          onClick={isUnsafe ? (e) => e.preventDefault() : undefined}
+          className={cn(
+            "inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40",
+            isUnsafe && "pointer-events-none opacity-60",
+          )}
         >
           <Icon className="size-4" />
           <span>Connect {displayName}</span>

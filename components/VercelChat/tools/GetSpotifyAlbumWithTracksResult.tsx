@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Play, ExternalLink, Disc3, ListMusic } from "lucide-react";
 import { SpotifyAlbum } from "@/types/spotify";
 import { formatDuration } from "@/lib/spotify/formatDuration";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import SpotifyAlbumWithTracksHero from "./SpotifyAlbumWithTracksHero";
 import { toolCardMotion } from "./shared/toolCardTokens";
@@ -59,7 +60,12 @@ const GetSpotifyAlbumWithTracksResult: React.FC<
             const spotifyUrl = track.external_urls?.spotify;
 
             const rowContent = (
-              <div className="group flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted/60 sm:px-3">
+              <div
+                className={cn(
+                  "group flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted/60 sm:px-3",
+                  spotifyUrl && "cursor-pointer",
+                )}
+              >
                 {/* Track Number / Play */}
                 <div className="w-5 text-center">
                   <span className="text-xs text-muted-foreground group-hover:hidden">
