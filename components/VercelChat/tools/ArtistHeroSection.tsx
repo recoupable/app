@@ -1,47 +1,9 @@
 "use client";
 
-import React from "react";
 import { CheckCircle2, Calendar, Tag, User } from "lucide-react";
 import { formatDate } from "date-fns";
 import { ArtistProfile } from "@/lib/supabase/artist/updateArtistProfile";
-
-/**
- * Avatar with a fade-in load + graceful icon fallback. Its load/error state is
- * owned locally, and the parent remounts it via a `key={imageUrl}` so a new
- * avatar starts fresh — no useEffect reset, no stale-state flicker between URLs.
- */
-const ArtistAvatar = ({ imageUrl, name }: { imageUrl: string; name: string }) => {
-  const [imgLoaded, setImgLoaded] = React.useState(false);
-  const [imgErrored, setImgErrored] = React.useState(false);
-
-  if (imgErrored) {
-    return (
-      <div className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground shadow-sm">
-        <User className="size-6 opacity-60" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-muted shadow-sm">
-      {!imgLoaded ? (
-        <div className="absolute inset-0 flex animate-pulse items-center justify-center bg-muted text-muted-foreground">
-          <User className="size-6 opacity-50" />
-        </div>
-      ) : null}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={imageUrl}
-        alt={name}
-        className={`size-full object-cover transition-opacity duration-300 ${
-          imgLoaded ? "opacity-100" : "opacity-0"
-        }`}
-        onLoad={() => setImgLoaded(true)}
-        onError={() => setImgErrored(true)}
-      />
-    </div>
-  );
-};
+import ArtistAvatar from "./ArtistAvatar";
 
 /**
  * Compact, token-safe artist identity header used inside success tool cards.
