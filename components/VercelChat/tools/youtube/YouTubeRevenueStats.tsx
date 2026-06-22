@@ -105,7 +105,9 @@ export default function YouTubeRevenueStats({
         <p className="mt-1.5 text-2xl font-semibold tabular-nums text-foreground">
           <CountUpCurrency value={revenueData.totalRevenue} />
         </p>
-        <p className="mt-0.5 text-xs text-muted-foreground">Past 30 days</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          Past {days.length} {days.length === 1 ? "day" : "days"}
+        </p>
       </div>
 
       {/* Best day */}

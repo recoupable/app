@@ -85,7 +85,9 @@ export default function CatalogSongsResult({
         />
       )}
 
-      {isSuccess && (
+      {/* Render the songs pane whenever there's no error so the list's own
+          empty-state shows on a successful response with zero songs. */}
+      {!hasError && (
         <div className="max-h-[60vh] overflow-y-auto">
           <InsertCatalogSongsList
             songs={filteredSongs}

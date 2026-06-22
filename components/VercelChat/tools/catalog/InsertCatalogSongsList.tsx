@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { FileMusic } from "lucide-react";
 import { CatalogSongsResponse } from "@/lib/catalog/getCatalogSongs";
 import { formatArtists } from "@/lib/catalog/formatArtists";
@@ -24,6 +24,7 @@ export default function InsertCatalogSongsList({
   songs,
   totalCount,
 }: InsertCatalogSongsListProps) {
+  const reduce = useReducedMotion();
   if (!songs || songs.length === 0) {
     return (
       <div className="rounded-2xl border border-border bg-card">
@@ -48,18 +49,18 @@ export default function InsertCatalogSongsList({
     <div className="overflow-hidden rounded-2xl border border-border bg-card">
       <ul className="divide-y divide-border/60 p-1.5">
         {songs.map((song, index) => (
-          <motion.div
+          <motion.li
             key={song.isrc || `${song.name}-${formatArtists(song.artists)}`}
-            initial={{ opacity: 0, y: 4 }}
+            initial={reduce ? false : { opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
-              duration: 0.22,
-              delay: Math.min(index, STAGGER_CAP) * 0.03,
+              duration: reduce ? 0 : 0.22,
+              delay: reduce ? 0 : Math.min(index, STAGGER_CAP) * 0.03,
               ease: [0.22, 1, 0.36, 1],
             }}
           >
             <CatalogSongRow song={song} />
-          </motion.div>
+          </motion.li>
         ))}
       </ul>
       <div className="border-t border-border/60 px-3 py-2 text-xs tabular-nums text-muted-foreground">

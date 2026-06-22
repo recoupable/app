@@ -4,7 +4,7 @@ import { RetrieveVideoContentResult } from "@/components/VercelChat/types";
 import { Download, Video, Film, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ToolCard, ToolCardBody } from "../shared/ToolCard";
 import { ToolError } from "../shared/ToolError";
 import { ToolEmpty } from "../shared/ToolEmpty";
@@ -36,14 +36,22 @@ export function Sora2VideoResult({ result }: Sora2VideoResultProps) {
     );
   }
 
+  // Only treat the URL as safe for playback/download when it's an https URL or
+  // a same-origin relative path — never a javascript:/data: scheme.
+  const safeVideoUrl =
+    typeof result.videoUrl === "string" &&
+    (result.videoUrl.startsWith("https://") || result.videoUrl.startsWith("/"))
+      ? result.videoUrl
+      : null;
+
   const handleDownload = () => {
-    if (!result.videoUrl) {
+    if (!safeVideoUrl) {
       return;
     }
 
     try {
       const link = document.createElement("a");
-      link.href = result.videoUrl;
+      link.href = safeVideoUrl;
       link.download = `sora-video-${result.video_id}.mp4`;
       document.body.appendChild(link);
       link.click();
@@ -66,7 +74,7 @@ export function Sora2VideoResult({ result }: Sora2VideoResultProps) {
       title="Video generated"
       subtitle={result.sizeInMB ? `${result.sizeInMB} • Sora 2` : "Sora 2"}
       trailing={
-        result.videoUrl ? (
+        safeVideoUrl ? (
           <Button
             onClick={handleDownload}
             variant="outline"
@@ -80,7 +88,7 @@ export function Sora2VideoResult({ result }: Sora2VideoResultProps) {
       }
     >
       <ToolCardBody>
-        {result.videoUrl ? (
+        {safeVideoUrl ? (
           videoError ? (
             <div className="flex aspect-video w-full items-center justify-center rounded-xl border border-border bg-muted p-4 text-center">
               <p className="text-sm text-muted-foreground">{videoError}</p>
@@ -91,7 +99,7 @@ export function Sora2VideoResult({ result }: Sora2VideoResultProps) {
                 ref={videoRef}
                 controls
                 className="h-full w-full object-contain"
-                src={result.videoUrl}
+                src={safeVideoUrl}
                 onError={handleVideoError}
                 onCanPlay={() => setCanPlay(true)}
                 preload="metadata"
@@ -103,35 +111,37 @@ export function Sora2VideoResult({ result }: Sora2VideoResultProps) {
               </motion.video>
 
               {/* Poster scrim + play affordance shown before the first play */}
-              {!started && (
-                <motion.button
-                  type="button"
-                  onClick={handlePlayOverlay}
-                  aria-label="Play video"
-                  className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-t from-black/40 via-transparent to-black/10"
-                  initial={false}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  whileHover={reduceMotion ? undefined : { scale: 1.0 }}
-                >
-                  <motion.span
-                    className="flex size-14 items-center justify-center rounded-full bg-background/70 text-foreground shadow-lg backdrop-blur-sm transition-colors group-hover:bg-background/85"
+              <AnimatePresence>
+                {!started && (
+                  <motion.button
+                    type="button"
+                    onClick={handlePlayOverlay}
+                    aria-label="Play video"
+                    className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-t from-black/40 via-transparent to-black/10"
                     initial={false}
-                    animate={
-                      reduceMotion || canPlay
-                        ? { scale: 1 }
-                        : { scale: [1, 1.08, 1] }
-                    }
-                    transition={{
-                      duration: 1.8,
-                      ease: "easeInOut",
-                      repeat: canPlay ? 0 : Infinity,
-                    }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    whileHover={reduceMotion ? undefined : { scale: 1.0 }}
                   >
-                    <Play className="size-6 translate-x-0.5" />
-                  </motion.span>
-                </motion.button>
-              )}
+                    <motion.span
+                      className="flex size-14 items-center justify-center rounded-full bg-background/70 text-foreground shadow-lg backdrop-blur-sm transition-colors group-hover:bg-background/85"
+                      initial={false}
+                      animate={
+                        reduceMotion || canPlay
+                          ? { scale: 1 }
+                          : { scale: [1, 1.08, 1] }
+                      }
+                      transition={{
+                        duration: 1.8,
+                        ease: "easeInOut",
+                        repeat: canPlay ? 0 : Infinity,
+                      }}
+                    >
+                      <Play className="size-6 translate-x-0.5" />
+                    </motion.span>
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </div>
           )
         ) : (

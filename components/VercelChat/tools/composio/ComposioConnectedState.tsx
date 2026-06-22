@@ -13,10 +13,12 @@ import { ToolCard, ToolCardBody } from "../shared/ToolCard";
 
 interface ComposioConnectedStateProps {
   displayName: string;
+  /** Stable connector slug (e.g. "googlesheets"); preferred over displayName for icon resolution. */
+  connector?: string;
 }
 
-function resolveProviderIcon(name: string): LucideIcon {
-  const key = name.toLowerCase();
+function resolveProviderIcon(value: string): LucideIcon {
+  const key = value.toLowerCase();
   if (key.includes("sheet")) return FileSpreadsheet;
   if (key.includes("drive")) return HardDrive;
   if (key.includes("doc")) return FileText;
@@ -28,9 +30,11 @@ function resolveProviderIcon(name: string): LucideIcon {
  */
 export function ComposioConnectedState({
   displayName,
+  connector,
 }: ComposioConnectedStateProps) {
   const reduceMotion = useReducedMotion();
-  const ProviderIcon = resolveProviderIcon(displayName);
+  // Prefer the stable connector slug; fall back to the human display name.
+  const ProviderIcon = resolveProviderIcon(connector ?? displayName);
 
   return (
     <ToolCard

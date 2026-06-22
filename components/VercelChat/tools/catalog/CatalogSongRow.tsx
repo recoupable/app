@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronDown, Disc3 } from "lucide-react";
 import { CatalogSongsResponse } from "@/lib/catalog/getCatalogSongs";
 import { formatArtists } from "@/lib/catalog/formatArtists";
@@ -31,6 +31,7 @@ const tintFor = (seed: string): string => {
 };
 
 const CatalogSongRow = ({ song }: CatalogSongRowProps) => {
+  const reduce = useReducedMotion();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const title = song.name?.trim() || "Untitled";
@@ -39,8 +40,7 @@ const CatalogSongRow = ({ song }: CatalogSongRowProps) => {
   const tint = tintFor(song.isrc || title || artists);
 
   return (
-    <li>
-      <ToolCardRow className="items-start">
+    <ToolCardRow className="items-start">
         {/* Artwork placeholder — songs table carries no cover art. */}
         <div
           className={cn(
@@ -96,10 +96,13 @@ const CatalogSongRow = ({ song }: CatalogSongRowProps) => {
             {hasNotes && isExpanded ? (
               <motion.div
                 key="notes"
-                initial={{ height: 0, opacity: 0 }}
+                initial={reduce ? false : { height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                exit={reduce ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                transition={{
+                  duration: reduce ? 0 : 0.22,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 className="overflow-hidden"
               >
                 <p className="mt-1.5 whitespace-pre-wrap rounded-lg bg-muted/60 px-2 py-1.5 text-xs text-muted-foreground">
@@ -110,7 +113,6 @@ const CatalogSongRow = ({ song }: CatalogSongRowProps) => {
           </AnimatePresence>
         </div>
       </ToolCardRow>
-    </li>
   );
 };
 

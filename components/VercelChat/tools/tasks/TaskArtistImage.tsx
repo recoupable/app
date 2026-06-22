@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Music2 } from "lucide-react";
 import useArtistImage from "@/hooks/useArtistImage";
 import { cn } from "@/lib/utils";
@@ -37,6 +37,13 @@ const TaskArtistImage: React.FC<TaskArtistImageProps> = ({
   const { imageUrl, artistName } = useArtistImage(artistAccountId);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+
+  // Reset transient load state so a later valid URL retries instead of staying
+  // stuck on a previous error/loaded result.
+  useEffect(() => {
+    setHasError(false);
+    setIsLoaded(false);
+  }, [imageUrl, artistAccountId]);
 
   const showImage = imageUrl && !hasError;
   const initials = initialsFor(artistName);

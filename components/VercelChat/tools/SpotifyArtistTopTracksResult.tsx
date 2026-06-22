@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { TrendingUp, Mic2 } from "lucide-react";
 import { SpotifyArtistTopTracksResultType } from "@/types/spotify";
 import SpotifyTrackCard from "./SpotifyTrackCard";
@@ -17,6 +17,7 @@ const SpotifyArtistTopTracksResult = ({
 }: {
   result: SpotifyArtistTopTracksResultType;
 }) => {
+  const reduce = useReducedMotion();
   const tracks = result.tracks ?? [];
 
   if (tracks.length === 0) {
@@ -45,9 +46,9 @@ const SpotifyArtistTopTracksResult = ({
     >
       <ToolCardBody>
         <motion.div
-          variants={gridStagger}
-          initial="hidden"
-          animate="show"
+          variants={reduce ? undefined : gridStagger}
+          initial={reduce ? false : "hidden"}
+          animate={reduce ? false : "show"}
           className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-4"
         >
           {tracks.map((track) => (

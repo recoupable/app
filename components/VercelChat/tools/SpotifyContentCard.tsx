@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Music, Play } from "lucide-react";
 import Link from "next/link";
 import { getSpotifyImage } from "@/lib/spotify/getSpotifyImage";
+import { isSafeSpotifyUrl } from "@/lib/spotify/isSafeSpotifyUrl";
 import {
   getSpotifySubtitle,
   type SpotifyContent,
@@ -53,7 +54,8 @@ const SpotifyContentCard = ({ content, subtitle }: SpotifyContentCardProps) => {
   const imageUrl = getSpotifyImage(content);
   const resolvedSubtitle = subtitle ?? getSpotifySubtitle(content);
   const spotifyUrl = content.external_urls?.spotify;
-  const hasValidUrl = Boolean(spotifyUrl && spotifyUrl !== "#");
+  const safeSpotifyUrl = isSafeSpotifyUrl(spotifyUrl) ? spotifyUrl : undefined;
+  const hasValidUrl = Boolean(safeSpotifyUrl);
   // Artists are circular on Spotify; everything else is a rounded square.
   const isArtist = content.type === "artist";
   // Tracks lead with a play verb; albums/artists open the page.
@@ -146,10 +148,10 @@ const SpotifyContentCard = ({ content, subtitle }: SpotifyContentCardProps) => {
     </motion.div>
   );
 
-  if (hasValidUrl) {
+  if (safeSpotifyUrl) {
     return (
       <Link
-        href={spotifyUrl}
+        href={safeSpotifyUrl}
         target="_blank"
         rel="noopener noreferrer"
         className="block h-full rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40"

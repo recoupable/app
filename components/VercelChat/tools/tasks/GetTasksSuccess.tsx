@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ListTodo } from "lucide-react";
 import { ScheduledAction } from "@/components/VercelChat/types";
 import { ToolCard } from "../shared/ToolCard";
@@ -17,6 +17,7 @@ export interface GetTasksSuccessProps {
 const STAGGER_CAP = 8;
 
 const GetTasksSuccess: React.FC<GetTasksSuccessProps> = ({ result: tasks }) => {
+  const reduce = useReducedMotion();
   const count = tasks?.length ?? 0;
   const isEmpty = count === 0;
 
@@ -45,11 +46,11 @@ const GetTasksSuccess: React.FC<GetTasksSuccessProps> = ({ result: tasks }) => {
           {tasks.map((task, index) => (
             <motion.div
               key={task.id}
-              initial={{ opacity: 0, y: 4 }}
+              initial={reduce ? false : { opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                duration: 0.24,
-                delay: Math.min(index, STAGGER_CAP) * 0.04,
+                duration: reduce ? 0 : 0.24,
+                delay: reduce ? 0 : Math.min(index, STAGGER_CAP) * 0.04,
                 ease: [0.22, 1, 0.36, 1],
               }}
             >

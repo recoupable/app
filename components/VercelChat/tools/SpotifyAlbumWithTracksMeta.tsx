@@ -2,6 +2,7 @@ import React from "react";
 import { Music } from "lucide-react";
 import { SpotifyAlbum } from "@/types/spotify";
 import { formatDuration } from "@/lib/spotify/formatDuration";
+import { isSafeSpotifyUrl } from "@/lib/spotify/isSafeSpotifyUrl";
 import Link from "next/link";
 
 interface SpotifyAlbumWithTracksMetaProps {
@@ -17,6 +18,7 @@ const SpotifyAlbumWithTracksMeta: React.FC<SpotifyAlbumWithTracksMetaProps> = ({
   totalDuration,
 }) => {
   const spotifyUrl = result.external_urls?.spotify;
+  const safeSpotifyUrl = isSafeSpotifyUrl(spotifyUrl) ? spotifyUrl : undefined;
   const releaseYear = result.release_date
     ? new Date(result.release_date).getFullYear()
     : null;
@@ -73,10 +75,10 @@ const SpotifyAlbumWithTracksMeta: React.FC<SpotifyAlbumWithTracksMetaProps> = ({
         </div>
       )}
 
-      {spotifyUrl && (
+      {safeSpotifyUrl && (
         <div className="mt-4 flex items-center gap-3">
           <Link
-            href={spotifyUrl}
+            href={safeSpotifyUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-black transition-transform hover:scale-[1.03] sm:px-6"

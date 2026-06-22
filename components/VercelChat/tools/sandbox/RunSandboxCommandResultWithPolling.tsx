@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Terminal } from "lucide-react";
 import { useTaskRunStatus } from "@/hooks/useTaskRunStatus";
 import RunDetails from "@/components/TasksPage/Run/RunDetails";
@@ -12,6 +12,7 @@ import { ToolError } from "../shared/ToolError";
  * Mirrors the resolved RunDetails layout to avoid a jarring transition.
  */
 function SandboxRunningSkeleton() {
+  const reduce = useReducedMotion();
   return (
     <motion.div
       initial={toolCardMotion.initial}
@@ -34,7 +35,7 @@ function SandboxRunningSkeleton() {
         <span className="flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
           <motion.span
             className="size-1.5 rounded-full bg-amber-500"
-            animate={{ opacity: [1, 0.3, 1] }}
+            animate={reduce ? undefined : { opacity: [1, 0.3, 1] }}
             transition={{ duration: 1.2, ease: "easeInOut", repeat: Infinity }}
           />
           In progress
@@ -44,13 +45,15 @@ function SandboxRunningSkeleton() {
       {/* Terminal-style output placeholder with a diagonal shimmer sweep */}
       <div className="border-t border-border/60 p-3">
         <div className="relative space-y-2 overflow-hidden rounded-xl border border-border bg-muted/40 p-3 font-mono">
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 -left-1/3 z-10 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-foreground/10 to-transparent"
-            initial={{ x: 0 }}
-            animate={{ x: ["0%", "450%"] }}
-            transition={{ duration: 1.6, ease: "easeInOut", repeat: Infinity }}
-          />
+          {reduce ? null : (
+            <motion.div
+              aria-hidden
+              className="pointer-events-none absolute inset-y-0 -left-1/3 z-10 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-foreground/10 to-transparent"
+              initial={{ x: 0 }}
+              animate={{ x: ["0%", "450%"] }}
+              transition={{ duration: 1.6, ease: "easeInOut", repeat: Infinity }}
+            />
+          )}
           <div className="h-3.5 w-3/4 rounded bg-muted" />
           <div className="h-3.5 w-1/2 rounded bg-muted" />
           <div className="h-3.5 w-2/3 rounded bg-muted" />

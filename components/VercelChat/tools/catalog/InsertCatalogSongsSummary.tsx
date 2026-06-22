@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { animate } from "framer-motion";
+import { motion, useTransform } from "framer-motion";
 import { CheckCircle2, Disc3, ListMusic } from "lucide-react";
 import { CatalogSongsResponse } from "@/lib/catalog/getCatalogSongs";
+import { useCountUp } from "../shared/useCountUp";
 import { cn } from "@/lib/utils";
 
 interface InsertCatalogSongsSummaryProps {
@@ -31,20 +31,6 @@ const TONES: Record<Tone, { chip: string; icon: string; value: string }> = {
   },
 };
 
-// Numbers that tick up feel earned.
-function useCountUp(target: number) {
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    const controls = animate(0, target, {
-      duration: 0.6,
-      ease: [0.22, 1, 0.36, 1],
-      onUpdate: (v) => setValue(Math.round(v)),
-    });
-    return () => controls.stop();
-  }, [target]);
-  return value;
-}
-
 function StatChip({
   icon: Icon,
   value,
@@ -57,6 +43,7 @@ function StatChip({
   tone: Tone;
 }) {
   const animated = useCountUp(value);
+  const formatted = useTransform(animated, (v) => v.toLocaleString());
   const t = TONES[tone];
   return (
     <div
@@ -74,14 +61,14 @@ function StatChip({
         <Icon className="size-[18px]" />
       </div>
       <div className="min-w-0">
-        <div
+        <motion.div
           className={cn(
             "text-lg font-semibold leading-none tabular-nums",
             t.value,
           )}
         >
-          {animated.toLocaleString()}
-        </div>
+          {formatted}
+        </motion.div>
         <div className="mt-1 truncate text-xs text-muted-foreground">
           {label}
         </div>

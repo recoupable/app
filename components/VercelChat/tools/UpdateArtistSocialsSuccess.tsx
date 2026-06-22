@@ -13,7 +13,7 @@ import { useEffect } from "react";
 import { ToolCard } from "./shared/ToolCard";
 import { ToolCardRow } from "./shared/ToolCard";
 import { ToolEmpty } from "./shared/ToolEmpty";
-import { getPlatformVisual } from "./ArtistSocial";
+import { getPlatformVisual } from "./platformVisual";
 import { cn } from "@/lib/utils";
 
 export interface UpdateArtistSocialsResult {

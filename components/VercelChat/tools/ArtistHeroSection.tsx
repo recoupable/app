@@ -18,11 +18,20 @@ const ArtistHeroSection = ({
   artistProfile: ArtistProfile;
   message?: string;
 }) => {
+  const imageUrl = artistProfile?.image;
   const [imgLoaded, setImgLoaded] = React.useState(false);
+  const [imgErrored, setImgErrored] = React.useState(false);
+
+  // Reset load/error state whenever the image URL changes so a new avatar
+  // re-runs the fade-in instead of inheriting the previous image's state.
+  React.useEffect(() => {
+    setImgLoaded(false);
+    setImgErrored(false);
+  }, [imageUrl]);
 
   return (
     <div className="flex items-center gap-4 p-4">
-      {artistProfile?.image ? (
+      {imageUrl && !imgErrored ? (
         <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-muted shadow-sm">
           {!imgLoaded ? (
             <div className="absolute inset-0 flex animate-pulse items-center justify-center bg-muted text-muted-foreground">
@@ -31,13 +40,13 @@ const ArtistHeroSection = ({
           ) : null}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={artistProfile.image}
+            src={imageUrl}
             alt={artistProfile?.name || "Artist"}
             className={`size-full object-cover transition-opacity duration-300 ${
               imgLoaded ? "opacity-100" : "opacity-0"
             }`}
             onLoad={() => setImgLoaded(true)}
-            onError={() => setImgLoaded(true)}
+            onError={() => setImgErrored(true)}
           />
         </div>
       ) : (

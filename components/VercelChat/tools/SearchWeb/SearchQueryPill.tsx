@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,9 +15,10 @@ const SearchQueryPill: React.FC<SearchQueryPillProps> = ({
   query,
   active = false,
 }) => {
+  const reduce = useReducedMotion();
   return (
     <div className="relative inline-flex max-w-full items-center gap-1.5 overflow-hidden rounded-full border border-border bg-muted/60 px-3 py-1 text-sm text-foreground">
-      {active ? (
+      {active && !reduce ? (
         <motion.span
           aria-hidden
           className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/2 bg-gradient-to-r from-transparent via-foreground/10 to-transparent"

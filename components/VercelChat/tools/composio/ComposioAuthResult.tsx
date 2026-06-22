@@ -55,7 +55,9 @@ export function ComposioAuthResult({ result }: ComposioAuthResultProps) {
   const displayName = formatConnectorName(connector);
 
   if (authResult.status?.toLowerCase() === "active") {
-    return <ComposioConnectedState displayName={displayName} />;
+    return (
+      <ComposioConnectedState displayName={displayName} connector={connector} />
+    );
   }
 
   // Initiated/pending status with a redirect → show the connect CTA.

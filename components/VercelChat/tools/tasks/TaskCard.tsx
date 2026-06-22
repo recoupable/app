@@ -162,7 +162,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, isDeleted, ownerEmail }) => {
       <div className="relative flex shrink-0 items-center justify-end gap-1">
         {/* Hover actions — never exposed on deleted tasks. */}
         {!isDeleted && (
-          <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
             <DropdownMenu
               open={isDropdownOpen}
               onOpenChange={setIsDropdownOpen}
@@ -171,7 +171,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, isDeleted, ownerEmail }) => {
                 <button
                   type="button"
                   aria-label="Task options"
-                  className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={(e) => e.stopPropagation()} // Prevent opening the edit dialog
                 >
                   <MoreHorizontal className="size-4" />

@@ -49,6 +49,7 @@ export function GenericToolCard({
   const info = getToolInfo(name);
   const inputSummary = summarizeToolInput(input);
   const outputText = loading ? null : toDisplayString(output);
+  const messageText = typeof message === "string" ? message.trim() : "";
 
   return (
     <ToolCard
@@ -56,7 +57,7 @@ export function GenericToolCard({
       tone={loading ? "neutral" : "success"}
       loading={loading}
       title={humanizeToolName(name)}
-      subtitle={message?.trim() || info.description}
+      subtitle={messageText || info.description}
       className="max-w-md"
       trailing={
         loading ? (

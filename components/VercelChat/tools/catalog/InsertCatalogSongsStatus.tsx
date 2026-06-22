@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +23,7 @@ export default function InsertCatalogSongsStatus({
   errorMessage,
   successMessage,
 }: InsertCatalogSongsStatusProps) {
+  const reduce = useReducedMotion();
   const isError = hasError;
 
   return (
@@ -36,9 +37,13 @@ export default function InsertCatalogSongsStatus({
     >
       <motion.div
         key={isError ? "error" : "success"}
-        initial={{ scale: 0.5, opacity: 0 }}
+        initial={reduce ? false : { scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 500, damping: 18 }}
+        transition={
+          reduce
+            ? { duration: 0 }
+            : { type: "spring", stiffness: 500, damping: 18 }
+        }
         className={cn(
           "flex size-5 shrink-0 items-center justify-center rounded-full",
           isError
