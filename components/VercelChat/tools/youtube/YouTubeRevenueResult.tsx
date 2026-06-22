@@ -1,7 +1,7 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { DollarSign, Calendar } from "lucide-react";
+import { DollarSign, Calendar, BarChart3 } from "lucide-react";
+import { ToolCard, ToolCardBody } from "../shared/ToolCard";
+import { ToolEmpty } from "../shared/ToolEmpty";
 import YouTubeRevenueError from "./YouTubeRevenueError";
 import YouTubeRevenueStats from "./YouTubeRevenueStats";
 import YouTubeRevenueDaily from "./YouTubeRevenueDaily";
@@ -42,73 +42,75 @@ export default function YouTubeRevenueResult({
     );
   }
 
-  // Handle successful revenue data
   const { revenueData } = result;
 
+  // No data returned
   if (!revenueData) {
     return (
-      <Card className="w-full max-w-2xl">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <DollarSign className="h-5 w-5" />
-            <span>YouTube Revenue Data</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            No revenue data available.
-          </p>
-        </CardContent>
-      </Card>
+      <ToolCard
+        icon={DollarSign}
+        tone="neutral"
+        title="YouTube revenue"
+        subtitle="Analytics"
+        className="max-w-2xl"
+      >
+        <ToolCardBody>
+          <ToolEmpty
+            icon={BarChart3}
+            title="No revenue data available"
+            description="There's nothing to report for this period yet."
+          />
+        </ToolCardBody>
+      </ToolCard>
     );
   }
 
   return (
-    <Card className="w-full max-w-4xl">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center space-x-2">
-            <DollarSign className="h-5 w-5" />
-            <span>YouTube Revenue Analytics</span>
-          </CardTitle>
-          <div className="flex items-center space-x-2">
-            <Badge variant={revenueData.isMonetized ? "default" : "secondary"}>
-              {revenueData.isMonetized ? "Monetized" : "Not Monetized"}
-            </Badge>
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-6">
-        {/* Summary Stats */}
+    <ToolCard
+      icon={DollarSign}
+      tone={revenueData.isMonetized ? "success" : "neutral"}
+      title="YouTube revenue"
+      subtitle="Analytics • estimated"
+      className="max-w-2xl"
+      trailing={
+        <span
+          className={
+            revenueData.isMonetized
+              ? "rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400"
+              : "rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
+          }
+        >
+          {revenueData.isMonetized ? "Monetized" : "Not monetized"}
+        </span>
+      }
+    >
+      <ToolCardBody className="space-y-5">
+        {/* Summary stats */}
         <YouTubeRevenueStats revenueData={revenueData} />
 
-        {/* Date Range */}
-        <div className="flex items-center justify-between text-sm text-muted-foreground border-t pt-4">
-          <div className="flex items-center space-x-1">
-            <Calendar className="h-4 w-4" />
-            <span>
-              {formatDate(revenueData.dateRange.startDate)} -{" "}
-              {formatDate(revenueData.dateRange.endDate)}
-            </span>
-          </div>
-          <span className="text-xs">
-            Channel ID: {revenueData.channelId.slice(0, 8)}...
+        {/* Date range */}
+        <div className="flex items-center justify-between border-t border-border/60 pt-3 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <Calendar className="size-3.5" />
+            {formatDate(revenueData.dateRange.startDate)} –{" "}
+            {formatDate(revenueData.dateRange.endDate)}
           </span>
+          {revenueData.channelId ? (
+            <span title={`Channel ID: ${revenueData.channelId}`}>
+              Channel ID {revenueData.channelId.slice(0, 8)}…
+            </span>
+          ) : null}
         </div>
 
-        {/* Recent Daily Revenue */}
+        {/* Daily breakdown */}
         <YouTubeRevenueDaily dailyRevenue={revenueData.dailyRevenue} />
 
-        {/* Footer Note */}
-        <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
-          <p>
-            💡 Revenue data is estimated and provided by YouTube Analytics.
-            Actual payments may vary based on YouTube&apos;s payment schedule
-            and policies.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+        {/* Footer note */}
+        <p className="rounded-lg bg-muted/50 p-3 text-xs leading-relaxed text-muted-foreground">
+          Revenue is estimated by YouTube Analytics. Actual payments may vary
+          based on YouTube&apos;s payment schedule and policies.
+        </p>
+      </ToolCardBody>
+    </ToolCard>
   );
 }

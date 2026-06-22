@@ -1,6 +1,12 @@
+"use client";
+
 import React from "react";
+import { motion } from "framer-motion";
+import { format, formatDistanceToNow, isValid } from "date-fns";
 import TaskCard from "./TaskCard";
-import { CheckCircle, Calendar } from "lucide-react";
+import { CalendarClock, PencilLine } from "lucide-react";
+import { ToolCard } from "../shared/ToolCard";
+import { ToolEmpty } from "../shared/ToolEmpty";
 import TaskDetailsDialog from "@/components/VercelChat/dialogs/tasks/TaskDetailsDialog";
 import { ScheduledAction } from "@/components/VercelChat/types";
 import TaskError from "./TaskError";
@@ -9,45 +15,59 @@ const UpdateTaskSuccess = ({ result: task }: { result: ScheduledAction }) => {
   // Error state
   if (!task) {
     return (
-      <TaskError
-        message="Failed to Update Task"
-        error="Failed to Update Task"
-        title="Failed to Update Task"
-      />
+      <TaskError error="Your changes couldn't be saved. Please try again." />
     );
   }
 
+  // Temporal feedback makes the edit feel real; re-emphasize the new next-run.
+  const updatedDate = task.updated_at ? new Date(task.updated_at) : null;
+  const updatedValid = updatedDate && isValid(updatedDate);
+  const nextRunDate = task.next_run ? new Date(task.next_run) : null;
+  const nextRunValid = nextRunDate && isValid(nextRunDate);
+
+  const subtitle = nextRunValid
+    ? `Next run ${format(nextRunDate as Date, "EEE 'at' h:mm a")}`
+    : updatedValid
+      ? `Updated ${formatDistanceToNow(updatedDate as Date, { addSuffix: true })}`
+      : "Your changes have been saved.";
+
   // Success state
   return (
-    <div className="bg-card border border-border rounded-xl p-4 max-w-2xl shadow-sm">
-      {/* Success Header */}
-      <div className="flex items-start space-x-3 mb-4">
-        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-        <div className="flex-1">
-          <h3 className="text-sm font-medium text-foreground flex items-center space-x-2">
-            <Calendar className="h-4 w-4" />
-            <span>Task updated successfully</span>
-          </h3>
-        </div>
-      </div>
-
-      {/* Task Card */}
-      {task && task.id && (
-        <div className="space-y-3">
-          <TaskDetailsDialog task={task}>
-            <TaskCard task={task} />
-          </TaskDetailsDialog>
-        </div>
-      )}
-
-      {/* Empty state (shouldn't happen in success, but just in case) */}
-      {(!task || !task.id) && (
-        <div className="text-center py-4">
-          <Calendar className="h-8 w-8 text-green-400 mx-auto mb-2" />
-          <p className="text-sm text-green-600">No task to display</p>
-        </div>
-      )}
-    </div>
+    <motion.div
+      // A subtle blue ring keyed to "update" — distinct from create's emerald.
+      initial={{ boxShadow: "0 0 0 0 rgba(59,130,246,0.0)" }}
+      animate={{
+        boxShadow: [
+          "0 0 0 0 rgba(59,130,246,0.0)",
+          "0 0 0 4px rgba(59,130,246,0.16)",
+          "0 0 0 0 rgba(59,130,246,0.0)",
+        ],
+      }}
+      transition={{ duration: 0.9, times: [0, 0.35, 1], ease: "easeOut" }}
+      className="w-full max-w-xl rounded-2xl"
+    >
+      <ToolCard
+        icon={PencilLine}
+        tone="info"
+        emphasized
+        title="Task updated"
+        subtitle={subtitle}
+      >
+        {task.id ? (
+          <div className="p-1.5">
+            <TaskDetailsDialog task={task}>
+              <TaskCard task={task} />
+            </TaskDetailsDialog>
+          </div>
+        ) : (
+          <ToolEmpty
+            icon={CalendarClock}
+            title="No task to display"
+            description="The task was updated but no details were returned."
+          />
+        )}
+      </ToolCard>
+    </motion.div>
   );
 };
 

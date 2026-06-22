@@ -1,82 +1,76 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+"use client";
+
+import React from "react";
+import { motion } from "framer-motion";
+import { DollarSign } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DollarSign, Loader } from "lucide-react";
+import { toolCardMotion } from "../shared/toolCardTokens";
 
 export default function YouTubeRevenueSkeleton() {
   return (
-    <Card className="w-full max-w-4xl">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center space-x-2">
-            <DollarSign className="h-5 w-5" />
-            <span>YouTube Revenue Analytics</span>
-          </CardTitle>
-          <div className="flex items-center space-x-2">
-            <Loader className="h-4 w-4 animate-spin text-primary" />
-            <span className="text-sm text-muted-foreground">Loading revenue data...</span>
-          </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-6">
-        {/* Summary Stats Skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
-            <div className="flex items-center space-x-2 mb-2">
-              <DollarSign className="h-4 w-4 text-green-600" />
-              <span className="text-sm font-medium text-green-600">Total Revenue</span>
-            </div>
-            <Skeleton className="h-8 w-24 mb-1" />
-            <Skeleton className="h-3 w-16" />
-          </div>
-          
-          <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-            <div className="flex items-center space-x-2 mb-2">
-              <Skeleton className="h-4 w-4" />
-              <Skeleton className="h-4 w-16" />
-            </div>
-            <Skeleton className="h-7 w-20 mb-1" />
-            <Skeleton className="h-3 w-12" />
-          </div>
-          
-          <div className="p-4 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
-            <div className="flex items-center space-x-2 mb-2">
-              <Skeleton className="h-4 w-4" />
-              <Skeleton className="h-4 w-20" />
-            </div>
-            <Skeleton className="h-7 w-18 mb-1" />
-            <Skeleton className="h-3 w-14" />
-          </div>
-        </div>
+    <motion.div
+      initial={toolCardMotion.initial}
+      animate={toolCardMotion.animate}
+      transition={toolCardMotion.transition}
+      className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+    >
+      {/* Diagonal shimmer sweep over the whole card */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 -left-1/2 z-10 w-1/2 -skew-x-12 bg-gradient-to-r from-transparent via-foreground/[0.06] to-transparent"
+        initial={{ x: 0 }}
+        animate={{ x: ["0%", "320%"] }}
+        transition={{ duration: 1.8, ease: "easeInOut", repeat: Infinity }}
+      />
 
-        {/* Date Range Skeleton */}
-        <div className="flex items-center justify-between text-sm border-t pt-4">
-          <div className="flex items-center space-x-1">
-            <Skeleton className="h-4 w-4" />
-            <Skeleton className="h-4 w-32" />
-          </div>
+      {/* Header mirrors ToolCard */}
+      <div className="flex items-center gap-3 px-4 py-3">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+          <DollarSign className="size-[18px]" />
+        </div>
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <Skeleton className="h-3.5 w-32" />
           <Skeleton className="h-3 w-24" />
         </div>
+        <Skeleton className="h-6 w-20 rounded-full" />
+      </div>
 
-        {/* Recent Daily Revenue Skeleton */}
-        <div>
-          <Skeleton className="h-5 w-48 mb-3" />
-          <div className="space-y-2">
-            {Array.from({ length: 7 }).map((_, index) => (
-              <div key={index} className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-4 w-12" />
-              </div>
-            ))}
-          </div>
+      <div className="space-y-5 border-t border-border/60 p-3">
+        {/* Stat chips */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="rounded-xl border border-border bg-muted/40 p-4"
+            >
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="mt-2 h-7 w-20" />
+              <Skeleton className="mt-1.5 h-3 w-16" />
+            </div>
+          ))}
         </div>
 
-        {/* Footer Note Skeleton */}
-        <div className="bg-muted/50 p-3 rounded-lg">
-          <Skeleton className="h-3 w-full" />
+        {/* Date range */}
+        <div className="flex items-center justify-between border-t border-border/60 pt-3">
+          <Skeleton className="h-3.5 w-40" />
+          <Skeleton className="h-3.5 w-24" />
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Daily breakdown bars */}
+        <div className="space-y-1.5">
+          <Skeleton className="mb-3 h-4 w-48" />
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <Skeleton className="h-3.5 w-16 shrink-0" />
+              <Skeleton className="h-6 flex-1 rounded-md" />
+              <Skeleton className="h-3.5 w-16 shrink-0" />
+            </div>
+          ))}
+        </div>
+
+        {/* Footer note */}
+        <Skeleton className="h-12 w-full rounded-lg" />
+      </div>
+    </motion.div>
   );
-} 
+}

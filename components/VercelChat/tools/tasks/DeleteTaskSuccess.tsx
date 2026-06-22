@@ -1,7 +1,14 @@
+"use client";
+
 import React from "react";
-import { Trash2, CheckCircle } from "lucide-react";
+import { motion } from "framer-motion";
+import { format, isValid } from "date-fns";
+import { Trash2 } from "lucide-react";
 import { ScheduledAction } from "@/components/VercelChat/types";
+import { ToolCard } from "../shared/ToolCard";
+import { ToolEmpty } from "../shared/ToolEmpty";
 import TaskCard from "./TaskCard";
+import TaskError from "./TaskError";
 import TaskDetailsDialog from "../../dialogs/tasks/TaskDetailsDialog";
 
 export interface DeleteTaskSuccessProps {
@@ -14,51 +21,51 @@ const DeleteTaskSuccess: React.FC<DeleteTaskSuccessProps> = ({
   // Error state
   if (!task) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-2xl">
-        <div className="flex items-start space-x-3">
-          <Trash2 className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
-          <div className="flex-1">
-            <h3 className="text-sm font-medium text-red-800">
-              Failed to Delete Task
-            </h3>
-            <p className="text-sm text-red-700 mt-1">Failed to Delete Task</p>
-            <div className="text-xs text-red-600 mt-2 font-mono bg-red-100 p-2 rounded">
-              Failed to Delete Task
-            </div>
-          </div>
-        </div>
-      </div>
+      <TaskError error="The task couldn't be deleted. Please try again." />
     );
   }
 
+  // Show the future that was cancelled — makes the deletion legible.
+  const nextRunDate = task.next_run ? new Date(task.next_run) : null;
+  const nextRunValid = nextRunDate && isValid(nextRunDate);
+  const cancelledRun = nextRunValid
+    ? `Was: ${format(nextRunDate as Date, "EEE 'at' h:mm a")}`
+    : null;
+
   // Success state
   return (
-    <div className="bg-red-50 border border-red-200 rounded-lg shadow-sm max-w-2xl">
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-red-100 bg-red-100/50 rounded-t-lg">
-        <div className="flex items-center space-x-2">
-          <CheckCircle className="h-5 w-5 text-red-600" />
-          <h3 className="text-sm font-semibold text-red-800">Deleted Task</h3>
-        </div>
-        <p className="text-xs text-red-700 mt-1">Task deleted successfully</p>
-      </div>
-
-      {/* Deleted Task */}
-      <div className="p-4">
-        {!task ? (
-          <div className="text-center py-6">
-            <Trash2 className="h-8 w-8 text-red-300 mx-auto mb-2" />
-            <p className="text-sm text-red-600">No tasks were deleted</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
+    <ToolCard
+      icon={Trash2}
+      tone="warning"
+      title="Task deleted"
+      subtitle="This task has been removed and will no longer run."
+    >
+      {task.id ? (
+        <div className="space-y-1.5 p-1.5">
+          {/* Removal "settle": the row desaturates and eases down on mount. */}
+          <motion.div
+            initial={{ opacity: 1, filter: "grayscale(0)", y: -2 }}
+            animate={{ opacity: 0.7, filter: "grayscale(0.6)", y: 0 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          >
             <TaskDetailsDialog task={task} isDeleted={true}>
               <TaskCard task={task} isDeleted={true} />
             </TaskDetailsDialog>
-          </div>
-        )}
-      </div>
-    </div>
+          </motion.div>
+          {cancelledRun && (
+            <p className="px-3 text-xs text-muted-foreground">
+              <span className="line-through">{cancelledRun}</span>
+            </p>
+          )}
+        </div>
+      ) : (
+        <ToolEmpty
+          icon={Trash2}
+          title="No tasks were deleted"
+          description="The delete completed but no details were returned."
+        />
+      )}
+    </ToolCard>
   );
 };
 

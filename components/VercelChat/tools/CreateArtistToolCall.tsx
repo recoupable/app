@@ -1,22 +1,19 @@
 import React from "react";
+import { Sparkles } from "lucide-react";
+import { ToolCardSkeleton } from "./shared/ToolCardSkeleton";
 
 /**
- * Component that displays when the create_new_artist tool is being called
- * Shows a loading skeleton for the artist being created
+ * Component that displays when the create_new_artist tool is being called.
+ * Mirrors the resolved CreateArtist success card so there's no layout jump.
  */
 export function CreateArtistToolCall() {
   return (
-    <div className="flex items-center space-x-4 p-3 rounded-md bg-muted my-2">
-      {/* Profile picture skeleton */}
-      <div className="h-12 w-12 rounded-full bg-muted/50 animate-pulse" />
-
-      <div className="space-y-2">
-        {/* Name skeleton */}
-        <div className="h-4 w-40 bg-muted/50 animate-pulse rounded" />
-        {/* Status text */}
-        <div className="text-sm text-muted-foreground">Creating new artist...</div>
-      </div>
-    </div>
+    <ToolCardSkeleton
+      icon={Sparkles}
+      label="Creating new artist…"
+      rows={0}
+      className="max-w-sm"
+    />
   );
 }
 

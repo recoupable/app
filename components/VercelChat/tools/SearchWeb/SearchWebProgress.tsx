@@ -1,77 +1,120 @@
+"use client";
+
 import React from "react";
-import { Loader } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { Search, Globe, Sparkles } from "lucide-react";
 import { Response } from "@/components/ai-elements/response";
 import { SearchProgress } from "@/lib/search/searchProgressUtils";
 import SearchResultItem from "./SearchResultItem";
 import SearchQueryPill from "./SearchQueryPill";
+import { ToolCard, ToolCardBody } from "../shared/ToolCard";
+import { useCountUp } from "../shared/useCountUp";
 
 interface SearchWebProgressProps {
   progress: SearchProgress;
 }
 
-export const SearchWebProgress: React.FC<SearchWebProgressProps> = ({ progress }) => {
-  // Searching state: Display the query being searched
-  if (progress.status === 'searching') {
+/** Small animated integer that tweens toward `value` whenever it changes. */
+const CountUp: React.FC<{ value: number }> = ({ value }) => {
+  const rounded = useCountUp(value);
+  return <motion.span className="tabular-nums">{rounded}</motion.span>;
+};
+
+export const SearchWebProgress: React.FC<SearchWebProgressProps> = ({
+  progress,
+}) => {
+  const reduce = useReducedMotion();
+
+  // Searching state: Display the query being searched.
+  if (progress.status === "searching") {
     return (
-      <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">Searching</p>
-        <div className="space-y-1">
-          <SearchQueryPill query={progress.query || ''} />
-        </div>
-      </div>
+      <ToolCard
+        icon={Search}
+        tone="info"
+        loading
+        title="Searching the web"
+        subtitle="Looking for relevant sources…"
+      >
+        {progress.query ? (
+          <ToolCardBody>
+            <SearchQueryPill query={progress.query} active />
+          </ToolCardBody>
+        ) : null}
+      </ToolCard>
     );
   }
 
-  // Reviewing state: Display query pill AND list of sources being reviewed
-  if (progress.status === 'reviewing') {
+  // Reviewing state: Display query pill AND list of sources as they stream in.
+  if (progress.status === "reviewing") {
     const searchResults = progress.searchResults || [];
 
     return (
-      <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">Searching</p>
-        <div className="space-y-1">
-          <SearchQueryPill query={progress.query || ''} />
-        </div>
-        
-        <p className="text-sm text-muted-foreground">
-          Reviewing sources · {searchResults.length}
-        </p>
-        
-        <div className="border border-border dark:border-zinc-800 rounded-lg overflow-hidden bg-card">
-          {searchResults.map((item, index) => (
-            <SearchResultItem 
-              key={index} 
-              result={item}
-            />
-          ))}
-        </div>
-      </div>
+      <ToolCard
+        icon={Globe}
+        tone="info"
+        loading
+        title="Reviewing sources"
+        subtitle={`${searchResults.length} ${searchResults.length === 1 ? "source" : "sources"} found`}
+        trailing={
+          <span className="flex min-w-6 items-center justify-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+            <CountUp value={searchResults.length} />
+          </span>
+        }
+      >
+        <ToolCardBody className="space-y-3">
+          {progress.query ? (
+            <SearchQueryPill query={progress.query} active />
+          ) : null}
+          <div className="space-y-0.5">
+            <AnimatePresence initial={false}>
+              {searchResults.map((item, index) => (
+                <motion.div
+                  key={item.url ? item.url : `result-${index}`}
+                  initial={reduce ? false : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: reduce ? 0 : 0.24,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                >
+                  <SearchResultItem result={item} index={index + 1} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        </ToolCardBody>
+      </ToolCard>
     );
   }
 
-  // Streaming state: Display accumulated content as it streams
-  if (progress.status === 'streaming') {
+  // Streaming state: Display accumulated content as it streams.
+  if (progress.status === "streaming") {
     return (
-      <div className="flex flex-col gap-3 py-3 px-4 bg-primary/5 rounded-lg border">
-        <div className="flex items-center gap-2">
-          <Loader className="h-4 w-4 animate-spin text-primary" />
-          <span className="text-sm font-medium">{progress.message}</span>
-        </div>
-        {progress.accumulatedContent && (
-          <Response className="w-full">{progress.accumulatedContent}</Response>
-        )}
-      </div>
+      <ToolCard
+        icon={Sparkles}
+        tone="info"
+        loading
+        title="Synthesizing answer"
+        subtitle={progress.message || "Writing a response from your sources…"}
+      >
+        {progress.accumulatedContent ? (
+          <ToolCardBody>
+            <Response className="w-full">
+              {progress.accumulatedContent}
+            </Response>
+          </ToolCardBody>
+        ) : null}
+      </ToolCard>
     );
   }
 
-  // Complete state: Don't show anything (final result handled by SearchWebResult)
-  if (progress.status === 'complete') {
+  // Complete state: Don't show anything (final result handled by SearchWebResult).
+  if (progress.status === "complete") {
     return null;
   }
 
-  // Fallback for unknown status
+  // Fallback for unknown status.
   return null;
 };
 
 export default SearchWebProgress;
-

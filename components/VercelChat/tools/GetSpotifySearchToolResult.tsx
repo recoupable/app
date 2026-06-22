@@ -1,7 +1,13 @@
+"use client";
+
 import React from "react";
+import { motion } from "framer-motion";
+import { Search } from "lucide-react";
 import { SpotifySearchResponse } from "@/types/spotify";
 import SpotifyContentCard from "./SpotifyContentCard";
 import { type SpotifyContent } from "@/lib/spotify/spotifyContentUtils";
+import { ToolCard, ToolCardBody } from "./shared/ToolCard";
+import { ToolEmpty } from "./shared/ToolEmpty";
 
 const typeLabels: Record<string, string> = {
   artists: "Artists",
@@ -13,48 +19,103 @@ const typeLabels: Record<string, string> = {
   audiobooks: "Audiobooks",
 };
 
+// Sections cascade top-down; cards within each rail cascade left-to-right.
+const sectionStagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06 } },
+};
+
+const railStagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.04 } },
+};
+
 const GetSpotifySearchToolResult: React.FC<{
   result: SpotifySearchResponse;
 }> = ({ result }) => {
+  const sections = Object.entries(result).filter(
+    ([key, value]) =>
+      key !== "success" &&
+      value &&
+      typeof value === "object" &&
+      "items" in (value as object) &&
+      Array.isArray((value as { items?: unknown[] }).items) &&
+      ((value as { items?: unknown[] }).items?.length ?? 0) > 0,
+  ) as [string, { items: unknown[]; total?: number }][];
+
+  const totalResults = sections.reduce(
+    (acc, [, value]) => acc + value.items.length,
+    0,
+  );
+
+  if (sections.length === 0) {
+    return (
+      <ToolCard
+        icon={Search}
+        tone="success"
+        title="Spotify search"
+        subtitle="No matches"
+      >
+        <ToolEmpty
+          icon={Search}
+          title="No results found"
+          description="Try a different artist, album, or track name."
+        />
+      </ToolCard>
+    );
+  }
 
   return (
-    <div>
-      {Object.entries(result)
-        .filter(
-          ([key, value]) =>
-            key !== "success" &&
-            value &&
-            typeof value === "object" &&
-            "items" in (value as object) &&
-            Array.isArray((value as { items?: unknown[] }).items) &&
-            ((value as { items?: unknown[] }).items?.length ?? 0) > 0
-        )
-        .map(([key, value]) => {
-          const section = value as { items: unknown[] };
-          return (
-            <div key={key} className="mb-6">
-              <div className="font-semibold text-lg mb-2">
-                {typeLabels[key] || key}
+    <ToolCard
+      icon={Search}
+      tone="success"
+      title="Spotify search"
+      subtitle={`${totalResults} result${totalResults === 1 ? "" : "s"} across ${sections.length} categor${sections.length === 1 ? "y" : "ies"}`}
+    >
+      <ToolCardBody className="space-y-5">
+        <motion.div
+          variants={sectionStagger}
+          initial="hidden"
+          animate="show"
+          className="space-y-5"
+        >
+          {sections.map(([key, section]) => (
+            <motion.div
+              key={key}
+              variants={{
+                hidden: { opacity: 0, y: 8 },
+                show: { opacity: 1, y: 0 },
+              }}
+            >
+              <div className="mb-2 flex items-center justify-between px-1">
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {typeLabels[key] || key}
+                </h4>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                  {section.items.length}
+                </span>
               </div>
-              <div className="flex flex-nowrap overflow-x-auto pb-1 -mx-2">
-                {section.items.map((item) => {
-                  const obj = item as { id?: string; name?: string };
+              <motion.div
+                variants={railStagger}
+                className="-mx-1 flex snap-x gap-1 overflow-x-auto pb-1"
+              >
+                {section.items.map((item, idx) => {
+                  const obj = item as { id?: string };
                   return (
                     <div
-                      key={obj.id || Math.random()}
-                      className="w-[140px] m-2 flex-shrink-0"
+                      key={obj.id || idx}
+                      className="w-[132px] shrink-0 snap-start"
                     >
-                      <SpotifyContentCard
-                        content={item as SpotifyContent}
-                      />
+                      <SpotifyContentCard content={item as SpotifyContent} />
                     </div>
                   );
                 })}
-              </div>
-            </div>
-          );
-        })}
-    </div>
+              </motion.div>
+            </motion.div>
+          ))}
+        </motion.div>
+      </ToolCardBody>
+    </ToolCard>
   );
 };
 

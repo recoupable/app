@@ -46,18 +46,28 @@ export default function CatalogSongsResult({
 
   const [hideIncomplete, setHideIncomplete] = useState(true);
 
+  const allSongs = displayResult.songs || [];
   const filteredSongs = useMemo(() => {
-    const songs = displayResult.songs || [];
-    return hideIncomplete ? songs.filter(isCompleteSong) : songs;
-  }, [displayResult.songs, hideIncomplete]);
+    return hideIncomplete ? allSongs.filter(isCompleteSong) : allSongs;
+  }, [allSongs, hideIncomplete]);
 
-  const isSuccess = displayResult?.songs && displayResult.songs?.length > 0;
+  const isSuccess = allSongs.length > 0;
+
+  // Don't show a green "added" line when nothing was added — gate the copy on
+  // the actual count rather than just the absence of an error.
+  const successMessage = useMemo(() => {
+    if (displayResult.total_added === 0) {
+      return "No new songs — everything was already in your catalog.";
+    }
+    return displayResult.message;
+  }, [displayResult.total_added, displayResult.message]);
+
   return (
-    <div className="flex flex-col gap-3 py-2">
+    <div className="flex w-full max-w-xl flex-col gap-2.5 py-2">
       <InsertCatalogSongsStatus
         hasError={hasError}
         errorMessage={uploadError || result.error}
-        successMessage={displayResult.message}
+        successMessage={successMessage}
       />
 
       {/* Songs Added Summary */}
@@ -75,17 +85,23 @@ export default function CatalogSongsResult({
         />
       )}
 
-      {isSuccess && (
+      {/* Render the songs pane whenever there's no error so the list's own
+          empty-state shows on a successful response with zero songs. */}
+      {!hasError && (
         <div className="max-h-[60vh] overflow-y-auto">
-          <InsertCatalogSongsList songs={filteredSongs} />
+          <InsertCatalogSongsList
+            songs={filteredSongs}
+            totalCount={allSongs.length}
+          />
         </div>
       )}
 
       {isUploading && uploadProgress.total > 0 ? (
-        <div className="space-y-1">
+        <div className="space-y-1.5 rounded-xl border border-border bg-muted/40 px-3 py-2.5">
           <Progress value={progressPercentage} className="h-2" />
-          <p className="text-xs text-muted-foreground text-center">
-            {Math.round(progressPercentage)}%
+          <p className="text-center text-xs tabular-nums text-muted-foreground">
+            Uploading {uploadProgress.current.toLocaleString()} /{" "}
+            {uploadProgress.total.toLocaleString()} songs
           </p>
         </div>
       ) : (

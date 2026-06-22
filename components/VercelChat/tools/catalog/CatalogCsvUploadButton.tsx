@@ -1,3 +1,6 @@
+"use client";
+
+import { useId, useRef } from "react";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -15,43 +18,44 @@ export default function CatalogCsvUploadButton({
   onFileSelect,
   hasCatalogId = true,
 }: CatalogCsvUploadButtonProps) {
+  const inputId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
   return (
-    <div className="mt-2 pt-3 border-t">
-      <label htmlFor="csv-upload">
+    <div className="rounded-xl border border-dashed border-border bg-muted/30 p-3">
+      <label htmlFor={inputId} className="block">
         <Button
           type="button"
           variant="outline"
           size="sm"
           disabled={!hasCatalogId}
-          className="w-full"
-          onClick={() => document.getElementById("csv-upload")?.click()}
+          className="w-full bg-card"
+          onClick={() => inputRef.current?.click()}
         >
-          <Upload className="h-4 w-4 mr-2" />
+          <Upload className="mr-2 size-4" />
           Upload CSV File
         </Button>
         <input
-          id="csv-upload"
+          id={inputId}
+          ref={inputRef}
           type="file"
           accept=".csv"
           onChange={onFileSelect}
           className="hidden"
         />
       </label>
-      <p className="text-xs text-muted-foreground mt-1.5 px-1">
+      <p className="mt-2 px-0.5 text-xs text-muted-foreground">
         {hasCatalogId ? (
           <>
             CSV must include an{" "}
-            <code className="text-[10px] bg-muted px-1 py-0.5 rounded">
+            <code className="rounded bg-muted px-1 py-0.5 text-[10px] text-foreground">
               isrc
             </code>{" "}
             column (case-insensitive)
           </>
         ) : (
-          <>
-            <span className="text-destructive">
-              No catalog selected. Please select a catalog first.
-            </span>
-          </>
+          <span className="text-destructive">
+            No catalog selected. Please select a catalog first.
+          </span>
         )}
       </p>
     </div>

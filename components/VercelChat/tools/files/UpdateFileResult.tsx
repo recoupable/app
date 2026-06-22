@@ -2,7 +2,10 @@
 
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2 } from "lucide-react";
+import { Check, FileEdit, ArrowUpRight } from "lucide-react";
+import Link from "next/link";
+import { ToolCard, ToolCardBody, ToolCardRow } from "../shared/ToolCard";
+import { ToolError } from "../shared/ToolError";
 
 /**
  * Result type returned by the update_file tool
@@ -20,6 +23,21 @@ export type UpdateFileResultType = {
 
 interface UpdateFileResultProps {
   result: UpdateFileResultType;
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+/**
+ * Only allow app-relative ("/...") or https URLs to be used as link targets.
+ */
+function toSafeHref(path?: string): string | null {
+  if (!path) return null;
+  if (path.startsWith("/") || path.startsWith("https://")) return path;
+  return null;
 }
 
 /**
@@ -41,33 +59,61 @@ export function UpdateFileResult({ result }: UpdateFileResultProps) {
 
   if (!result.success) {
     return (
-      <div className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-        <div className="flex-1">
-          <p className="text-sm text-destructive font-medium">
-            {result.error || "Failed to update file"}
-          </p>
-          {result.message && (
-            <p className="text-xs text-muted-foreground mt-1">{result.message}</p>
-          )}
-        </div>
-      </div>
+      <ToolError
+        title="Update file"
+        message={result.error || result.message || "Failed to update file"}
+      />
     );
   }
 
+  const fileName = result.fileName?.trim();
+  const safeHref = toSafeHref(result.path);
+  const meta: string[] = [];
+  if (result.verified) meta.push("Verified");
+  if (result.sizeBytes !== undefined) meta.push(formatBytes(result.sizeBytes));
+
   return (
-    <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/10 border border-primary/20">
-      <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium">
-          {result.fileName ? `Updated ${result.fileName}` : "File updated"}
-        </p>
-        {result.sizeBytes !== undefined && (
-          <p className="text-xs text-muted-foreground mt-1">
-            {(result.sizeBytes / 1024).toFixed(2)} KB
-          </p>
-        )}
-      </div>
-    </div>
+    <ToolCard
+      icon={FileEdit}
+      tone="success"
+      title={fileName ? `Updated ${fileName}` : "File updated"}
+      subtitle={meta.length > 0 ? meta.join(" · ") : undefined}
+      className="max-w-md"
+      trailing={
+        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+          <Check className="size-3" strokeWidth={3} />
+          Saved
+        </span>
+      }
+    >
+      {result.path ? (
+        <ToolCardBody>
+          {safeHref ? (
+            <Link
+              href={safeHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
+            >
+              <ToolCardRow className="group cursor-pointer transition-colors hover:bg-muted/60">
+                <FileEdit className="size-4 shrink-0 text-muted-foreground" />
+                <span className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
+                  {result.path}
+                </span>
+                <ArrowUpRight className="size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+              </ToolCardRow>
+            </Link>
+          ) : (
+            // Path isn't a safe link target — still surface it as plain text.
+            <ToolCardRow>
+              <FileEdit className="size-4 shrink-0 text-muted-foreground" />
+              <span className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
+                {result.path}
+              </span>
+            </ToolCardRow>
+          )}
+        </ToolCardBody>
+      ) : null}
+    </ToolCard>
   );
 }
-

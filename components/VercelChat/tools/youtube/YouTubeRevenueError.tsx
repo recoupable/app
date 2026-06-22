@@ -1,27 +1,48 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle } from "lucide-react";
+import React from "react";
+import { Youtube, PlugZap } from "lucide-react";
+import { ToolCard, ToolCardBody } from "../shared/ToolCard";
+import { ToolError } from "../shared/ToolError";
 
 interface YouTubeRevenueErrorProps {
   message?: string;
 }
 
-export default function YouTubeRevenueError({ message }: YouTubeRevenueErrorProps) {
-  return (
-    <Card className="w-full max-w-2xl">
-      <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-        <div className="flex items-center space-x-2">
-          <AlertCircle className="h-5 w-5 text-destructive" />
-          <CardTitle className="text-lg">YouTube Revenue Access Issue</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-            {message}
+export default function YouTubeRevenueError({
+  message,
+}: YouTubeRevenueErrorProps) {
+  const text = (message ?? "").toLowerCase();
+  const looksLikeNotConnected =
+    text.includes("connect") ||
+    text.includes("not linked") ||
+    text.includes("authoriz") ||
+    text.includes("permission") ||
+    text.includes("scope");
+
+  // When the failure is a connection/permission gap, guide the next step
+  // instead of presenting a dead-end error.
+  if (looksLikeNotConnected) {
+    return (
+      <ToolCard
+        icon={Youtube}
+        tone="warning"
+        emphasized
+        title="Connect YouTube to see revenue"
+        subtitle="Channel access needed"
+        className="max-w-md"
+      >
+        <ToolCardBody className="space-y-3">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {message ||
+              "We couldn't read revenue for this channel. Connecting YouTube Analytics with the right permissions will let us pull it in."}
           </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-} 
+          <div className="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
+            <PlugZap className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            Ask to connect your YouTube account, then try again.
+          </div>
+        </ToolCardBody>
+      </ToolCard>
+    );
+  }
+
+  return <ToolError title="YouTube revenue" message={message} />;
+}

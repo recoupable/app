@@ -1,5 +1,11 @@
+"use client";
+
 import Link from "next/link";
-import { MessageSquare, CheckCircle2, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { formatDistanceToNowStrict } from "date-fns";
+import { MessageSquare, ChevronRight } from "lucide-react";
+import { ToolCard, ToolCardBody } from "../shared/ToolCard";
+import { ToolEmpty } from "../shared/ToolEmpty";
 
 /**
  * Row shape returned by the `get_chats` MCP tool — the session-scoped
@@ -23,60 +29,118 @@ interface GetChatsResultProps {
   result: GetChatsResultType;
 }
 
+/** Compact relative time (e.g. "2d ago"); returns null for missing/invalid input. */
+function relativeTime(value?: string): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return `${formatDistanceToNowStrict(date)} ago`;
+}
+
+/** Deterministic tonal tint for the first-letter avatar so rows read as distinct. */
+const AVATAR_TINTS = [
+  "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  "bg-violet-500/10 text-violet-600 dark:text-violet-400",
+  "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+  "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
+];
+
+function tintFor(seed: string): string {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+  }
+  return AVATAR_TINTS[Math.abs(hash) % AVATAR_TINTS.length];
+}
+
 const GetChatsResult = ({ result }: GetChatsResultProps) => {
   const chats = result?.chats ?? [];
+  const count = chats.length;
 
   return (
-    <div className="bg-card border border-border rounded-lg shadow-sm max-w-md">
-      <div className="px-4 py-3 border-b border-border bg-muted rounded-t-lg">
-        <div className="flex items-center space-x-2">
-          <CheckCircle2 className="h-5 w-5 text-green-500 dark:text-green-400" />
-          <h3 className="text-sm font-semibold text-foreground">Chats</h3>
-        </div>
-        <p className="text-xs text-muted-foreground mt-1">
-          {chats.length === 0
-            ? "No chats found"
-            : `Found ${chats.length} chat${chats.length === 1 ? "" : "s"}`}
-        </p>
-      </div>
-
-      {chats.length > 0 && (
-        <div className="p-2 max-h-72 overflow-y-auto">
-          <ul className="space-y-1">
+    <ToolCard
+      icon={MessageSquare}
+      tone={count > 0 ? "info" : "neutral"}
+      title="Chats"
+      subtitle={
+        count === 0
+          ? "No chats found"
+          : `Found ${count} chat${count === 1 ? "" : "s"}`
+      }
+      className="max-w-md"
+      trailing={
+        count > 0 ? (
+          <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium tabular-nums text-muted-foreground">
+            {count}
+          </span>
+        ) : undefined
+      }
+    >
+      {count > 0 ? (
+        <ToolCardBody>
+          <motion.ul
+            className="max-h-72 space-y-0.5 overflow-y-auto"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              visible: { transition: { staggerChildren: 0.045 } },
+            }}
+          >
             {chats.map((chat) => {
               const displayTitle =
                 chat.title && chat.title.trim().length > 0
                   ? chat.title
                   : "Untitled Chat";
+              const updated = relativeTime(chat.updatedAt);
+              const initial = displayTitle.charAt(0).toUpperCase();
 
               return (
-                <li key={chat.id}>
+                <motion.li
+                  key={chat.id}
+                  variants={{
+                    hidden: { opacity: 0, y: 4 },
+                    visible: { opacity: 1, y: 0 },
+                  }}
+                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                >
                   <Link
                     href={`/sessions/${chat.sessionId}/chats/${chat.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 p-2 rounded-md hover:bg-muted transition-colors group"
+                    className="group/row flex items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-muted/60"
                   >
-                    <MessageSquare className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="text-sm text-foreground truncate flex-1">
+                    <span
+                      className={`flex size-7 shrink-0 items-center justify-center rounded-lg text-xs font-semibold ${tintFor(
+                        chat.id,
+                      )}`}
+                    >
+                      {initial}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-sm text-foreground">
                       {displayTitle}
                     </span>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    {updated ? (
+                      <span className="shrink-0 text-xs tabular-nums text-muted-foreground transition-opacity group-hover/row:opacity-0">
+                        {updated}
+                      </span>
+                    ) : null}
+                    <ChevronRight className="size-4 shrink-0 -translate-x-1 text-muted-foreground opacity-0 transition-all group-hover/row:translate-x-0 group-hover/row:opacity-100" />
                   </Link>
-                </li>
+                </motion.li>
               );
             })}
-          </ul>
-        </div>
+          </motion.ul>
+        </ToolCardBody>
+      ) : (
+        <ToolEmpty
+          icon={MessageSquare}
+          title="No chats available"
+          description="When chats are created they'll show up here."
+        />
       )}
-
-      {chats.length === 0 && (
-        <div className="p-6 text-center">
-          <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">No chats available</p>
-        </div>
-      )}
-    </div>
+    </ToolCard>
   );
 };
 

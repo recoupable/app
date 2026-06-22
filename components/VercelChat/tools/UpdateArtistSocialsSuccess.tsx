@@ -1,11 +1,20 @@
+"use client";
+
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import ArtistHeroSection from "./ArtistHeroSection";
 import { ArtistProfile } from "@/lib/supabase/artist/updateArtistProfile";
 import { AccountSocialWithSocial } from "@/lib/supabase/account_socials/getAccountSocials";
 import Link from "next/link";
-import { ExternalLink, Globe } from "lucide-react";
+import { motion } from "framer-motion";
+import { ExternalLink, Share2 } from "lucide-react";
 import getSocialPlatformByLink from "@/lib/getSocialPlatformByLink";
+import getPlatformDisplayName from "@/lib/socials/getPlatformDisplayName";
 import { useEffect } from "react";
+import { ToolCard } from "./shared/ToolCard";
+import { ToolCardRow } from "./shared/ToolCard";
+import { ToolEmpty } from "./shared/ToolEmpty";
+import { getPlatformVisual } from "./getPlatformVisual";
+import { cn } from "@/lib/utils";
 
 export interface UpdateArtistSocialsResult {
   success: boolean;
@@ -17,62 +26,112 @@ export interface UpdateArtistSocialsSuccessProps {
   result: UpdateArtistSocialsResult;
 }
 
+const normalizeUrl = (url: string) =>
+  url.startsWith("http://") || url.startsWith("https://")
+    ? url
+    : `https://${url}`;
+
 const UpdateArtistSocialsSuccess: React.FC<UpdateArtistSocialsSuccessProps> = ({
   result,
 }) => {
-  const { getArtists } = useArtistProvider();
-  const { selectedArtist } = useArtistProvider();
+  const { getArtists, selectedArtist } = useArtistProvider();
 
   useEffect(() => {
     getArtists();
   }, []);
 
+  const socials = result.socials ?? [];
+  const hasSocials = socials.length > 0;
+
   return (
-    <div className="bg-gradient-to-b from-gray-900 to-black rounded-2xl overflow-hidden max-w-2xl w-full my-4">
-      <ArtistHeroSection
-        artistProfile={selectedArtist as ArtistProfile}
-        message={result.message || "Artist socials updated successfully."}
-      />
-      <div className="bg-black/40 backdrop-blur-sm rounded-b-xl overflow-hidden">
-        <div className="p-4 sm:p-6 space-y-2">
-          {result.socials?.map((social) => (
-            <Link
-              href={
-                social.social.profile_url.startsWith("http://") ||
-                social.social.profile_url.startsWith("https://")
-                  ? social.social.profile_url
-                  : `https://${social.social.profile_url}`
-              }
-              key={social.social.id}
-              target="_blank"
-              rel="noopener noreferrer"
-              passHref
-            >
-              <div className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-accent transition-colors group cursor-pointer">
-                <div className="w-8 h-8 bg-muted rounded flex items-center justify-center">
-                  <Globe className="w-4 h-4 text-muted-foreground" />
-                </div>
+    <ToolCard
+      icon={Share2}
+      tone="success"
+      title="Artist socials updated"
+      subtitle={result.message || "Artist socials updated successfully."}
+      trailing={
+        hasSocials ? (
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium tabular-nums text-muted-foreground">
+            {socials.length}
+          </span>
+        ) : undefined
+      }
+      className="max-w-xl"
+    >
+      {/* The ToolCard header owns the success confirmation; the hero shows
+          identity only (no `message`) so the check/message isn't doubled. */}
+      {selectedArtist ? (
+        <ArtistHeroSection artistProfile={selectedArtist as ArtistProfile} />
+      ) : null}
 
-                <div className="flex-1 min-w-0">
-                  <div className="text-white text-sm font-medium truncate">
-                    {social.social.profile_url}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {getSocialPlatformByLink(
-                      social.social.profile_url
-                    ).toLowerCase() || "Social Link"}
-                  </div>
-                </div>
+      {hasSocials ? (
+        <motion.div
+          className="space-y-1 border-t border-border/60 p-2"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            visible: { transition: { staggerChildren: 0.05 } },
+          }}
+        >
+          {socials.map((social) => {
+            const platformType = getSocialPlatformByLink(
+              social.social.profile_url,
+            );
+            const platform =
+              platformType !== "NONE"
+                ? getPlatformDisplayName(platformType)
+                : "Social link";
+            const { Icon, chipClass } = getPlatformVisual(
+              social.social.profile_url,
+            );
 
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </div>
+            return (
+              <motion.div
+                key={social.social.id}
+                variants={{
+                  hidden: { opacity: 0, y: 4 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <Link
+                  href={normalizeUrl(social.social.profile_url)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  passHref
+                >
+                  <ToolCardRow className="group/row cursor-pointer">
+                    <span
+                      className={cn(
+                        "flex size-8 shrink-0 items-center justify-center rounded-lg",
+                        chipClass,
+                      )}
+                    >
+                      <Icon className="size-4" strokeWidth={2} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-medium text-foreground">
+                        {platform}
+                      </div>
+                      <div className="truncate text-xs text-muted-foreground">
+                        {social.social.profile_url}
+                      </div>
+                    </div>
+                    <ExternalLink className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/row:opacity-100" />
+                  </ToolCardRow>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      ) : (
+        <ToolEmpty
+          icon={Share2}
+          title="No socials linked"
+          description="No social profiles were attached to this update."
+        />
+      )}
+    </ToolCard>
   );
 };
 

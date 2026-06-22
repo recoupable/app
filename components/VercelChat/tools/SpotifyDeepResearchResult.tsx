@@ -1,8 +1,9 @@
+import { Mic2, Share2 } from "lucide-react";
 import { SpotifyDeepResearchResultUIType } from "@/types/spotify";
-import GetArtistSocialsResult from "./GetArtistSocialsResult";
-import { SocialsResponse } from "@/types/Social";
-import Image from "next/image";
-import spotifyLogo from "@/public/brand-logos/spotify.png";
+import { ArtistSocial } from "./ArtistSocial";
+import { ToolCard, ToolCardBody } from "./shared/ToolCard";
+import { ToolError } from "./shared/ToolError";
+import { ToolEmpty } from "./shared/ToolEmpty";
 
 export default function SpotifyDeepResearchResult({
   result,
@@ -10,30 +11,42 @@ export default function SpotifyDeepResearchResult({
   result: SpotifyDeepResearchResultUIType;
 }) {
   const socials = result.artistSocials?.socials ?? [];
-  const processedResult = {
-    success: result.success,
-    socials,
-    status: result.success ? "success" : "error",
-    pagination: {
-      page: 1,
-      limit: 10,
-      total_count: socials.length,
-      total_pages: 1,
-    },
-  } as SocialsResponse;
+
+  if (!result.success) {
+    return (
+      <ToolError
+        title="Spotify deep research"
+        message="Spotify deep research failed to complete. You can try again."
+      />
+    );
+  }
+
   return (
-    <GetArtistSocialsResult
-      title="Spotify Deep Research Complete"
-      icon={
-        <Image
-          src={spotifyLogo.src}
-          alt="Spotify Logo"
-          width={20}
-          height={20}
-        />
+    <ToolCard
+      icon={Mic2}
+      tone="success"
+      title="Spotify deep research"
+      subtitle={
+        socials.length > 0
+          ? `${socials.length} platform${socials.length === 1 ? "" : "s"} found`
+          : "Research complete"
       }
-      errorText="Spotify Deep Research Failed"
-      result={processedResult}
-    />
+    >
+      <ToolCardBody>
+        {socials.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+            {socials.map((social) => (
+              <ArtistSocial key={social.id} social={social} />
+            ))}
+          </div>
+        ) : (
+          <ToolEmpty
+            icon={Share2}
+            title="No socials found"
+            description="We couldn't find linked social profiles for this artist."
+          />
+        )}
+      </ToolCardBody>
+    </ToolCard>
   );
 }
