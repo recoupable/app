@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +14,9 @@ interface InsertCatalogSongsStatusProps {
  * Displays the status of catalog song insertion.
  * Shows either a success or error pill with an appropriate icon and message,
  * using shared design tokens so it reads consistently in light/dark mode.
+ *
+ * The status icon arrives with a small spring so the outcome feels confirmed
+ * rather than pre-rendered.
  */
 export default function InsertCatalogSongsStatus({
   hasError,
@@ -28,7 +34,11 @@ export default function InsertCatalogSongsStatus({
           : "border-emerald-500/20 bg-emerald-500/5",
       )}
     >
-      <div
+      <motion.div
+        key={isError ? "error" : "success"}
+        initial={{ scale: 0.5, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 500, damping: 18 }}
         className={cn(
           "flex size-5 shrink-0 items-center justify-center rounded-full",
           isError
@@ -41,20 +51,16 @@ export default function InsertCatalogSongsStatus({
         ) : (
           <Check className="size-3" strokeWidth={3} />
         )}
-      </div>
+      </motion.div>
       <span
         className={cn(
           "min-w-0 flex-1 truncate text-sm",
-          isError
-            ? "text-destructive"
-            : "text-foreground",
+          isError ? "text-destructive" : "text-foreground",
         )}
-        title={
-          (isError ? errorMessage : successMessage) || undefined
-        }
+        title={(isError ? errorMessage : successMessage) || undefined}
       >
         {isError
-          ? errorMessage || "Something went wrong adding songs"
+          ? errorMessage || "We couldn't add these songs. Please try again."
           : successMessage || "Songs added to catalog"}
       </span>
     </div>

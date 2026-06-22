@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { motion } from "framer-motion";
 import { ListTodo } from "lucide-react";
 import { ScheduledAction } from "@/components/VercelChat/types";
 import { ToolCard } from "../shared/ToolCard";
@@ -10,6 +13,9 @@ export interface GetTasksSuccessProps {
   result: ScheduledAction[];
 }
 
+// Cap the cascade so long lists don't feel slow to assemble.
+const STAGGER_CAP = 8;
+
 const GetTasksSuccess: React.FC<GetTasksSuccessProps> = ({ result: tasks }) => {
   const count = tasks?.length ?? 0;
   const isEmpty = count === 0;
@@ -19,14 +25,10 @@ const GetTasksSuccess: React.FC<GetTasksSuccessProps> = ({ result: tasks }) => {
       icon={ListTodo}
       tone="info"
       title="Tasks"
-      subtitle={
-        isEmpty
-          ? "No scheduled tasks"
-          : `${count} scheduled ${count === 1 ? "task" : "tasks"}`
-      }
+      subtitle={isEmpty ? "No scheduled tasks" : "Scheduled tasks"}
       trailing={
         isEmpty ? undefined : (
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium tabular-nums text-muted-foreground">
             {count}
           </span>
         )
@@ -40,10 +42,21 @@ const GetTasksSuccess: React.FC<GetTasksSuccessProps> = ({ result: tasks }) => {
         />
       ) : (
         <div className="max-h-80 divide-y divide-border/60 overflow-y-auto p-1.5">
-          {tasks.map((task) => (
-            <TaskDetailsDialog key={task.id} task={task}>
-              <TaskCard task={task} />
-            </TaskDetailsDialog>
+          {tasks.map((task, index) => (
+            <motion.div
+              key={task.id}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.24,
+                delay: Math.min(index, STAGGER_CAP) * 0.04,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            >
+              <TaskDetailsDialog task={task}>
+                <TaskCard task={task} />
+              </TaskDetailsDialog>
+            </motion.div>
           ))}
         </div>
       )}

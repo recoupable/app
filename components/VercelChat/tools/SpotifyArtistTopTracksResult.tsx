@@ -1,8 +1,16 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { TrendingUp, Mic2 } from "lucide-react";
 import { SpotifyArtistTopTracksResultType } from "@/types/spotify";
 import SpotifyTrackCard from "./SpotifyTrackCard";
 import { ToolCard, ToolCardBody } from "./shared/ToolCard";
 import { ToolEmpty } from "./shared/ToolEmpty";
+
+const gridStagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.045 } },
+};
 
 const SpotifyArtistTopTracksResult = ({
   result,
@@ -36,11 +44,16 @@ const SpotifyArtistTopTracksResult = ({
       subtitle={`${tracks.length} popular track${tracks.length === 1 ? "" : "s"}`}
     >
       <ToolCardBody>
-        <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-4">
+        <motion.div
+          variants={gridStagger}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-4"
+        >
           {tracks.map((track) => (
             <SpotifyTrackCard key={track.id} track={track} />
           ))}
-        </div>
+        </motion.div>
       </ToolCardBody>
     </ToolCard>
   );

@@ -8,6 +8,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { ToolCard, ToolCardBody } from "../shared/ToolCard";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface ComposioConnectPromptProps {
@@ -59,21 +60,23 @@ export function ComposioConnectPrompt({
           Connect your {displayName} account to enable this connector.
         </p>
 
-        <a
-          href={safeRedirect}
-          aria-disabled={isUnsafe || undefined}
-          // aria-disabled alone doesn't block navigation; also prevent the
-          // click and pointer interaction when the redirect URL isn't safe.
-          onClick={isUnsafe ? (e) => e.preventDefault() : undefined}
-          className={cn(
-            "inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40",
-            isUnsafe && "pointer-events-none opacity-60",
-          )}
-        >
-          <Icon className="size-4" />
-          <span>Connect {displayName}</span>
-          <ArrowUpRight className="size-4 opacity-80" />
-        </a>
+        {isUnsafe ? (
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            This connection link looks invalid. Please ask to reconnect.
+          </div>
+        ) : (
+          <Button asChild className="w-full">
+            <a
+              href={safeRedirect}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon className="size-4" />
+              <span>Connect {displayName}</span>
+              <ArrowUpRight className={cn("size-4 opacity-80")} />
+            </a>
+          </Button>
+        )}
 
         <p className="text-center text-xs text-muted-foreground">
           You&apos;ll be redirected to authorize access. Link expires in 10

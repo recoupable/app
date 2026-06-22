@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { motion } from "framer-motion";
 import { Globe, Search } from "lucide-react";
 import SearchResultItem from "./SearchResultItem";
 import { ToolCard } from "../shared/ToolCard";
@@ -43,18 +46,34 @@ const SearchApiResult = ({ result }: { result: SearchApiResultType }) => {
       }
       trailing={
         hasResults ? (
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium tabular-nums text-muted-foreground">
             {searchResults.length}
           </span>
         ) : undefined
       }
     >
       {hasResults ? (
-        <div className="space-y-0.5 p-2">
-          {searchResults.map((item) => (
-            <SearchResultItem key={item.url} result={item} />
+        <motion.div
+          className="space-y-0.5 p-2"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            visible: { transition: { staggerChildren: 0.05 } },
+          }}
+        >
+          {searchResults.map((item, i) => (
+            <motion.div
+              key={item.url}
+              variants={{
+                hidden: { opacity: 0, y: 6 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <SearchResultItem result={item} index={i + 1} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       ) : (
         <ToolEmpty
           icon={Search}

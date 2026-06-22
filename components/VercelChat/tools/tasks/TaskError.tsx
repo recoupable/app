@@ -12,9 +12,15 @@ const TaskError: React.FC<TaskErrorProps> = ({
   error,
   title = "Task Error",
 }) => {
+  // Callers historically pass the same string as title/message/error. Build a
+  // detail from the distinct parts only, and drop any part that merely repeats
+  // the title — so the body never echoes the heading. A cause still shows when
+  // it genuinely differs.
+  const normalizedTitle = title.trim();
   const detail = [message, error]
-    .filter((part): part is string => Boolean(part?.trim()))
-    // Avoid showing the same string twice when message === error.
+    .map((part) => part?.trim())
+    .filter((part): part is string => Boolean(part))
+    .filter((part) => part !== normalizedTitle)
     .filter((part, index, all) => all.indexOf(part) === index)
     .join("\n\n");
 

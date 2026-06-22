@@ -95,7 +95,11 @@ export default function YouTubeRevenueResult({
             {formatDate(revenueData.dateRange.startDate)} –{" "}
             {formatDate(revenueData.dateRange.endDate)}
           </span>
-          <span>Channel {revenueData.channelId.slice(0, 8)}…</span>
+          {revenueData.channelId ? (
+            <span title={`Channel ID: ${revenueData.channelId}`}>
+              Channel ID {revenueData.channelId.slice(0, 8)}…
+            </span>
+          ) : null}
         </div>
 
         {/* Daily breakdown */}

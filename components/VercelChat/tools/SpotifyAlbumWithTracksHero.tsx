@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { motion } from "framer-motion";
 import { Music } from "lucide-react";
 import { SpotifyAlbum } from "@/types/spotify";
 import SpotifyAlbumWithTracksMeta from "./SpotifyAlbumWithTracksMeta";
@@ -16,15 +19,16 @@ const SpotifyAlbumWithTracksHero: React.FC<SpotifyAlbumWithTracksHeroProps> = ({
 
   return (
     <div className="relative isolate overflow-hidden">
-      {/* Blurred album-art backdrop with a darkening gradient for legibility */}
+      {/* Blurred album-art backdrop. Lighter scrim lets the artwork's hue
+          survive so each release feels like itself. */}
       {backgroundImage && (
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${backgroundImage})` }}
           aria-hidden
         >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/80" />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-xl" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/75" />
         </div>
       )}
       {!backgroundImage && (
@@ -34,8 +38,13 @@ const SpotifyAlbumWithTracksHero: React.FC<SpotifyAlbumWithTracksHeroProps> = ({
       {/* Content Overlay */}
       <div className="relative z-10 p-4 sm:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-6">
-          {/* Album Cover */}
-          <div className="shrink-0">
+          {/* Album Cover — moves once, gracefully, as the record loads. */}
+          <motion.div
+            className="shrink-0"
+            initial={{ opacity: 0, scale: 0.94, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          >
             {backgroundImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -48,7 +57,7 @@ const SpotifyAlbumWithTracksHero: React.FC<SpotifyAlbumWithTracksHeroProps> = ({
                 <Music className="size-12 text-white/40 sm:size-16" />
               </div>
             )}
-          </div>
+          </motion.div>
 
           {/* Album Info */}
           <SpotifyAlbumWithTracksMeta

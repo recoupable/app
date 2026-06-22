@@ -32,10 +32,13 @@ export default function PulseToolResult({
     return <ToolError title="Pulse" message={result.message} />;
   }
 
+  // Color must tell the truth: emerald only when the digest is actually on.
+  const tone = isInitialLoading ? "neutral" : active ? "success" : "neutral";
+
   return (
     <ToolCard
       icon={Activity}
-      tone="success"
+      tone={tone}
       title={
         <a
           href="/tasks?tab=pulses"

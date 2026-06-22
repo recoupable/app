@@ -5,6 +5,7 @@ const GetChatsSkeleton = () => {
   return (
     <ToolCardSkeleton
       icon={MessageSquare}
+      label="Loading chats…"
       rows={4}
       className="max-w-md"
     />

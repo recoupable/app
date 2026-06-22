@@ -1,4 +1,8 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { ImageGenerationResult } from "@/components/VercelChat/types";
 import { useImageDownloader } from "@/hooks/useImageDownloader";
 import MessageMediaDownloadButton from "@/components/VercelChat/MessageMediaDownloadButton";
@@ -10,6 +14,8 @@ interface ImageResultProps {
 
 export function ImageResult({ result }: ImageResultProps) {
   const { imageUrl } = result;
+  const [loaded, setLoaded] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   const { isDownloading, isReady, handleDownload } = useImageDownloader({
     imageUrl,
@@ -48,21 +54,44 @@ export function ImageResult({ result }: ImageResultProps) {
             isDownloading={isDownloading}
           />
 
+          {/* Developing-photo placeholder fades out as the image resolves */}
+          <div
+            aria-hidden
+            className={`pointer-events-none absolute inset-0 z-0 bg-gradient-to-br from-muted via-muted/60 to-muted transition-opacity duration-500 ${
+              loaded ? "opacity-0" : "animate-pulse opacity-100"
+            }`}
+          />
+
           <div className="h-auto w-full max-w-md max-h-md">
-            <Image
-              src={imageUrl}
-              alt="AI-generated image"
-              width={448}
-              height={448}
-              style={{
-                width: "100%",
-                height: "auto",
-                maxWidth: "28rem",
-                maxHeight: "28rem",
-                objectFit: "contain",
-              }}
-              priority
-            />
+            <motion.div
+              initial={false}
+              animate={
+                reduceMotion
+                  ? { opacity: loaded ? 1 : 0 }
+                  : {
+                      opacity: loaded ? 1 : 0,
+                      scale: loaded ? 1 : 1.04,
+                      filter: loaded ? "blur(0px)" : "blur(12px)",
+                    }
+              }
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <Image
+                src={imageUrl}
+                alt="AI-generated image"
+                width={448}
+                height={448}
+                onLoad={() => setLoaded(true)}
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  maxWidth: "28rem",
+                  maxHeight: "28rem",
+                  objectFit: "contain",
+                }}
+                priority
+              />
+            </motion.div>
           </div>
         </div>
       </div>

@@ -1,14 +1,37 @@
 "use client";
 
 import React from "react";
+import { Plug } from "lucide-react";
 import { formatConnectorName } from "@/lib/composio/formatConnectorName";
 import { findAuthResult } from "@/lib/composio/findAuthResult";
 import { hasValidAuthData } from "@/lib/composio/hasValidAuthData";
 import { ComposioConnectedState } from "./ComposioConnectedState";
 import { ComposioConnectPrompt } from "./ComposioConnectPrompt";
+import { ToolCard, ToolCardBody } from "../shared/ToolCard";
 
 interface ComposioAuthResultProps {
   result: unknown;
+}
+
+/** Neutral fallback so a connect flow never silently renders nothing. */
+function ComposioStatusUnknown({ displayName }: { displayName?: string }) {
+  return (
+    <ToolCard
+      icon={Plug}
+      tone="neutral"
+      title="Connection status unavailable"
+      subtitle={displayName ? displayName : "Connector"}
+      className="max-w-md"
+    >
+      <ToolCardBody>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          We couldn&apos;t read the connection status
+          {displayName ? ` for ${displayName}` : ""}. Please try connecting
+          again.
+        </p>
+      </ToolCardBody>
+    </ToolCard>
+  );
 }
 
 /**
@@ -20,12 +43,12 @@ interface ComposioAuthResultProps {
  */
 export function ComposioAuthResult({ result }: ComposioAuthResultProps) {
   if (!hasValidAuthData(result)) {
-    return null;
+    return <ComposioStatusUnknown />;
   }
 
   const authResult = findAuthResult(result.data?.results);
   if (!authResult) {
-    return null;
+    return <ComposioStatusUnknown />;
   }
 
   const connector = authResult.toolkit || "Connector";
@@ -35,17 +58,20 @@ export function ComposioAuthResult({ result }: ComposioAuthResultProps) {
     return <ComposioConnectedState displayName={displayName} />;
   }
 
-  if (!authResult.redirect_url) {
-    return null;
+  // Initiated/pending status with a redirect → show the connect CTA.
+  if (authResult.redirect_url) {
+    return (
+      <ComposioConnectPrompt
+        displayName={displayName}
+        redirectUrl={authResult.redirect_url}
+        connector={connector}
+      />
+    );
   }
 
-  return (
-    <ComposioConnectPrompt
-      displayName={displayName}
-      redirectUrl={authResult.redirect_url}
-      connector={connector}
-    />
-  );
+  // Known connector but an unrecognized status / no redirect — render a
+  // sensible fallback rather than vanishing silently.
+  return <ComposioStatusUnknown displayName={displayName} />;
 }
 
 export default ComposioAuthResult;

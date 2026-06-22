@@ -1,9 +1,10 @@
 "use client";
 
 import { RetrieveVideoContentResult } from "@/components/VercelChat/types";
-import { Download, Video, Film } from "lucide-react";
+import { Download, Video, Film, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { ToolCard, ToolCardBody } from "../shared/ToolCard";
 import { ToolError } from "../shared/ToolError";
 import { ToolEmpty } from "../shared/ToolEmpty";
@@ -14,6 +15,17 @@ interface Sora2VideoResultProps {
 
 export function Sora2VideoResult({ result }: Sora2VideoResultProps) {
   const [videoError, setVideoError] = useState<string | null>(null);
+  const [canPlay, setCanPlay] = useState(false);
+  const [started, setStarted] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const reduceMotion = useReducedMotion();
+
+  const handlePlayOverlay = () => {
+    setStarted(true);
+    videoRef.current?.play().catch(() => {
+      // Autoplay may be blocked; native controls remain available.
+    });
+  };
 
   if (!result.success) {
     return (
@@ -74,15 +86,53 @@ export function Sora2VideoResult({ result }: Sora2VideoResultProps) {
               <p className="text-sm text-muted-foreground">{videoError}</p>
             </div>
           ) : (
-            <video
-              controls
-              className="aspect-video w-full rounded-xl border border-border bg-black object-contain shadow-sm"
-              src={result.videoUrl}
-              onError={handleVideoError}
-              preload="metadata"
-            >
-              Your browser does not support the video tag.
-            </video>
+            <div className="group relative aspect-video w-full overflow-hidden rounded-xl border border-border bg-black shadow-sm">
+              <motion.video
+                ref={videoRef}
+                controls
+                className="h-full w-full object-contain"
+                src={result.videoUrl}
+                onError={handleVideoError}
+                onCanPlay={() => setCanPlay(true)}
+                preload="metadata"
+                initial={false}
+                animate={{ opacity: canPlay ? 1 : 0 }}
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              >
+                Your browser does not support the video tag.
+              </motion.video>
+
+              {/* Poster scrim + play affordance shown before the first play */}
+              {!started && (
+                <motion.button
+                  type="button"
+                  onClick={handlePlayOverlay}
+                  aria-label="Play video"
+                  className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-t from-black/40 via-transparent to-black/10"
+                  initial={false}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  whileHover={reduceMotion ? undefined : { scale: 1.0 }}
+                >
+                  <motion.span
+                    className="flex size-14 items-center justify-center rounded-full bg-background/70 text-foreground shadow-lg backdrop-blur-sm transition-colors group-hover:bg-background/85"
+                    initial={false}
+                    animate={
+                      reduceMotion || canPlay
+                        ? { scale: 1 }
+                        : { scale: [1, 1.08, 1] }
+                    }
+                    transition={{
+                      duration: 1.8,
+                      ease: "easeInOut",
+                      repeat: canPlay ? 0 : Infinity,
+                    }}
+                  >
+                    <Play className="size-6 translate-x-0.5" />
+                  </motion.span>
+                </motion.button>
+              )}
+            </div>
           )
         ) : (
           <ToolEmpty

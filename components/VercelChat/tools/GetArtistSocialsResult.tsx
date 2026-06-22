@@ -1,4 +1,7 @@
+"use client";
+
 import { SocialsResponse } from "@/types/Social";
+import { motion } from "framer-motion";
 import { Share2, Users } from "lucide-react";
 import { ReactNode } from "react";
 import { ArtistSocial } from "./ArtistSocial";
@@ -56,11 +59,27 @@ export default function GetArtistSocialsResult({
     >
       {hasSocials ? (
         <ToolCardBody>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+          <motion.div
+            className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              visible: { transition: { staggerChildren: 0.05 } },
+            }}
+          >
             {socials.map((social) => (
-              <ArtistSocial key={social.id} social={social} />
+              <motion.div
+                key={social.id}
+                variants={{
+                  hidden: { opacity: 0, y: 6 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <ArtistSocial social={social} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </ToolCardBody>
       ) : (
         <ToolEmpty

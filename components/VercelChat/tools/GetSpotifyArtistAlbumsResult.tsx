@@ -1,9 +1,17 @@
+"use client";
+
 import React from "react";
+import { motion } from "framer-motion";
 import { Disc3 } from "lucide-react";
 import { SpotifyArtistAlbumsResultUIType } from "@/types/spotify";
 import SpotifyContentCard from "./SpotifyContentCard";
 import { ToolCard, ToolCardBody } from "./shared/ToolCard";
 import { ToolEmpty } from "./shared/ToolEmpty";
+
+const gridStagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } },
+};
 
 const GetSpotifyArtistAlbumsResult: React.FC<{
   result: SpotifyArtistAlbumsResultUIType;
@@ -39,25 +47,26 @@ const GetSpotifyArtistAlbumsResult: React.FC<{
       }
     >
       <ToolCardBody>
-        <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-4">
+        <motion.div
+          variants={gridStagger}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-4"
+        >
           {result.items.map((album) => {
             const releaseYear = album.release_date
               ? new Date(album.release_date).getFullYear()
               : null;
-            // Surface the release year as the card subtitle (in place of artist).
-            const displayAlbum = {
-              ...album,
-              artists:
-                releaseYear && album.artists.length > 0
-                  ? [{ ...album.artists[0], name: releaseYear.toString() }]
-                  : album.artists,
-            };
 
             return (
-              <SpotifyContentCard key={album.id} content={displayAlbum} />
+              <SpotifyContentCard
+                key={album.id}
+                content={album}
+                subtitle={releaseYear ? releaseYear.toString() : undefined}
+              />
             );
           })}
-        </div>
+        </motion.div>
       </ToolCardBody>
     </ToolCard>
   );

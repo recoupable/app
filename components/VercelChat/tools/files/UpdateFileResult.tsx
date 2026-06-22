@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, FileEdit } from "lucide-react";
+import { Check, FileEdit, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { ToolCard, ToolCardBody, ToolCardRow } from "../shared/ToolCard";
 import { ToolError } from "../shared/ToolError";
@@ -95,11 +95,12 @@ export function UpdateFileResult({ result }: UpdateFileResultProps) {
               rel="noopener noreferrer"
               className="block"
             >
-              <ToolCardRow className="cursor-pointer">
+              <ToolCardRow className="group cursor-pointer transition-colors hover:bg-muted/60">
                 <FileEdit className="size-4 shrink-0 text-muted-foreground" />
                 <span className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
                   {result.path}
                 </span>
+                <ArrowUpRight className="size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
               </ToolCardRow>
             </Link>
           ) : (

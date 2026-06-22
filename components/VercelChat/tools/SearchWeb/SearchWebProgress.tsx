@@ -1,4 +1,13 @@
+"use client";
+
 import React from "react";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useTransform,
+  animate,
+} from "framer-motion";
 import { Search, Globe, Sparkles } from "lucide-react";
 import { Response } from "@/components/ai-elements/response";
 import { SearchProgress } from "@/lib/search/searchProgressUtils";
@@ -9,6 +18,22 @@ import { ToolCard, ToolCardBody } from "../shared/ToolCard";
 interface SearchWebProgressProps {
   progress: SearchProgress;
 }
+
+/** Small animated integer that tweens toward `value` whenever it changes. */
+const CountUp: React.FC<{ value: number }> = ({ value }) => {
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, (latest) => Math.round(latest));
+
+  React.useEffect(() => {
+    const controls = animate(count, value, {
+      duration: 0.4,
+      ease: [0.22, 1, 0.36, 1],
+    });
+    return controls.stop;
+  }, [value, count]);
+
+  return <motion.span className="tabular-nums">{rounded}</motion.span>;
+};
 
 export const SearchWebProgress: React.FC<SearchWebProgressProps> = ({
   progress,
@@ -32,7 +57,7 @@ export const SearchWebProgress: React.FC<SearchWebProgressProps> = ({
     );
   }
 
-  // Reviewing state: Display query pill AND list of sources being reviewed.
+  // Reviewing state: Display query pill AND list of sources as they stream in.
   if (progress.status === "reviewing") {
     const searchResults = progress.searchResults || [];
 
@@ -44,8 +69,8 @@ export const SearchWebProgress: React.FC<SearchWebProgressProps> = ({
         title="Reviewing sources"
         subtitle={`${searchResults.length} ${searchResults.length === 1 ? "source" : "sources"} found`}
         trailing={
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-            {searchResults.length}
+          <span className="flex min-w-6 items-center justify-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+            <CountUp value={searchResults.length} />
           </span>
         }
       >
@@ -54,9 +79,21 @@ export const SearchWebProgress: React.FC<SearchWebProgressProps> = ({
             <SearchQueryPill query={progress.query} active />
           ) : null}
           <div className="space-y-0.5">
-            {searchResults.map((item, index) => (
-              <SearchResultItem key={index} result={item} />
-            ))}
+            <AnimatePresence initial={false}>
+              {searchResults.map((item, index) => (
+                <motion.div
+                  key={item.url ?? index}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.24,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                >
+                  <SearchResultItem result={item} index={index + 1} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </ToolCardBody>
       </ToolCard>

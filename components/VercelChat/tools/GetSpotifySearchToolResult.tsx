@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { SpotifySearchResponse } from "@/types/spotify";
 import SpotifyContentCard from "./SpotifyContentCard";
@@ -14,6 +17,17 @@ const typeLabels: Record<string, string> = {
   shows: "Shows",
   episodes: "Episodes",
   audiobooks: "Audiobooks",
+};
+
+// Sections cascade top-down; cards within each rail cascade left-to-right.
+const sectionStagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06 } },
+};
+
+const railStagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.04 } },
 };
 
 const GetSpotifySearchToolResult: React.FC<{
@@ -59,31 +73,47 @@ const GetSpotifySearchToolResult: React.FC<{
       subtitle={`${totalResults} result${totalResults === 1 ? "" : "s"} across ${sections.length} categor${sections.length === 1 ? "y" : "ies"}`}
     >
       <ToolCardBody className="space-y-5">
-        {sections.map(([key, section]) => (
-          <div key={key}>
-            <div className="mb-2 flex items-center justify-between px-1">
-              <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                {typeLabels[key] || key}
-              </h4>
-              <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                {section.items.length}
-              </span>
-            </div>
-            <div className="-mx-1 flex snap-x gap-1 overflow-x-auto pb-1">
-              {section.items.map((item, idx) => {
-                const obj = item as { id?: string };
-                return (
-                  <div
-                    key={obj.id || idx}
-                    className="w-[132px] shrink-0 snap-start"
-                  >
-                    <SpotifyContentCard content={item as SpotifyContent} />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+        <motion.div
+          variants={sectionStagger}
+          initial="hidden"
+          animate="show"
+          className="space-y-5"
+        >
+          {sections.map(([key, section]) => (
+            <motion.div
+              key={key}
+              variants={{
+                hidden: { opacity: 0, y: 8 },
+                show: { opacity: 1, y: 0 },
+              }}
+            >
+              <div className="mb-2 flex items-center justify-between px-1">
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {typeLabels[key] || key}
+                </h4>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                  {section.items.length}
+                </span>
+              </div>
+              <motion.div
+                variants={railStagger}
+                className="-mx-1 flex snap-x gap-1 overflow-x-auto pb-1"
+              >
+                {section.items.map((item, idx) => {
+                  const obj = item as { id?: string };
+                  return (
+                    <div
+                      key={obj.id || idx}
+                      className="w-[132px] shrink-0 snap-start"
+                    >
+                      <SpotifyContentCard content={item as SpotifyContent} />
+                    </div>
+                  );
+                })}
+              </motion.div>
+            </motion.div>
+          ))}
+        </motion.div>
       </ToolCardBody>
     </ToolCard>
   );
