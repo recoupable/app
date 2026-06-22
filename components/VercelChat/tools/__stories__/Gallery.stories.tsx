@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { Sparkles } from "lucide-react";
 import {
@@ -22,21 +21,21 @@ import { StoryBoundary } from "./StoryBoundary";
 
 const IMG = "/dashboard.png";
 
-const chats: any = {
+const chats: React.ComponentProps<typeof GetChatsResult>["result"] = {
   chats: [
     { id: "1", title: "Q3 release strategy for Nova", sessionId: "s1", accountId: "a1", updatedAt: new Date().toISOString() },
     { id: "2", title: "TikTok campaign brainstorm", sessionId: "s1", accountId: "a1", updatedAt: new Date().toISOString() },
     { id: "3", title: "Untitled Chat", sessionId: "s1", accountId: "a1", updatedAt: new Date().toISOString() },
   ],
 };
-const search: any = {
+const search: React.ComponentProps<typeof SearchApiResult>["result"] = {
   formatted: "",
   results: [
     { title: "Nova announces sophomore album 'Aurora' — Pitchfork", url: "https://pitchfork.com/news/nova-aurora", snippet: "The rising pop artist revealed a 12-track record arriving this fall, produced with longtime collaborator Jae Park.", date: "2026-05-12" },
     { title: "How Nova built a 2M-strong fanbase on short-form video", url: "https://www.rollingstone.com/music/nova-fanbase", snippet: "A look at the creative strategy behind one of the year's fastest-growing independent acts.", date: "2026-04-28" },
   ],
 };
-const youtube: any = {
+const youtube: React.ComponentProps<typeof YouTubeRevenueResult>["result"] = {
   success: true,
   status: "ok",
   revenueData: {
@@ -47,15 +46,17 @@ const youtube: any = {
     isMonetized: true,
   },
 };
-const albums: any = {
+// Partial fixture asserted to the result type — stories only exercise the
+// fields the component reads (cover art, name, release year, artist name).
+const albums = {
   total: 9,
   items: [
     { id: "al1", name: "Aurora", release_date: "2026-09-04", images: [{ url: IMG }], artists: [{ id: "a1", name: "Nova" }], type: "album" },
     { id: "al2", name: "Midnight Drives", release_date: "2024-03-15", images: [{ url: IMG }], artists: [{ id: "a1", name: "Nova" }], type: "album" },
     { id: "al3", name: "First Light - EP", release_date: "2022-07-01", images: [{ url: IMG }], artists: [{ id: "a1", name: "Nova" }], type: "album" },
   ],
-};
-const socials: any = {
+} as unknown as React.ComponentProps<typeof GetSpotifyArtistAlbumsResult>["result"];
+const socials = {
   status: "success",
   socials: [
     { id: "s1", profile_url: "instagram.com/novamusic", follower_count: 1200000 },
@@ -63,9 +64,14 @@ const socials: any = {
     { id: "s3", profile_url: "tiktok.com/@novamusic", follower_count: 2100000 },
     { id: "s4", profile_url: "spotify.com/artist/nova", follower_count: 95000 },
   ],
-};
+} as unknown as React.ComponentProps<typeof GetArtistSocialsResult>["result"];
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+interface SectionProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+function Section({ title, children }: SectionProps) {
   return (
     <div className="space-y-3">
       <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>

@@ -19,17 +19,23 @@ const GenericSuccess = ({
   children?: React.ReactNode;
 }) => {
   const prettyName = humanizeToolName(name);
+  // Only render images from app-relative or https sources (defense-in-depth,
+  // consistent with the href validation used elsewhere in tool cards).
+  const safeImage =
+    image && (image.startsWith("/") || image.startsWith("https://"))
+      ? image
+      : undefined;
 
   return (
     <ToolCard
       tone="success"
-      icon={image ? undefined : Check}
+      icon={safeImage ? undefined : Check}
       media={
-        image ? (
+        safeImage ? (
           <div className="flex size-9 items-center justify-center overflow-hidden rounded-xl bg-muted">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={image}
+              src={safeImage}
               alt={prettyName}
               width={36}
               height={36}

@@ -54,19 +54,24 @@ export default function RunSandboxCommandResultWithPolling({
 }: {
   runId: string;
 }) {
-  const { data, isLoading } = useTaskRunStatus(runId);
+  const { data, isLoading, error } = useTaskRunStatus(runId);
 
   if (isLoading) {
     return <SandboxRunningSkeleton />;
   }
 
   // Polling finished but no run data is available — surface an error instead of
-  // spinning the skeleton forever.
+  // spinning the skeleton forever. No retry affordance here, so the copy
+  // doesn't promise one.
   if (!data) {
     return (
       <ToolError
         title="Sandbox"
-        message="We couldn't load the sandbox run results. Please try again."
+        message={
+          error instanceof Error
+            ? `We couldn't load the sandbox run results: ${error.message}`
+            : "We couldn't load the sandbox run results."
+        }
       />
     );
   }
