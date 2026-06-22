@@ -37,10 +37,12 @@ export function Sora2VideoResult({ result }: Sora2VideoResultProps) {
   }
 
   // Only treat the URL as safe for playback/download when it's an https URL or
-  // a same-origin relative path — never a javascript:/data: scheme.
+  // a same-origin relative path — never a javascript:/data: scheme, and never a
+  // protocol-relative URL ("//host/…") which would resolve to a foreign origin.
   const safeVideoUrl =
     typeof result.videoUrl === "string" &&
-    (result.videoUrl.startsWith("https://") || result.videoUrl.startsWith("/"))
+    (result.videoUrl.startsWith("https://") ||
+      (result.videoUrl.startsWith("/") && !result.videoUrl.startsWith("//")))
       ? result.videoUrl
       : null;
 

@@ -4,7 +4,7 @@ import { ExternalLink } from "lucide-react";
 import ArtistSocialDisplayText from "./ArtistSocialDisplayText";
 import getSocialPlatformByLink from "@/lib/getSocialPlatformByLink";
 import getPlatformDisplayName from "@/lib/socials/getPlatformDisplayName";
-import { getPlatformVisual } from "./platformVisual";
+import { getPlatformVisual } from "./getPlatformVisual";
 import { cn } from "@/lib/utils";
 
 /** Compact follower-count formatter (1.2K / 3.4M). */
