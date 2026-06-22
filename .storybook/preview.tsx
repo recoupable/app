@@ -1,26 +1,31 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import type { Preview } from "@storybook/nextjs-vite";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "../app/globals.css";
 
-const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: false } },
-});
-
-/** Applies the app's real `.dark` class toggle to <html> based on the toolbar. */
-function ThemeWrapper({
+/**
+ * Per-story wrapper: a fresh QueryClient (so cache never leaks between stories)
+ * plus the app's real `.dark` class toggle driven by the toolbar.
+ */
+function StoryWrapper({
   theme,
   children,
 }: {
   theme: string;
   children: React.ReactNode;
 }) {
+  // useState initializer runs once per story mount → isolated cache per story.
+  const [queryClient] = useState(
+    () => new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+  );
   useEffect(() => {
     const root = document.documentElement;
     root.classList.toggle("dark", theme === "dark");
     root.style.colorScheme = theme;
   }, [theme]);
-  return <>{children}</>;
+  return (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
 }
 
 const preview: Preview = {
@@ -46,13 +51,11 @@ const preview: Preview = {
   },
   decorators: [
     (Story, context) => (
-      <QueryClientProvider client={queryClient}>
-        <ThemeWrapper theme={context.globals.theme}>
-          <div className="bg-background p-6 text-foreground">
-            <Story />
-          </div>
-        </ThemeWrapper>
-      </QueryClientProvider>
+      <StoryWrapper theme={context.globals.theme}>
+        <div className="bg-background p-6 text-foreground">
+          <Story />
+        </div>
+      </StoryWrapper>
     ),
   ],
 };
