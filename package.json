@@ -10,7 +10,9 @@
     "format": "prettier --write app components providers types hooks lib && pnpm lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "update-types": "npx supabase gen types typescript --project-id godremdqwajrwazhbrue --schema public > types/database.types.ts"
+    "update-types": "npx supabase gen types typescript --project-id godremdqwajrwazhbrue --schema public > types/database.types.ts",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "3.0.80",
@@ -114,6 +116,7 @@
     "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@storybook/nextjs-vite": "^10.4.6",
     "@tailwindcss/postcss": "^4.1.17",
     "@tailwindcss/typography": "0.5.0-alpha.3",
     "@types/node": "^20",
@@ -129,8 +132,10 @@
     "eslint-plugin-storybook": "^10.0.7",
     "postcss": "^8",
     "prettier": "3.3.3",
+    "storybook": "^10.4.6",
     "tailwindcss": "^4.1.17",
     "typescript": "^5",
+    "vite": "^8.0.16",
     "vitest": "^4.0.8"
   }
 }
