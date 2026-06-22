@@ -21,7 +21,9 @@ const CreateTaskSuccess: React.FC<CreateTaskSuccessProps> = ({
 }) => {
   // Error state
   if (!task) {
-    return <TaskError error="The task couldn't be scheduled. Please try again." />;
+    return (
+      <TaskError error="The task couldn't be scheduled. Please try again." />
+    );
   }
 
   // Confirm the consequence: when this first runs, not just "saved".
