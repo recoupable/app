@@ -21,8 +21,7 @@ import UpdateArtistSocialsSuccess from "./tools/UpdateArtistSocialsSuccess";
 import { UpdateArtistSocialsResult } from "./tools/UpdateArtistSocialsSuccess";
 import { TxtFileResult } from "@/components/ui/TxtFileResult";
 import { TxtFileGenerationResult } from "@/components/ui/TxtFileResult";
-import GenericSuccess from "./tools/GenericSuccess";
-import getToolInfo from "@/lib/tools/getToolInfo";
+import GenericToolCard from "./tools/GenericToolCard";
 import { isSearchProgressUpdate } from "@/lib/search/searchProgressUtils";
 import YouTubeRevenueResult, {
   type YouTubeRevenueResult as YouTubeRevenueResultType,
@@ -252,15 +251,16 @@ export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
     );
   }
 
-  // Default generic result for other tools
+  // Default for tools without bespoke UI (incl. unknown/MCP tools): a plain-
+  // English card that echoes the input and offers the raw output, so a
+  // non-technical user understands the step and repeated calls look distinct.
   return (
-    <GenericSuccess
+    <GenericToolCard
       key={toolCallId}
       name={toolName}
-      message={
-        (result as { message?: string }).message ??
-        getToolInfo(toolName).message
-      }
+      input={(part as { input?: unknown }).input}
+      output={result}
+      message={(result as { message?: string }).message}
     />
   );
 }

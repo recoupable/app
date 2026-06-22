@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import type { Preview } from "@storybook/nextjs-vite";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { StoryBoundary } from "../components/VercelChat/tools/__stories__/StoryBoundary";
 import "../app/globals.css";
 
 /**
@@ -53,7 +54,9 @@ const preview: Preview = {
     (Story, context) => (
       <StoryWrapper theme={context.globals.theme}>
         <div className="bg-background p-6 text-foreground">
-          <Story />
+          <StoryBoundary label={context.title || "Story"}>
+            <Story />
+          </StoryBoundary>
         </div>
       </StoryWrapper>
     ),
