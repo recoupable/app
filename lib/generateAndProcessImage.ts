@@ -1,9 +1,9 @@
-import { Experimental_GenerateImageResult } from "ai";
+import { GenerateImageResult } from "ai";
 import Transaction from "arweave/node/lib/transaction";
 import { Address, Hash } from "viem";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
-interface RecoupImageGenerateResponse extends Experimental_GenerateImageResult {
+interface RecoupImageGenerateResponse extends GenerateImageResult {
   imageUrl: string;
   arweaveResult: Transaction;
   moment: {

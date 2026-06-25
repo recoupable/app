@@ -13,12 +13,12 @@
     "update-types": "npx supabase gen types typescript --project-id godremdqwajrwazhbrue --schema public > types/database.types.ts"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "3.0.80",
-    "@ai-sdk/gateway": "^3.0.96",
-    "@ai-sdk/google": "3.0.80",
-    "@ai-sdk/mcp": "^0.0.11",
-    "@ai-sdk/openai": "3.0.66",
-    "@ai-sdk/react": "3.0.167",
+    "@ai-sdk/anthropic": "^4.0.0",
+    "@ai-sdk/gateway": "^4.0.2",
+    "@ai-sdk/google": "^4.0.0",
+    "@ai-sdk/mcp": "^2.0.0",
+    "@ai-sdk/openai": "^4.0.0",
+    "@ai-sdk/react": "^4.0.2",
     "@browserbasehq/stagehand": "^2.5.2",
     "@coinbase/cdp-sdk": "^1.4.0",
     "@coinbase/onchainkit": "^0.38.8",
@@ -55,7 +55,7 @@
     "@uiw/react-heat-map": "^2.3.2",
     "@vercel/analytics": "^1.5.0",
     "@vercel/blob": "^2.3.2",
-    "ai": "6.0.165",
+    "ai": "^7.0.2",
     "apify-client": "^2.9.7",
     "arweave": "^1.15.7",
     "class-variance-authority": "^0.7.1",
@@ -111,7 +111,7 @@
     "viem": "2.x",
     "wagmi": "^2.15.4",
     "x402-mcp": "^0.1.1",
-    "zod": "^3.25.0"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",

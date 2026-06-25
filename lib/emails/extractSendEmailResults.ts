@@ -1,6 +1,6 @@
 import {
   getToolOrDynamicToolName,
-  isToolOrDynamicToolUIPart,
+  isToolUIPart,
   UIMessage,
 } from "ai";
 
@@ -23,7 +23,7 @@ export function extractSendEmailResults(
 
   for (const message of responseMessages) {
     for (const part of message.parts) {
-      const isDynamicTool = isToolOrDynamicToolUIPart(part);
+      const isDynamicTool = isToolUIPart(part);
       if (!isDynamicTool) continue;
       const isSendEmailTool = getToolOrDynamicToolName(part) === "send_email";
       if (!isSendEmailTool) continue;

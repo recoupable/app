@@ -1,4 +1,4 @@
-import { experimental_generateImage as generate } from "ai";
+import { generateImage as generate } from "ai";
 import { openai } from "@ai-sdk/openai";
 import uploadToArweave from "../arweave/uploadToArweave";
 

@@ -17,7 +17,7 @@ const generateArray = async ({
 }): Promise<GenerateArrayResult[]> => {
   const result = await generateObject({
     model: anthropic(ANTHROPIC_MODEL),
-    system,
+    instructions: system,
     prompt,
     output: "array",
     schema: z.object({

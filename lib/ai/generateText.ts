@@ -11,7 +11,7 @@ const generateText = async ({
   model?: string;
 }) => {
   const result = await generate({
-    system,
+    instructions: system,
     model: model || DEFAULT_MODEL,
     prompt,
   });

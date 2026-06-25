@@ -1,7 +1,7 @@
 import {
   ToolUIPart,
   UIMessage,
-  isToolOrDynamicToolUIPart,
+  isToolUIPart,
   UIMessagePart,
   UIDataTypes,
   UITools,
@@ -105,7 +105,7 @@ export function MessageParts({ message, mode, setMode }: MessagePartsProps) {
             }
           }
 
-          if (isToolOrDynamicToolUIPart(part)) {
+          if (isToolUIPart(part)) {
             const { state } = part as ToolUIPart;
             if (state !== "output-available") {
               return getToolCallComponent(part as ToolUIPart);
