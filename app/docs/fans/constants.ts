@@ -1,5 +1,7 @@
+import { API_PUBLIC_BASE_URL } from "@/lib/consts";
+
 export const codeExamples = {
-  curl: `curl -X GET "https://api.recoupable.com/api/fans?artist_account_id=YOUR_ARTIST_ACCOUNT_ID&page=1&limit=20" \\
+  curl: `curl -X GET "${API_PUBLIC_BASE_URL}/api/fans?artist_account_id=YOUR_ARTIST_ACCOUNT_ID&page=1&limit=20" \\
   -H "Content-Type: application/json"`,
   python: `import requests
 
@@ -13,9 +15,9 @@ params = {
     "limit": 20
 }
 
-response = requests.get("https://api.recoupable.com/api/fans", headers=headers, params=params)
+response = requests.get("${API_PUBLIC_BASE_URL}/api/fans", headers=headers, params=params)
 data = response.json()`,
-  javascript: `fetch("https://api.recoupable.com/api/fans?artist_account_id=YOUR_ARTIST_ACCOUNT_ID&page=1&limit=20", {
+  javascript: `fetch("${API_PUBLIC_BASE_URL}/api/fans?artist_account_id=YOUR_ARTIST_ACCOUNT_ID&page=1&limit=20", {
   headers: {
     "Content-Type": "application/json"
   }
@@ -51,7 +53,7 @@ const fetchArtistFans = async (
   limit: number = 20
 ) => {
   const response = await fetch(
-    \`https://api.recoupable.com/api/fans?artist_account_id=\${artistAccountId}&page=\${page}&limit=\${limit}\`, 
+    \`${API_PUBLIC_BASE_URL}/api/fans?artist_account_id=\${artistAccountId}&page=\${page}&limit=\${limit}\`, 
     {
       headers: {
         "Content-Type": "application/json"

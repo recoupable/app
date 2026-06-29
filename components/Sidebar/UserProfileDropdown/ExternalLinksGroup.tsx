@@ -3,6 +3,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { DOCS_BASE_URL } from "@/lib/consts";
 
 const ExternalLinksGroup = () => (
   <DropdownMenuGroup>
@@ -14,7 +15,7 @@ const ExternalLinksGroup = () => (
       </a>
     </DropdownMenuItem>
     <DropdownMenuItem asChild className="cursor-pointer">
-      <a href="https://developers.recoupable.com" target="_blank" rel="noopener noreferrer">
+      <a href={DOCS_BASE_URL} target="_blank" rel="noopener noreferrer">
         <HelpCircle className="h-4 w-4" />
         Help & Docs
         <ExternalLink className="h-3 w-3 ml-auto text-muted-foreground" />

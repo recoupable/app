@@ -29,7 +29,7 @@ export default function PostsDocs() {
         <div className="mb-6">
           <h3 className="text-lg md:text-xl font-semibold mb-2">Endpoint</h3>
           <code className="block bg-gray-100 p-2 md:p-4 rounded text-sm md:text-base break-all">
-            GET https://api.recoupable.com/api/posts
+            GET https://api.recoupable.dev/api/posts
           </code>
         </div>
 

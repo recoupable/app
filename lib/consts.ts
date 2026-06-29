@@ -4,6 +4,9 @@ export const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
 export const NEW_API_BASE_URL = IS_PROD
   ? "https://api.recoupable.dev"
   : "https://test-recoup-api.vercel.app";
+export const APP_BASE_URL = "https://chat.recoupable.dev";
+export const DOCS_BASE_URL = "https://docs.recoupable.dev";
+export const API_PUBLIC_BASE_URL = "https://api.recoupable.dev";
 export const API_OVERRIDE_STORAGE_KEY = "recoup_api_override";
 export const ACCOUNT_OVERRIDE_STORAGE_KEY = "recoup_account_override";
 export const IN_PROCESS_PROTOCOL_ADDRESS = IS_PROD

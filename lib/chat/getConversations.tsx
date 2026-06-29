@@ -42,7 +42,7 @@ const apiChatsResponseSchema = z.object({
  * boundary — a malformed row (missing/wrongly typed field) raises and
  * we fall back to `[]` rather than letting bad data flow into the UI.
  *
- * @see https://developers.recoupable.com/api-reference/chat/chats
+ * @see https://docs.recoupable.dev/api-reference/chat/chats
  */
 const getConversations = async (
   accessToken: string,
