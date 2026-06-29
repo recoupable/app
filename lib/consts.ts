@@ -2,7 +2,7 @@ import { Address } from "viem";
 
 export const IS_PROD = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
 export const NEW_API_BASE_URL = IS_PROD
-  ? "https://api.recoupable.com"
+  ? "https://api.recoupable.dev"
   : "https://test-recoup-api.vercel.app";
 export const API_OVERRIDE_STORAGE_KEY = "recoup_api_override";
 export const ACCOUNT_OVERRIDE_STORAGE_KEY = "recoup_account_override";
