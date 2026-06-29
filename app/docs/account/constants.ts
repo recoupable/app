@@ -1,5 +1,7 @@
+import { API_PUBLIC_BASE_URL } from "@/lib/consts";
+
 export const codeExamples = {
-  curl: `curl -X GET "https://api.recoupable.com/api/account" \\
+  curl: `curl -X GET "${API_PUBLIC_BASE_URL}/api/account" \\
   -H "Content-Type: application/json" \\
   -d '{"accountId": "YOUR_ACCOUNT_ID"}'`,
   python: `import requests
@@ -12,9 +14,9 @@ params = {
     "accountId": "YOUR_ACCOUNT_ID"
 }
 
-response = requests.get("https://api.recoupable.com/api/account", headers=headers, params=params)
+response = requests.get("${API_PUBLIC_BASE_URL}/api/account", headers=headers, params=params)
 data = response.json()`,
-  javascript: `fetch("https://api.recoupable.com/api/account?accountId=YOUR_ACCOUNT_ID", {
+  javascript: `fetch("${API_PUBLIC_BASE_URL}/api/account?accountId=YOUR_ACCOUNT_ID", {
   headers: {
     "Content-Type": "application/json"
   }
@@ -39,7 +41,7 @@ interface AccountSocialsResponse {
 }
 
 const fetchAccountSocials = async (accountId: string) => {
-  const response = await fetch(\`https://api.recoupable.com/api/account?accountId=\${accountId}\`, {
+  const response = await fetch(\`${API_PUBLIC_BASE_URL}/api/account?accountId=\${accountId}\`, {
     headers: {
       "Content-Type": "application/json"
     }

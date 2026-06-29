@@ -17,7 +17,7 @@ export interface UpdateTaskParams {
 
 /**
  * Updates an existing task via the Recoup API
- * @see https://docs.recoupable.com/tasks/update
+ * @see https://docs.recoupable.dev/tasks/update
  */
 export async function updateTask(
   accessToken: string,
