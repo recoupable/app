@@ -12,7 +12,7 @@ interface DeleteTaskResponse {
 /**
  * Deletes a task via the Recoup API.
  * Missing or empty token still issues a request; the API enforces auth.
- * @see https://docs.recoupable.com/tasks/delete
+ * @see https://docs.recoupable.dev/tasks/delete
  */
 export async function deleteTask(
   accessToken: string | null | undefined,
