@@ -34,7 +34,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
       <p className="text-sm text-gray-500">
         Still having trouble?{" "}
         <a
-          href="mailto:support@recoupable.com"
+          href="mailto:support@recoupable.dev"
           className="text-blue-600 hover:text-blue-700 underline"
         >
           Get help from our team
