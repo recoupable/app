@@ -8,9 +8,9 @@ import { DOCS_BASE_URL } from "@/lib/consts";
 const ExternalLinksGroup = () => (
   <DropdownMenuGroup>
     <DropdownMenuItem asChild className="cursor-pointer">
-      <a href="https://recoupable.com" target="_blank" rel="noopener noreferrer">
+      <a href="https://recoupable.dev" target="_blank" rel="noopener noreferrer">
         <House className="h-4 w-4" />
-        recoupable.com
+        recoupable.dev
         <ExternalLink className="h-3 w-3 ml-auto text-muted-foreground" />
       </a>
     </DropdownMenuItem>
