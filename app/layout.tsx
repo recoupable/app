@@ -12,7 +12,7 @@ import ArtistsSidebar from "@/components/Artists/ArtistsSidebar";
 import { ToastContainer } from "react-toastify";
 import { Toaster } from "sonner";
 import { Geist, Geist_Mono } from "next/font/google";
-import DeferredAnalytics from "@/components/DeferredAnalytics";
+import { Analytics } from "@vercel/analytics/next";
 import AccountOverrideBadge from "@/components/AccountOverrideBadge";
 
 const geist = Geist({
@@ -99,7 +99,7 @@ export default function RootLayout({
             <Toaster />
           </Providers>
         </Suspense>
-        <DeferredAnalytics />
+        <Analytics />
       </body>
     </html>
   );
