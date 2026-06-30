@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 const TermsPage = () => {
-  redirect("https://www.recoupable.com/terms-of-service");
+  redirect("https://recoupable.dev/terms-of-use");
   return null; // Fallback render (unreachable)
 };
 

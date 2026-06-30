@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 const PrivacyPage = () => {
-  redirect("https://www.recoupable.com/privacy-policy");
+  redirect("https://recoupable.dev/privacy-policy");
   return null; // Fallback render (unreachable)
 };
 
