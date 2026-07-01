@@ -91,7 +91,7 @@ export const responseProperties = [
     description: "List of social media accounts associated with the account",
   },
   {
-    name: "socials[].id",
+    name: "socials[].social_id",
     type: "string",
     description: "Unique identifier for the social account",
   },

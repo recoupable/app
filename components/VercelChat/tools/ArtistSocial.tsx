@@ -12,7 +12,7 @@ export const ArtistSocial = ({ social }: { social: SocialType }) => {
 
   return (
     <Link
-      key={social.id}
+      key={social.social_id}
       href={`https://${social.profile_url}`}
       target="_blank"
       rel="noopener noreferrer"

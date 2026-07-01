@@ -47,7 +47,7 @@ export default function GetArtistSocialsResult({
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {socials.map((social) => (
-              <ArtistSocial key={social.id} social={social} />
+              <ArtistSocial key={social.social_id} social={social} />
             ))}
           </div>
         </div>
