@@ -1,5 +1,6 @@
 export interface Social {
   id: string;
+  social_id: string;
   username: string;
   avatar: string | null;
   profile_url: string;
