@@ -10,25 +10,17 @@ This file provides guidance to coding agents like Claude Code (claude.ai/code) a
 2. Push commits to the current feature branch
 3. **NEVER push directly to `main` or `test` branches** - always use feature branches and PRs
 4. Before pushing, verify the current branch is not `main` or `test`
-5. **Open PRs against the `test` branch**, not `main`
-6. After pushing, check if a PR exists for the branch. If not, create one with `gh pr create --base test`
+5. **Open PRs against `main`** (the `test` branch is retired as a PR target; never target it)
+6. After pushing, check if a PR exists for the branch. If not, create one with `gh pr create --base main`
 7. **After creating a PR, always wait for explicit user approval before merging.** Never merge PRs autonomously.
 
 ### Starting a New Task
 
-When starting a new task, **first sync the `test` branch with `main`**:
-
-```bash
-git checkout test && git pull origin test && git fetch origin main && git merge origin/main && git push origin test
-```
-
-Then checkout main, pull latest, and create your feature branch from there:
+Branch from the latest `main`:
 
 ```bash
 git checkout main && git pull origin main && git checkout -b <branch-name>
 ```
-
-The sync step is the **only** time you should push directly to `test`.
 
 ## Build Commands
 
