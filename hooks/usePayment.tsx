@@ -1,4 +1,3 @@
-import { DEFAULT_CREDITS, PRO_CREDITS } from "@/lib/consts";
 import useCredits from "./useCredits";
 import useProStatus from "./useProStatus";
 import { useUserProvider } from "@/providers/UserProvder";
@@ -17,7 +16,7 @@ const usePayment = () => {
 
   // Check pro status (account subscription or org subscription)
   const isSubscribed = proStatusData?.isPro || false;
-  const totalCredits = isSubscribed ? PRO_CREDITS : DEFAULT_CREDITS;
+  const totalCredits = creditsData?.total_credits || 0;
 
   return {
     isLoading: isLoadingCredits || isLoadingProStatus || isLoadingUser,
