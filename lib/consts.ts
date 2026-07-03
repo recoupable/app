@@ -52,9 +52,6 @@ export const TITLE = "Recoupable";
 export const META_DESCRIPTION =
   "Recoup helps artists build their own record label.";
 
-export const DEFAULT_CREDITS = 333;
-export const PRO_CREDITS = 1000;
-
 // Supabase Private Storage Bucket
 export const SUPABASE_STORAGE_BUCKET = "user-files";
 
