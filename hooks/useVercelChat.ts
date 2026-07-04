@@ -24,6 +24,7 @@ import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { getChatPath } from "@/lib/chat/getChatPath";
+import { shouldAutoSendInitialMessage } from "@/lib/chat/shouldAutoSendInitialMessage";
 import { usePersistSelectedModel } from "./usePersistSelectedModel";
 
 interface UseVercelChatProps {
@@ -107,7 +108,9 @@ export function useVercelChat({
   }, [input]);
 
   // Resolve selected sandbox files for mention context and file attachments.
-  const [mentionAttachments, setMentionAttachments] = useState<FileUIPart[]>([]);
+  const [mentionAttachments, setMentionAttachments] = useState<FileUIPart[]>(
+    [],
+  );
   const [mentionTextContext, setMentionTextContext] = useState("");
   const [isLoadingSignedUrls, setIsLoadingSignedUrls] = useState(false);
 
@@ -115,7 +118,8 @@ export function useVercelChat({
     let cancelled = false;
     const run = async () => {
       if (!selectedFileIds.length) {
-        if (!cancelled) setMentionAttachments((prev) => (prev.length ? [] : prev));
+        if (!cancelled)
+          setMentionAttachments((prev) => (prev.length ? [] : prev));
         if (!cancelled) setMentionTextContext((prev) => (prev ? "" : prev));
         if (!cancelled) setIsLoadingSignedUrls((prev) => (prev ? false : prev));
         return;
@@ -124,7 +128,8 @@ export function useVercelChat({
       const idSet = new Set(selectedFileIds);
       const selected = allArtistFiles.filter((f) => idSet.has(f.id));
       if (selected.length === 0) {
-        if (!cancelled) setMentionAttachments((prev) => (prev.length ? [] : prev));
+        if (!cancelled)
+          setMentionAttachments((prev) => (prev.length ? [] : prev));
         if (!cancelled) setMentionTextContext((prev) => (prev ? "" : prev));
         if (!cancelled) setIsLoadingSignedUrls((prev) => (prev ? false : prev));
         return;
@@ -176,11 +181,14 @@ export function useVercelChat({
 
         if (!cancelled) setMentionAttachments(nextAttachments);
         if (!cancelled)
-          setMentionTextContext(textBlocks.length ? textBlocks.join("\n\n") : "");
+          setMentionTextContext(
+            textBlocks.length ? textBlocks.join("\n\n") : "",
+          );
         if (!cancelled) setIsLoadingSignedUrls(false);
       } catch (e) {
         console.error(e);
-        if (!cancelled) setMentionAttachments((prev) => (prev.length ? [] : prev));
+        if (!cancelled)
+          setMentionAttachments((prev) => (prev.length ? [] : prev));
         if (!cancelled) setMentionTextContext((prev) => (prev ? "" : prev));
         if (!cancelled) setIsLoadingSignedUrls((prev) => (prev ? false : prev));
       }
@@ -377,19 +385,21 @@ export function useVercelChat({
   );
 
   useEffect(() => {
-    const isFullyLoggedIn = userId;
-    const isReady = status === "ready";
-    const hasMessages = messages.length > 1;
-    const hasInitialMessages = initialMessages && initialMessages.length > 0;
-    // Wait for authentication before sending initial message to avoid 401 errors
-    if (
-      !hasInitialMessages ||
-      !isReady ||
-      hasMessages ||
-      !isFullyLoggedIn ||
-      !authenticated
-    )
-      return;
+    // Gates mirror the manual Send button, including the provisioned
+    // sessionId — without it the transport POSTs /api/chat with no
+    // sessionId and 400s (chat#1847). The effect re-runs when the
+    // bootstrap lands, so the ?q= message queues instead of failing.
+    const mayAutoSend = shouldAutoSendInitialMessage({
+      hasInitialMessages: Boolean(
+        initialMessages && initialMessages.length > 0,
+      ),
+      status,
+      messagesLength: messages.length,
+      userId,
+      authenticated,
+      sessionId,
+    });
+    if (!mayAutoSend || !initialMessages) return;
     handleSendQueryMessages(initialMessages[0]);
   }, [
     initialMessages,
@@ -398,6 +408,7 @@ export function useVercelChat({
     handleSendQueryMessages,
     messages.length,
     authenticated,
+    sessionId,
   ]);
 
   return {
