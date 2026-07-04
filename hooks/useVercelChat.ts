@@ -390,8 +390,6 @@ export function useVercelChat({
     initialMessages,
     status,
     messagesLength: messages.length,
-    userId,
-    authenticated,
     sessionId,
     input,
     setInput,

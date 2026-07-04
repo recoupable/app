@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { UIMessage } from "ai";
+import { usePrivy } from "@privy-io/react-auth";
+import { useUserProvider } from "@/providers/UserProvder";
 import { generateUUID } from "@/lib/generateUUID";
 import { getInitialMessageText } from "@/lib/chat/getInitialMessageText";
 import { shouldAutoSendInitialMessage } from "@/lib/chat/shouldAutoSendInitialMessage";
@@ -10,8 +12,6 @@ interface UseInitialMessageAutoSendParams {
   /** useChat transport status — only "ready" may send. */
   status: string;
   messagesLength: number;
-  userId?: string;
-  authenticated: boolean;
   /** Api-minted session id; absent until the bootstrap provisions. */
   sessionId?: string;
   input: string;
@@ -23,7 +23,9 @@ interface UseInitialMessageAutoSendParams {
 /**
  * The whole ?q= deep-link behavior, self-contained so useVercelChat
  * stays closed against changes here (OCP — this hook is the extension
- * point, like useChatTransport / usePersistSelectedModel):
+ * point, like useChatTransport / usePersistSelectedModel). Auth state
+ * is sourced from usePrivy/useUserProvider directly; params carry only
+ * what is chat-instance-scoped.
  *
  * 1. Prefills the input with the prompt immediately — instant feedback
  *    that the AGENTS click landed while the workspace provisions.
@@ -37,13 +39,15 @@ export function useInitialMessageAutoSend({
   initialMessages,
   status,
   messagesLength,
-  userId,
-  authenticated,
   sessionId,
   input,
   setInput,
   send,
 }: UseInitialMessageAutoSendParams): void {
+  const { authenticated } = usePrivy();
+  const { userData } = useUserProvider();
+  const userId = userData?.account_id || userData?.id;
+
   const initialMessageText = getInitialMessageText(initialMessages);
   const didPrefillRef = useRef(false);
   const didAutoFireRef = useRef(false);
