@@ -24,8 +24,7 @@ import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { getChatPath } from "@/lib/chat/getChatPath";
-import { shouldAutoSendInitialMessage } from "@/lib/chat/shouldAutoSendInitialMessage";
-import { getInitialMessageText } from "@/lib/chat/getInitialMessageText";
+import { useInitialMessageAutoSend } from "./useInitialMessageAutoSend";
 import { usePersistSelectedModel } from "./usePersistSelectedModel";
 
 interface UseVercelChatProps {
@@ -385,58 +384,19 @@ export function useVercelChat({
     [silentlyUpdateUrl, sendMessage, chatRequestBody, getHeaders],
   );
 
-  const initialMessageText = getInitialMessageText(initialMessages);
-  const didPrefillInputRef = useRef(false);
-  const didAutoFireRef = useRef(false);
-
-  useEffect(() => {
-    // Prefill the input with the ?q= prompt so the click gives instant
-    // feedback while the workspace provisions — no dead space wondering
-    // whether it worked. Runs once, and never over an existing
-    // conversation or anything already typed.
-    if (!initialMessageText || didPrefillInputRef.current) return;
-    if (messages.length > 0 || input) return;
-    didPrefillInputRef.current = true;
-    setInput(initialMessageText);
-  }, [initialMessageText, messages.length, input, setInput]);
-
-  useEffect(() => {
-    // Gates mirror the manual Send button, including the provisioned
-    // sessionId — without it the transport POSTs /api/chat with no
-    // sessionId and 400s (chat#1847). The effect re-runs when the
-    // bootstrap lands, so the ?q= message queues instead of failing.
-    const mayAutoSend = shouldAutoSendInitialMessage({
-      hasInitialMessages: Boolean(initialMessageText),
-      status,
-      messagesLength: messages.length,
-      userId,
-      authenticated,
-      sessionId,
-    });
-    if (!mayAutoSend || didAutoFireRef.current) return;
-    didAutoFireRef.current = true;
-    // Fire whatever is in the input — the customer may have edited the
-    // prefilled prompt while waiting (send their version) or cleared it
-    // (they opted out; send nothing), exactly as if they pressed Send.
-    const text = input.trim() ? input : "";
-    if (!text) return;
-    handleSendQueryMessages({
-      id: generateUUID(),
-      role: "user",
-      parts: [{ type: "text", text }],
-    });
-    setInput("");
-  }, [
-    initialMessageText,
+  // The ?q= deep-link behavior (prefill + provisioning-gated auto-fire)
+  // lives entirely in this hook — extend it there, not here (chat#1847).
+  useInitialMessageAutoSend({
+    initialMessages,
     status,
+    messagesLength: messages.length,
     userId,
-    handleSendQueryMessages,
-    messages.length,
     authenticated,
     sessionId,
     input,
     setInput,
-  ]);
+    send: handleSendQueryMessages,
+  });
 
   return {
     // States
