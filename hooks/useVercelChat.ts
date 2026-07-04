@@ -24,7 +24,7 @@ import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { getChatPath } from "@/lib/chat/getChatPath";
-import { shouldAutoSendInitialMessage } from "@/lib/chat/shouldAutoSendInitialMessage";
+import { useInitialMessageAutoSend } from "./useInitialMessageAutoSend";
 import { usePersistSelectedModel } from "./usePersistSelectedModel";
 
 interface UseVercelChatProps {
@@ -384,32 +384,17 @@ export function useVercelChat({
     [silentlyUpdateUrl, sendMessage, chatRequestBody, getHeaders],
   );
 
-  useEffect(() => {
-    // Gates mirror the manual Send button, including the provisioned
-    // sessionId — without it the transport POSTs /api/chat with no
-    // sessionId and 400s (chat#1847). The effect re-runs when the
-    // bootstrap lands, so the ?q= message queues instead of failing.
-    const mayAutoSend = shouldAutoSendInitialMessage({
-      hasInitialMessages: Boolean(
-        initialMessages && initialMessages.length > 0,
-      ),
-      status,
-      messagesLength: messages.length,
-      userId,
-      authenticated,
-      sessionId,
-    });
-    if (!mayAutoSend || !initialMessages) return;
-    handleSendQueryMessages(initialMessages[0]);
-  }, [
+  // The ?q= deep-link behavior (prefill + provisioning-gated auto-fire)
+  // lives entirely in this hook — extend it there, not here (chat#1847).
+  useInitialMessageAutoSend({
     initialMessages,
     status,
-    userId,
-    handleSendQueryMessages,
-    messages.length,
-    authenticated,
+    messagesLength: messages.length,
     sessionId,
-  ]);
+    input,
+    setInput,
+    send: handleSendQueryMessages,
+  });
 
   return {
     // States
