@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useArtistProvider } from "@/providers/ArtistProvider";
-import { useTaskRuns } from "@/hooks/useTaskRuns";
-import { getHomeTasksModuleState } from "@/lib/home/getHomeTasksModuleState";
+import useHomeTasksModuleState from "@/hooks/useHomeTasksModuleState";
 import HomeRunRow from "./HomeRunRow";
 import StarterTaskCard from "./StarterTaskCard";
 
@@ -14,15 +12,7 @@ import StarterTaskCard from "./StarterTaskCard";
  * failure so the homepage never blocks on it.
  */
 const TasksModule = () => {
-  const { data: runs, isLoading, isError } = useTaskRuns();
-  const { selectedArtist } = useArtistProvider();
-
-  const state = getHomeTasksModuleState({
-    runs,
-    runsFailed: isError,
-    isLoading,
-    hasArtist: !!selectedArtist?.account_id,
-  });
+  const state = useHomeTasksModuleState();
 
   if (state.view === "hidden") return null;
 

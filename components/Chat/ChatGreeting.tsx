@@ -3,6 +3,7 @@ import ImageWithFallback from "@/components/ImageWithFallback";
 import ValuationHero from "@/components/Home/ValuationHero";
 import useHomeValuation from "@/hooks/useHomeValuation";
 import TasksModule from "@/components/Home/TasksModule";
+import HomeSuggestedPrompts from "@/components/Home/HomeSuggestedPrompts";
 import { VALUATION_URL } from "@/lib/consts";
 
 /**
@@ -11,8 +12,8 @@ import { VALUATION_URL } from "@/lib/consts";
  * funnel: the artist-scoped catalog valuation hero when the account has
  * measured data for the current scope, otherwise the "Ask me about"
  * greeting plus a CTA into the valuation funnel; the "label at work"
- * tasks module renders beneath it (self-hiding when it has nothing to
- * show). All context arrives via provider-backed hooks — no props beyond
+ * tasks module and the suggested prompt chips render beneath it (each
+ * self-hiding when it has nothing to show). All context arrives via provider-backed hooks — no props beyond
  * the fade flag the chat empty state already owned, so the chat component
  * needs no knowledge of what this header shows.
  */
@@ -36,6 +37,7 @@ export function ChatGreeting({ isVisible }: { isVisible: boolean }) {
           measuredTrackCount={valuation.measuredTrackCount}
         />
         <TasksModule />
+        <HomeSuggestedPrompts />
       </div>
     );
   }
@@ -77,6 +79,9 @@ export function ChatGreeting({ isVisible }: { isVisible: boolean }) {
       </div>
       <div className="text-left text-sm font-normal tracking-normal">
         <TasksModule />
+      </div>
+      <div className="mt-4 text-sm font-normal tracking-normal">
+        <HomeSuggestedPrompts />
       </div>
     </div>
   );
