@@ -28,7 +28,7 @@ describe("getValuationHeroState", () => {
         measurements: undefined,
         measurementsFailed: false,
         selectedArtistName: null,
-        artistSongCount: undefined,
+        artistMatched: undefined,
         artistMatchFailed: false,
       }),
     ).toEqual({ show: false });
@@ -42,7 +42,7 @@ describe("getValuationHeroState", () => {
         measurements: undefined,
         measurementsFailed: false,
         selectedArtistName: null,
-        artistSongCount: undefined,
+        artistMatched: undefined,
         artistMatchFailed: false,
       }),
     ).toEqual({ show: false });
@@ -56,7 +56,7 @@ describe("getValuationHeroState", () => {
         measurements: undefined,
         measurementsFailed: false,
         selectedArtistName: null,
-        artistSongCount: undefined,
+        artistMatched: undefined,
         artistMatchFailed: false,
       }),
     ).toEqual({ show: false });
@@ -70,7 +70,7 @@ describe("getValuationHeroState", () => {
         measurements: undefined,
         measurementsFailed: true,
         selectedArtistName: null,
-        artistSongCount: undefined,
+        artistMatched: undefined,
         artistMatchFailed: false,
       }),
     ).toEqual({ show: false });
@@ -84,7 +84,7 @@ describe("getValuationHeroState", () => {
         measurements: undefined,
         measurementsFailed: false,
         selectedArtistName: null,
-        artistSongCount: undefined,
+        artistMatched: undefined,
         artistMatchFailed: false,
       }),
     ).toEqual({ show: false });
@@ -101,7 +101,7 @@ describe("getValuationHeroState", () => {
         } as unknown as CatalogMeasurementsResponse,
         measurementsFailed: false,
         selectedArtistName: null,
-        artistSongCount: undefined,
+        artistMatched: undefined,
         artistMatchFailed: false,
       }),
     ).toEqual({ show: false });
@@ -115,7 +115,7 @@ describe("getValuationHeroState", () => {
         measurements,
         measurementsFailed: false,
         selectedArtistName: null,
-        artistSongCount: undefined,
+        artistMatched: undefined,
         artistMatchFailed: false,
       }),
     ).toEqual({
@@ -135,13 +135,13 @@ describe("getValuationHeroState", () => {
         measurements,
         measurementsFailed: false,
         selectedArtistName: "Del Water Gap",
-        artistSongCount: undefined,
+        artistMatched: undefined,
         artistMatchFailed: false,
       }),
     ).toEqual({ show: false });
   });
 
-  it("hides the hero when the selected artist has no songs in the catalog", () => {
+  it("hides the hero when the selected artist does not match the catalog", () => {
     expect(
       getValuationHeroState({
         catalog,
@@ -149,7 +149,7 @@ describe("getValuationHeroState", () => {
         measurements,
         measurementsFailed: false,
         selectedArtistName: "Ana Bárbara",
-        artistSongCount: 0,
+        artistMatched: false,
         artistMatchFailed: false,
       }),
     ).toEqual({ show: false });
@@ -163,7 +163,7 @@ describe("getValuationHeroState", () => {
         measurements,
         measurementsFailed: false,
         selectedArtistName: "Del Water Gap",
-        artistSongCount: undefined,
+        artistMatched: undefined,
         artistMatchFailed: true,
       }),
     ).toEqual({ show: false });
@@ -177,7 +177,7 @@ describe("getValuationHeroState", () => {
         measurements,
         measurementsFailed: false,
         selectedArtistName: "Del Water Gap",
-        artistSongCount: 67,
+        artistMatched: true,
         artistMatchFailed: false,
       }),
     ).toEqual({

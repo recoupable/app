@@ -10,7 +10,7 @@ interface GetValuationHeroStateParams {
   measurements: CatalogMeasurementsResponse | undefined;
   measurementsFailed: boolean;
   selectedArtistName: string | null;
-  artistSongCount: number | undefined;
+  artistMatched: boolean | undefined;
   artistMatchFailed: boolean;
 }
 
@@ -28,7 +28,7 @@ export type ValuationHeroState =
  * Decides whether the homepage valuation hero can render, and under which
  * label. With no artist selected the hero shows the whole catalog's value
  * (catalog label). With an artist selected it only shows once the artist is
- * confirmed to have songs in the catalog (`artistSongCount > 0`) — never the
+ * confirmed to belong to the catalog (`artistMatched`) — never the
  * wrong artist over another catalog's money. Any missing, unresolved, or
  * failed input hides the hero so the homepage falls back to the chat
  * greeting with zero regression (recoupable/chat#1850).
@@ -39,7 +39,7 @@ export function getValuationHeroState({
   measurements,
   measurementsFailed,
   selectedArtistName,
-  artistSongCount,
+  artistMatched,
   artistMatchFailed,
 }: GetValuationHeroStateParams): ValuationHeroState {
   if (catalogsFailed || measurementsFailed) return { show: false };
@@ -50,7 +50,7 @@ export function getValuationHeroState({
 
   if (selectedArtistName) {
     if (artistMatchFailed) return { show: false };
-    if (!artistSongCount) return { show: false };
+    if (!artistMatched) return { show: false };
   }
 
   return {
