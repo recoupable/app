@@ -23,10 +23,13 @@ describe("getValuationHeroState", () => {
   it("hides the hero while catalogs are still loading", () => {
     expect(
       getValuationHeroState({
-        catalogs: undefined,
+        catalog: undefined,
         catalogsFailed: false,
         measurements: undefined,
         measurementsFailed: false,
+        selectedArtistName: null,
+        artistSongCount: undefined,
+        artistMatchFailed: false,
       }),
     ).toEqual({ show: false });
   });
@@ -34,10 +37,13 @@ describe("getValuationHeroState", () => {
   it("hides the hero when the account has no catalogs", () => {
     expect(
       getValuationHeroState({
-        catalogs: [],
+        catalog: undefined,
         catalogsFailed: false,
         measurements: undefined,
         measurementsFailed: false,
+        selectedArtistName: null,
+        artistSongCount: undefined,
+        artistMatchFailed: false,
       }),
     ).toEqual({ show: false });
   });
@@ -45,10 +51,13 @@ describe("getValuationHeroState", () => {
   it("hides the hero when the catalogs request failed", () => {
     expect(
       getValuationHeroState({
-        catalogs: undefined,
+        catalog: undefined,
         catalogsFailed: true,
         measurements: undefined,
         measurementsFailed: false,
+        selectedArtistName: null,
+        artistSongCount: undefined,
+        artistMatchFailed: false,
       }),
     ).toEqual({ show: false });
   });
@@ -56,10 +65,13 @@ describe("getValuationHeroState", () => {
   it("hides the hero when measurements are unavailable (endpoint 404/error)", () => {
     expect(
       getValuationHeroState({
-        catalogs: [catalog],
+        catalog,
         catalogsFailed: false,
         measurements: undefined,
         measurementsFailed: true,
+        selectedArtistName: null,
+        artistSongCount: undefined,
+        artistMatchFailed: false,
       }),
     ).toEqual({ show: false });
   });
@@ -67,10 +79,13 @@ describe("getValuationHeroState", () => {
   it("hides the hero while measurements are still loading", () => {
     expect(
       getValuationHeroState({
-        catalogs: [catalog],
+        catalog,
         catalogsFailed: false,
         measurements: undefined,
         measurementsFailed: false,
+        selectedArtistName: null,
+        artistSongCount: undefined,
+        artistMatchFailed: false,
       }),
     ).toEqual({ show: false });
   });
@@ -78,27 +93,96 @@ describe("getValuationHeroState", () => {
   it("hides the hero when the response has no valuation band", () => {
     expect(
       getValuationHeroState({
-        catalogs: [catalog],
+        catalog,
         catalogsFailed: false,
         measurements: {
           status: "success",
           measurements: [],
         } as unknown as CatalogMeasurementsResponse,
         measurementsFailed: false,
+        selectedArtistName: null,
+        artistSongCount: undefined,
+        artistMatchFailed: false,
       }),
     ).toEqual({ show: false });
   });
 
-  it("shows the valuation and measured track count when data is complete", () => {
+  it("shows the whole-catalog valuation (catalog label) when no artist is selected", () => {
     expect(
       getValuationHeroState({
-        catalogs: [catalog],
+        catalog,
         catalogsFailed: false,
         measurements,
         measurementsFailed: false,
+        selectedArtistName: null,
+        artistSongCount: undefined,
+        artistMatchFailed: false,
       }),
     ).toEqual({
       show: true,
+      showArtist: false,
+      catalogName: "Del Water Gap",
+      valuation: { low: 959000, mid: 1400000, high: 2000000 },
+      measuredTrackCount: 2,
+    });
+  });
+
+  it("hides the hero while the selected artist's catalog match is still resolving", () => {
+    expect(
+      getValuationHeroState({
+        catalog,
+        catalogsFailed: false,
+        measurements,
+        measurementsFailed: false,
+        selectedArtistName: "Del Water Gap",
+        artistSongCount: undefined,
+        artistMatchFailed: false,
+      }),
+    ).toEqual({ show: false });
+  });
+
+  it("hides the hero when the selected artist has no songs in the catalog", () => {
+    expect(
+      getValuationHeroState({
+        catalog,
+        catalogsFailed: false,
+        measurements,
+        measurementsFailed: false,
+        selectedArtistName: "Ana Bárbara",
+        artistSongCount: 0,
+        artistMatchFailed: false,
+      }),
+    ).toEqual({ show: false });
+  });
+
+  it("hides the hero when the artist match check failed", () => {
+    expect(
+      getValuationHeroState({
+        catalog,
+        catalogsFailed: false,
+        measurements,
+        measurementsFailed: false,
+        selectedArtistName: "Del Water Gap",
+        artistSongCount: undefined,
+        artistMatchFailed: true,
+      }),
+    ).toEqual({ show: false });
+  });
+
+  it("shows the artist-labeled hero when the selected artist has songs in the catalog", () => {
+    expect(
+      getValuationHeroState({
+        catalog,
+        catalogsFailed: false,
+        measurements,
+        measurementsFailed: false,
+        selectedArtistName: "Del Water Gap",
+        artistSongCount: 67,
+        artistMatchFailed: false,
+      }),
+    ).toEqual({
+      show: true,
+      showArtist: true,
       catalogName: "Del Water Gap",
       valuation: { low: 959000, mid: 1400000, high: 2000000 },
       measuredTrackCount: 2,
