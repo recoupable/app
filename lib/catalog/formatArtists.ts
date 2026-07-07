@@ -5,9 +5,8 @@ import { CatalogSongsResponse } from "./getCatalogSongs";
  * Returns "—" if no artists exist
  */
 export const formatArtists = (
-  artists: CatalogSongsResponse["songs"][0]["artists"]
+  artists: CatalogSongsResponse["songs"][0]["artists"],
 ): string => {
   if (!artists || artists.length === 0) return "—";
   return artists.map((artist) => artist.name).join(", ");
 };
-

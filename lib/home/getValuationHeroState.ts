@@ -10,8 +10,7 @@ interface GetValuationHeroStateParams {
   measurements: CatalogMeasurementsResponse | undefined;
   measurementsFailed: boolean;
   selectedArtistName: string | null;
-  artistMatched: boolean | undefined;
-  artistMatchFailed: boolean;
+  selectedArtistAccountId: string | null;
 }
 
 export type ValuationHeroState =
@@ -27,11 +26,14 @@ export type ValuationHeroState =
 /**
  * Decides whether the homepage valuation hero can render, and under which
  * label. With no artist selected the hero shows the whole catalog's value
- * (catalog label). With an artist selected it only shows once the artist is
- * confirmed to belong to the catalog (`artistMatched`) — never the
- * wrong artist over another catalog's money. Any missing, unresolved, or
- * failed input hides the hero so the homepage falls back to the chat
- * greeting with zero regression (recoupable/chat#1850).
+ * (catalog label). With an artist selected the api scopes the read via
+ * artist_account_id and the hero only renders when the response ECHOES that
+ * exact scope — a pre-v2 deployment ignores the unknown param and returns
+ * whole-catalog numbers without the echo, which must never appear under an
+ * artist's name. An empty measurements array (artist with no measured songs,
+ * or an unmeasured catalog) and any missing or failed input hide the hero so
+ * the homepage falls back to the chat greeting with zero regression
+ * (recoupable/chat#1850).
  */
 export function getValuationHeroState({
   catalog,
@@ -39,8 +41,7 @@ export function getValuationHeroState({
   measurements,
   measurementsFailed,
   selectedArtistName,
-  artistMatched,
-  artistMatchFailed,
+  selectedArtistAccountId,
 }: GetValuationHeroStateParams): ValuationHeroState {
   if (catalogsFailed || measurementsFailed) return { show: false };
 
@@ -48,16 +49,20 @@ export function getValuationHeroState({
 
   if (!measurements?.valuation) return { show: false };
 
-  if (selectedArtistName) {
-    if (artistMatchFailed) return { show: false };
-    if (!artistMatched) return { show: false };
+  if (!measurements.measurements?.length) return { show: false };
+
+  if (
+    selectedArtistAccountId &&
+    measurements.artist_account_id !== selectedArtistAccountId
+  ) {
+    return { show: false };
   }
 
   return {
     show: true,
-    showArtist: !!selectedArtistName,
+    showArtist: !!selectedArtistAccountId && !!selectedArtistName,
     catalogName: catalog.name,
     valuation: measurements.valuation,
-    measuredTrackCount: measurements.measurements?.length ?? 0,
+    measuredTrackCount: measurements.measurements.length,
   };
 }

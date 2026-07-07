@@ -29,7 +29,7 @@ export async function getCatalogSongs(
   catalogId: string,
   pageSize: number = 100,
   page: number = 1,
-  artistName?: string
+  artistName?: string,
 ): Promise<CatalogSongsResponse> {
   try {
     const params = new URLSearchParams({
@@ -49,7 +49,7 @@ export async function getCatalogSongs(
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {

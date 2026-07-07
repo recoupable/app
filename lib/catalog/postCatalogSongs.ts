@@ -15,16 +15,19 @@ export interface CatalogSongInput {
  * Adds songs to a catalog by ISRC in batch
  */
 export async function postCatalogSongs(
-  songs: CatalogSongInput[]
+  songs: CatalogSongInput[],
 ): Promise<CatalogSongsResponse> {
   try {
-    const response = await fetch(`${getClientApiBaseUrl()}/api/catalogs/songs`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const response = await fetch(
+      `${getClientApiBaseUrl()}/api/catalogs/songs`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ songs }),
       },
-      body: JSON.stringify({ songs }),
-    });
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
