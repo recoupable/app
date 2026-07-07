@@ -2,13 +2,17 @@ import { useArtistProvider } from "@/providers/ArtistProvider";
 import ImageWithFallback from "@/components/ImageWithFallback";
 import ValuationHero from "@/components/Home/ValuationHero";
 import useHomeValuation from "@/hooks/useHomeValuation";
+import TasksModule from "@/components/Home/TasksModule";
 import { VALUATION_URL } from "@/lib/consts";
 
 /**
- * The empty chat's artist header (recoupable/chat#1850): the artist-scoped
- * catalog valuation hero when the account has measured data for the current
- * scope, otherwise the "Ask me about" greeting plus a CTA into the valuation
- * funnel. All context arrives via provider-backed hooks — no props beyond
+ * The empty chat's home header (recoupable/chat#1850), valuation first —
+ * it's the headline number customers arrive with from the marketing
+ * funnel: the artist-scoped catalog valuation hero when the account has
+ * measured data for the current scope, otherwise the "Ask me about"
+ * greeting plus a CTA into the valuation funnel; the "label at work"
+ * tasks module renders beneath it (self-hiding when it has nothing to
+ * show). All context arrives via provider-backed hooks — no props beyond
  * the fade flag the chat empty state already owned, so the chat component
  * needs no knowledge of what this header shows.
  */
@@ -24,13 +28,14 @@ export function ChatGreeting({ isVisible }: { isVisible: boolean }) {
 
   if (valuation.show) {
     return (
-      <div className={`mb-6 mt-4 py-3 ${fadeClass}`}>
+      <div className={`mb-6 mt-4 flex flex-col gap-4 py-3 ${fadeClass}`}>
         <ValuationHero
           artistName={valuation.artistName}
           artistImage={valuation.artistImage}
           valuation={valuation.valuation}
           measuredTrackCount={valuation.measuredTrackCount}
         />
+        <TasksModule />
       </div>
     );
   }
@@ -60,7 +65,7 @@ export function ChatGreeting({ isVisible }: { isVisible: boolean }) {
         )}
         {isArtistSelected ? artistName : "your roster"}
       </span>
-      <div className="mt-4">
+      <div className="mb-4 mt-4">
         <a
           href={VALUATION_URL}
           target="_blank"
@@ -69,6 +74,9 @@ export function ChatGreeting({ isVisible }: { isVisible: boolean }) {
         >
           Get a free catalog valuation &rarr;
         </a>
+      </div>
+      <div className="text-left text-sm font-normal tracking-normal">
+        <TasksModule />
       </div>
     </div>
   );
