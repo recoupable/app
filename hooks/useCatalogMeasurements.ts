@@ -8,11 +8,17 @@ import {
 const useCatalogMeasurements = (
   catalogId: string | undefined,
   artistAccountId?: string,
+  limit?: number,
 ): UseQueryResult<CatalogMeasurementsResponse> => {
   const { getAccessToken, authenticated } = usePrivy();
 
   return useQuery({
-    queryKey: ["catalog-measurements", catalogId, artistAccountId ?? null],
+    queryKey: [
+      "catalog-measurements",
+      catalogId,
+      artistAccountId ?? null,
+      limit ?? null,
+    ],
     queryFn: async () => {
       const accessToken = await getAccessToken();
       if (!accessToken) throw new Error("No access token");
@@ -20,6 +26,7 @@ const useCatalogMeasurements = (
         catalogId as string,
         accessToken,
         artistAccountId,
+        limit,
       );
     },
     enabled: !!catalogId && authenticated,

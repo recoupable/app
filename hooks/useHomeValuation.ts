@@ -33,8 +33,14 @@ const useHomeValuation = (): HomeValuationState => {
   const { data: catalogsData, isError: catalogsFailed } = useCatalogs();
   const catalog = catalogsData?.catalogs?.[0];
 
+  // limit 1: the hero only needs the whole-scope aggregates
+  // (measured_song_count + valuation), not the measurement rows.
   const { data: measurements, isError: measurementsFailed } =
-    useCatalogMeasurements(catalog?.id, selectedArtistAccountId ?? undefined);
+    useCatalogMeasurements(
+      catalog?.id,
+      selectedArtistAccountId ?? undefined,
+      1,
+    );
 
   const state = getValuationHeroState({
     catalog,

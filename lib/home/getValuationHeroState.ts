@@ -30,10 +30,11 @@ export type ValuationHeroState =
  * artist_account_id and the hero only renders when the response ECHOES that
  * exact scope — a pre-v2 deployment ignores the unknown param and returns
  * whole-catalog numbers without the echo, which must never appear under an
- * artist's name. An empty measurements array (artist with no measured songs,
- * or an unmeasured catalog) and any missing or failed input hide the hero so
- * the homepage falls back to the chat greeting with zero regression
- * (recoupable/chat#1850).
+ * artist's name. Visibility and the track count come from the whole-scope
+ * measured_song_count aggregate, never the returned page: zero (nothing
+ * measured in scope) or absent (pre-v2 shape, numbers from a capped read)
+ * hides the hero, as does any missing or failed input, so the homepage
+ * falls back to the chat greeting with zero regression (recoupable/chat#1850).
  */
 export function getValuationHeroState({
   catalog,
@@ -49,7 +50,7 @@ export function getValuationHeroState({
 
   if (!measurements?.valuation) return { show: false };
 
-  if (!measurements.measurements?.length) return { show: false };
+  if (!measurements.measured_song_count) return { show: false };
 
   if (
     selectedArtistAccountId &&
@@ -63,6 +64,6 @@ export function getValuationHeroState({
     showArtist: !!selectedArtistAccountId && !!selectedArtistName,
     catalogName: catalog.name,
     valuation: measurements.valuation,
-    measuredTrackCount: measurements.measurements.length,
+    measuredTrackCount: measurements.measured_song_count,
   };
 }

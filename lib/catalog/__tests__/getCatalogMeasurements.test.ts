@@ -90,6 +90,33 @@ describe("getCatalogMeasurements", () => {
     );
   });
 
+  it("passes limit through and returns the whole-scope count", async () => {
+    const payload = {
+      status: "success",
+      measurements: [{ isrc: "USABC1234567", playcount: 1000 }],
+      measured_song_count: 2679,
+      valuation: { low: 100, mid: 200, high: 300 },
+      artist_account_id: null,
+    };
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue(payload),
+    }) as unknown as typeof fetch;
+
+    const result = await getCatalogMeasurements(
+      "catalog-1",
+      accessToken,
+      undefined,
+      1,
+    );
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://api.recoupable.com/api/catalogs/measurements?catalogId=catalog-1&limit=1",
+      expect.anything(),
+    );
+    expect(result.measured_song_count).toBe(2679);
+  });
+
   it("throws on a non-ok response (endpoint not deployed yet)", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,

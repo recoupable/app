@@ -12,12 +12,12 @@ const catalog: Catalog = {
 
 const artistAccountId = "b1814076-8e19-4a77-9dea-2ec150e26aaa";
 
+// The hero requests limit=1 — the rows page is minimal; the whole-scope
+// aggregate measured_song_count is the source of truth for visibility/count.
 const wholeCatalogMeasurements: CatalogMeasurementsResponse = {
   status: "success",
-  measurements: [
-    { isrc: "USABC1234567", playcount: 1000 },
-    { isrc: "USABC1234568", playcount: 2000 },
-  ],
+  measurements: [{ isrc: "USABC1234567", playcount: 2000 }],
+  measured_song_count: 2679,
   valuation: { low: 959000, mid: 1400000, high: 2000000 },
   artist_account_id: null,
 };
@@ -25,6 +25,7 @@ const wholeCatalogMeasurements: CatalogMeasurementsResponse = {
 const artistScopedMeasurements: CatalogMeasurementsResponse = {
   status: "success",
   measurements: [{ isrc: "USABC1234567", playcount: 1000 }],
+  measured_song_count: 322,
   valuation: { low: 100000, mid: 146000, high: 205000 },
   artist_account_id: artistAccountId,
 };
@@ -82,7 +83,7 @@ describe("getValuationHeroState", () => {
     ).toEqual({ show: false });
   });
 
-  it("hides the hero when the response has no measurements (empty scope)", () => {
+  it("hides the hero when nothing in scope is measured (measured_song_count 0)", () => {
     expect(
       getValuationHeroState({
         catalog,
@@ -90,8 +91,31 @@ describe("getValuationHeroState", () => {
         measurements: {
           status: "success",
           measurements: [],
+          measured_song_count: 0,
           valuation: { low: 0, mid: 0, high: 0 },
           artist_account_id: null,
+        },
+        measurementsFailed: false,
+        selectedArtistName: null,
+        selectedArtistAccountId: null,
+      }),
+    ).toEqual({ show: false });
+  });
+
+  it("hides the hero when the response has no measured_song_count (pre-v2 api shape)", () => {
+    // The v1 endpoint returns rows but no whole-scope count — its numbers are
+    // computed over a capped read, so the hero must not trust them.
+    expect(
+      getValuationHeroState({
+        catalog,
+        catalogsFailed: false,
+        measurements: {
+          status: "success",
+          measurements: [
+            { isrc: "USABC1234567", playcount: 1000 },
+            { isrc: "USABC1234568", playcount: 2000 },
+          ],
+          valuation: { low: 959000, mid: 1400000, high: 2000000 },
         },
         measurementsFailed: false,
         selectedArtistName: null,
@@ -108,6 +132,7 @@ describe("getValuationHeroState", () => {
         measurements: {
           status: "success",
           measurements: [],
+          measured_song_count: 0,
           valuation: { low: 0, mid: 0, high: 0 },
           artist_account_id: artistAccountId,
         },
@@ -133,8 +158,21 @@ describe("getValuationHeroState", () => {
       showArtist: false,
       catalogName: "Full Roster Catalog",
       valuation: { low: 959000, mid: 1400000, high: 2000000 },
-      measuredTrackCount: 2,
+      measuredTrackCount: 2679,
     });
+  });
+
+  it("counts from measured_song_count, not the returned page size", () => {
+    const result = getValuationHeroState({
+      catalog,
+      catalogsFailed: false,
+      measurements: { ...wholeCatalogMeasurements, measurements: [] },
+      measurementsFailed: false,
+      selectedArtistName: null,
+      selectedArtistAccountId: null,
+    });
+
+    expect(result).toMatchObject({ show: true, measuredTrackCount: 2679 });
   });
 
   it("shows the artist-labeled hero when the response echoes the requested artist scope", () => {
@@ -152,7 +190,7 @@ describe("getValuationHeroState", () => {
       showArtist: true,
       catalogName: "Full Roster Catalog",
       valuation: { low: 100000, mid: 146000, high: 205000 },
-      measuredTrackCount: 1,
+      measuredTrackCount: 322,
     });
   });
 
