@@ -4,21 +4,23 @@ import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useCreateStarterTask } from "@/hooks/useCreateStarterTask";
 
 /**
- * Empty-state suggestion for the homepage tasks module: one click creates
- * the "Weekly valuation + streams report, Mondays" task via the existing
- * task-creation path (recoupable/chat#1850).
+ * Empty-state suggestion for the homepage tasks module: one click
+ * schedules an existing /agents Report template for the selected artist,
+ * Mondays at 9am, via the existing task-creation path
+ * (recoupable/chat#1850). Hidden when no Report template exists.
  */
 const StarterTaskCard = () => {
   const { selectedArtist } = useArtistProvider();
-  const { handleCreateStarterTask, isCreating, isScheduled } =
+  const { handleCreateStarterTask, isCreating, isScheduled, starterTemplate } =
     useCreateStarterTask();
   const artistName = selectedArtist?.name || "your artist";
+
+  if (!starterTemplate) return null;
 
   if (isScheduled) {
     return (
       <p className="text-sm text-muted-foreground" role="status">
-        Scheduled: weekly valuation + streams report for {artistName}, Mondays
-        at 9am.
+        Scheduled: {starterTemplate.title} for {artistName}, Mondays at 9am.
       </p>
     );
   }
@@ -27,10 +29,10 @@ const StarterTaskCard = () => {
     <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
       <div>
         <p className="text-sm font-medium text-foreground">
-          Weekly valuation + streams report for {artistName}, Mondays
+          {starterTemplate.title} for {artistName}, Mondays
         </p>
         <p className="text-xs text-muted-foreground">
-          Valuation, ranges, and stream deltas in your inbox every Monday.
+          {starterTemplate.description}
         </p>
       </div>
       <button
