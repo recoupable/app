@@ -7,6 +7,8 @@ export interface TaskRunItem {
   error?: string;
   metadata?: Record<string, unknown> | null;
   taskIdentifier: string;
+  /** Originating scheduled task's title; null or absent when unresolvable. */
+  title?: string | null;
   createdAt: string;
   startedAt: string | null;
   finishedAt: string | null;

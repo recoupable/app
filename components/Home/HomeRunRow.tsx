@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { TaskRunItem } from "@/lib/tasks/getTaskRuns";
-import { getTaskDisplayName } from "@/lib/tasks/getTaskDisplayName";
+import { getRunDisplayName } from "@/lib/tasks/getRunDisplayName";
 import { getStatusColor } from "@/lib/tasks/getStatusColor";
 import { getStatusLabel } from "@/lib/tasks/getStatusLabel";
 import { formatTimestamp } from "@/lib/tasks/formatTimestamp";
 
 /**
  * Compact task-run row for the homepage tasks module. Links to the
- * existing run detail page. Per-run sent-email subjects are not exposed
- * by `GET /api/tasks/runs` yet, so this shows what is available: run
- * name, status, and finished-at (recoupable/chat#1850).
+ * existing run detail page. Renders the originating scheduled task's
+ * title when the api resolves one, falling back to the generic
+ * per-taskIdentifier label. Per-run sent-email subjects are not exposed
+ * by `GET /api/tasks/runs` yet (recoupable/chat#1850).
  */
 const HomeRunRow = ({ run }: { run: TaskRunItem }) => (
   <Link
@@ -19,7 +20,7 @@ const HomeRunRow = ({ run }: { run: TaskRunItem }) => (
   >
     <div className="min-w-0">
       <p className="truncate text-sm font-medium text-foreground">
-        {getTaskDisplayName(run.taskIdentifier)}
+        {getRunDisplayName(run)}
       </p>
       <p className="text-xs text-muted-foreground">
         {formatTimestamp(run.finishedAt ?? run.createdAt)}
