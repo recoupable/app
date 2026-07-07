@@ -5,7 +5,7 @@ import { CatalogSongsResponse } from "./getCatalogSongs";
  * Creates a CatalogSongsResult from paginated catalog data
  */
 export const createCatalogResult = (
-  pages: CatalogSongsResponse[]
+  pages: CatalogSongsResponse[],
 ): CatalogSongsResult => {
   const allSongs = pages.flatMap((page) => page.songs);
   const totalCount = pages[0].pagination.total_count;

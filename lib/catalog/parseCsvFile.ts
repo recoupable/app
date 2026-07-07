@@ -17,7 +17,7 @@ type ParsedRow = Partial<TablesInsert<"songs">> & {
  */
 export function parseCsvFile(
   text: string,
-  catalogId: string
+  catalogId: string,
 ): CatalogSongInput[] {
   // Parse CSV using papaparse with optimized configuration
   const parseResult = Papa.parse<ParsedRow>(text, {
@@ -29,11 +29,11 @@ export function parseCsvFile(
 
   // Check for critical parsing errors
   const criticalErrors = parseResult.errors.filter(
-    (e) => e.type === "Delimiter" || e.type === "FieldMismatch"
+    (e) => e.type === "Delimiter" || e.type === "FieldMismatch",
   );
   if (criticalErrors.length > 0) {
     throw new Error(
-      `CSV parsing errors: ${criticalErrors.map((e) => e.message).join(", ")}`
+      `CSV parsing errors: ${criticalErrors.map((e) => e.message).join(", ")}`,
     );
   }
 
