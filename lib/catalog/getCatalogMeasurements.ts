@@ -49,8 +49,11 @@ export async function getCatalogMeasurements(
   artistAccountId?: string,
   limit?: number,
 ): Promise<CatalogMeasurementsResponse> {
-  const url = new URL(`${getClientApiBaseUrl()}/api/catalogs/measurements`);
-  url.searchParams.set("catalogId", catalogId);
+  // Path for identity, query for the optional modifiers (chat#1850 REST
+  // decision — mirrors /api/research/albums/{id}/measurements).
+  const url = new URL(
+    `${getClientApiBaseUrl()}/api/catalogs/${encodeURIComponent(catalogId)}/measurements`,
+  );
   if (artistAccountId) {
     url.searchParams.set("artist_account_id", artistAccountId);
   }

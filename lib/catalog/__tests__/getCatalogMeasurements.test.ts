@@ -16,7 +16,7 @@ describe("getCatalogMeasurements", () => {
     );
   });
 
-  it("calls GET /api/catalogs/measurements with catalogId and bearer auth", async () => {
+  it("calls GET /api/catalogs/{catalogId}/measurements with bearer auth", async () => {
     const payload = {
       status: "success",
       measurements: [
@@ -33,7 +33,7 @@ describe("getCatalogMeasurements", () => {
     const result = await getCatalogMeasurements("catalog-1", accessToken);
 
     expect(fetch).toHaveBeenCalledWith(
-      "https://api.recoupable.com/api/catalogs/measurements?catalogId=catalog-1",
+      "https://api.recoupable.com/api/catalogs/catalog-1/measurements",
       expect.objectContaining({
         method: "GET",
         headers: expect.objectContaining({
@@ -63,7 +63,7 @@ describe("getCatalogMeasurements", () => {
     );
 
     expect(fetch).toHaveBeenCalledWith(
-      "https://api.recoupable.com/api/catalogs/measurements?catalogId=catalog-1&artist_account_id=b1814076-8e19-4a77-9dea-2ec150e26aaa",
+      "https://api.recoupable.com/api/catalogs/catalog-1/measurements?artist_account_id=b1814076-8e19-4a77-9dea-2ec150e26aaa",
       expect.objectContaining({ method: "GET" }),
     );
     expect(result.artist_account_id).toBe(
@@ -71,7 +71,7 @@ describe("getCatalogMeasurements", () => {
     );
   });
 
-  it("omits artist_account_id from the query when not provided", async () => {
+  it("sends no query string when no modifiers are provided", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: vi.fn().mockResolvedValue({
@@ -85,7 +85,7 @@ describe("getCatalogMeasurements", () => {
     await getCatalogMeasurements("catalog-1", accessToken);
 
     expect(fetch).toHaveBeenCalledWith(
-      "https://api.recoupable.com/api/catalogs/measurements?catalogId=catalog-1",
+      "https://api.recoupable.com/api/catalogs/catalog-1/measurements",
       expect.anything(),
     );
   });
@@ -111,7 +111,7 @@ describe("getCatalogMeasurements", () => {
     );
 
     expect(fetch).toHaveBeenCalledWith(
-      "https://api.recoupable.com/api/catalogs/measurements?catalogId=catalog-1&limit=1",
+      "https://api.recoupable.com/api/catalogs/catalog-1/measurements?limit=1",
       expect.anything(),
     );
     expect(result.measured_song_count).toBe(2679);
