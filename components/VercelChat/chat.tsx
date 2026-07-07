@@ -42,12 +42,6 @@ interface ChatProps {
    */
   workspaceStatus?: WorkspaceStatus;
   initialMessages?: UIMessage[];
-  /**
-   * Hide the empty-state greeting when the homepage renders the valuation
-   * hero above the chat area instead (recoupable/chat#1850). Defaults to
-   * false so every existing mount keeps the greeting.
-   */
-  hideGreeting?: boolean;
 }
 
 export function Chat({
@@ -56,7 +50,6 @@ export function Chat({
   workflowChatId,
   workspaceStatus,
   initialMessages,
-  hideGreeting,
 }: ChatProps) {
   const { selectedOrgId } = useOrganization();
   const providerKey = `${id}-${selectedOrgId ?? "personal"}`;
@@ -70,7 +63,7 @@ export function Chat({
       workspaceStatus={workspaceStatus}
       initialMessages={initialMessages}
     >
-      <ChatContent id={id} sessionId={sessionId} hideGreeting={hideGreeting} />
+      <ChatContent id={id} sessionId={sessionId} />
     </VercelChatProvider>
   );
 }
@@ -78,11 +71,9 @@ export function Chat({
 // Inner component that uses the context
 function ChatContentMemoized({
   sessionId,
-  hideGreeting,
 }: {
   id: string;
   sessionId?: string;
-  hideGreeting?: boolean;
 }) {
   const { messages, status, isLoading, hasError } = useVercelChatContext();
   const { chatId: routeChatId } = useParams<{ chatId?: string }>();
@@ -120,7 +111,7 @@ function ChatContentMemoized({
         "px-4 md:px-0 pb-4 flex flex-col h-full items-center w-full relative",
         {
           "justify-between": messages.length > 0,
-        },
+        }
       )}
       {...getRootProps()}
     >
@@ -133,7 +124,7 @@ function ChatContentMemoized({
 
           {/* Centered greeting and chat input */}
           <div className="w-full max-w-3xl mx-auto">
-            {!hideGreeting && <ChatGreeting isVisible={isVisible} />}
+            <ChatGreeting isVisible={isVisible} />
             <div className="mt-1 md:mt-6">
               <ChatInput />
             </div>
@@ -155,8 +146,6 @@ function ChatContentMemoized({
 
 const ChatContent = memo(ChatContentMemoized, (prevProps, nextProps) => {
   return (
-    prevProps.id === nextProps.id &&
-    prevProps.sessionId === nextProps.sessionId &&
-    prevProps.hideGreeting === nextProps.hideGreeting
+    prevProps.id === nextProps.id && prevProps.sessionId === nextProps.sessionId
   );
 });

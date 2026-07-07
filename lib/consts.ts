@@ -6,6 +6,7 @@ export const NEW_API_BASE_URL = IS_PROD
   : "https://test-recoup-api.vercel.app";
 export const APP_BASE_URL = "https://chat.recoupable.dev";
 export const DOCS_BASE_URL = "https://docs.recoupable.dev";
+export const VALUATION_URL = "https://recoupable.dev/valuation";
 export const API_PUBLIC_BASE_URL = "https://api.recoupable.dev";
 export const API_OVERRIDE_STORAGE_KEY = "recoup_api_override";
 export const ACCOUNT_OVERRIDE_STORAGE_KEY = "recoup_account_override";

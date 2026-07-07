@@ -9,8 +9,6 @@ import { generateUUID } from "@/lib/generateUUID";
 
 interface NewChatBootstrapProps {
   initialMessages?: UIMessage[];
-  /** Hide the empty-state greeting when the homepage renders its own hero (chat#1850). */
-  hideGreeting?: boolean;
 }
 
 /**
@@ -27,7 +25,6 @@ interface NewChatBootstrapProps {
  */
 export default function NewChatBootstrap({
   initialMessages,
-  hideGreeting,
 }: NewChatBootstrapProps) {
   const state = useNewChatBootstrap();
   // Stable client id so the <Chat> instance (and anything typed into it)
@@ -52,7 +49,6 @@ export default function NewChatBootstrap({
       workflowChatId={state.status === "ready" ? state.chatId : undefined}
       workspaceStatus={workspaceStatus}
       initialMessages={initialMessages}
-      hideGreeting={hideGreeting}
     />
   );
 }
