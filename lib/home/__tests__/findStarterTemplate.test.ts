@@ -18,7 +18,24 @@ const template = (over: Partial<AgentTemplateRow>): AgentTemplateRow =>
   }) as AgentTemplateRow;
 
 describe("findStarterTemplate", () => {
-  it("prefers the Weekly Performance Dashboard template", () => {
+  it("prefers the weekly valuation + streams template above all others", () => {
+    const templates = [
+      template({ id: "a", title: "Run Performance Report", tags: ["Report"] }),
+      template({
+        id: "b",
+        title: "Weekly Performance Dashboard",
+        tags: ["Report"],
+      }),
+      template({
+        id: "c",
+        title: "Weekly valuation + streams report",
+        tags: ["Report"],
+      }),
+    ];
+    expect(findStarterTemplate(templates)?.id).toBe("c");
+  });
+
+  it("falls back to the Weekly Performance Dashboard template", () => {
     const templates = [
       template({ id: "a", title: "Run Performance Report", tags: ["Report"] }),
       template({
