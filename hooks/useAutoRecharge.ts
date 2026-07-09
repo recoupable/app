@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 import { usePrivy } from "@privy-io/react-auth";
 import getAutoRechargeSetting from "@/lib/recoup/getAutoRechargeSetting";
 import updateAutoRechargeSetting from "@/lib/recoup/updateAutoRechargeSetting";
@@ -37,6 +38,9 @@ const useAutoRecharge = () => {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(["auto-recharge", accountId], data);
+    },
+    onError: () => {
+      toast.error("Couldn't update automatic top-up. Please try again.");
     },
   });
 
