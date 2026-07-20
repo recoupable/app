@@ -7,6 +7,7 @@ interface GetHomeSuggestedPromptsParams {
   hasValuation: boolean;
   hasRuns: boolean;
   artistName: string;
+  catalogName: string;
 }
 
 const MAX_PROMPTS = 3;
@@ -20,6 +21,7 @@ export function getHomeSuggestedPrompts({
   hasValuation,
   hasRuns,
   artistName,
+  catalogName,
 }: GetHomeSuggestedPromptsParams): HomeSuggestedPrompt[] {
   const prompts: HomeSuggestedPrompt[] = [];
 
@@ -29,6 +31,18 @@ export function getHomeSuggestedPrompts({
       prompt:
         "Why did my catalog valuation change? Walk through the latest " +
         "measurements and explain what moved the estimate.",
+    });
+  } else if (catalogName) {
+    // The account already claimed a catalog: anchor the ask to that
+    // catalog's data so the model reaches for the catalog toolset instead
+    // of dead-ending on a generic estimate (recoupable/chat#1867).
+    prompts.push({
+      label: "What's my catalog worth?",
+      prompt:
+        `Estimate what my claimed catalog "${catalogName}" is worth. ` +
+        "Start from the songs already in my Recoup catalog, then use " +
+        "public streaming data, and tell me what's missing to tighten " +
+        "the estimate.",
     });
   } else {
     prompts.push({

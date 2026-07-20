@@ -1,17 +1,18 @@
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import ImageWithFallback from "@/components/ImageWithFallback";
 import ValuationHero from "@/components/Home/ValuationHero";
+import HomeCatalogCta from "@/components/Home/HomeCatalogCta";
 import useHomeValuation from "@/hooks/useHomeValuation";
 import TasksModule from "@/components/Home/TasksModule";
 import HomeSuggestedPrompts from "@/components/Home/HomeSuggestedPrompts";
-import { VALUATION_URL } from "@/lib/consts";
 
 /**
  * The empty chat's home header (recoupable/chat#1850), valuation first —
  * it's the headline number customers arrive with from the marketing
  * funnel: the artist-scoped catalog valuation hero when the account has
  * measured data for the current scope, otherwise the "Ask me about"
- * greeting plus a CTA into the valuation funnel; the "label at work"
+ * greeting plus either the claimed-catalog card (recoupable/chat#1867) or,
+ * with nothing claimed, a CTA into the valuation funnel; the "label at work"
  * tasks module and the suggested prompt chips render beneath it (each
  * self-hiding when it has nothing to show). All context arrives via provider-backed hooks — no props beyond
  * the fade flag the chat empty state already owned, so the chat component
@@ -67,16 +68,7 @@ export function ChatGreeting({ isVisible }: { isVisible: boolean }) {
         )}
         {isArtistSelected ? artistName : "your roster"}
       </span>
-      <div className="mb-4 mt-4">
-        <a
-          href={VALUATION_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="rounded-full bg-card px-4 py-2 text-sm font-normal text-muted-foreground shadow-[0px_0px_0px_1px_var(--border)] transition-colors hover:text-foreground"
-        >
-          Get a free catalog valuation &rarr;
-        </a>
-      </div>
+      <HomeCatalogCta />
       <div className="text-left text-sm font-normal tracking-normal">
         <TasksModule />
       </div>
