@@ -6,11 +6,11 @@ import { uploadFile } from "@/lib/arweave/uploadFile";
 import { useAccount } from "wagmi";
 import { toast } from "sonner";
 import { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
-import { fetchOrCreateAccount } from "@/lib/accounts/fetchOrCreateAccount";
+import { ensureAccount } from "@/lib/accounts/ensureAccount";
 import { updateAccountProfile } from "@/lib/accounts/updateAccountProfile";
 
 const useUser = () => {
-  const { login, user, logout, getAccessToken } = usePrivy();
+  const { login, user, logout, getAccessToken, ready } = usePrivy();
   const { address: wagmiAddress } = useAccount();
   const address = (user?.wallet?.address as Address) || wagmiAddress;
   const email = user?.email?.address;
@@ -112,13 +112,19 @@ const useUser = () => {
   };
 
   useEffect(() => {
+    // Wait for Privy to resolve so we never POST /api/accounts before the
+    // identifying payload (email) is known (chat#1875).
+    if (!ready) return;
+    if (!email && !address) return;
+    let cancelled = false;
     const init = async () => {
       const accessToken = await getAccessToken();
-      const data = await fetchOrCreateAccount({
+      const data = await ensureAccount({
         email,
         wallet: address,
         accessToken,
       });
+      if (cancelled) return;
 
       setUserData(data);
       setImage(data.image || "");
@@ -129,9 +135,11 @@ const useUser = () => {
       setRoleType(data.role_type || "");
       setCompanyName(data.company_name || "");
     };
-    if (!email && !address) return;
     init();
-  }, [email, address, getAccessToken]);
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, email, address, getAccessToken]);
 
   return {
     address,
