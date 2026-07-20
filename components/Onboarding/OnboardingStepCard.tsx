@@ -19,12 +19,12 @@ const OnboardingStepCard = ({ step }: { step: OnboardingStepId }) => {
       aria-labelledby="onboarding-step-title"
       className="w-full rounded-xl border bg-card p-6 text-card-foreground shadow"
     >
-      <h1
+      <h3
         id="onboarding-step-title"
         className="text-lg font-semibold text-foreground"
       >
         {title}
-      </h1>
+      </h3>
       <p className="mt-2 text-sm text-muted-foreground">{description}</p>
       <Link
         href={href}

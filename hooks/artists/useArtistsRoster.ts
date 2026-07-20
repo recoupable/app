@@ -17,6 +17,12 @@ interface UseArtistsRosterResult {
   artists: ArtistRecord[];
   isLoading: boolean;
   /**
+   * True when the roster fetch failed. Consumers that derive state from
+   * the roster (e.g. the onboarding gate) must treat an errored roster
+   * as unresolved rather than an empty roster.
+   */
+  isError: boolean;
+  /**
    * Direct cache mutation. Mirrors React's `setState` signature so both
    * `setArtists(newList)` and `setArtists(prev => mutate(prev))` work.
    * Used by `useArtistPinToggle` and `useDeleteArtist` for optimistic
@@ -63,7 +69,11 @@ export function useArtistsRoster({
   // v5's `isLoading` flips false while `enabled` is false, which would
   // let `useNewChatBootstrap` fire with `artistId: undefined` during
   // the user-data-loading window.
-  const { data: artists = [], isPending } = useQuery({
+  const {
+    data: artists = [],
+    isPending,
+    isError,
+  } = useQuery({
     queryKey,
     queryFn,
     enabled: !!userId && authenticated,
@@ -83,5 +93,5 @@ export function useArtistsRoster({
     [queryClient, queryKey, queryFn],
   );
 
-  return { artists, isLoading: isPending, setArtists, refetchArtists };
+  return { artists, isLoading: isPending, isError, setArtists, refetchArtists };
 }

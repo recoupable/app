@@ -36,3 +36,10 @@ export interface OnboardingCheckpoint {
   id: OnboardingStepId;
   complete: boolean;
 }
+
+/**
+ * Session-scoped escape hatches (skip / checklist dismissed). Stored in
+ * sessionStorage keyed by account id so one account's choice never leaks
+ * to another signed in from the same tab.
+ */
+export type OnboardingFlag = "skipped" | "checklist-dismissed";

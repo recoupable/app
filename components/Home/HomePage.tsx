@@ -34,7 +34,7 @@ const HomePage = ({ initialMessages }: { initialMessages?: UIMessage[] }) => {
   }
 
   return (
-    <div className="flex flex-col size-full items-center">
+    <div className="relative flex flex-col size-full items-center">
       <NewChatBootstrap initialMessages={initialMessages} />
       {onboarding.view === "checklist" && (
         <OnboardingChecklist

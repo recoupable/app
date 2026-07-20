@@ -13,7 +13,10 @@ interface OnboardingChecklistProps {
 /**
  * Pinned, dismissible checklist shown after "skip for now"
  * (recoupable/chat#1867): keeps the remaining activation checkpoints
- * visible in the app and re-opens the sequence on resume.
+ * visible in the app and re-opens the sequence on resume. Positioned
+ * `absolute` within the (relative) home content area — never `fixed` to
+ * the viewport, where the z-[65] ArtistsSidebar rail overlaps the right
+ * edge and clips the dismiss button off-screen.
  */
 const OnboardingChecklist = ({
   checkpoints,
@@ -22,7 +25,7 @@ const OnboardingChecklist = ({
 }: OnboardingChecklistProps) => (
   <aside
     aria-label="Onboarding checklist"
-    className="fixed bottom-4 right-4 z-40 w-64 rounded-xl border bg-card p-4 text-card-foreground shadow-lg"
+    className="absolute bottom-4 right-4 z-40 w-64 rounded-xl border bg-card p-4 text-card-foreground shadow-lg"
   >
     <div className="mb-3 flex items-start justify-between gap-2">
       <p className="text-sm font-semibold text-foreground">Finish setting up</p>

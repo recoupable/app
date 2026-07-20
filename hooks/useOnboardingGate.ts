@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useOnboardingSessionFlags } from "@/hooks/useOnboardingSessionFlags";
 import { useOnboardingState } from "@/hooks/useOnboardingState";
 import { getOnboardingView } from "@/lib/onboarding/getOnboardingView";
 import type { OnboardingView } from "@/lib/onboarding/getOnboardingView";
@@ -8,16 +8,7 @@ import type {
   OnboardingCheckpoint,
   OnboardingStep,
 } from "@/lib/onboarding/types";
-
-// Session-scoped on purpose (recoupable/chat#1867): skip and dismiss are
-// escape hatches for the current visit only — the next landing derives
-// state fresh and resumes the sequence by default. Never persisted
-// server-side (no wizard cursor).
-const SKIP_KEY = "recoup-onboarding-skipped";
-const DISMISS_KEY = "recoup-onboarding-checklist-dismissed";
-
-const readSessionFlag = (key: string): boolean =>
-  typeof window !== "undefined" && window.sessionStorage.getItem(key) === "1";
+import { useUserProvider } from "@/providers/UserProvder";
 
 export interface OnboardingGate {
   view: OnboardingView;
@@ -28,30 +19,18 @@ export interface OnboardingGate {
   dismissChecklist: () => void;
 }
 
-/** Soft gate for the chat home: derived onboarding state + skip controls. */
+/**
+ * Soft gate for the chat home: derived onboarding state + session-scoped
+ * skip controls. Single source of truth for the gate — mount it once (in
+ * `HomePage`) and pass the callbacks down; skip/dismiss are account-scoped
+ * session escape hatches, never persisted server-side
+ * (recoupable/chat#1867).
+ */
 export function useOnboardingGate(): OnboardingGate {
+  const { userData } = useUserProvider();
   const { isReady, step, checkpoints } = useOnboardingState();
-  const [skipped, setSkipped] = useState(() => readSessionFlag(SKIP_KEY));
-  const [checklistDismissed, setChecklistDismissed] = useState(() =>
-    readSessionFlag(DISMISS_KEY),
-  );
-
-  const skip = useCallback(() => {
-    window.sessionStorage.setItem(SKIP_KEY, "1");
-    setSkipped(true);
-  }, []);
-
-  const resume = useCallback(() => {
-    window.sessionStorage.removeItem(SKIP_KEY);
-    window.sessionStorage.removeItem(DISMISS_KEY);
-    setSkipped(false);
-    setChecklistDismissed(false);
-  }, []);
-
-  const dismissChecklist = useCallback(() => {
-    window.sessionStorage.setItem(DISMISS_KEY, "1");
-    setChecklistDismissed(true);
-  }, []);
+  const { skipped, checklistDismissed, skip, resume, dismissChecklist } =
+    useOnboardingSessionFlags(userData?.account_id ?? "");
 
   return {
     view: getOnboardingView({ isReady, step, skipped, checklistDismissed }),
