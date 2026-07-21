@@ -6,6 +6,7 @@ import { getFirstTaskSchedule } from "@/lib/onboarding/getFirstTaskSchedule";
 const input = {
   artistName: "Luh Tyler",
   artistAccountId: "artist-123",
+  recipientEmail: "manager@example.com",
   catalogName: "Debut",
 };
 
@@ -16,6 +17,8 @@ describe("buildFirstTaskParams", () => {
       title: "Weekly Catalog Report — Luh Tyler",
       prompt: buildFirstTaskPrompt({
         artistName: "Luh Tyler",
+        artistAccountId: "artist-123",
+        recipientEmail: "manager@example.com",
         catalogName: "Debut",
       }),
       schedule: getFirstTaskSchedule(),
@@ -26,5 +29,10 @@ describe("buildFirstTaskParams", () => {
   it("uses the exact prompt the pre-run showed, so the scheduled task matches the preview", () => {
     const params = buildFirstTaskParams(input);
     expect(params.prompt).toBe(buildFirstTaskPrompt(input));
+  });
+
+  it("threads the recipient email into the scheduled prompt so the weekly report is emailed", () => {
+    const params = buildFirstTaskParams(input);
+    expect(params.prompt).toContain("manager@example.com");
   });
 });

@@ -1,11 +1,20 @@
-import { UIMessage } from "ai";
+import { UIMessage, ChatStatus } from "ai";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { MessageParts } from "./MessageParts";
 
-const Message = ({ message }: { message: UIMessage }) => {
+const Message = ({
+  message,
+  status,
+  reload,
+}: {
+  message: UIMessage;
+  /** Injected when rendered outside a VercelChatProvider (onboarding pre-run). */
+  status?: ChatStatus;
+  reload?: () => void;
+}) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
 
   return (
@@ -24,10 +33,16 @@ const Message = ({ message }: { message: UIMessage }) => {
             {
               "w-full": mode === "edit",
               "group-data-[role=user]/message:w-fit": mode !== "edit",
-            }
+            },
           )}
         >
-          <MessageParts message={message} mode={mode} setMode={setMode} />
+          <MessageParts
+            message={message}
+            mode={mode}
+            setMode={setMode}
+            status={status}
+            reload={reload}
+          />
         </div>
       </motion.div>
     </AnimatePresence>

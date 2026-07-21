@@ -42,7 +42,7 @@ export const SOCIAL_DEFAULT_PLATFORMS = [
 // Vercel AI SDK
 export const AI_MODEL = "o3-mini";
 export const ANTHROPIC_MODEL = "claude-3-7-sonnet-20250219";
-export const DEFAULT_MODEL = "openai/gpt-5.4-mini";
+export const DEFAULT_MODEL = "moonshotai/kimi-k3";
 export const FAST_MODEL = "openai/gpt-5-nano";
 // Fastest model for lightweight tasks e.g generating chat titles etc.
 export const LIGHTWEIGHT_MODEL = "openai/gpt-4o-mini";

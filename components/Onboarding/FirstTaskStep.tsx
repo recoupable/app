@@ -1,5 +1,6 @@
 "use client";
 
+import { usePrivy } from "@privy-io/react-auth";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import useCatalogs from "@/hooks/useCatalogs";
 import { useNewChatBootstrap } from "@/hooks/useNewChatBootstrap";
@@ -17,7 +18,12 @@ const FirstTaskStep = () => {
   const { selectedArtist, isLoading: isArtistsLoading } = useArtistProvider();
   const catalogsQuery = useCatalogs();
   const bootstrap = useNewChatBootstrap();
+  const { user, ready } = usePrivy();
   const artistName = selectedArtist?.name;
+  const artistAccountId = selectedArtist?.account_id;
+  // The weekly report is emailed to the account holder — same address the
+  // scheduled task uses (useConfirmFirstTask), so the preview matches the send.
+  const recipientEmail = user?.email?.address;
 
   // Wait for catalogs so the pre-run prompt names the claimed catalog —
   // and therefore matches the scheduled task's prompt byte-for-byte.
@@ -45,7 +51,17 @@ const FirstTaskStep = () => {
         <p className="text-sm text-destructive" role="alert">
           {bootstrap.message}
         </p>
-      ) : isPreparing || bootstrap.status !== "ready" || !artistName ? (
+      ) : ready && artistName && artistAccountId && !recipientEmail ? (
+        // Distinct from "loading": a wallet/phone/social-only Privy login has no
+        // email to deliver the report to — retrying never resolves it.
+        <p className="text-sm text-destructive" role="alert">
+          Add an email address to your account to receive your weekly report.
+        </p>
+      ) : isPreparing ||
+        bootstrap.status !== "ready" ||
+        !artistName ||
+        !artistAccountId ||
+        !recipientEmail ? (
         <p
           className="animate-pulse text-sm text-muted-foreground"
           role="status"
@@ -59,7 +75,12 @@ const FirstTaskStep = () => {
           key={bootstrap.chatId}
           sessionId={bootstrap.sessionId}
           chatId={bootstrap.chatId}
-          prompt={buildFirstTaskPrompt({ artistName, catalogName })}
+          prompt={buildFirstTaskPrompt({
+            artistName,
+            artistAccountId,
+            recipientEmail,
+            catalogName,
+          })}
           catalogName={catalogName}
         />
       )}

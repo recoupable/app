@@ -26,7 +26,7 @@ interface UseConfirmFirstTaskInput {
  * decline creates nothing. Auth + artist come from providers.
  */
 export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken, user } = usePrivy();
   const { selectedArtist } = useArtistProvider();
   const queryClient = useQueryClient();
   const [decision, setDecision] = useState<FirstTaskDecision>("pending");
@@ -42,12 +42,21 @@ export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
       if (!artistAccountId || !artistName) {
         throw new Error("ARTIST_REQUIRED");
       }
+      const recipientEmail = user?.email?.address;
+      if (!recipientEmail) {
+        throw new Error("EMAIL_REQUIRED");
+      }
       const accessToken = await getAccessToken();
       if (!accessToken) {
         throw new Error("AUTH_REQUIRED");
       }
       return createTask(accessToken, {
-        ...buildFirstTaskParams({ artistName, artistAccountId, catalogName }),
+        ...buildFirstTaskParams({
+          artistName,
+          artistAccountId,
+          recipientEmail,
+          catalogName,
+        }),
         model: DEFAULT_MODEL,
       });
     },
@@ -57,8 +66,14 @@ export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
         exact: false,
       });
     },
-    onError: () => {
-      toast.error("Couldn't schedule the weekly report. Please try again.");
+    onError: (error) => {
+      // A missing email is permanent for wallet/social-only logins — tell the
+      // user to link one instead of "try again", which can't succeed.
+      const message =
+        error instanceof Error && error.message === "EMAIL_REQUIRED"
+          ? "Add an email address to your account to receive your weekly report."
+          : "Couldn't schedule the weekly report. Please try again.";
+      toast.error(message);
     },
   });
 
