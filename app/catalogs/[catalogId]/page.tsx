@@ -1,4 +1,4 @@
-import CatalogSongsPage from "@/components/Catalog/CatalogSongsPage";
+import CatalogReportPage from "@/components/Catalog/report/CatalogReportPage";
 
 interface CatalogPageProps {
   params: Promise<{
@@ -8,7 +8,7 @@ interface CatalogPageProps {
 
 const CatalogPage = async ({ params }: CatalogPageProps) => {
   const { catalogId } = await params;
-  return <CatalogSongsPage catalogId={catalogId} />;
+  return <CatalogReportPage catalogId={catalogId} />;
 };
 
 export default CatalogPage;
