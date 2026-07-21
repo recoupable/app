@@ -28,10 +28,11 @@ const useArtists = () => {
 
   const orgKey = selectedOrgId || "personal";
 
-  const { artists, isLoading, setArtists, refetchArtists } = useArtistsRoster({
-    userId: userData?.id,
-    orgId: selectedOrgId,
-  });
+  const { artists, isLoading, isError, setArtists, refetchArtists } =
+    useArtistsRoster({
+      userId: userData?.id,
+      orgId: selectedOrgId,
+    });
 
   const { selectedArtist, setSelectedArtist } = useArtistSelection(
     orgKey,
@@ -124,6 +125,7 @@ const useArtists = () => {
     setMenuVisibleArtistId,
     menuVisibleArtistId,
     isLoading,
+    isError,
     isCreatingArtist,
     setIsCreatingArtist,
     updateChatState,
