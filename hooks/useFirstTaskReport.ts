@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { ChatStatus, UIMessage } from "ai";
 import { useChat } from "@ai-sdk/react";
 import { useChatTransport } from "@/hooks/useChatTransport";
 import { useArtistProvider } from "@/providers/ArtistProvider";
@@ -20,7 +21,9 @@ interface UseFirstTaskReportInput {
 }
 
 interface UseFirstTaskReportResult {
-  reportText: string;
+  /** Streamed messages, rendered with the same <Message> the normal chat uses. */
+  messages: UIMessage[];
+  status: ChatStatus;
   phase: FirstTaskRunPhase;
 }
 
@@ -67,7 +70,8 @@ export function useFirstTaskReport({
 
   const reportText = getReportTextFromMessages(messages);
   return {
-    reportText,
+    messages,
+    status,
     phase: getFirstTaskRunPhase({ status, hasReport: reportText.length > 0 }),
   };
 }

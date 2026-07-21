@@ -1,6 +1,6 @@
 "use client";
 
-import { Response } from "@/components/ai-elements/response";
+import Message from "@/components/VercelChat/message";
 import { useFirstTaskReport } from "@/hooks/useFirstTaskReport";
 import FirstTaskConfirm from "./FirstTaskConfirm";
 
@@ -22,11 +22,18 @@ const FirstTaskReportRun = ({
   prompt,
   catalogName,
 }: FirstTaskReportRunProps) => {
-  const { reportText, phase } = useFirstTaskReport({
+  const { messages, status, phase } = useFirstTaskReport({
     sessionId,
     chatId,
     prompt,
   });
+
+  // The auto-sent user message is the (large) prompt itself — show only the
+  // assistant's work, rendered with the same <Message> the normal chat uses so
+  // tool calls and results get their real components (DRY, not a text dump).
+  const assistantMessages = messages.filter(
+    (message) => message.role === "assistant",
+  );
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -47,7 +54,11 @@ const FirstTaskReportRun = ({
             We couldn&apos;t generate the report. Refresh the page to try again.
           </p>
         ) : (
-          <Response>{reportText}</Response>
+          <div className="flex flex-col gap-6">
+            {assistantMessages.map((message) => (
+              <Message key={message.id} message={message} status={status} />
+            ))}
+          </div>
         )}
       </section>
       {phase === "ready" && (
