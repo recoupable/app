@@ -39,29 +39,10 @@ const ArtistSocialsCard = ({
       </h2>
 
       {socials.length === 0 ? (
-        <>
-          <p className="text-sm text-muted-foreground">
-            No profiles were auto-matched for {artist.name || "this artist"}.
-            Add one, or continue.
-          </p>
-          {adding ? (
-            <SocialFixForm
-              placeholder="Paste a profile link"
-              isSubmitting={isFixing}
-              onSubmit={handleAdd}
-            />
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="self-start"
-              onClick={() => setAdding(true)}
-            >
-              Add a profile
-            </Button>
-          )}
-        </>
+        <p className="text-sm text-muted-foreground">
+          No profiles were auto-matched for {artist.name || "this artist"}. Add
+          one, or continue.
+        </p>
       ) : (
         <div className="divide-y divide-border">
           {socials.map((social) => (
@@ -73,6 +54,25 @@ const ArtistSocialsCard = ({
             />
           ))}
         </div>
+      )}
+
+      {/* Always available: a matched-social list can still be missing platforms. */}
+      {adding ? (
+        <SocialFixForm
+          placeholder="Paste a profile link"
+          isSubmitting={isFixing}
+          onSubmit={handleAdd}
+        />
+      ) : (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="self-start"
+          onClick={() => setAdding(true)}
+        >
+          Add a profile
+        </Button>
       )}
     </div>
   );
