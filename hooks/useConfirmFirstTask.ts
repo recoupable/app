@@ -13,7 +13,7 @@ import {
   type FirstTaskDecision,
 } from "@/lib/onboarding/getFirstTaskConfirmPhase";
 import { useArtistProvider } from "@/providers/ArtistProvider";
-import { DEFAULT_MODEL } from "@/lib/consts";
+import { REPORT_MODEL } from "@/lib/consts";
 
 interface UseConfirmFirstTaskInput {
   catalogName?: string;
@@ -26,7 +26,7 @@ interface UseConfirmFirstTaskInput {
  * decline creates nothing. Auth + artist come from providers.
  */
 export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken, user } = usePrivy();
   const { selectedArtist } = useArtistProvider();
   const queryClient = useQueryClient();
   const [decision, setDecision] = useState<FirstTaskDecision>("pending");
@@ -42,13 +42,22 @@ export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
       if (!artistAccountId || !artistName) {
         throw new Error("ARTIST_REQUIRED");
       }
+      const recipientEmail = user?.email?.address;
+      if (!recipientEmail) {
+        throw new Error("EMAIL_REQUIRED");
+      }
       const accessToken = await getAccessToken();
       if (!accessToken) {
         throw new Error("AUTH_REQUIRED");
       }
       return createTask(accessToken, {
-        ...buildFirstTaskParams({ artistName, artistAccountId, catalogName }),
-        model: DEFAULT_MODEL,
+        ...buildFirstTaskParams({
+          artistName,
+          artistAccountId,
+          recipientEmail,
+          catalogName,
+        }),
+        model: REPORT_MODEL,
       });
     },
     onSuccess: async () => {

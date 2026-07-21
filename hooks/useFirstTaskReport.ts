@@ -5,7 +5,7 @@ import { useChat } from "@ai-sdk/react";
 import { useChatTransport } from "@/hooks/useChatTransport";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { generateUUID } from "@/lib/generateUUID";
-import { DEFAULT_MODEL } from "@/lib/consts";
+import { REPORT_MODEL } from "@/lib/consts";
 import { getReportTextFromMessages } from "@/lib/onboarding/getReportTextFromMessages";
 import {
   getFirstTaskRunPhase,
@@ -59,7 +59,7 @@ export function useFirstTaskReport({
           role: "user",
           parts: [{ type: "text", text: prompt }],
         },
-        { body: { roomId: chatId, artistId, model: DEFAULT_MODEL }, headers },
+        { body: { roomId: chatId, artistId, model: REPORT_MODEL }, headers },
       );
     };
     void fire();
