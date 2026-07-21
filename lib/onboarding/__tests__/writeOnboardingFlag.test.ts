@@ -9,9 +9,9 @@ describe("writeOnboardingFlag", () => {
   });
 
   it("sets a flag readable for the same account only", () => {
-    writeOnboardingFlag("checklist-dismissed", "acct-a", true);
-    expect(readOnboardingFlag("checklist-dismissed", "acct-a")).toBe(true);
-    expect(readOnboardingFlag("checklist-dismissed", "acct-b")).toBe(false);
+    writeOnboardingFlag("skipped", "acct-a", true);
+    expect(readOnboardingFlag("skipped", "acct-a")).toBe(true);
+    expect(readOnboardingFlag("skipped", "acct-b")).toBe(false);
   });
 
   it("clears a flag when written false", () => {

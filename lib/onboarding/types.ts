@@ -38,8 +38,9 @@ export interface OnboardingCheckpoint {
 }
 
 /**
- * Session-scoped escape hatches (skip / checklist dismissed). Stored in
- * sessionStorage keyed by account id so one account's choice never leaks
- * to another signed in from the same tab.
+ * Session-scoped skip escape hatch. Stored in sessionStorage keyed by
+ * account id so one account's choice never leaks to another signed in from
+ * the same tab. Skip is the only hatch — the pinned checklist that follows
+ * is a persistent reminder with no dismiss (recoupable/chat#1867).
  */
-export type OnboardingFlag = "skipped" | "checklist-dismissed";
+export type OnboardingFlag = "skipped";

@@ -76,28 +76,22 @@ describe("HomePage onboarding gate (single source of truth)", () => {
       name: /onboarding checklist/i,
     });
     // Regression guard: `fixed` pinned the card to the viewport edge, where
-    // the z-[65] ArtistsSidebar rail clipped the Dismiss button off-screen.
+    // the z-[65] ArtistsSidebar rail clipped it off-screen.
     expect(checklist.className).not.toContain("fixed");
     expect(checklist.className).toContain("absolute");
     expect(checklist.parentElement?.className).toContain("relative");
   });
 
-  it("dismiss from the checklist hides it at the HomePage level", () => {
+  it("has no dismiss control — the checklist is a persistent reminder", () => {
     render(<HomePage />);
     fireEvent.click(screen.getByRole("button", { name: /skip for now/i }));
-    fireEvent.click(
-      screen.getByRole("button", { name: /dismiss onboarding checklist/i }),
-    );
-    expect(
-      screen.queryByRole("complementary", { name: /onboarding checklist/i }),
-    ).toBeNull();
-    expect(screen.getByTestId("chat-bootstrap")).toBeDefined();
+    expect(screen.queryByRole("button", { name: /dismiss/i })).toBeNull();
   });
 
-  it("resume from the checklist re-opens the sequence", () => {
+  it("clicking Finish setting up re-opens the sequence", () => {
     render(<HomePage />);
     fireEvent.click(screen.getByRole("button", { name: /skip for now/i }));
-    fireEvent.click(screen.getByRole("button", { name: /resume setup/i }));
+    fireEvent.click(screen.getByRole("button", { name: /finish setting up/i }));
     expect(
       screen.getByRole("heading", { level: 3, name: /confirm your artists/i }),
     ).toBeDefined();

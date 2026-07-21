@@ -8,12 +8,6 @@ describe("getOnboardingFlagKey", () => {
     );
   });
 
-  it("scopes the checklist-dismissed flag by account id", () => {
-    expect(getOnboardingFlagKey("checklist-dismissed", "acct-a")).toBe(
-      "recoup-onboarding-checklist-dismissed:acct-a",
-    );
-  });
-
   it("produces distinct keys for distinct accounts (no cross-account leak)", () => {
     expect(getOnboardingFlagKey("skipped", "acct-a")).not.toBe(
       getOnboardingFlagKey("skipped", "acct-b"),

@@ -19,8 +19,9 @@ const HomePage = ({ initialMessages }: { initialMessages?: UIMessage[] }) => {
   }, [setFrameReady, isFrameReady]);
 
   // Incomplete accounts resume the sequence at their derived step on every
-  // landing; skip drops to the app with the checklist pinned; activated
-  // accounts only ever see the normal home (recoupable/chat#1867).
+  // landing; skip drops to the app with the checklist pinned as a persistent
+  // reminder; activated accounts only ever see the normal home
+  // (recoupable/chat#1867).
   if (onboarding.view === "sequence" && onboarding.step !== "complete") {
     return (
       <div className="flex flex-col size-full items-center">
@@ -40,7 +41,6 @@ const HomePage = ({ initialMessages }: { initialMessages?: UIMessage[] }) => {
         <OnboardingChecklist
           checkpoints={onboarding.checkpoints}
           onResume={onboarding.resume}
-          onDismiss={onboarding.dismissChecklist}
         />
       )}
     </div>
