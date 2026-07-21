@@ -37,8 +37,6 @@ describe("extractSendEmailResults", () => {
         id: "msg-1",
         role: "assistant",
         parts: [{ type: "text", text: "Hello" }],
-        content: "",
-        createdAt: new Date(),
       },
     ];
     const result = extractSendEmailResults(messages);
@@ -51,8 +49,6 @@ describe("extractSendEmailResults", () => {
         id: "msg-1",
         role: "assistant",
         parts: [createSendEmailPart("output-available", createMcpOutput({ id: "email-123" }))],
-        content: "",
-        createdAt: new Date(),
       },
     ];
     const result = extractSendEmailResults(messages);
@@ -65,15 +61,11 @@ describe("extractSendEmailResults", () => {
         id: "msg-1",
         role: "assistant",
         parts: [createSendEmailPart("output-available", createMcpOutput({ id: "email-1" }))],
-        content: "",
-        createdAt: new Date(),
       },
       {
         id: "msg-2",
         role: "assistant",
         parts: [createSendEmailPart("output-available", createMcpOutput({ id: "email-2" }))],
-        content: "",
-        createdAt: new Date(),
       },
     ];
     const result = extractSendEmailResults(messages);
@@ -89,8 +81,6 @@ describe("extractSendEmailResults", () => {
         id: "msg-1",
         role: "assistant",
         parts: [createSendEmailPart("pending")],
-        content: "",
-        createdAt: new Date(),
       },
     ];
     const result = extractSendEmailResults(messages);
@@ -103,8 +93,6 @@ describe("extractSendEmailResults", () => {
         id: "msg-1",
         role: "assistant",
         parts: [createSendEmailPart("output-available", createMcpOutput({}))],
-        content: "",
-        createdAt: new Date(),
       },
     ];
     const result = extractSendEmailResults(messages);
@@ -121,8 +109,6 @@ describe("extractSendEmailResults", () => {
           createSendEmailPart("output-available", createMcpOutput({ id: "email-abc" })),
           { type: "text", text: "Email sent!" },
         ],
-        content: "",
-        createdAt: new Date(),
       },
     ];
     const result = extractSendEmailResults(messages);
