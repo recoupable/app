@@ -32,15 +32,17 @@ export const FEATURED_MODELS: FeaturedModelConfig[] = [
     isPro: true,
     pill: "New",
     description: "OpenAI's most intelligent model",
-    tooltip: "OpenAI's best general-purpose model for both general and agentic tasks",
+    tooltip:
+      "OpenAI's best general-purpose model for both general and agentic tasks",
   },
   {
     id: DEFAULT_MODEL,
-    displayName: "GPT-5.4 Mini",
+    displayName: "Kimi K3",
     isPro: false,
-    pill: "Fast",
+    pill: "New",
     description: "Great for everyday",
-    tooltip: "OpenAI's faster, cost-optimized model",
+    tooltip:
+      "Moonshot's latest model — reliable for long-form reports and agentic tasks",
   },
   {
     id: "anthropic/claude-opus-4.5",
@@ -48,7 +50,8 @@ export const FEATURED_MODELS: FeaturedModelConfig[] = [
     isPro: true,
     pill: "New",
     description: "Great for complex reasoning",
-    tooltip: "Anthropic's latest model for demanding reasoning and complex problem solving",
+    tooltip:
+      "Anthropic's latest model for demanding reasoning and complex problem solving",
   },
   {
     id: "anthropic/claude-sonnet-4.5",
@@ -85,12 +88,14 @@ export const FEATURED_MODELS: FeaturedModelConfig[] = [
  * Check if a model ID is in the featured list
  */
 export const isFeaturedModel = (modelId: string): boolean => {
-  return FEATURED_MODELS.some(model => model.id === modelId);
+  return FEATURED_MODELS.some((model) => model.id === modelId);
 };
 
 /**
  * Get featured model config by ID
  */
-export const getFeaturedModelConfig = (modelId: string): FeaturedModelConfig | undefined => {
-  return FEATURED_MODELS.find(model => model.id === modelId);
+export const getFeaturedModelConfig = (
+  modelId: string,
+): FeaturedModelConfig | undefined => {
+  return FEATURED_MODELS.find((model) => model.id === modelId);
 };

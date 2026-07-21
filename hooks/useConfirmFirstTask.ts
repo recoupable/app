@@ -13,7 +13,7 @@ import {
   type FirstTaskDecision,
 } from "@/lib/onboarding/getFirstTaskConfirmPhase";
 import { useArtistProvider } from "@/providers/ArtistProvider";
-import { REPORT_MODEL } from "@/lib/consts";
+import { DEFAULT_MODEL } from "@/lib/consts";
 
 interface UseConfirmFirstTaskInput {
   catalogName?: string;
@@ -57,7 +57,7 @@ export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
           recipientEmail,
           catalogName,
         }),
-        model: REPORT_MODEL,
+        model: DEFAULT_MODEL,
       });
     },
     onSuccess: async () => {
@@ -66,8 +66,14 @@ export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
         exact: false,
       });
     },
-    onError: () => {
-      toast.error("Couldn't schedule the weekly report. Please try again.");
+    onError: (error) => {
+      // A missing email is permanent for wallet/social-only logins — tell the
+      // user to link one instead of "try again", which can't succeed.
+      const message =
+        error instanceof Error && error.message === "EMAIL_REQUIRED"
+          ? "Add an email address to your account to receive your weekly report."
+          : "Couldn't schedule the weekly report. Please try again.";
+      toast.error(message);
     },
   });
 

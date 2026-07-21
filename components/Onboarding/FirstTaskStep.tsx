@@ -18,7 +18,7 @@ const FirstTaskStep = () => {
   const { selectedArtist, isLoading: isArtistsLoading } = useArtistProvider();
   const catalogsQuery = useCatalogs();
   const bootstrap = useNewChatBootstrap();
-  const { user } = usePrivy();
+  const { user, ready } = usePrivy();
   const artistName = selectedArtist?.name;
   const artistAccountId = selectedArtist?.account_id;
   // The weekly report is emailed to the account holder — same address the
@@ -50,6 +50,12 @@ const FirstTaskStep = () => {
       ) : bootstrap.status === "error" ? (
         <p className="text-sm text-destructive" role="alert">
           {bootstrap.message}
+        </p>
+      ) : ready && artistName && artistAccountId && !recipientEmail ? (
+        // Distinct from "loading": a wallet/phone/social-only Privy login has no
+        // email to deliver the report to — retrying never resolves it.
+        <p className="text-sm text-destructive" role="alert">
+          Add an email address to your account to receive your weekly report.
         </p>
       ) : isPreparing ||
         bootstrap.status !== "ready" ||

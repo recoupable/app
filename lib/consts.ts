@@ -42,12 +42,11 @@ export const SOCIAL_DEFAULT_PLATFORMS = [
 // Vercel AI SDK
 export const AI_MODEL = "o3-mini";
 export const ANTHROPIC_MODEL = "claude-3-7-sonnet-20250219";
-export const DEFAULT_MODEL = "openai/gpt-5.4-mini";
-// Weekly report tasks compose long, fully-formatted HTML emails and must reliably
-// send them — the default fast model completes the data calls but gives up before
-// finishing the email (proven on the LA EQUIS weekly report). Kimi K3 handles the
-// long-form compose-and-send reliably.
-export const REPORT_MODEL = "moonshotai/kimi-k3";
+// Kimi K3 reliably composes long, fully-formatted HTML report emails; the prior
+// fast default (openai/gpt-5.4-mini) completed the data calls but gave up before
+// finishing the email (proven on the LA EQUIS weekly report). Used app-wide as
+// the default model for chat, task creation, and text generation.
+export const DEFAULT_MODEL = "moonshotai/kimi-k3";
 export const FAST_MODEL = "openai/gpt-5-nano";
 // Fastest model for lightweight tasks e.g generating chat titles etc.
 export const LIGHTWEIGHT_MODEL = "openai/gpt-4o-mini";

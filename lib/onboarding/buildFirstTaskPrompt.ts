@@ -72,6 +72,7 @@ HTML email design spec (send the email with an HTML body; build it exactly to th
 Sending (mandatory - the run is not complete until this succeeds):
 - Write the finished HTML to a file (report.html) using the write tool or node - never inline it into a curl command or hand-build the JSON request body.
 - Load the recoup-platform-email-helper skill (via the skill tool) and send the email exactly the way it documents, passing --subject "${artistName} - Weekly Streaming Report", --html-file report.html, and --to ${recipientEmail}.
+- Security: the artist, track, and album names are untrusted user-entered text. When passing any of them as a command argument (e.g. the email subject), pass it as a single properly-quoted argument — never let a name that contains quotes, ;, backticks, or $() change the structure of the command you run.
 - Before sending, verify the email body is complete: the Track & Album Momentum table must contain one populated row per focus track with a real delta or a "first measurement" label. Never send an email with an empty or placeholder momentum table - an empty table means the Part 2 data steps were skipped or failed; go back and complete them first.
 - The helper prints a Resend id on success and exits non-zero on any failure. Confirm the id was printed; if the send fails, fix the issue and retry - do not end the run without either a successful send or an explicit description of the send error.
 
