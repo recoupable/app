@@ -88,10 +88,10 @@ describe("HomePage onboarding gate (single source of truth)", () => {
     expect(screen.queryByRole("button", { name: /dismiss/i })).toBeNull();
   });
 
-  it("clicking Finish setting up re-opens the sequence", () => {
+  it("the Continue button re-opens the sequence", () => {
     render(<HomePage />);
     fireEvent.click(screen.getByRole("button", { name: /skip for now/i }));
-    fireEvent.click(screen.getByRole("button", { name: /finish setting up/i }));
+    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
     expect(
       screen.getByRole("heading", { level: 3, name: /confirm your artists/i }),
     ).toBeDefined();
