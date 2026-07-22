@@ -7,7 +7,7 @@ import getSocialPlatformByLink from "@/lib/getSocialPlatformByLink";
 import { getSocialFollowerCount } from "@/lib/onboarding/getSocialFollowerCount";
 import getPlatformDisplayName from "@/lib/socials/getPlatformDisplayName";
 import formatFollowerCount from "@/lib/utils/formatFollowerCount";
-import SocialFixForm from "./SocialFixForm";
+import SocialSearchOrPaste from "./SocialSearchOrPaste";
 import type { SOCIAL } from "@/types/Agent";
 
 interface SocialRowProps {
@@ -65,8 +65,8 @@ const SocialRow = ({ social, isSubmitting, onFix }: SocialRowProps) => {
       </div>
       {editing && (
         <div className="mt-2">
-          <SocialFixForm
-            placeholder="Paste the correct profile link"
+          <SocialSearchOrPaste
+            pastePlaceholder="Paste the correct profile link"
             isSubmitting={isSubmitting}
             onSubmit={handleFix}
           />
