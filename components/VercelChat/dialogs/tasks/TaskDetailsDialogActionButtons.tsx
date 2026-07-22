@@ -11,6 +11,7 @@ interface TaskDetailsDialogActionButtonsProps {
   editPrompt: string;
   editCron: string;
   editModel: string;
+  editTimezone: string;
   onSaveSuccess: () => void;
   onDeleteSuccess: () => void;
   isEnabled: boolean;
@@ -25,6 +26,7 @@ const TaskDetailsDialogActionButtons: React.FC<
   editPrompt,
   editCron,
   editModel,
+  editTimezone,
   onSaveSuccess,
   onDeleteSuccess,
   isEnabled,
@@ -77,6 +79,7 @@ const TaskDetailsDialogActionButtons: React.FC<
           prompt: editPrompt,
           schedule: cronExpression,
           model: editModel,
+          timezone: editTimezone,
         },
         onSuccess: () => {
           onSaveSuccess();

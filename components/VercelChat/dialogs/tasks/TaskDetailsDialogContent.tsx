@@ -19,6 +19,7 @@ const CronEditor = dynamic(
 );
 import TaskLastRunSection from "./TaskLastRunSection";
 import TaskScheduleSection from "./TaskScheduleSection";
+import TimezoneSelect from "@/components/TimezoneSelect/TimezoneSelect";
 import TaskRecentRunsSection from "./TaskRecentRunsSection";
 import TaskUpcomingRunsSection from "./TaskUpcomingRunsSection";
 import { getFeaturedModelConfig } from "@/lib/ai/featuredModels";
@@ -31,10 +32,12 @@ interface TaskDetailsDialogContentProps {
   editPrompt: string;
   editCron: string;
   editModel: string;
+  editTimezone: string;
   onTitleChange: (value: string) => void;
   onPromptChange: (value: string) => void;
   onCronChange: (value: string) => void;
   onModelChange: (value: string) => void;
+  onTimezoneChange: (value: string) => void;
   canEdit: boolean;
   isDeleted?: boolean;
 }
@@ -45,10 +48,12 @@ const TaskDetailsDialogContent: React.FC<TaskDetailsDialogContentProps> = ({
   editPrompt,
   editCron,
   editModel,
+  editTimezone,
   onTitleChange,
   onPromptChange,
   onCronChange,
   onModelChange,
+  onTimezoneChange,
   canEdit,
   isDeleted = false,
 }) => {
@@ -91,14 +96,21 @@ const TaskDetailsDialogContent: React.FC<TaskDetailsDialogContentProps> = ({
 
       {/* Schedule Section */}
       {canEdit ? (
-        <CronEditor
-          cronExpression={editCron}
-          onCronExpressionChange={onCronChange}
-        />
+        <>
+          <CronEditor
+            cronExpression={editCron}
+            onCronExpressionChange={onCronChange}
+          />
+          <TimezoneSelect
+            value={editTimezone}
+            onValueChange={onTimezoneChange}
+          />
+        </>
       ) : (
         <TaskScheduleSection
           schedule={task.schedule}
           nextRun={task.next_run || ""}
+          timezone={editTimezone}
           isDeleted={isDeleted}
         />
       )}

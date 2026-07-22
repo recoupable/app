@@ -13,6 +13,8 @@ export interface UpdateTaskParams {
   artist_account_id?: string;
   enabled?: boolean | null;
   model?: string | null;
+  /** IANA timezone (e.g. "America/Los_Angeles") the cron schedule is interpreted in. */
+  timezone?: string;
 }
 
 /**
@@ -43,6 +45,7 @@ export async function updateTask(
         }),
         ...(params.enabled !== undefined && { enabled: params.enabled }),
         ...(params.model !== undefined && { model: params.model }),
+        ...(params.timezone !== undefined && { timezone: params.timezone }),
       }),
     });
 
