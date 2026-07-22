@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { ArtistRecord } from "@/types/Artist";
-import SocialFixForm from "./SocialFixForm";
 import SocialRow from "./SocialRow";
+import SocialSearchOrPaste from "./SocialSearchOrPaste";
 
 interface ArtistSocialsCardProps {
   artist: ArtistRecord;
@@ -58,8 +58,8 @@ const ArtistSocialsCard = ({
 
       {/* Always available: a matched-social list can still be missing platforms. */}
       {adding ? (
-        <SocialFixForm
-          placeholder="Paste a profile link"
+        <SocialSearchOrPaste
+          pastePlaceholder="Paste a profile link"
           isSubmitting={isFixing}
           onSubmit={handleAdd}
         />
