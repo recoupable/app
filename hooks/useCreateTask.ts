@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { createTask } from "@/lib/tasks/createTask";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { DEFAULT_MODEL } from "@/lib/consts";
+import { getLocalTimezone } from "@/lib/timezone/getLocalTimezone";
 
 const DEFAULT_SCHEDULE = "0 9 * * *";
 
@@ -38,6 +39,7 @@ export function useCreateTask() {
         schedule: DEFAULT_SCHEDULE,
         artist_account_id: artistAccountId,
         model: DEFAULT_MODEL,
+        timezone: getLocalTimezone(),
       });
     },
     onSuccess: async (task) => {

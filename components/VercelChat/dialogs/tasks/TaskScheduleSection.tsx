@@ -2,16 +2,19 @@ import { CalendarDays, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatScheduledActionDate } from "@/lib/utils/formatScheduledActionDate";
 import { parseCronToHuman } from "@/lib/tasks/parseCronToHuman";
+import { formatTimezoneLabel } from "@/lib/timezone/formatTimezoneLabel";
 
 interface TaskScheduleSectionProps {
   schedule: string;
   nextRun: string;
+  timezone?: string | null;
   isDeleted?: boolean;
 }
 
 const TaskScheduleSection = ({
   schedule,
   nextRun,
+  timezone,
   isDeleted,
 }: TaskScheduleSectionProps) => {
   return (
@@ -36,6 +39,13 @@ const TaskScheduleSection = ({
           })}>
             {parseCronToHuman(schedule)}
           </div>
+          {timezone && (
+            <div className={cn("text-[10px] mt-0.5 text-muted-foreground", {
+              "text-red-500": isDeleted
+            })}>
+              {formatTimezoneLabel(timezone)}
+            </div>
+          )}
         </div>
       </div>
 

@@ -32,6 +32,8 @@ const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
     setEditCron,
     editModel,
     setEditModel,
+    editTimezone,
+    setEditTimezone,
     isActive,
     isPaused,
     canEdit,
@@ -60,10 +62,12 @@ const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
           editPrompt={editPrompt}
           editCron={editCron}
           editModel={editModel}
+          editTimezone={editTimezone}
           onTitleChange={setEditTitle}
           onPromptChange={setEditPrompt}
           onCronChange={setEditCron}
           onModelChange={setEditModel}
+          onTimezoneChange={setEditTimezone}
           canEdit={canEdit}
           isDeleted={isDeleted}
         />
@@ -76,6 +80,7 @@ const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({
             editPrompt={editPrompt}
             editCron={editCron}
             editModel={editModel}
+            editTimezone={editTimezone}
             onSaveSuccess={() => setIsDialogOpen(false)}
             onDeleteSuccess={() => {
               setIsDialogOpen(false);

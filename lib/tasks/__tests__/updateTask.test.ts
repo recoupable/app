@@ -41,4 +41,27 @@ describe("updateTask", () => {
     );
     expect(result).toEqual(updatedTask);
   });
+
+  it("includes timezone in the body when provided", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({
+        status: "success",
+        tasks: [{ id: "task-1" }],
+      }),
+    }) as unknown as typeof fetch;
+
+    await updateTask(accessToken, {
+      id: "task-1",
+      schedule: "0 9 * * 1",
+      timezone: "Europe/London",
+    });
+
+    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
+    expect(JSON.parse(String(init.body))).toEqual({
+      id: "task-1",
+      schedule: "0 9 * * 1",
+      timezone: "Europe/London",
+    });
+  });
 });
