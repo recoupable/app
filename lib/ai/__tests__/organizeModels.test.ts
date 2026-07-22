@@ -10,9 +10,9 @@ describe("organizeModels", () => {
   it("splits featured and non-featured gateway models", () => {
     const models = [
       {
-        id: "openai/gpt-5.2",
-        name: "gpt-5.2",
-        specification: { specificationVersion: "v2", provider: "openai", modelId: "gpt-5.2" },
+        id: "openai/gpt-5.5",
+        name: "gpt-5.5",
+        specification: { specificationVersion: "v2", provider: "openai", modelId: "gpt-5.5" },
       },
       {
         id: "some/other-model",
@@ -22,7 +22,7 @@ describe("organizeModels", () => {
     ] as never;
 
     const result = organizeModels(models);
-    expect(result.featuredModels.map((m) => m.id)).toContain("openai/gpt-5.2");
+    expect(result.featuredModels.map((m) => m.id)).toContain("openai/gpt-5.5");
     expect(result.otherModels.map((m) => m.id)).toEqual(["some/other-model"]);
   });
 });
