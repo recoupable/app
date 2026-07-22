@@ -7,6 +7,7 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import { Suspense } from "react";
 import ArtistSettingModal from "@/components/ArtistSettingModal";
+import AddArtistDialog from "@/components/Artists/AddArtistDialog";
 import MobileDownloadModal from "@/components/ModalDownloadModal";
 import ArtistsSidebar from "@/components/Artists/ArtistsSidebar";
 import { ToastContainer } from "react-toastify";
@@ -85,6 +86,7 @@ export default function RootLayout({
               <Sidebar />
               <Header />
               <ArtistSettingModal />
+              <AddArtistDialog />
               <div className="grow flex h-[100dvh] pt-16 md:pt-0 md:h-screen overflow-hidden bg-sidebar">
                 <div className="size-full md:py-4 md:pl-4">
                   <div className="size-full bg-card overflow-y-auto md:rounded-xl flex flex-col md:shadow-md md:border md:border-border">

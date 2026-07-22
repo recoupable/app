@@ -1,23 +1,27 @@
 import { useUserProvider } from "@/providers/UserProvder";
 import { ArtistRecord } from "@/types/Artist";
 import { SETTING_MODE } from "@/types/Setting";
-import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useState } from "react";
 
 const useArtistMode = (
   clearParams: () => void,
-  setEditableArtist: Dispatch<SetStateAction<ArtistRecord | null>>
+  setEditableArtist: Dispatch<SetStateAction<ArtistRecord | null>>,
 ) => {
   const [settingMode, setSettingMode] = useState(SETTING_MODE.UPDATE);
   const [isOpenSettingModal, setIsOpenSettingModal] = useState(false);
+  const [isCreationOpen, setIsCreationOpen] = useState(false);
   const { email } = useUserProvider();
-  const { push } = useRouter();
 
+  // Opens the shared Spotify-search dialog (AddArtistDialog). Previously this
+  // pushed `/?q=create a new artist`, which the onboarding router now
+  // intercepts for incomplete accounts — dead-ending in an /artists loop.
   const toggleCreation = () => {
-    clearParams();
     if (!email) return;
-    push("/?q=create a new artist");
+    clearParams();
+    setIsCreationOpen(true);
   };
+
+  const closeCreation = () => setIsCreationOpen(false);
 
   const toggleUpdate = (artist: ArtistRecord) => {
     setSettingMode(SETTING_MODE.UPDATE);
@@ -32,6 +36,8 @@ const useArtistMode = (
     toggleUpdate,
     toggleSettingModal,
     toggleCreation,
+    closeCreation,
+    isCreationOpen,
     settingMode,
     setSettingMode,
     isOpenSettingModal,
