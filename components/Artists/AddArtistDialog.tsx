@@ -10,7 +10,7 @@ import {
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useAddSpotifyArtist } from "@/hooks/useAddSpotifyArtist";
 import SpotifyArtistSearch from "./SpotifyArtistSearch";
-import type { SpotifyArtistResult } from "@/lib/spotify/parseSpotifyArtistResults";
+import type { SpotifyArtistSearchResult } from "@/types/spotify";
 
 /**
  * Global "Add New Artist" dialog: search Spotify -> pick -> add to the roster.
@@ -21,7 +21,7 @@ const AddArtistDialog = () => {
   const { isCreationOpen, closeCreation } = useArtistProvider();
   const { add, isAdding } = useAddSpotifyArtist();
 
-  const handleSelect = async (artist: SpotifyArtistResult) => {
+  const handleSelect = async (artist: SpotifyArtistSearchResult) => {
     const added = await add(artist);
     if (added) closeCreation();
   };

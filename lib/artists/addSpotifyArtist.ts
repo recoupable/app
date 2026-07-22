@@ -1,28 +1,28 @@
 import type { ArtistRecord } from "@/types/Artist";
-import type { SpotifyArtistResult } from "@/lib/spotify/parseSpotifyArtistResults";
+import type { SpotifyArtistSearchResult } from "@/types/spotify";
 import { createRosterArtist } from "@/lib/artists/createRosterArtist";
 import saveArtist from "@/lib/saveArtist";
 
 /**
  * Adds a Spotify-searched artist to the roster with real data: creates the
- * artist by name (`POST /api/artists`), then links its Spotify profile URL and
- * avatar image (`PATCH /api/artists/{id}`) so the roster card and reports have
- * the correct image + a Spotify social to enrich. Reuses the existing endpoints
- * rather than a bespoke create path.
+ * artist by name (`POST /api/artists`, which only accepts a name), then links
+ * its Spotify profile URL and avatar image (`PATCH /api/artists/{id}`) so the
+ * roster card and reports have the correct image + a Spotify social to enrich.
  */
 export async function addSpotifyArtist(
   accessToken: string,
-  artist: SpotifyArtistResult,
+  artist: SpotifyArtistSearchResult,
   orgId?: string | null,
 ): Promise<ArtistRecord> {
   const created = await createRosterArtist(accessToken, artist.name, orgId);
 
+  const imageUrl = artist.images?.[0]?.url;
   const { artist: updated } = await saveArtist(
     accessToken,
     created.account_id,
     {
-      ...(artist.imageUrl ? { image: artist.imageUrl } : {}),
-      profileUrls: { SPOTIFY: artist.profileUrl },
+      ...(imageUrl ? { image: imageUrl } : {}),
+      profileUrls: { SPOTIFY: artist.external_urls.spotify },
     },
   );
 

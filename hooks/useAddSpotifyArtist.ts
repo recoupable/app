@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { addSpotifyArtist } from "@/lib/artists/addSpotifyArtist";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useOrganization } from "@/providers/OrganizationProvider";
-import type { SpotifyArtistResult } from "@/lib/spotify/parseSpotifyArtistResults";
+import type { SpotifyArtistSearchResult } from "@/types/spotify";
 
 /**
  * Adds a Spotify-searched artist to the roster and refreshes + selects it.
@@ -19,7 +19,7 @@ export function useAddSpotifyArtist() {
   const { selectedOrgId } = useOrganization();
   const [isAdding, setIsAdding] = useState(false);
 
-  const add = async (artist: SpotifyArtistResult): Promise<boolean> => {
+  const add = async (artist: SpotifyArtistSearchResult): Promise<boolean> => {
     setIsAdding(true);
     try {
       const accessToken = await getAccessToken();

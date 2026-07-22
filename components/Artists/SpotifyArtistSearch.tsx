@@ -5,10 +5,10 @@ import { Loader, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useSpotifyArtistSearch } from "@/hooks/useSpotifyArtistSearch";
 import formatFollowerCount from "@/lib/utils/formatFollowerCount";
-import type { SpotifyArtistResult } from "@/lib/spotify/parseSpotifyArtistResults";
+import type { SpotifyArtistSearchResult } from "@/types/spotify";
 
 interface SpotifyArtistSearchProps {
-  onSelect: (artist: SpotifyArtistResult) => void;
+  onSelect: (artist: SpotifyArtistSearchResult) => void;
   /** Disables input + results while an add is in flight. */
   isBusy?: boolean;
   autoFocus?: boolean;
@@ -69,10 +69,10 @@ const SpotifyArtistSearch = ({
             onClick={() => onSelect(artist)}
             className="flex items-center gap-3 rounded-lg p-2 text-left hover:bg-muted disabled:opacity-50"
           >
-            {artist.imageUrl ? (
+            {artist.images?.[0]?.url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={artist.imageUrl}
+                src={artist.images[0].url}
                 alt=""
                 className="size-10 shrink-0 rounded-full object-cover"
               />
@@ -83,9 +83,9 @@ const SpotifyArtistSearch = ({
               <p className="truncate text-sm font-medium text-foreground">
                 {artist.name}
               </p>
-              {artist.followers !== null && (
+              {typeof artist.followers?.total === "number" && (
                 <p className="text-xs text-muted-foreground">
-                  {formatFollowerCount(artist.followers)} followers
+                  {formatFollowerCount(artist.followers.total)} followers
                 </p>
               )}
             </div>

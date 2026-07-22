@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
-import {
-  parseSpotifyArtistResults,
-  type SpotifyArtistResult,
-} from "@/lib/spotify/parseSpotifyArtistResults";
+import type {
+  SpotifyArtistSearchResult,
+  SpotifySearchResponse,
+} from "@/types/spotify";
 
 interface UseSpotifyArtistSearchResult {
-  results: SpotifyArtistResult[];
+  results: SpotifyArtistSearchResult[];
   isSearching: boolean;
 }
 
@@ -20,7 +20,7 @@ interface UseSpotifyArtistSearchResult {
 export function useSpotifyArtistSearch(
   query: string,
 ): UseSpotifyArtistSearchResult {
-  const [results, setResults] = useState<SpotifyArtistResult[]>([]);
+  const [results, setResults] = useState<SpotifyArtistSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
@@ -41,8 +41,8 @@ export function useSpotifyArtistSearch(
           )}&type=artist`,
           { signal: controller.signal },
         );
-        const json = await res.json();
-        setResults(parseSpotifyArtistResults(json));
+        const data: SpotifySearchResponse = await res.json();
+        setResults(data.artists?.items ?? []);
       } catch {
         if (!controller.signal.aborted) setResults([]);
       } finally {

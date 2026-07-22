@@ -2,18 +2,25 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { addSpotifyArtist } from "@/lib/artists/addSpotifyArtist";
 import { createRosterArtist } from "@/lib/artists/createRosterArtist";
 import saveArtist from "@/lib/saveArtist";
+import type { SpotifyArtistSearchResult } from "@/types/spotify";
 
 vi.mock("@/lib/artists/createRosterArtist", () => ({
   createRosterArtist: vi.fn(),
 }));
 vi.mock("@/lib/saveArtist", () => ({ default: vi.fn() }));
 
-const spotifyArtist = {
+const spotifyArtist: SpotifyArtistSearchResult = {
   id: "0xPoVNPnxIIUS1vrxAYV00",
   name: "Del Water Gap",
-  imageUrl: "https://i.scdn.co/image/big",
-  profileUrl: "https://open.spotify.com/artist/0xPoVNPnxIIUS1vrxAYV00",
-  followers: 317952,
+  type: "artist",
+  uri: "spotify:artist:0xPoVNPnxIIUS1vrxAYV00",
+  external_urls: {
+    spotify: "https://open.spotify.com/artist/0xPoVNPnxIIUS1vrxAYV00",
+  },
+  images: [{ url: "https://i.scdn.co/image/big", height: 640, width: 640 }],
+  popularity: 60,
+  genres: [],
+  followers: { href: null, total: 317952 },
 };
 
 describe("addSpotifyArtist", () => {
@@ -24,7 +31,7 @@ describe("addSpotifyArtist", () => {
     vi.clearAllMocks();
     vi.mocked(createRosterArtist).mockResolvedValue(created as never);
     vi.mocked(saveArtist).mockResolvedValue({
-      artist: { ...created, image: spotifyArtist.imageUrl },
+      artist: { ...created, image: "https://i.scdn.co/image/big" },
     } as never);
   });
 
@@ -38,15 +45,15 @@ describe("addSpotifyArtist", () => {
     );
     expect(saveArtist).toHaveBeenCalledWith(token, "acc-1", {
       image: "https://i.scdn.co/image/big",
-      profileUrls: { SPOTIFY: spotifyArtist.profileUrl },
+      profileUrls: { SPOTIFY: spotifyArtist.external_urls.spotify },
     });
     expect(result.account_id).toBe("acc-1");
   });
 
   it("omits the image when the Spotify result has none", async () => {
-    await addSpotifyArtist(token, { ...spotifyArtist, imageUrl: null });
+    await addSpotifyArtist(token, { ...spotifyArtist, images: [] });
     expect(saveArtist).toHaveBeenCalledWith(token, "acc-1", {
-      profileUrls: { SPOTIFY: spotifyArtist.profileUrl },
+      profileUrls: { SPOTIFY: spotifyArtist.external_urls.spotify },
     });
   });
 });
