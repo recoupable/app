@@ -2,6 +2,8 @@ import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
 export interface CatalogSongMeasurement {
   isrc: string;
+  /** Song title from the measurement capture. Absent on pre-v2 deployments. */
+  title?: string | null;
   playcount?: number | null;
   measured_at?: string | null;
 }
@@ -22,6 +24,11 @@ export interface CatalogMeasurementsResponse {
    * from a capped read and must not be trusted.
    */
   measured_song_count?: number;
+  /**
+   * Whole-scope lifetime stream total (same SQL aggregate). Absent on pre-v2
+   * deployments — callers fall back to summing the page they got.
+   */
+  total_streams?: number;
   valuation: CatalogValuationBand;
   /**
    * Echoes the artist filter the api actually applied: the uuid when the
@@ -30,6 +37,11 @@ export interface CatalogMeasurementsResponse {
    * artist scope must verify this echo before trusting the numbers.
    */
   artist_account_id?: string | null;
+  /**
+   * Catalog age (years) derived server-side from the earliest Spotify
+   * release date, defaulting to 5. Absent on pre-v2 deployments.
+   */
+  catalog_age_years?: number;
   error?: string;
 }
 
