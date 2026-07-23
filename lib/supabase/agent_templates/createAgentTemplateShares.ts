@@ -1,5 +1,6 @@
-import getAccountDetailsByEmails from "@/lib/supabase/account_emails/getAccountDetailsByEmails";
+import { insertAgentTemplateEmailShares } from "./insertAgentTemplateEmailShares";
 import { insertAgentTemplateShares } from "./insertAgentTemplateShares";
+import { splitShareEmailsByAccount } from "./splitShareEmailsByAccount";
 
 /**
  * Create agent template shares for multiple email addresses
@@ -14,21 +15,23 @@ export async function createAgentTemplateShares(
     return;
   }
 
-  // Get user accounts by email using utility function
-  const userEmails = await getAccountDetailsByEmails(emails);
+  const { accountIds, invitedEmails } = await splitShareEmailsByAccount(emails);
 
-  if (userEmails.length === 0) {
-    return;
+  if (accountIds.length > 0) {
+    await insertAgentTemplateShares(
+      accountIds.map((accountId) => ({
+        template_id: templateId,
+        user_id: accountId,
+      }))
+    );
   }
 
-    // Create share records for found users (filter out null account_ids)
-    const sharesData = userEmails
-      .filter(userEmail => userEmail.account_id !== null)
-      .map(userEmail => ({
+  if (invitedEmails.length > 0) {
+    await insertAgentTemplateEmailShares(
+      invitedEmails.map((email) => ({
         template_id: templateId,
-        user_id: userEmail.account_id!,
-      }));
-
-    // Insert shares using utility function
-    await insertAgentTemplateShares(sharesData);
+        email,
+      }))
+    );
+  }
 }

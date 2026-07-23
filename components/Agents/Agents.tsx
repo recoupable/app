@@ -6,8 +6,8 @@ import { useAgentData } from "./useAgentData";
 import { useAgentToggleFavorite } from "./useAgentToggleFavorite";
 import type { Agent } from "./useAgentData";
 import CreateAgentButton from "./CreateAgentButton";
-import { Switch } from "@/components/ui/switch";
 import AgentsSkeleton from "./AgentsSkeleton";
+import AgentsVisibilityFilter from "./AgentsVisibilityFilter";
 
 const Agents = () => {
   const { push } = useRouter();
@@ -35,12 +35,10 @@ const Agents = () => {
           Agents
         </h1>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground dark:text-muted-foreground">
-              {isPrivate ? "Private" : "Public"}
-            </span>
-            <Switch checked={isPrivate} onCheckedChange={() => togglePrivate()} />
-          </div>
+          <AgentsVisibilityFilter
+            isPrivate={isPrivate}
+            togglePrivate={togglePrivate}
+          />
           <CreateAgentButton />
         </div>
       </div>

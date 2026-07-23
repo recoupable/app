@@ -57,6 +57,10 @@ const EmailShareInput = ({ emails, existingSharedEmails = [], onEmailsChange, on
   return (
     <div className="space-y-2">
       <Label htmlFor="share-emails">Share with (email addresses)</Label>
+      <p className="text-sm text-muted-foreground">
+        Add email addresses for the people who should be able to view this
+        private agent.
+      </p>
       <Input
         id="share-emails"
         type="email"

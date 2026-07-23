@@ -623,6 +623,32 @@ export type Database = {
           },
         ]
       }
+      agent_template_email_shares: {
+        Row: {
+          created_at: string | null
+          email: string
+          template_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          template_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_template_email_shares_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "agent_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_templates: {
         Row: {
           created_at: string
