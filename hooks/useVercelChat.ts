@@ -23,6 +23,7 @@ import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
 import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
+import { useStopChatWorkflow } from "./useStopChatWorkflow";
 import { getChatPath } from "@/lib/chat/getChatPath";
 import { useInitialMessageAutoSend } from "./useInitialMessageAutoSend";
 import { usePersistSelectedModel } from "./usePersistSelectedModel";
@@ -213,7 +214,7 @@ export function useVercelChat({
     [id, artistId, organizationId, accountIdOverride, model],
   );
 
-  const { messages, status, stop, sendMessage, setMessages, regenerate } =
+  const { messages, status, stop: aiStop, sendMessage, setMessages, regenerate } =
     useChat({
       id,
       transport,
@@ -228,6 +229,16 @@ export function useVercelChat({
         await refetchCredits();
       },
     });
+
+  // Stop = instant local abort for all chats; for workflow chats also fire a
+  // best-effort backend cancel (POST /api/chat/{chatId}/stop). We don't await
+  // it — the local stop() gives the instant UI stop, and api#590 persists the
+  // correct turn state server-side, so reload stays consistent either way.
+  const stopWorkflow = useStopChatWorkflow(transportChatId);
+  const stop = useCallback(async () => {
+    if (sessionId) stopWorkflow();
+    await aiStop();
+  }, [aiStop, sessionId, stopWorkflow]);
 
   const earliestFailedUserMessageId = useMemo(
     () => getEarliestFailedUserMessageId(messages),

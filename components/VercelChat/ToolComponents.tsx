@@ -23,7 +23,7 @@ import UpdateArtistSocialsSuccess from "./tools/UpdateArtistSocialsSuccess";
 import { UpdateArtistSocialsResult } from "./tools/UpdateArtistSocialsSuccess";
 import { TxtFileResult } from "@/components/ui/TxtFileResult";
 import { TxtFileGenerationResult } from "@/components/ui/TxtFileResult";
-import { Loader } from "lucide-react";
+import { Loader, OctagonX } from "lucide-react";
 import GenericSuccess from "./tools/GenericSuccess";
 import getToolInfo from "@/lib/utils/getToolsInfo";
 import { isSearchProgressUpdate } from "@/lib/search/searchProgressUtils";
@@ -216,6 +216,30 @@ export function getToolCallComponent(part: ToolUIPart) {
     >
       <Loader className="h-3 w-3 animate-spin text-foreground" />
       <span>Using {toolName}</span>
+    </div>
+  );
+}
+
+/**
+ * Render a tool-call that terminated in `output-error` or `output-denied`
+ * (cancelled by the user, denied by approval flow, or errored). Without
+ * this branch the renderer falls through to the spinning skeleton and
+ * the pill keeps "running" forever.
+ */
+export function getCancelledToolComponent(part: ToolUIPart | DynamicToolUIPart) {
+  const { toolCallId } = part;
+  const toolName = getToolOrDynamicToolName(part);
+  const label =
+    (part as { errorText?: string }).errorText === "Cancelled"
+      ? `Cancelled ${toolName}`
+      : `Failed ${toolName}`;
+  return (
+    <div
+      key={toolCallId}
+      className="flex items-center gap-1 py-1 px-2 bg-muted/50 rounded-sm border border-border w-fit text-xs text-muted-foreground"
+    >
+      <OctagonX className="h-3 w-3 text-foreground" />
+      <span>{label}</span>
     </div>
   );
 }
