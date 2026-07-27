@@ -1,20 +1,16 @@
 import { redirect } from "next/navigation";
 
 /**
- * Funnel-entry convergence (chat#1885): marketing-funnel signups used to
- * deep-link to this standalone first-task mount, a surface distinct from the
- * unified `OnboardingSequence` that direct-chat signups see. Route the funnel
- * entry through the same surface by sending it to the home gate, which renders
- * `OnboardingSequence` at the account's DERIVED step (`useOnboardingGate` →
- * `HomePage`) — so both entry paths converge on one onboarding experience and
- * the funnel CTA always lands at the correct step, never a hard-coded one.
+ * Retired into `/setup/*` (chat#1889): `/setup` is the canonical onboarding
+ * sequence, so this interim standalone mount forwards to the matching setup
+ * route instead of rendering a parallel flow.
  *
- * Deferred (see PR): fully retire the interim standalone `/onboarding/*`
- * mounts (this route + `/onboarding/roster`) and repoint any external
- * deep-links once nothing references them.
+ * Kept as a redirect rather than deleted — the catalog report's primary CTA
+ * (the marketing funnel's and the valuation email's landing page) and any
+ * pasted/indexed link still resolve here. Delete once logs show no traffic.
  */
 const FirstTaskOnboardingPage = () => {
-  redirect("/");
+  redirect("/setup/tasks");
 };
 
 export default FirstTaskOnboardingPage;
