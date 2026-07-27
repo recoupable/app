@@ -1,6 +1,7 @@
 import cronstrue from "cronstrue";
 
 export const parseCronToHuman = (cronExpression: string): string => {
+  if (!cronExpression) return "No schedule";
   try {
     return cronstrue.toString(cronExpression);
   } catch (e) {

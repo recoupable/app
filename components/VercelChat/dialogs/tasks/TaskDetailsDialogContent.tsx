@@ -97,7 +97,7 @@ const TaskDetailsDialogContent: React.FC<TaskDetailsDialogContentProps> = ({
         />
       ) : (
         <TaskScheduleSection
-          schedule={task.schedule}
+          schedule={task.schedule || ""}
           nextRun={task.next_run || ""}
           isDeleted={isDeleted}
         />
