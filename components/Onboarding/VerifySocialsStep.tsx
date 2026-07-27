@@ -40,6 +40,7 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
             }
             onFix={(url) => fixSocial(artist, url)}
             onRemove={(socialId) => removeSocial(artist, socialId)}
+            defaultOpen={artists.length === 1}
           />
         ))}
       </div>
