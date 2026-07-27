@@ -21,10 +21,13 @@ const ConfirmRosterStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
         <h1 className="text-2xl font-semibold text-foreground">
           Confirm your roster
         </h1>
+        {/* Two-thirds of welcome-email signups arrive with an empty roster and
+            never ran a valuation, so claiming we set one up from "your
+            valuation" was simply false for them (chat#1889). */}
         <p className="text-sm text-muted-foreground mt-1">
-          We set {artists.length === 1 ? "this artist" : "these artists"} up
-          from your valuation. Add anyone else you manage — you can verify their
-          socials next.
+          {artists.length === 0
+            ? "Search Spotify for the artists you manage. Recoup uses them to measure your catalog, so pick the real profile."
+            : `We set ${artists.length === 1 ? "this artist" : "these artists"} up from your valuation. Add anyone else you manage — you can verify their socials next.`}
         </p>
       </div>
 
@@ -36,7 +39,8 @@ const ConfirmRosterStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
           </>
         ) : artists.length === 0 ? (
           <p className="text-sm text-muted-foreground p-4 rounded-xl border border-border">
-            No artists on your roster yet. Add your first artist below.
+            No artists on your roster yet. Add your first artist below to get
+            your catalog valued.
           </p>
         ) : (
           artists.map((artist) => (
