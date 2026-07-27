@@ -23,6 +23,7 @@ import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
 import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
+import { useStopChatWorkflow } from "./useStopChatWorkflow";
 import { getChatPath } from "@/lib/chat/getChatPath";
 import { useInitialMessageAutoSend } from "./useInitialMessageAutoSend";
 import { usePersistSelectedModel } from "./usePersistSelectedModel";
@@ -213,7 +214,7 @@ export function useVercelChat({
     [id, artistId, organizationId, accountIdOverride, model],
   );
 
-  const { messages, status, stop, sendMessage, setMessages, regenerate } =
+  const { messages, status, stop: aiStop, sendMessage, setMessages, regenerate } =
     useChat({
       id,
       transport,
@@ -228,6 +229,19 @@ export function useVercelChat({
         await refetchCredits();
       },
     });
+
+  // Workflow chats: await the backend cancel and let SSE close naturally —
+  // calling aiStop here would tear down SSE before in-flight chunks reach
+  // the UI and frontend/DB would disagree on reload. Legacy chats abort
+  // locally via the AI SDK's `stop()`.
+  const { stop: stopWorkflow, isStopping } = useStopChatWorkflow(transportChatId);
+  const stop = useCallback(async () => {
+    if (sessionId) {
+      await stopWorkflow();
+      return;
+    }
+    await aiStop();
+  }, [aiStop, sessionId, stopWorkflow]);
 
   const earliestFailedUserMessageId = useMemo(
     () => getEarliestFailedUserMessageId(messages),
@@ -404,6 +418,7 @@ export function useVercelChat({
     isLoading,
     hasError,
     isGeneratingResponse,
+    isStopping,
     model,
     isLoadingSignedUrls,
 
