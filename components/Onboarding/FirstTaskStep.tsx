@@ -4,7 +4,10 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import useCatalogs from "@/hooks/useCatalogs";
 import { useNewChatBootstrap } from "@/hooks/useNewChatBootstrap";
+import { useScheduledActions } from "@/hooks/useScheduledActions";
 import { buildFirstTaskPrompt } from "@/lib/onboarding/buildFirstTaskPrompt";
+import { findExistingWeeklyReportTask } from "@/lib/onboarding/findExistingWeeklyReportTask";
+import ExistingWeeklyReportPanel from "./ExistingWeeklyReportPanel";
 import FirstTaskReportRun from "./FirstTaskReportRun";
 import SetupSkipLink from "./SetupSkipLink";
 
@@ -20,6 +23,7 @@ import SetupSkipLink from "./SetupSkipLink";
 const FirstTaskStep = () => {
   const { selectedArtist, isLoading: isArtistsLoading } = useArtistProvider();
   const catalogsQuery = useCatalogs();
+  const tasksQuery = useScheduledActions({});
   const bootstrap = useNewChatBootstrap();
   const { user, ready } = usePrivy();
   const artistName = selectedArtist?.name;
@@ -33,6 +37,28 @@ const FirstTaskStep = () => {
   const isPreparing =
     isArtistsLoading || catalogsQuery.isLoading || bootstrap.status !== "ready";
   const catalogName = catalogsQuery.data?.catalogs?.[0]?.name;
+
+  // Never pre-run + re-schedule over an existing schedule (chat#1889): a return
+  // visit (or a re-click of the welcome email's step link) billed a duplicate
+  // run and left a second schedule behind. Wait for the read before deciding, so
+  // the pre-run isn't kicked off while tasks are still loading.
+  const existingTask = findExistingWeeklyReportTask(tasksQuery.data);
+  if (tasksQuery.isLoading) {
+    return (
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-8">
+        <p className="animate-pulse text-sm text-muted-foreground" role="status">
+          Checking your reports...
+        </p>
+      </div>
+    );
+  }
+  if (existingTask) {
+    return (
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-8">
+        <ExistingWeeklyReportPanel task={existingTask} />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-8">
