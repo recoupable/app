@@ -6,13 +6,16 @@ import useCatalogs from "@/hooks/useCatalogs";
 import { useNewChatBootstrap } from "@/hooks/useNewChatBootstrap";
 import { buildFirstTaskPrompt } from "@/lib/onboarding/buildFirstTaskPrompt";
 import FirstTaskReportRun from "./FirstTaskReportRun";
+import SetupSkipLink from "./SetupSkipLink";
 
 /**
- * Onboarding sequence final step (chat#1867): pre-run the first weekly
- * catalog report, show it finished, then ask "get this every Monday?".
- * Self-contained — provisions its own chat session (same infrastructure
- * a normal send uses) so it can slot into the OnboardingSequence
- * container later without depending on it.
+ * Final step of the canonical `/setup/*` sequence (chat#1867, chat#1889),
+ * mounted by `/setup/tasks`: pre-run the first weekly catalog report, show it
+ * finished, then ask "get this every Monday?". Self-contained — provisions its
+ * own chat session (the same infrastructure a normal send uses).
+ *
+ * Carries the gate's "skip for now" escape hatch, since home forwards
+ * incomplete accounts into the sequence.
  */
 const FirstTaskStep = () => {
   const { selectedArtist, isLoading: isArtistsLoading } = useArtistProvider();
@@ -84,6 +87,7 @@ const FirstTaskStep = () => {
           catalogName={catalogName}
         />
       )}
+      <SetupSkipLink />
     </div>
   );
 };

@@ -1,15 +1,16 @@
 "use client";
 
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
+import { useRouter } from "next/navigation";
 import NewChatBootstrap from "../VercelChat/NewChatBootstrap";
 import OnboardingChecklist from "@/components/Onboarding/OnboardingChecklist";
-import OnboardingSequence from "@/components/Onboarding/OnboardingSequence";
 import { useOnboardingGate } from "@/hooks/useOnboardingGate";
 import { useEffect } from "react";
 import { UIMessage } from "ai";
 
 const HomePage = ({ initialMessages }: { initialMessages?: UIMessage[] }) => {
   const { setFrameReady, isFrameReady } = useMiniKit();
+  const router = useRouter();
   const onboarding = useOnboardingGate();
 
   useEffect(() => {
@@ -18,21 +19,20 @@ const HomePage = ({ initialMessages }: { initialMessages?: UIMessage[] }) => {
     }
   }, [setFrameReady, isFrameReady]);
 
-  // Incomplete accounts resume the sequence at their derived step on every
-  // landing; skip drops to the app with the checklist pinned as a persistent
-  // reminder; activated accounts only ever see the normal home
-  // (recoupable/chat#1867).
-  if (onboarding.view === "sequence" && onboarding.step !== "complete") {
-    return (
-      <div className="flex flex-col size-full items-center">
-        <OnboardingSequence
-          step={onboarding.step}
-          checkpoints={onboarding.checkpoints}
-          onSkip={onboarding.skip}
-        />
-      </div>
-    );
-  }
+  // One canonical onboarding surface (chat#1889): an incomplete account is
+  // forwarded into `/setup`, which opens at its derived step. Home used to host
+  // a second, card-based sequence that only linked out to the generic app pages,
+  // so a direct signup never saw the interactive steps the welcome email's
+  // `/setup/*` links reach. Skip still drops to the app with the checklist
+  // pinned (the gate stays soft — see SetupSkipLink).
+  const shouldEnterSetup =
+    onboarding.view === "sequence" && onboarding.step !== "complete";
+
+  useEffect(() => {
+    if (shouldEnterSetup) {
+      router.replace("/setup");
+    }
+  }, [shouldEnterSetup, router]);
 
   return (
     <div className="relative flex flex-col size-full items-center">

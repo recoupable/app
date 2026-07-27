@@ -2,12 +2,14 @@
 
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getOnboardingStepContent } from "@/lib/onboarding/getOnboardingStepContent";
+import { getOnboardingStepTitle } from "@/lib/onboarding/getOnboardingStepTitle";
 import type { OnboardingCheckpoint } from "@/lib/onboarding/types";
 
 /**
- * Read-only list of activation checkpoints with completion state. Shared
- * by the onboarding sequence (progress) and the pinned checklist.
+ * Read-only list of activation checkpoints with completion state, used by the
+ * pinned checklist. Titles come from `getOnboardingStepTitle` — the placeholder
+ * step-card content it used to read is gone (chat#1889), since each step now
+ * renders its own real heading inside `/setup/*`.
  */
 const OnboardingCheckpointList = ({
   checkpoints,
@@ -35,7 +37,7 @@ const OnboardingCheckpointList = ({
               : "text-foreground",
           )}
         >
-          {getOnboardingStepContent(checkpoint.id).title}
+          {getOnboardingStepTitle(checkpoint.id)}
         </span>
         <span className="sr-only">
           {checkpoint.complete ? "(complete)" : "(incomplete)"}
