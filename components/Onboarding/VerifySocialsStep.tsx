@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useSocialFix } from "@/hooks/onboarding/useSocialFix";
+import { useSocialRemove } from "@/hooks/onboarding/useSocialRemove";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import ArtistSocialsCard from "./ArtistSocialsCard";
 
@@ -15,6 +16,7 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
   const { sorted } = useArtistProvider();
   const artists = sorted.filter((artist) => !artist.isWorkspace);
   const { fixSocial, fixingArtistId } = useSocialFix();
+  const { removeSocial, removingSocialId } = useSocialRemove();
 
   return (
     <section className="flex flex-col gap-6">
@@ -33,8 +35,11 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
           <ArtistSocialsCard
             key={artist.account_id}
             artist={artist}
-            isFixing={fixingArtistId === artist.account_id}
+            isFixing={
+              fixingArtistId === artist.account_id || removingSocialId !== null
+            }
             onFix={(url) => fixSocial(artist, url)}
+            onRemove={(socialId) => removeSocial(artist, socialId)}
           />
         ))}
       </div>

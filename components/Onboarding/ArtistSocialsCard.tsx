@@ -10,6 +10,7 @@ interface ArtistSocialsCardProps {
   artist: ArtistRecord;
   isFixing: boolean;
   onFix: (url: string) => Promise<boolean>;
+  onRemove: (socialId: string) => Promise<boolean>;
 }
 
 /**
@@ -22,6 +23,7 @@ const ArtistSocialsCard = ({
   artist,
   isFixing,
   onFix,
+  onRemove,
 }: ArtistSocialsCardProps) => {
   const socials = artist.account_socials ?? [];
   const [adding, setAdding] = useState(false);
@@ -40,8 +42,8 @@ const ArtistSocialsCard = ({
 
       {socials.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No profiles were auto-matched for {artist.name || "this artist"}. Add
-          one, or continue.
+          No profiles were auto-matched for {artist.name || "this artist"}.
+          Adding one is optional, and you can continue without it.
         </p>
       ) : (
         <div className="divide-y divide-border">
@@ -51,6 +53,7 @@ const ArtistSocialsCard = ({
               social={social}
               isSubmitting={isFixing}
               onFix={onFix}
+              onRemove={onRemove}
             />
           ))}
         </div>
