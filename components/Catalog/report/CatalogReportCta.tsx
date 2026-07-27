@@ -6,10 +6,11 @@ import Link from "next/link";
  * the one-click first-task step — pre-runs the first weekly report, then
  * confirms the Monday schedule — instead of a blank /tasks page.
  *
- * Points at the canonical `/setup/tasks` route rather than the retired
- * `/onboarding/first-task` mount (chat#1889). This CTA is the landing page for
- * both the marketing valuation funnel and the valuation email, so it must not
- * route through a surface that is being retired.
+ * Points at the canonical `/setup/tasks` route rather than the deleted
+ * `/onboarding/first-task` mount (chat#1889, now a 308 in `next.config.mjs`).
+ * This CTA is the landing page for both the marketing valuation funnel and the
+ * valuation email, so it must route straight at the canonical step rather than
+ * bouncing through a retired one.
  */
 const CatalogReportCta = () => {
   return (
