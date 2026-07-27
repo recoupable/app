@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Pencil } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import getSocialPlatformByLink from "@/lib/getSocialPlatformByLink";
 import { getSocialFollowerCount } from "@/lib/onboarding/getSocialFollowerCount";
@@ -33,6 +34,10 @@ const SocialRow = ({ social, isSubmitting, onFix }: SocialRowProps) => {
       ? social.username
       : `@${social.username}`
     : social.link;
+  const initial = (social.username || platform || "?")
+    .replace(/^@/, "")
+    .charAt(0)
+    .toUpperCase();
 
   const handleFix = async (url: string) => {
     const saved = await onFix(url);
@@ -43,13 +48,23 @@ const SocialRow = ({ social, isSubmitting, onFix }: SocialRowProps) => {
   return (
     <div className="py-2">
       <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-card-foreground">{platform}</p>
-          <p className="text-xs text-muted-foreground truncate">
-            {handle}
-            {followerCount !== null &&
-              ` · ${formatFollowerCount(followerCount)} followers`}
-          </p>
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar className="size-9 shrink-0">
+            {social.avatar ? (
+              <AvatarImage src={social.avatar} alt="" />
+            ) : null}
+            <AvatarFallback>{initial}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-card-foreground">
+              {platform}
+            </p>
+            <p className="text-xs text-muted-foreground truncate">
+              {handle}
+              {followerCount !== null &&
+                ` · ${formatFollowerCount(followerCount)} followers`}
+            </p>
+          </div>
         </div>
         <Button
           type="button"
