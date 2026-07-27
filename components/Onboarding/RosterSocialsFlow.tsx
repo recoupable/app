@@ -8,10 +8,10 @@ import VerifySocialsStep from "./VerifySocialsStep";
 type FlowStep = "roster" | "socials" | "done";
 
 /**
- * Standalone container for the roster + socials onboarding steps so the
- * slice is user-testable at /onboarding/roster today. The sibling
- * onboarding-sequence router (chat#1867) mounts `ConfirmRosterStep` and
- * `VerifySocialsStep` directly with its own state-derived stepping.
+ * Standalone container for the roster + socials onboarding steps, mounted at
+ * `/setup/artists` and `/setup/socials`. The sibling onboarding-sequence
+ * router (chat#1867) mounts `ConfirmRosterStep` and `VerifySocialsStep`
+ * directly with its own state-derived stepping.
  *
  * `initialStep` lets a deep link open the flow directly at a given step (e.g.
  * the welcome email's "verify socials" link → `/setup/socials`); it defaults to

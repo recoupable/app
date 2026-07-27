@@ -5,6 +5,12 @@ import Link from "next/link";
  * this valuation measured (onboarding sequence advance, chat#1867). Routes to
  * the one-click first-task step — pre-runs the first weekly report, then
  * confirms the Monday schedule — instead of a blank /tasks page.
+ *
+ * Points at the canonical `/setup/tasks` route rather than the deleted
+ * `/onboarding/first-task` mount (chat#1889, now a 308 in `next.config.mjs`).
+ * This CTA is the landing page for both the marketing valuation funnel and the
+ * valuation email, so it must route straight at the canonical step rather than
+ * bouncing through a retired one.
  */
 const CatalogReportCta = () => {
   return (
@@ -20,7 +26,7 @@ const CatalogReportCta = () => {
         re-measures your catalog and emails you the trend.
       </p>
       <Link
-        href="/onboarding/first-task"
+        href="/setup/tasks"
         className="mt-4 inline-flex items-center justify-center rounded-xl bg-primary px-5 py-2.5 font-heading text-sm font-semibold text-primary-foreground transition-colors duration-200 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         Set up your weekly report
