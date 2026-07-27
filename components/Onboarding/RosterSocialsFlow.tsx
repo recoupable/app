@@ -12,9 +12,17 @@ type FlowStep = "roster" | "socials" | "done";
  * slice is user-testable at /onboarding/roster today. The sibling
  * onboarding-sequence router (chat#1867) mounts `ConfirmRosterStep` and
  * `VerifySocialsStep` directly with its own state-derived stepping.
+ *
+ * `initialStep` lets a deep link open the flow directly at a given step (e.g.
+ * the welcome email's "verify socials" link → `/setup/socials`); it defaults to
+ * "roster" so existing mounts are unchanged.
  */
-const RosterSocialsFlow = () => {
-  const [step, setStep] = useState<FlowStep>("roster");
+const RosterSocialsFlow = ({
+  initialStep = "roster",
+}: {
+  initialStep?: "roster" | "socials";
+} = {}) => {
+  const [step, setStep] = useState<FlowStep>(initialStep);
 
   return (
     <div className="w-full max-w-xl mx-auto grow py-8 px-6">
