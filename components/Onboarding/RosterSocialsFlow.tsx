@@ -3,19 +3,20 @@
 import { useState } from "react";
 import ConfirmRosterStep from "./ConfirmRosterStep";
 import RosterVerifiedPanel from "./RosterVerifiedPanel";
+import SetupSkipLink from "./SetupSkipLink";
 import VerifySocialsStep from "./VerifySocialsStep";
 
 type FlowStep = "roster" | "socials" | "done";
 
 /**
- * Standalone container for the roster + socials onboarding steps so the
- * slice is user-testable at /onboarding/roster today. The sibling
- * onboarding-sequence router (chat#1867) mounts `ConfirmRosterStep` and
- * `VerifySocialsStep` directly with its own state-derived stepping.
+ * Container for the roster + socials steps of the canonical `/setup/*`
+ * sequence (chat#1889), mounted by `/setup/artists` and `/setup/socials`.
  *
  * `initialStep` lets a deep link open the flow directly at a given step (e.g.
- * the welcome email's "verify socials" link → `/setup/socials`); it defaults to
- * "roster" so existing mounts are unchanged.
+ * the welcome email's "verify socials" link → `/setup/socials`).
+ *
+ * Carries the gate's "skip for now" escape hatch: home forwards incomplete
+ * accounts here, so without it the soft gate would become a wall.
  */
 const RosterSocialsFlow = ({
   initialStep = "roster",
@@ -25,9 +26,9 @@ const RosterSocialsFlow = ({
   const [step, setStep] = useState<FlowStep>(initialStep);
 
   return (
-    <div className="w-full max-w-xl mx-auto grow py-8 px-6">
+    <div className="w-full max-w-xl mx-auto grow py-8 px-6 flex flex-col gap-6">
       {step !== "done" && (
-        <p className="text-xs text-muted-foreground mb-6">
+        <p className="text-xs text-muted-foreground">
           Step {step === "roster" ? "1" : "2"} of 2
         </p>
       )}
@@ -38,6 +39,7 @@ const RosterSocialsFlow = ({
         <VerifySocialsStep onConfirmed={() => setStep("done")} />
       )}
       {step === "done" && <RosterVerifiedPanel />}
+      {step !== "done" && <SetupSkipLink />}
     </div>
   );
 };
