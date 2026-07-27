@@ -6,6 +6,7 @@ import useCatalogs from "@/hooks/useCatalogs";
 import { useNewChatBootstrap } from "@/hooks/useNewChatBootstrap";
 import { buildFirstTaskPrompt } from "@/lib/onboarding/buildFirstTaskPrompt";
 import FirstTaskReportRun from "./FirstTaskReportRun";
+import SetupProgress from "./SetupProgress";
 import SetupSkipLink from "./SetupSkipLink";
 
 /**
@@ -36,6 +37,7 @@ const FirstTaskStep = () => {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-8">
+      <SetupProgress step="task" />
       <header>
         <h1 className="text-xl font-semibold text-foreground">
           Your first weekly report

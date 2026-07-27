@@ -3,6 +3,7 @@
 import { useState } from "react";
 import ConfirmRosterStep from "./ConfirmRosterStep";
 import RosterVerifiedPanel from "./RosterVerifiedPanel";
+import SetupProgress from "./SetupProgress";
 import SetupSkipLink from "./SetupSkipLink";
 import VerifySocialsStep from "./VerifySocialsStep";
 
@@ -28,9 +29,7 @@ const RosterSocialsFlow = ({
   return (
     <div className="w-full max-w-xl mx-auto grow py-8 px-6 flex flex-col gap-6">
       {step !== "done" && (
-        <p className="text-xs text-muted-foreground">
-          Step {step === "roster" ? "1" : "2"} of 2
-        </p>
+        <SetupProgress step={step === "roster" ? "artists" : "socials"} />
       )}
       {step === "roster" && (
         <ConfirmRosterStep onConfirmed={() => setStep("socials")} />
