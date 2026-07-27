@@ -4,7 +4,7 @@ import { formatScheduledActionDate } from "@/lib/utils/formatScheduledActionDate
 import { parseCronToHuman } from "@/lib/tasks/parseCronToHuman";
 
 interface TaskScheduleSectionProps {
-  schedule: string;
+  schedule: string | null;
   nextRun: string;
   isDeleted?: boolean;
 }
@@ -30,12 +30,14 @@ const TaskScheduleSection = ({
         <div className={cn("break-words text-muted-foreground", {
           "text-red-600": isDeleted
         })}>
-          <span className="font-mono">{schedule}</span>
-          <div className={cn("text-[10px] mt-0.5 text-muted-foreground", {
-            "text-red-500": isDeleted
-          })}>
-            {parseCronToHuman(schedule)}
-          </div>
+          <span className="font-mono">{schedule || "No schedule"}</span>
+          {schedule && (
+            <div className={cn("text-[10px] mt-0.5 text-muted-foreground", {
+              "text-red-500": isDeleted
+            })}>
+              {parseCronToHuman(schedule)}
+            </div>
+          )}
         </div>
       </div>
 
