@@ -59,6 +59,7 @@ const ArtistSocialsCard = ({
       {/* Always available: a matched-social list can still be missing platforms. */}
       {adding ? (
         <SocialSearchOrPaste
+          withPlatformPicker
           pastePlaceholder="Paste a profile link"
           isSubmitting={isFixing}
           onSubmit={handleAdd}
