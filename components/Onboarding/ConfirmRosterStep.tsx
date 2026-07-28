@@ -3,6 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useArtistProvider } from "@/providers/ArtistProvider";
+import useCatalogs from "@/hooks/useCatalogs";
+import { getConfirmRosterCopy } from "@/lib/onboarding/getConfirmRosterCopy";
 import AddArtistForm from "./AddArtistForm";
 import RosterArtistRow from "./RosterArtistRow";
 
@@ -13,7 +15,9 @@ import RosterArtistRow from "./RosterArtistRow";
  */
 const ConfirmRosterStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
   const { sorted, isLoading } = useArtistProvider();
+  const { data: catalogsData } = useCatalogs();
   const artists = sorted.filter((artist) => !artist.isWorkspace);
+  const hasValuation = (catalogsData?.catalogs?.length ?? 0) > 0;
 
   return (
     <section className="flex flex-col gap-6">
@@ -22,9 +26,10 @@ const ConfirmRosterStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
           Confirm your roster
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          We set {artists.length === 1 ? "this artist" : "these artists"} up
-          from your valuation. Add anyone else you manage — you can verify their
-          socials next.
+          {getConfirmRosterCopy({
+            artistCount: artists.length,
+            hasValuation,
+          })}
         </p>
       </div>
 
@@ -36,7 +41,8 @@ const ConfirmRosterStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
           </>
         ) : artists.length === 0 ? (
           <p className="text-sm text-muted-foreground p-4 rounded-xl border border-border">
-            No artists on your roster yet. Add your first artist below.
+            No artists on your roster yet. Add your first artist below to get
+            your catalog valued.
           </p>
         ) : (
           artists.map((artist) => (
@@ -52,7 +58,7 @@ const ConfirmRosterStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
         disabled={isLoading || artists.length === 0}
         onClick={onConfirmed}
       >
-        {artists.length > 1 ? "These are my artists" : "This is my artist"} —
+        {artists.length > 1 ? "These are my artists" : "This is my artist"},
         continue
       </Button>
     </section>
