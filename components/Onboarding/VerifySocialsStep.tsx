@@ -24,7 +24,7 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           These are the profiles we matched. Fix any that point at the wrong
-          account — reports and tasks pull from them.
+          account. Reports and tasks pull from them.
         </p>
       </div>
 
@@ -40,7 +40,7 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
       </div>
 
       <Button type="button" className="w-full" onClick={onConfirmed}>
-        Looks good — continue
+        Looks good, continue
       </Button>
     </section>
   );

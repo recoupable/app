@@ -58,7 +58,7 @@ const ConfirmRosterStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
         disabled={isLoading || artists.length === 0}
         onClick={onConfirmed}
       >
-        {artists.length > 1 ? "These are my artists" : "This is my artist"} —
+        {artists.length > 1 ? "These are my artists" : "This is my artist"},
         continue
       </Button>
     </section>

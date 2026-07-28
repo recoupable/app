@@ -23,7 +23,7 @@ export function getConfirmRosterCopy({
   }
 
   const tail =
-    "Add anyone else you manage — you can verify their socials next.";
+    "Add anyone else you manage, you can verify their socials next.";
 
   if (!hasValuation) return tail;
 
