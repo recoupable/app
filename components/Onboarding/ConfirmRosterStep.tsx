@@ -3,6 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useArtistProvider } from "@/providers/ArtistProvider";
+import useCatalogs from "@/hooks/useCatalogs";
+import { getConfirmRosterCopy } from "@/lib/onboarding/getConfirmRosterCopy";
 import AddArtistForm from "./AddArtistForm";
 import RosterArtistRow from "./RosterArtistRow";
 
@@ -13,7 +15,9 @@ import RosterArtistRow from "./RosterArtistRow";
  */
 const ConfirmRosterStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
   const { sorted, isLoading } = useArtistProvider();
+  const { data: catalogsData } = useCatalogs();
   const artists = sorted.filter((artist) => !artist.isWorkspace);
+  const hasValuation = (catalogsData?.catalogs?.length ?? 0) > 0;
 
   return (
     <section className="flex flex-col gap-6">
@@ -21,13 +25,11 @@ const ConfirmRosterStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
         <h1 className="text-2xl font-semibold text-foreground">
           Confirm your roster
         </h1>
-        {/* Two-thirds of welcome-email signups arrive with an empty roster and
-            never ran a valuation, so claiming we set one up from "your
-            valuation" was simply false for them (chat#1889). */}
         <p className="text-sm text-muted-foreground mt-1">
-          {artists.length === 0
-            ? "Search Spotify for the artists you manage. Recoup uses them to measure your catalog, so pick the real profile."
-            : `We set ${artists.length === 1 ? "this artist" : "these artists"} up from your valuation. Add anyone else you manage — you can verify their socials next.`}
+          {getConfirmRosterCopy({
+            artistCount: artists.length,
+            hasValuation,
+          })}
         </p>
       </div>
 

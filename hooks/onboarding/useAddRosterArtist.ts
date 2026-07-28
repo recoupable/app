@@ -55,10 +55,17 @@ export function useAddRosterArtist() {
         ? buildSocialFixPayload(options.profileUrl)
         : null;
       if (artist?.account_id && (payload || options.image)) {
-        await saveArtist(accessToken, artist.account_id, {
-          ...(payload ? { profileUrls: payload.profileUrls } : {}),
-          ...(options.image ? { image: options.image } : {}),
-        });
+        try {
+          await saveArtist(accessToken, artist.account_id, {
+            ...(payload ? { profileUrls: payload.profileUrls } : {}),
+            ...(options.image ? { image: options.image } : {}),
+          });
+        } catch {
+          // Swallowed on purpose. POST /api/artists already succeeded, so
+          // surfacing this would leave the form open over an artist that
+          // exists — and picking again would create a duplicate. The socials
+          // are still fixable in the next step.
+        }
       }
 
       await getArtists();
