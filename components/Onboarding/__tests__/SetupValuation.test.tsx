@@ -94,4 +94,23 @@ describe("SetupValuation", () => {
     expect(getByText("hero")).toBeDefined();
     expect(replace).not.toHaveBeenCalled();
   });
+  // Seeding (chat#1889 row 8) creates the catalog seconds after the first
+  // artist is added, but its measurements land later — so this window is now
+  // routine, not theoretical. Without a terminal state the route renders a
+  // skeleton forever: the redirect cannot fire (there IS a catalog) and the
+  // hero cannot render (nothing measured yet).
+  it("shows a measuring state, not an endless skeleton, when the catalog has no valuation yet", () => {
+    catalogsResult = {
+      data: { catalogs: [{ id: "cat-1" }] },
+      isLoading: false,
+      isPending: false,
+      isError: false,
+    };
+    valuationResult = { show: false };
+
+    const { getByText } = render(<SetupValuation />);
+
+    expect(getByText(/measuring your catalog/i)).toBeDefined();
+    expect(replace).not.toHaveBeenCalled();
+  });
 });
