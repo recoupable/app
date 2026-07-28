@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSocialFix } from "@/hooks/onboarding/useSocialFix";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import ArtistSocialsCard from "./ArtistSocialsCard";
@@ -10,9 +11,14 @@ import ArtistSocialsCard from "./ArtistSocialsCard";
  * artist. Matches are accepted by default — edit any that point at the
  * wrong account, or add one where none were found. Continue always
  * proceeds; an artist with no socials simply has none.
+ *
+ * Reads `isLoading` and renders skeletons, mirroring `ConfirmRosterStep`: the
+ * step used to read only `sorted`, so a direct `/setup/socials` visit (the
+ * welcome email's step 2 link) rendered a blank step that looked broken until
+ * the roster arrived (chat#1889).
  */
 const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
-  const { sorted } = useArtistProvider();
+  const { sorted, isLoading } = useArtistProvider();
   const artists = sorted.filter((artist) => !artist.isWorkspace);
   const { fixSocial, fixingArtistId } = useSocialFix();
 
@@ -29,19 +35,28 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
       </div>
 
       <div className="flex flex-col gap-3">
-        {artists.map((artist) => (
-          <ArtistSocialsCard
-            key={artist.account_id}
-            artist={artist}
-            isFixing={fixingArtistId === artist.account_id}
-            onFix={(url) => fixSocial(artist, url)}
-          />
-        ))}
+        {isLoading ? (
+          <>
+            <Skeleton className="h-[104px] w-full rounded-xl" />
+            <Skeleton className="h-[104px] w-full rounded-xl" />
+          </>
+        ) : (
+          artists.map((artist) => (
+            <ArtistSocialsCard
+              key={artist.account_id}
+              artist={artist}
+              isFixing={fixingArtistId === artist.account_id}
+              onFix={(url) => fixSocial(artist, url)}
+            />
+          ))
+        )}
       </div>
 
-      <Button type="button" className="w-full" onClick={onConfirmed}>
-        Looks good — continue
-      </Button>
+      {!isLoading && (
+        <Button type="button" className="w-full" onClick={onConfirmed}>
+          Looks good — continue
+        </Button>
+      )}
     </section>
   );
 };
