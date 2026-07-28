@@ -23,15 +23,20 @@ import { cn } from "@/lib/utils";
 const SetupValuation = () => {
   const router = useRouter();
   const valuation = useHomeValuation();
-  const { data, isLoading, isError } = useCatalogs();
+  // `isPending`, not `isLoading`: useCatalogs is `enabled: !!accountId &&
+  // authenticated`, and a disabled TanStack Query v5 query reports
+  // isPending true / isFetching false — so isLoading is false while Privy is
+  // still resolving. Redirecting on that bounced every cold load of this
+  // route, which is exactly where the welcome email's payoff link points.
+  const { data, isPending, isError } = useCatalogs();
   const hasCatalog = !!data?.catalogs?.length;
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isPending) return;
     if (!hasCatalog || isError) router.replace("/catalogs");
-  }, [isLoading, hasCatalog, isError, router]);
+  }, [isPending, hasCatalog, isError, router]);
 
-  if (isLoading || !valuation.show) {
+  if (isPending || !valuation.show) {
     return (
       <div className="mx-auto flex w-full max-w-xl flex-col gap-4 px-6 py-8">
         <Skeleton className="h-8 w-1/2 rounded-lg" />
