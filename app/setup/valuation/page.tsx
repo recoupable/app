@@ -1,11 +1,12 @@
-import { redirect } from "next/navigation";
+import SetupValuation from "@/components/Onboarding/SetupValuation";
 
 /**
- * `/setup/valuation` — welcome email step 4 ("See your baseline valuation").
- * The baseline valuation is the catalog report (`/catalogs/[catalogId]`), which
- * is not addressable without a catalog id here, so route to the catalog list.
- * Revisit if a dedicated valuation landing is built.
+ * `/setup/valuation` — the welcome email's payoff link. Renders the account's
+ * baseline valuation (chat#1889) instead of the bare `/catalogs` redirect it
+ * used to be, which left the email's "See your baseline valuation" link with no
+ * real destination. Reading the valuation needs client state, so the page mounts
+ * `SetupValuation`.
  */
 export default function SetupValuationPage() {
-  redirect("/catalogs");
+  return <SetupValuation />;
 }
