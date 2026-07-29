@@ -5,9 +5,11 @@ import {
 } from "../ai-elements/prompt-input";
 import { PromptInputModelSelectContent } from "../ai-elements/prompt-input";
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
-import { isFreeModel } from "@/lib/ai/isFreeModel";
+import { isPremiumModel } from "@/lib/ai/isPremiumModel";
+import { dedupeModels } from "@/lib/ai/dedupeModels";
 import { toast } from "react-toastify";
 import { usePaymentProvider } from "@/providers/PaymentProvider";
+import useSubscribeClick from "@/hooks/useSubscribeClick";
 import { organizeModels } from "@/lib/ai/organizeModels";
 import { getFeaturedModelConfig } from "@/lib/ai/featuredModels";
 import { useMemo } from "react";
@@ -17,9 +19,10 @@ import ModelSelectMaintenance from "./ModelSelectMaintenance";
 const ModelSelect = () => {
   const { model, setModel, availableModels } = useVercelChatContext();
   const { isSubscribed } = usePaymentProvider();
+  const { handleClick: handleSubscribeClick } = useSubscribeClick();
 
   const organizedModels = useMemo(() => {
-    return organizeModels(availableModels);
+    return organizeModels(dedupeModels(availableModels));
   }, [availableModels]);
 
   const selectedModel = availableModels.find((m) => m.id === model);
@@ -30,11 +33,10 @@ const ModelSelect = () => {
 
   const handleModelChange = (value: string) => {
     const selectedModel = availableModels.find((m) => m.id === value);
-    const isModelFree = selectedModel ? isFreeModel(selectedModel) : false;
-    if (!isModelFree && !isSubscribed) {
-      toast.error(
-        "This model is not free. Please upgrade to a paid plan or select a free model."
-      );
+    const isPremium = selectedModel ? isPremiumModel(selectedModel) : true;
+    if (isPremium && !isSubscribed) {
+      toast.info("Upgrade to Pro to use this model.");
+      handleSubscribeClick();
       return;
     }
     setModel(value);
