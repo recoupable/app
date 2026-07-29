@@ -40,7 +40,7 @@ const SPOTIFY = {
 describe("useAddRosterArtist", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    createRosterArtist.mockResolvedValue({ account_id: "artist-1" });
+    createRosterArtist.mockResolvedValue({ artist: { account_id: "artist-1" }, created: true });
     saveArtist.mockResolvedValue(undefined);
   });
 

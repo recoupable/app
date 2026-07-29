@@ -29,31 +29,46 @@ describe("addSpotifyArtist", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(createRosterArtist).mockResolvedValue(created as never);
+    vi.mocked(createRosterArtist).mockResolvedValue({ artist: created, created: true } as never);
     vi.mocked(saveArtist).mockResolvedValue({
       artist: { ...created, image: "https://i.scdn.co/image/big" },
     } as never);
   });
 
-  it("creates the artist by name then links its Spotify image + profile URL", async () => {
+  // Row 8 (chat#1889): the server resolves-or-creates the canonical for the
+  // Spotify id and attaches the social itself — the client no longer PATCHes
+  // profileUrls, which is what minted a duplicate row per signup.
+  it("passes the Spotify id to the create and never PATCHes the social", async () => {
     const result = await addSpotifyArtist(token, spotifyArtist, "org-1");
 
     expect(createRosterArtist).toHaveBeenCalledWith(
       token,
       "Del Water Gap",
       "org-1",
+      spotifyArtist.id,
     );
     expect(saveArtist).toHaveBeenCalledWith(token, "acc-1", {
       image: "https://i.scdn.co/image/big",
-      profileUrls: { SPOTIFY: spotifyArtist.external_urls.spotify },
     });
     expect(result.account_id).toBe("acc-1");
   });
 
-  it("omits the image when the Spotify result has none", async () => {
+  it("skips the image PATCH when the Spotify result has none", async () => {
     await addSpotifyArtist(token, { ...spotifyArtist, images: [] });
-    expect(saveArtist).toHaveBeenCalledWith(token, "acc-1", {
-      profileUrls: { SPOTIFY: spotifyArtist.external_urls.spotify },
-    });
+    expect(saveArtist).not.toHaveBeenCalled();
+  });
+
+  // A reused canonical is SHARED state (chat#1866): writing our image onto it
+  // would overwrite metadata every other rostering account sees.
+  it("never writes the image onto a reused canonical", async () => {
+    vi.mocked(createRosterArtist).mockResolvedValue({
+      artist: { id: "canonical-1", account_id: "canonical-1", name: "Del Water Gap" },
+      created: false,
+    } as never);
+
+    const result = await addSpotifyArtist(token, spotifyArtist, "org-1");
+
+    expect(saveArtist).not.toHaveBeenCalled();
+    expect(result.account_id).toBe("canonical-1");
   });
 });

@@ -20,6 +20,7 @@ describe("createRosterArtist", () => {
     const artist = { id: "artist-1", account_id: "artist-1", name: "New Act" };
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
+      status: 201,
       json: vi.fn().mockResolvedValue({ artist }),
     }) as unknown as typeof fetch;
 
@@ -35,12 +36,13 @@ describe("createRosterArtist", () => {
         body: JSON.stringify({ name: "New Act" }),
       }),
     );
-    expect(result).toEqual(artist);
+    expect(result).toEqual({ artist, created: true });
   });
 
   it("includes organization_id when an org is provided", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
+      status: 201,
       json: vi.fn().mockResolvedValue({ artist: { id: "a" } }),
     }) as unknown as typeof fetch;
 
@@ -55,6 +57,7 @@ describe("createRosterArtist", () => {
   it("throws the API error message on failure responses", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
+      status: 400,
       json: vi
         .fn()
         .mockResolvedValue({ status: "error", error: "name is required" }),
@@ -68,11 +71,33 @@ describe("createRosterArtist", () => {
   it("throws when the response has no artist", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
+      status: 201,
       json: vi.fn().mockResolvedValue({}),
     }) as unknown as typeof fetch;
 
     await expect(createRosterArtist(accessToken, "New Act")).rejects.toThrow(
       "Failed to create artist",
     );
+  });
+  // Row 8 (chat#1889): 200 = the API linked an existing canonical.
+  it("reports created: false when the API returns 200 (canonical reused)", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: vi.fn().mockResolvedValue({ artist: { id: "canonical-1" } }),
+    }) as unknown as typeof fetch;
+
+    const result = await createRosterArtist(
+      accessToken,
+      "Del Water Gap",
+      null,
+      "0xPoVNPnxIIUS1vrxAYV00",
+    );
+
+    expect(result.created).toBe(false);
+    const body = JSON.parse(
+      vi.mocked(global.fetch).mock.calls[0][1]?.body as string,
+    );
+    expect(body.spotify_artist_id).toBe("0xPoVNPnxIIUS1vrxAYV00");
   });
 });
