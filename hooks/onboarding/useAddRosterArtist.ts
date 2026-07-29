@@ -45,7 +45,7 @@ export function useAddRosterArtist() {
       if (!accessToken) {
         throw new Error("Please sign in to add an artist");
       }
-      const artist = await createRosterArtist(
+      const { artist } = await createRosterArtist(
         accessToken,
         trimmed,
         selectedOrgId,
