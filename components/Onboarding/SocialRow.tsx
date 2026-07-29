@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import getSocialPlatformByLink from "@/lib/getSocialPlatformByLink";
 import { getSocialFollowerCount } from "@/lib/onboarding/getSocialFollowerCount";
 import getPlatformDisplayName from "@/lib/socials/getPlatformDisplayName";
 import formatFollowerCount from "@/lib/utils/formatFollowerCount";
+import SocialRowActions from "./SocialRowActions";
 import SocialSearchOrPaste from "./SocialSearchOrPaste";
 import type { SOCIAL } from "@/types/Agent";
 
@@ -15,6 +14,7 @@ interface SocialRowProps {
   social: SOCIAL;
   isSubmitting: boolean;
   onFix: (url: string) => Promise<boolean>;
+  onRemove: (socialId: string) => Promise<boolean>;
 }
 
 /**
@@ -22,8 +22,16 @@ interface SocialRowProps {
  * followers, with an Edit affordance that reveals a paste-the-correct-link
  * form for the rare wrong match. No confirm step — leaving it as-is is the
  * confirmation.
+ *
+ * Remove is the other half (chat#1889): the step previously only added or
+ * replaced, so a profile the user did not want could not be taken back.
  */
-const SocialRow = ({ social, isSubmitting, onFix }: SocialRowProps) => {
+const SocialRow = ({
+  social,
+  isSubmitting,
+  onFix,
+  onRemove,
+}: SocialRowProps) => {
   const [editing, setEditing] = useState(false);
   const platform = getPlatformDisplayName(
     getSocialPlatformByLink(social.link || ""),
@@ -66,17 +74,13 @@ const SocialRow = ({ social, isSubmitting, onFix }: SocialRowProps) => {
             </p>
           </div>
         </div>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          className="shrink-0 text-muted-foreground"
-          aria-label={`Edit ${platform} link`}
-          aria-expanded={editing}
-          onClick={() => setEditing((open) => !open)}
-        >
-          <Pencil className="size-4" />
-        </Button>
+        <SocialRowActions
+          platform={platform}
+          editing={editing}
+          isSubmitting={isSubmitting}
+          onToggleEdit={() => setEditing((open) => !open)}
+          onRemove={() => void onRemove(social.id)}
+        />
       </div>
       {editing && (
         <div className="mt-2">
