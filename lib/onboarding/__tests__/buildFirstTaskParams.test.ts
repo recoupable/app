@@ -14,7 +14,7 @@ describe("buildFirstTaskParams", () => {
   it("builds POST /api/tasks params with a personalized title", () => {
     const params = buildFirstTaskParams(input);
     expect(params).toEqual({
-      title: "Weekly Catalog Report — Luh Tyler",
+      title: "Weekly Catalog Report: Luh Tyler",
       prompt: buildFirstTaskPrompt({
         artistName: "Luh Tyler",
         artistAccountId: "artist-123",

@@ -23,7 +23,7 @@ export function buildFirstTaskParams({
   catalogName,
 }: BuildFirstTaskParamsInput): Omit<CreateTaskParams, "model"> {
   return {
-    title: `Weekly Catalog Report — ${artistName}`,
+    title: `Weekly Catalog Report: ${artistName}`,
     prompt: buildFirstTaskPrompt({
       artistName,
       artistAccountId,

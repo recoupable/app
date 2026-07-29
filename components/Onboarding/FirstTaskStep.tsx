@@ -68,7 +68,7 @@ const FirstTaskStep = () => {
         </h1>
         <p className="text-sm text-muted-foreground">
           {artistName
-            ? `This week's catalog report for ${artistName} — the kind of update Recoup can send you every Monday.`
+            ? `This week's catalog report for ${artistName}. The kind of update Recoup can send you every Monday.`
             : "The kind of update Recoup can send you every Monday."}
         </p>
       </header>
