@@ -4,18 +4,20 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import AddArtistForm from "@/components/Onboarding/AddArtistForm";
 
-const addArtist = vi.fn();
+const add = vi.fn();
 
 const SPOTIFY_RESULT = {
   id: "3TVXtAsR1Inumwj472S9r4",
   name: "Drake",
-  external_urls: { spotify: "https://open.spotify.com/artist/3TVXtAsR1Inumwj472S9r4" },
+  external_urls: {
+    spotify: "https://open.spotify.com/artist/3TVXtAsR1Inumwj472S9r4",
+  },
   images: [{ url: "https://i.scdn.co/image/drake.jpg" }],
   followers: { total: 92000000 },
 };
 
-vi.mock("@/hooks/onboarding/useAddRosterArtist", () => ({
-  useAddRosterArtist: () => ({ addArtist, isAdding: false }),
+vi.mock("@/hooks/useAddSpotifyArtist", () => ({
+  useAddSpotifyArtist: () => ({ add, isAdding: false }),
 }));
 
 vi.mock("@/hooks/useSpotifyArtistSearch", () => ({
@@ -27,8 +29,8 @@ vi.mock("@/hooks/useSpotifyArtistSearch", () => ({
 
 describe("AddArtistForm", () => {
   beforeEach(() => {
-    addArtist.mockClear();
-    addArtist.mockResolvedValue(true);
+    add.mockClear();
+    add.mockResolvedValue(true);
   });
 
   const openForm = () => {
@@ -46,13 +48,15 @@ describe("AddArtistForm", () => {
     expect(screen.getByLabelText(/search spotify for an artist/i)).toBeDefined();
   });
 
-  it("resolves the picked artist to its Spotify profile URL and avatar", () => {
+  // useAddSpotifyArtist seeds the onboarding catalog by kicking POST
+  // /api/valuation for the picked artist when the account has none yet.
+  // useAddRosterArtist never did, so an account onboarded here finished setup
+  // with no catalog and the valuation reward could only show its fallback
+  // (chat#1889 row 8).
+  it("adds through the hook that seeds the catalog, passing the whole Spotify result", () => {
     openForm();
     fireEvent.click(screen.getByRole("option", { name: /drake/i }));
 
-    expect(addArtist).toHaveBeenCalledWith("Drake", {
-      profileUrl: SPOTIFY_RESULT.external_urls.spotify,
-      image: SPOTIFY_RESULT.images[0].url,
-    });
+    expect(add).toHaveBeenCalledWith(SPOTIFY_RESULT);
   });
 });

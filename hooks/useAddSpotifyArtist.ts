@@ -13,8 +13,9 @@ import type { SpotifyArtistSearchResult } from "@/types/spotify";
 
 /**
  * Adds a Spotify-searched artist to the roster and refreshes + selects it.
- * Wraps `addSpotifyArtist` with auth + the shared roster (ArtistProvider),
- * mirroring `useAddRosterArtist`.
+ * Wraps `addSpotifyArtist` with auth + the shared roster (ArtistProvider).
+ * The onboarding roster step adds through this hook too, so a first artist
+ * added during setup seeds the catalog the same way (chat#1889 row 8).
  *
  * On the **first** artist add (the account has no catalog yet) it also
  * fire-and-forget kicks `POST /api/valuation` for that artist's Spotify id —

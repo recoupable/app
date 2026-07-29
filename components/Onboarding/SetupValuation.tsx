@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ValuationHero from "@/components/Home/ValuationHero";
+import MeasuringCatalogPanel from "@/components/Onboarding/MeasuringCatalogPanel";
 import useCatalogs from "@/hooks/useCatalogs";
 import useHomeValuation from "@/hooks/useHomeValuation";
 import { cn } from "@/lib/utils";
@@ -36,7 +37,7 @@ const SetupValuation = () => {
     if (!hasCatalog || isError) router.replace("/catalogs");
   }, [isPending, hasCatalog, isError, router]);
 
-  if (isPending || !valuation.show) {
+  if (isPending) {
     return (
       <div className="mx-auto flex w-full max-w-xl flex-col gap-4 px-6 py-8">
         <Skeleton className="h-8 w-1/2 rounded-lg" />
@@ -44,6 +45,10 @@ const SetupValuation = () => {
       </div>
     );
   }
+
+  // A catalog exists but has no valuation yet: routine while a seeded
+  // valuation is still measuring (chat#1889 row 8).
+  if (!valuation.show) return <MeasuringCatalogPanel />;
 
   return (
     <section className="mx-auto flex w-full max-w-xl flex-col items-center gap-4 px-6 py-8">

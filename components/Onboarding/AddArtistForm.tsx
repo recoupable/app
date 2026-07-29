@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SpotifyArtistSearch from "@/components/Artists/SpotifyArtistSearch";
-import { useAddRosterArtist } from "@/hooks/onboarding/useAddRosterArtist";
+import { useAddSpotifyArtist } from "@/hooks/useAddSpotifyArtist";
 import type { SpotifyArtistSearchResult } from "@/types/spotify";
 
 /**
@@ -15,16 +15,19 @@ import type { SpotifyArtistSearchResult } from "@/types/spotify";
  * structurally unreachable for anyone who arrived without a funnel valuation
  * (chat#1889). Picking a real Spotify artist resolves the id, profile URL, and
  * avatar in one step, reusing the same typeahead as verify-socials (chat#1882).
+ *
+ * Adds through `useAddSpotifyArtist` — the same hook the `/artists` dialog uses
+ * — because it also kicks `POST /api/valuation` for the picked artist when the
+ * account has no catalog yet. Without that seeding an account onboarded here
+ * finished setup with nothing to value, so the reward on the completion panel
+ * could only ever render its "Claim your catalog" fallback (chat#1889 row 8).
  */
 const AddArtistForm = () => {
-  const { addArtist, isAdding } = useAddRosterArtist();
+  const { add, isAdding } = useAddSpotifyArtist();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSelect = async (artist: SpotifyArtistSearchResult) => {
-    const added = await addArtist(artist.name, {
-      profileUrl: artist.external_urls.spotify,
-      image: artist.images?.[0]?.url,
-    });
+    const added = await add(artist);
     if (added) setIsOpen(false);
   };
 
