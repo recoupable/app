@@ -2,6 +2,7 @@
 
 import useUser from "@/hooks/useUser";
 import { useAutoLogin } from "@/hooks/useAutoLogin";
+import { useTrackSignupCompleted } from "@/hooks/useTrackSignupCompleted";
 import React, { createContext, useContext, useMemo } from "react";
 
 const UserContext = createContext<ReturnType<typeof useUser>>(
@@ -24,6 +25,7 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
 /** Runs auto-login under the provider so `useUserProvider` sees real user state. */
 function UserAutoLogin() {
   useAutoLogin();
+  useTrackSignupCompleted();
   return null;
 }
 

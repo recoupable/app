@@ -1,4 +1,5 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import trackEvent from "@/lib/analytics/trackEvent";
 
 const createClientCheckoutSession = async (accessToken: string) => {
   try {
@@ -25,6 +26,7 @@ const createClientCheckoutSession = async (accessToken: string) => {
       return { error: new Error("Checkout URL missing") };
     }
 
+    trackEvent("checkout_opened");
     window.open(data.url, "_blank", "noopener,noreferrer");
   } catch (error) {
     return { error };
