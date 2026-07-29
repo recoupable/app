@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import getSocialPlatformByLink from "@/lib/getSocialPlatformByLink";
 import { getSocialFollowerCount } from "@/lib/onboarding/getSocialFollowerCount";
 import getPlatformDisplayName from "@/lib/socials/getPlatformDisplayName";
 import formatFollowerCount from "@/lib/utils/formatFollowerCount";
+import SocialRowActions from "./SocialRowActions";
 import SocialSearchOrPaste from "./SocialSearchOrPaste";
 import type { SOCIAL } from "@/types/Agent";
 
@@ -75,30 +74,13 @@ const SocialRow = ({
             </p>
           </div>
         </div>
-        <div className="flex shrink-0 items-center">
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="text-muted-foreground"
-            aria-label={`Edit ${platform} link`}
-            aria-expanded={editing}
-            onClick={() => setEditing((open) => !open)}
-          >
-            <Pencil className="size-4" />
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="text-muted-foreground"
-            aria-label={`Remove ${platform} link`}
-            disabled={isSubmitting}
-            onClick={() => void onRemove(social.id)}
-          >
-            <Trash2 className="size-4" />
-          </Button>
-        </div>
+        <SocialRowActions
+          platform={platform}
+          editing={editing}
+          isSubmitting={isSubmitting}
+          onToggleEdit={() => setEditing((open) => !open)}
+          onRemove={() => void onRemove(social.id)}
+        />
       </div>
       {editing && (
         <div className="mt-2">
