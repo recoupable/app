@@ -1,7 +1,9 @@
 "use client";
 
 import cn from "classnames";
+import { usePrivy } from "@privy-io/react-auth";
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
+import { getComposerSubmitAction } from "@/lib/chat/getComposerSubmitAction";
 import AttachmentsPreview from "./AttachmentsPreview";
 import PureAttachmentsButton from "./PureAttachmentsButton";
 import { motion } from "framer-motion";
@@ -29,15 +31,29 @@ export function ChatInput() {
     input,
     textAttachments,
   } = useVercelChatContext();
+  const { ready: authReady, authenticated, login } = usePrivy();
   // Allow typing regardless of artist selection
   const isDisabled = false;
   // Block sending until the workspace (session + sandbox) is ready; the
   // input stays typeable so users aren't stuck on a spinner meanwhile.
-  const isSendDisabled =
+  const isSendBlocked =
     isDisabled ||
     hasPendingUploads ||
     isLoadingSignedUrls ||
     workspaceStatus !== "ready";
+  // Allow sending if there are text attachments even without typed input
+  const hasContent = input !== "" || textAttachments.length > 0;
+  const submitAction = getComposerSubmitAction({
+    authReady,
+    authenticated,
+    hasContent,
+    isSendBlocked,
+  });
+  // The workspace never provisions for signed-out visitors, so Send must
+  // stay clickable for them once they have a draft: the attempt reopens
+  // the Privy login modal instead of dead-ending (chat#1902 C4).
+  const isSendDisabled =
+    submitAction === "prompt-login" ? false : isSendBlocked;
 
   const handleSend = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -48,10 +64,14 @@ export function ChatInput() {
       return;
     }
 
-    // Only check input requirements for sending new messages
-    // Allow sending if there are text attachments even without typed input
-    const hasContent = input !== "" || textAttachments.length > 0;
-    if (!hasContent || isSendDisabled) return;
+    // Signed-out send attempt: reopen the login modal. The draft lives in
+    // `input` state above this overlay, so it survives the auth flow.
+    if (submitAction === "prompt-login") {
+      login();
+      return;
+    }
+
+    if (submitAction !== "send") return;
 
     handleSendMessage(event);
   };
@@ -79,7 +99,7 @@ export function ChatInput() {
           className={cn(
             "overflow-visible",
             "rounded-2xl border border-border bg-background/70 backdrop-blur",
-            "shadow-sm"
+            "shadow-sm",
           )}
         >
           <FileMentionsInput
@@ -95,12 +115,19 @@ export function ChatInput() {
             </PromptInputTools>
             <PromptInputSubmit
               disabled={isSendDisabled}
+              aria-label={
+                isGeneratingResponse
+                  ? "Stop response"
+                  : submitAction === "prompt-login"
+                    ? "Sign in to send"
+                    : "Send message"
+              }
               status={status}
               className={cn(
                 "rounded-full hover:scale-105 active:scale-95 transition-all",
                 {
                   "cursor-not-allowed opacity-50": isSendDisabled,
-                }
+                },
               )}
             />
           </PromptInputToolbar>
