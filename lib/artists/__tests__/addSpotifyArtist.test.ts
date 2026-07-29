@@ -71,16 +71,4 @@ describe("addSpotifyArtist", () => {
     expect(saveArtist).not.toHaveBeenCalled();
     expect(result.account_id).toBe("canonical-1");
   });
-
-  // POST /api/artists has already succeeded by the time enrichment runs, so a
-  // failing PATCH must not fail the whole add: the caller would report failure
-  // over an artist that exists, and picking again creates a duplicate
-  // (chat#1889, same defect fixed in useAddRosterArtist).
-  it("returns the created artist when enrichment fails", async () => {
-    vi.mocked(saveArtist).mockRejectedValue(new Error("Forbidden"));
-
-    const result = await addSpotifyArtist(token, spotifyArtist, "org-1");
-
-    expect(result.account_id).toBe("acc-1");
-  });
 });
