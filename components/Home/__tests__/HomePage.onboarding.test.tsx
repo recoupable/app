@@ -23,6 +23,12 @@ vi.mock("@/providers/UserProvder", () => ({
   useUserProvider: () => ({ userData: { account_id: "acct-test" } }),
 }));
 
+// Checkout-intent handling is covered by __tests__/shouldTriggerCheckoutIntent.test.ts;
+// this suite only exercises the onboarding gate.
+vi.mock("@/hooks/useCheckoutIntent", () => ({
+  default: () => {},
+}));
+
 vi.mock("@/hooks/useOnboardingState", () => ({
   useOnboardingState: () => ({
     isReady: true,
