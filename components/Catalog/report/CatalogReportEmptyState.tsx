@@ -15,9 +15,15 @@ const CTA_CLASS =
  * point at recoupable.dev, which is how a signed-in customer ended up re-running
  * a valuation that was already running (chat#1912 row 1).
  */
-const CatalogReportEmptyState = ({ state }: { state: EmptyState }) => {
+const CatalogReportEmptyState = ({
+  state,
+  hasOwnCatalogs,
+}: {
+  state: EmptyState;
+  hasOwnCatalogs: boolean;
+}) => {
   const { login } = useUserProvider();
-  const copy = getCatalogReportEmptyCopy(state);
+  const copy = getCatalogReportEmptyCopy(state, { hasOwnCatalogs });
 
   return (
     <div className="max-w-3xl rounded-2xl bg-card p-6 sm:p-8 shadow-[0_0_0_1px_var(--border)]">

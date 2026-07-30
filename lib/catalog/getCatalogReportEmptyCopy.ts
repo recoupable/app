@@ -12,6 +12,11 @@ export interface CatalogReportEmptyCopy {
   cta?: { label: string; href?: string; action?: "login" };
 }
 
+export interface CatalogReportViewer {
+  /** Whether the signed-in viewer has any catalog of their own. */
+  hasOwnCatalogs: boolean;
+}
+
 const COPY: Record<CatalogReportEmptyState, CatalogReportEmptyCopy> = {
   "signed-out": {
     title: "Sign in to see this report",
@@ -24,7 +29,7 @@ const COPY: Record<CatalogReportEmptyState, CatalogReportEmptyCopy> = {
   },
   "other-account": {
     title: "This catalog was measured by another account",
-    body: "The songs are listed under Manage songs, but the play counts and valuation belong to the account that measured them.",
+    body: "Its play counts and valuation belong to the account that measured it. Here is how to get this report for your own music.",
     cta: { label: "Go to your catalogs", href: "/catalogs" },
   },
   error: {
@@ -40,6 +45,20 @@ const COPY: Record<CatalogReportEmptyState, CatalogReportEmptyCopy> = {
  */
 export function getCatalogReportEmptyCopy(
   state: CatalogReportEmptyState,
+  viewer: CatalogReportViewer,
 ): CatalogReportEmptyCopy {
-  return COPY[state];
+  const copy = COPY[state];
+
+  // A viewer who cannot see this catalog still needs somewhere to go, and
+  // "your catalogs" is only somewhere for people who have one. A stranger
+  // following a shared link usually has none, so point them at the step that
+  // creates one instead of an empty page.
+  if (state === "other-account" && !viewer.hasOwnCatalogs) {
+    return {
+      ...copy,
+      cta: { label: "Value your catalog", href: "/setup/artists" },
+    };
+  }
+
+  return copy;
 }
