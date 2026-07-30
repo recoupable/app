@@ -24,6 +24,7 @@ const Menu = ({ isExpanded, isPinned = false, onTogglePin }: MenuProps) => {
   const isAgents = pathname.includes("/agents");
   const isTasks = pathname.includes("/tasks");
   const isFiles = pathname.includes("/files");
+  const isCatalogs = pathname.includes("/catalogs");
 
   const goToItem = (link?: string) => {
     if (isPrepared()) {
@@ -47,6 +48,7 @@ const Menu = ({ isExpanded, isPinned = false, onTogglePin }: MenuProps) => {
         isAgents={isAgents}
         isTasks={isTasks}
         isFiles={isFiles}
+        isCatalogs={isCatalogs}
         onNavigate={goToItem}
       />
 
