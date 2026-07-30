@@ -25,9 +25,9 @@ const renderNav = (overrides = {}) => {
 };
 
 describe("SecondaryNav", () => {
-  // Ben Hanchett, 2026-07-29: "I'm not sure where to find the tooling in the
-  // site ... I guess I'm waiting on the newsletter." Catalogs is the valuation
-  // payoff surface and was reachable only by direct URL (chat#1912 row 3).
+  // chat#1912 row 3: Catalogs is the valuation payoff surface and was
+  // reachable only by direct URL, so a customer could not find it from the
+  // app's own navigation. Reporter and quote live on the issue, not here.
   it("links Catalogs alongside the other tools", () => {
     renderNav();
 

@@ -1,14 +1,16 @@
 import NavButton from "./NavButton";
 
+export interface CatalogsNavItemProps {
+  isActive: boolean;
+  isExpanded?: boolean;
+  onClick: () => void;
+}
+
 const CatalogsNavItem = ({
   isActive,
   isExpanded,
   onClick,
-}: {
-  isActive: boolean;
-  isExpanded?: boolean;
-  onClick: () => void;
-}) => {
+}: CatalogsNavItemProps) => {
   return (
     <NavButton
       icon="book"
