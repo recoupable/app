@@ -1,12 +1,17 @@
 // @vitest-environment jsdom
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import UserProfileButton from "@/components/Sidebar/UserProfileButton";
 
+const login = vi.hoisted(() => vi.fn());
 const privy = { ready: true, authenticated: false };
-const user: { userData: { name?: string; account_id?: string } | null; email?: string } =
-  { userData: null, email: undefined };
+const user: {
+  userData: { name?: string; account_id?: string } | null;
+  email?: string;
+  address?: string;
+  login: () => void;
+} = { userData: null, email: undefined, address: undefined, login };
 
 vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => privy,
@@ -30,15 +35,25 @@ describe("UserProfileButton", () => {
     privy.authenticated = false;
     user.userData = null;
     user.email = undefined;
+    user.address = undefined;
+    login.mockClear();
   });
 
-  // chat#1912 row 2 — the defect a referred first-time visitor hit on 2026-07-29.
-  it("renders nothing for a signed-out visitor", () => {
-    const { container } = render(<UserProfileButton />);
+  // chat#1912 row 2 — the defect a referred first-time visitor hit on 2026-07-29:
+  // a profile skeleton that could never resolve, pinned under a Sign In button.
+  it("offers a sign-in button to a signed-out visitor, never a skeleton", () => {
+    render(<UserProfileButton />);
 
     expect(screen.queryByLabelText(/loading user profile/i)).toBeNull();
-    expect(screen.queryByRole("button")).toBeNull();
-    expect(container.innerHTML).toBe("");
+    expect(screen.getByRole("button", { name: /sign in/i })).toBeDefined();
+  });
+
+  it("opens the login prompt when the signed-out slot is clicked", () => {
+    render(<UserProfileButton />);
+
+    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
+
+    expect(login).toHaveBeenCalled();
   });
 
   it("shows the skeleton only while an authenticated session is still loading", () => {

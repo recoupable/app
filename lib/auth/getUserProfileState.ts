@@ -3,6 +3,13 @@ export type UserProfileState = "loading" | "signed-out" | "ready";
 interface UserProfileStateInput {
   isPrivyReady: boolean;
   isAuthenticated: boolean;
+  /**
+   * A connected wallet counts as a session on its own. Farcaster mini-app
+   * visitors never get a Privy session — `useAutoLogin` skips login when
+   * `isMiniApp` — yet `useUser` bootstraps their account from the wagmi
+   * address, so gating on Privy alone would hide a real user's profile.
+   */
+  hasWallet: boolean;
   hasUserData: boolean;
 }
 
@@ -18,9 +25,10 @@ interface UserProfileStateInput {
 export function getUserProfileState({
   isPrivyReady,
   isAuthenticated,
+  hasWallet,
   hasUserData,
 }: UserProfileStateInput): UserProfileState {
   if (!isPrivyReady) return "loading";
-  if (!isAuthenticated) return "signed-out";
+  if (!isAuthenticated && !hasWallet) return "signed-out";
   return hasUserData ? "ready" : "loading";
 }

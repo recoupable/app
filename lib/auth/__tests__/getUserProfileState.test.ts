@@ -11,9 +11,39 @@ describe("getUserProfileState", () => {
       getUserProfileState({
         isPrivyReady: true,
         isAuthenticated: false,
+        hasWallet: false,
         hasUserData: false,
       }),
     ).toBe("signed-out");
+  });
+
+  /**
+   * Review finding (codex P2 / cubic P2, 2026-07-30). A Farcaster mini-app
+   * visitor is a real signed-in user with no Privy session: useAutoLogin skips
+   * Privy login when isMiniApp, while useUser still bootstraps the account from
+   * the wagmi address. Gating on Privy's flag alone would have hidden their
+   * profile chip entirely — a regression, not the bug this PR set out to fix.
+   */
+  it("treats a wallet-only session as signed in", () => {
+    expect(
+      getUserProfileState({
+        isPrivyReady: true,
+        isAuthenticated: false,
+        hasWallet: true,
+        hasUserData: true,
+      }),
+    ).toBe("ready");
+  });
+
+  it("is loading for a wallet-only session whose account is still fetching", () => {
+    expect(
+      getUserProfileState({
+        isPrivyReady: true,
+        isAuthenticated: false,
+        hasWallet: true,
+        hasUserData: false,
+      }),
+    ).toBe("loading");
   });
 
   it("stays signed-out even if stale account data lingers", () => {
@@ -23,6 +53,7 @@ describe("getUserProfileState", () => {
       getUserProfileState({
         isPrivyReady: true,
         isAuthenticated: false,
+        hasWallet: false,
         hasUserData: true,
       }),
     ).toBe("signed-out");
@@ -33,6 +64,7 @@ describe("getUserProfileState", () => {
       getUserProfileState({
         isPrivyReady: false,
         isAuthenticated: false,
+        hasWallet: false,
         hasUserData: false,
       }),
     ).toBe("loading");
@@ -43,6 +75,7 @@ describe("getUserProfileState", () => {
       getUserProfileState({
         isPrivyReady: true,
         isAuthenticated: true,
+        hasWallet: false,
         hasUserData: false,
       }),
     ).toBe("loading");
@@ -53,6 +86,7 @@ describe("getUserProfileState", () => {
       getUserProfileState({
         isPrivyReady: true,
         isAuthenticated: true,
+        hasWallet: false,
         hasUserData: true,
       }),
     ).toBe("ready");

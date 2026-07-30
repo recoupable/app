@@ -5,6 +5,7 @@ import useAccountOrganizations from "@/hooks/useAccountOrganizations";
 import { getUserProfileState } from "@/lib/auth/getUserProfileState";
 import UserProfileDropdown from "./UserProfileDropdown";
 import UserProfileButtonSkeleton from "./UserProfileButtonSkeleton";
+import SignInSlotButton from "./SignInSlotButton";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -14,7 +15,7 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const UserProfileButton = ({ isExpanded = true }: { isExpanded?: boolean }) => {
-  const { email, userData } = useUserProvider();
+  const { email, userData, address, login } = useUserProvider();
   const { ready, authenticated } = usePrivy();
   const { selectedOrgId } = useOrganization();
   const { data: organizations } = useAccountOrganizations();
@@ -22,13 +23,13 @@ const UserProfileButton = ({ isExpanded = true }: { isExpanded?: boolean }) => {
   const profileState = getUserProfileState({
     isPrivyReady: ready,
     isAuthenticated: authenticated,
+    hasWallet: !!address,
     hasUserData: !!userData,
   });
 
-  // A signed-out visitor has no profile to load, so the slot stays empty
-  // rather than showing a skeleton that never resolves next to a Sign In
-  // button (chat#1912 row 2).
-  if (profileState === "signed-out") return null;
+  // A signed-out visitor has no profile to load, so the slot offers the way in
+  // rather than a skeleton that can never resolve (chat#1912 row 2).
+  if (profileState === "signed-out") return <SignInSlotButton onClick={login} />;
   if (profileState === "loading") return <UserProfileButtonSkeleton />;
 
   const userName = userData?.name || email || userData?.wallet || "";
@@ -46,8 +47,6 @@ const UserProfileButton = ({ isExpanded = true }: { isExpanded?: boolean }) => {
   const primaryName = isOrgSelected
     ? selectedOrg.organization_name || "Organization"
     : userName;
-
-  const secondaryName = isOrgSelected ? userName : "Personal";
 
   const avatarImage = isOrgSelected
     ? selectedOrg.organization_image
