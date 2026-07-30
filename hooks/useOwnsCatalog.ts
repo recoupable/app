@@ -5,15 +5,23 @@ import useCatalogs from "./useCatalogs";
  * this to tell "your measurement has not landed yet" apart from "this catalog
  * was measured by someone else" — the api returns 404 for both (chat#1912 row 1).
  *
- * `isResolved` is false until the catalog list has actually loaded, so callers
- * do not treat a pending list as proof of non-ownership.
+ * Resolution is derived from `isSuccess`/`isError`, never from `!isLoading`:
+ * `useCatalogs` is `enabled: !!accountId && authenticated`, and a disabled
+ * TanStack Query v5 query reports isPending true / isFetching false, so
+ * `isLoading` is already false while Privy and the account are still resolving.
+ * Treating that as a resolved empty list called a signed-in owner a stranger
+ * and announced "measured by another account" on their own catalog. Same trap
+ * documented in SetupValuation.
  */
 const useOwnsCatalog = (catalogId?: string) => {
-  const { data, isLoading } = useCatalogs();
+  const { data, isSuccess, isError } = useCatalogs();
 
   return {
-    ownsCatalog: !!catalogId && !!data?.catalogs?.some((c) => c.id === catalogId),
-    isResolved: !isLoading,
+    ownsCatalog:
+      !!catalogId && !!data?.catalogs?.some((c) => c.id === catalogId),
+    isResolved: isSuccess || isError,
+    /** The list failed, so ownership carries no information either way. */
+    ownershipUnknown: isError,
   };
 };
 

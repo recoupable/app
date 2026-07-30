@@ -7,6 +7,7 @@ const base = {
   hasMeasurements: false,
   error: null as Error | null,
   ownsCatalog: false,
+  ownershipUnknown: false,
 };
 
 describe("getCatalogReportState", () => {
@@ -85,5 +86,44 @@ describe("getCatalogReportState", () => {
     expect(
       getCatalogReportState({ ...base, ownsCatalog: true, error: null }),
     ).toBe("measuring");
+  });
+
+  // Review finding (cubic P2, 2026-07-30). getCatalogMeasurements throws
+  // `HTTP {status}: {body}`, so a 500 whose *body* happens to contain "404"
+  // was being read as a missing measurement and rendered as measuring or
+  // other-account. Only the status prefix may decide this.
+  it("does not treat a non-404 failure as missing just because the body says 404", () => {
+    expect(
+      getCatalogReportState({
+        ...base,
+        ownsCatalog: true,
+        error: new Error('HTTP 500: {"error":"upstream returned 404"}'),
+      }),
+    ).toBe("error");
+  });
+
+  it("still recognises a real 404 by its status prefix", () => {
+    expect(
+      getCatalogReportState({
+        ...base,
+        ownsCatalog: true,
+        error: new Error("HTTP 404: catalog measurements not found"),
+      }),
+    ).toBe("measuring");
+  });
+
+  // Review finding (cubic P1 / codex P2, 2026-07-30). When the catalog list
+  // cannot be resolved we genuinely do not know who owns this catalog, and
+  // guessing "other-account" tells a signed-in owner their own catalog belongs
+  // to someone else. Say the honest thing instead.
+  it("does not claim another account owns it when ownership could not be resolved", () => {
+    expect(
+      getCatalogReportState({
+        ...base,
+        ownsCatalog: false,
+        ownershipUnknown: true,
+        error: new Error("HTTP 404: not found"),
+      }),
+    ).toBe("error");
   });
 });

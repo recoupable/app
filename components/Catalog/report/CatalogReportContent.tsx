@@ -1,11 +1,7 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import { usePrivy } from "@privy-io/react-auth";
-import useCatalogMeasurements from "@/hooks/useCatalogMeasurements";
-import useCatalogReportSongs from "@/hooks/useCatalogReportSongs";
-import useOwnsCatalog from "@/hooks/useOwnsCatalog";
-import { getCatalogReportState } from "@/lib/catalog/getCatalogReportState";
+import { useMemo } from "react";
+import useCatalogReport from "@/hooks/useCatalogReport";
 import { computeCatalogValuation } from "@/lib/valuation/computeCatalogValuation";
 import { buildReleaseRollups } from "@/lib/catalog/buildReleaseRollups";
 import { buildReportInsights } from "@/lib/valuation/buildReportInsights";
@@ -21,49 +17,18 @@ interface CatalogReportContentProps {
   catalogId: string;
 }
 
-const MEASUREMENTS_PAGE_LIMIT = 100;
-/** A seeded catalog's first measurement lands in roughly a minute. */
-const MEASURING_POLL_MS = 5000;
-
 /**
  * The report body: valuation echo, measured-scope stats, per-release table,
  * diagnosis + prescription, and the single primary next action. Pre-v2
  * measurement responses can omit the whole-scope aggregates, so totals fall
  * back to summing the fetched page rather than rendering blanks.
+ *
+ * Data, report state and the measuring poll all live in `useCatalogReport`;
+ * this component only renders what that state describes.
  */
 const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
-  const measurementsQuery = useCatalogMeasurements(
-    catalogId,
-    undefined,
-    MEASUREMENTS_PAGE_LIMIT,
-  );
-  const songsQuery = useCatalogReportSongs(catalogId);
-  const { authenticated } = usePrivy();
-  const { ownsCatalog, isResolved: ownershipResolved } =
-    useOwnsCatalog(catalogId);
-
-  const measurements = measurementsQuery.data;
-  const songs = songsQuery.data?.songs;
-
-  const state = getCatalogReportState({
-    isAuthenticated: authenticated,
-    isLoading:
-      measurementsQuery.isLoading ||
-      songsQuery.isLoading ||
-      (authenticated && !ownershipResolved),
-    hasMeasurements: !!measurements,
-    error: measurementsQuery.error,
-    ownsCatalog,
-  });
-
-  // The owner's measurement is still running, so pull again instead of leaving
-  // them on an empty report to re-run the whole valuation (chat#1912 row 1).
-  const { refetch } = measurementsQuery;
-  useEffect(() => {
-    if (state !== "measuring") return;
-    const id = setInterval(() => refetch(), MEASURING_POLL_MS);
-    return () => clearInterval(id);
-  }, [state, refetch]);
+  const { state, measurements, songs, totalSongs } =
+    useCatalogReport(catalogId);
 
   const releases = useMemo(
     () => buildReleaseRollups(songs ?? [], measurements?.measurements ?? []),
@@ -72,11 +37,7 @@ const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
 
   if (state === "loading") return <CatalogReportSkeleton />;
   if (state !== "ready" || !measurements) {
-    return (
-      <CatalogReportEmptyState
-        state={state === "ready" ? "error" : state}
-      />
-    );
+    return <CatalogReportEmptyState state={state === "ready" ? "error" : state} />;
   }
 
   const totalStreams =
@@ -88,10 +49,8 @@ const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
     totalStreams,
     catalogAgeYears: measurements.catalog_age_years,
   });
-  const totalSongs =
-    songsQuery.data?.pagination?.total_count ?? measuredSongCount;
   const insights = buildReportInsights({
-    totalSongs,
+    totalSongs: totalSongs ?? measuredSongCount,
     measuredSongCount,
     releaseStreamShares:
       totalStreams > 0 ? releases.map((r) => r.streams / totalStreams) : [],
@@ -103,7 +62,7 @@ const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
       <CatalogReportStats
         totalStreams={totalStreams}
         measuredSongCount={measuredSongCount}
-        totalSongs={totalSongs}
+        totalSongs={totalSongs ?? measuredSongCount}
         releaseCount={releases.length}
         catalogAgeYears={valuation.catalogAgeYears}
       />
