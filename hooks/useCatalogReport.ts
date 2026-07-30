@@ -22,7 +22,7 @@ const useCatalogReport = (catalogId: string) => {
     MEASUREMENTS_PAGE_LIMIT,
   );
   const songsQuery = useCatalogReportSongs(catalogId);
-  const { ownsCatalog, isResolved, ownershipUnknown } =
+  const { ownsCatalog, hasOwnCatalogs, isResolved, ownershipUnknown } =
     useOwnsCatalog(catalogId);
 
   const state = getCatalogReportState({
@@ -43,6 +43,7 @@ const useCatalogReport = (catalogId: string) => {
 
   return {
     state,
+    hasOwnCatalogs,
     measurements: measurementsQuery.data,
     songs: songsQuery.data?.songs,
     totalSongs: songsQuery.data?.pagination?.total_count,

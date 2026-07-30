@@ -19,6 +19,8 @@ const useOwnsCatalog = (catalogId?: string) => {
   return {
     ownsCatalog:
       !!catalogId && !!data?.catalogs?.some((c) => c.id === catalogId),
+    /** Drives the cross-account CTA: somewhere to go depends on having one. */
+    hasOwnCatalogs: (data?.catalogs?.length ?? 0) > 0,
     isResolved: isSuccess || isError,
     /** The list failed, so ownership carries no information either way. */
     ownershipUnknown: isError,

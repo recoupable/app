@@ -27,7 +27,7 @@ interface CatalogReportContentProps {
  * this component only renders what that state describes.
  */
 const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
-  const { state, measurements, songs, totalSongs } =
+  const { state, measurements, songs, totalSongs, hasOwnCatalogs } =
     useCatalogReport(catalogId);
 
   const releases = useMemo(
@@ -37,7 +37,12 @@ const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
 
   if (state === "loading") return <CatalogReportSkeleton />;
   if (state !== "ready" || !measurements) {
-    return <CatalogReportEmptyState state={state === "ready" ? "error" : state} />;
+    return (
+      <CatalogReportEmptyState
+        state={state === "ready" ? "error" : state}
+        hasOwnCatalogs={hasOwnCatalogs}
+      />
+    );
   }
 
   const totalStreams =
