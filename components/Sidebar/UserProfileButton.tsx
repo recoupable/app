@@ -1,6 +1,8 @@
+import { usePrivy } from "@privy-io/react-auth";
 import { useUserProvider } from "@/providers/UserProvder";
 import { useOrganization } from "@/providers/OrganizationProvider";
 import useAccountOrganizations from "@/hooks/useAccountOrganizations";
+import { getUserProfileState } from "@/lib/auth/getUserProfileState";
 import UserProfileDropdown from "./UserProfileDropdown";
 import UserProfileButtonSkeleton from "./UserProfileButtonSkeleton";
 import {
@@ -13,10 +15,21 @@ import { cn } from "@/lib/utils";
 
 const UserProfileButton = ({ isExpanded = true }: { isExpanded?: boolean }) => {
   const { email, userData } = useUserProvider();
+  const { ready, authenticated } = usePrivy();
   const { selectedOrgId } = useOrganization();
   const { data: organizations } = useAccountOrganizations();
 
-  if (!userData) return <UserProfileButtonSkeleton />;
+  const profileState = getUserProfileState({
+    isPrivyReady: ready,
+    isAuthenticated: authenticated,
+    hasUserData: !!userData,
+  });
+
+  // A signed-out visitor has no profile to load, so the slot stays empty
+  // rather than showing a skeleton that never resolves next to a Sign In
+  // button (chat#1912 row 2).
+  if (profileState === "signed-out") return null;
+  if (profileState === "loading") return <UserProfileButtonSkeleton />;
 
   const userName = userData?.name || email || userData?.wallet || "";
   const userImage = userData?.image;
