@@ -13,6 +13,7 @@ import CatalogReportInsights from "./CatalogReportInsights";
 import CatalogReportCta from "./CatalogReportCta";
 import CatalogReportSkeleton from "./CatalogReportSkeleton";
 import CatalogReportError from "./CatalogReportError";
+import CatalogReportEmailCapture from "./CatalogReportEmailCapture";
 
 interface CatalogReportContentProps {
   catalogId: string;
@@ -46,7 +47,14 @@ const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
     return <CatalogReportSkeleton />;
   }
   if (!measurements) {
-    return <CatalogReportError error={measurementsQuery.error} />;
+    // Anonymous viewers can land here (the measurements query needs auth), so
+    // the capture must still render: the emailed link brings them back.
+    return (
+      <div className="flex flex-col gap-4 max-w-3xl">
+        <CatalogReportError error={measurementsQuery.error} />
+        <CatalogReportEmailCapture catalogId={catalogId} />
+      </div>
+    );
   }
 
   const totalStreams =
@@ -70,6 +78,10 @@ const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
   return (
     <div className="flex flex-col gap-4 max-w-3xl">
       <CatalogValuationCard valuation={valuation} />
+      <CatalogReportEmailCapture
+        catalogId={catalogId}
+        headlineValue={valuation.valueBand.central}
+      />
       <CatalogReportStats
         totalStreams={totalStreams}
         measuredSongCount={measuredSongCount}
