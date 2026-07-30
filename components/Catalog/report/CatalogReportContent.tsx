@@ -1,8 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 import useCatalogMeasurements from "@/hooks/useCatalogMeasurements";
 import useCatalogReportSongs from "@/hooks/useCatalogReportSongs";
+import useOwnsCatalog from "@/hooks/useOwnsCatalog";
+import { getCatalogReportState } from "@/lib/catalog/getCatalogReportState";
 import { computeCatalogValuation } from "@/lib/valuation/computeCatalogValuation";
 import { buildReleaseRollups } from "@/lib/catalog/buildReleaseRollups";
 import { buildReportInsights } from "@/lib/valuation/buildReportInsights";
@@ -12,13 +15,15 @@ import CatalogReleasesTable from "./CatalogReleasesTable";
 import CatalogReportInsights from "./CatalogReportInsights";
 import CatalogReportCta from "./CatalogReportCta";
 import CatalogReportSkeleton from "./CatalogReportSkeleton";
-import CatalogReportError from "./CatalogReportError";
+import CatalogReportEmptyState from "./CatalogReportEmptyState";
 
 interface CatalogReportContentProps {
   catalogId: string;
 }
 
 const MEASUREMENTS_PAGE_LIMIT = 100;
+/** A seeded catalog's first measurement lands in roughly a minute. */
+const MEASURING_POLL_MS = 5000;
 
 /**
  * The report body: valuation echo, measured-scope stats, per-release table,
@@ -33,20 +38,45 @@ const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
     MEASUREMENTS_PAGE_LIMIT,
   );
   const songsQuery = useCatalogReportSongs(catalogId);
+  const { authenticated } = usePrivy();
+  const { ownsCatalog, isResolved: ownershipResolved } =
+    useOwnsCatalog(catalogId);
 
   const measurements = measurementsQuery.data;
   const songs = songsQuery.data?.songs;
+
+  const state = getCatalogReportState({
+    isAuthenticated: authenticated,
+    isLoading:
+      measurementsQuery.isLoading ||
+      songsQuery.isLoading ||
+      (authenticated && !ownershipResolved),
+    hasMeasurements: !!measurements,
+    error: measurementsQuery.error,
+    ownsCatalog,
+  });
+
+  // The owner's measurement is still running, so pull again instead of leaving
+  // them on an empty report to re-run the whole valuation (chat#1912 row 1).
+  const { refetch } = measurementsQuery;
+  useEffect(() => {
+    if (state !== "measuring") return;
+    const id = setInterval(() => refetch(), MEASURING_POLL_MS);
+    return () => clearInterval(id);
+  }, [state, refetch]);
 
   const releases = useMemo(
     () => buildReleaseRollups(songs ?? [], measurements?.measurements ?? []),
     [songs, measurements?.measurements],
   );
 
-  if (measurementsQuery.isLoading || songsQuery.isLoading) {
-    return <CatalogReportSkeleton />;
-  }
-  if (!measurements) {
-    return <CatalogReportError error={measurementsQuery.error} />;
+  if (state === "loading") return <CatalogReportSkeleton />;
+  if (state !== "ready" || !measurements) {
+    return (
+      <CatalogReportEmptyState
+        state={state === "ready" ? "error" : state}
+      />
+    );
   }
 
   const totalStreams =
