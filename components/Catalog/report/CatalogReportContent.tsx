@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import useCatalogMeasurements from "@/hooks/useCatalogMeasurements";
-import useCatalogReportSongs from "@/hooks/useCatalogReportSongs";
+import useCatalogReport from "@/hooks/useCatalogReport";
 import { computeCatalogValuation } from "@/lib/valuation/computeCatalogValuation";
 import { buildReleaseRollups } from "@/lib/catalog/buildReleaseRollups";
 import { buildReportInsights } from "@/lib/valuation/buildReportInsights";
@@ -12,41 +11,33 @@ import CatalogReleasesTable from "./CatalogReleasesTable";
 import CatalogReportInsights from "./CatalogReportInsights";
 import CatalogReportCta from "./CatalogReportCta";
 import CatalogReportSkeleton from "./CatalogReportSkeleton";
-import CatalogReportError from "./CatalogReportError";
+import CatalogReportEmptyState from "./CatalogReportEmptyState";
 
 interface CatalogReportContentProps {
   catalogId: string;
 }
-
-const MEASUREMENTS_PAGE_LIMIT = 100;
 
 /**
  * The report body: valuation echo, measured-scope stats, per-release table,
  * diagnosis + prescription, and the single primary next action. Pre-v2
  * measurement responses can omit the whole-scope aggregates, so totals fall
  * back to summing the fetched page rather than rendering blanks.
+ *
+ * Data, report state and the measuring poll all live in `useCatalogReport`;
+ * this component only renders what that state describes.
  */
 const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
-  const measurementsQuery = useCatalogMeasurements(
-    catalogId,
-    undefined,
-    MEASUREMENTS_PAGE_LIMIT,
-  );
-  const songsQuery = useCatalogReportSongs(catalogId);
-
-  const measurements = measurementsQuery.data;
-  const songs = songsQuery.data?.songs;
+  const { state, measurements, songs, totalSongs } =
+    useCatalogReport(catalogId);
 
   const releases = useMemo(
     () => buildReleaseRollups(songs ?? [], measurements?.measurements ?? []),
     [songs, measurements?.measurements],
   );
 
-  if (measurementsQuery.isLoading || songsQuery.isLoading) {
-    return <CatalogReportSkeleton />;
-  }
-  if (!measurements) {
-    return <CatalogReportError error={measurementsQuery.error} />;
+  if (state === "loading") return <CatalogReportSkeleton />;
+  if (state !== "ready" || !measurements) {
+    return <CatalogReportEmptyState state={state === "ready" ? "error" : state} />;
   }
 
   const totalStreams =
@@ -58,10 +49,8 @@ const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
     totalStreams,
     catalogAgeYears: measurements.catalog_age_years,
   });
-  const totalSongs =
-    songsQuery.data?.pagination?.total_count ?? measuredSongCount;
   const insights = buildReportInsights({
-    totalSongs,
+    totalSongs: totalSongs ?? measuredSongCount,
     measuredSongCount,
     releaseStreamShares:
       totalStreams > 0 ? releases.map((r) => r.streams / totalStreams) : [],
@@ -73,7 +62,7 @@ const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
       <CatalogReportStats
         totalStreams={totalStreams}
         measuredSongCount={measuredSongCount}
-        totalSongs={totalSongs}
+        totalSongs={totalSongs ?? measuredSongCount}
         releaseCount={releases.length}
         catalogAgeYears={valuation.catalogAgeYears}
       />
