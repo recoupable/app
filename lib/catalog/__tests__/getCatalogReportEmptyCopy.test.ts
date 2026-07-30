@@ -52,4 +52,14 @@ describe("getCatalogReportEmptyCopy", () => {
   it("offers no CTA while measuring, because there is nothing to do", () => {
     expect(getCatalogReportEmptyCopy("measuring").cta).toBeUndefined();
   });
+
+  // chat#1912 row 6 chain (recoupable/docs#282 -> recoupable/api#802): catalog
+  // songs become account-scoped, so a non-owner will no longer see the songs
+  // tab either. Copy that points them at Manage songs would be promising a
+  // tab that now fails.
+  it("does not promise a cross-account viewer the songs tab", () => {
+    const copy = getCatalogReportEmptyCopy("other-account");
+
+    expect(copy.body.toLowerCase()).not.toContain("manage songs");
+  });
 });

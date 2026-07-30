@@ -24,7 +24,7 @@ const COPY: Record<CatalogReportEmptyState, CatalogReportEmptyCopy> = {
   },
   "other-account": {
     title: "This catalog was measured by another account",
-    body: "The songs are listed under Manage songs, but the play counts and valuation belong to the account that measured them.",
+    body: "Its play counts and valuation belong to the account that measured it. Run a valuation on your own catalog to see this report.",
     cta: { label: "Go to your catalogs", href: "/catalogs" },
   },
   error: {
