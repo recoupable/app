@@ -13,7 +13,7 @@ const CatalogsNavItem = ({
 }: CatalogsNavItemProps) => {
   return (
     <NavButton
-      icon="book"
+      icon="disc"
       label="Catalogs"
       isActive={isActive}
       isExpanded={isExpanded}

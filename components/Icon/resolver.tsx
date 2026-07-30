@@ -251,7 +251,7 @@ export const Icons = {
     >
       <path
         d="M9.99992 14.9167C8.87492 14.2083 6.83325 13.6667 5.41659 13.6667C4.04159 13.6667 2.62492 13.9167 1.45825 14.5417C1.37492 14.5833 1.33325 14.5833 1.24992 14.5833C1.04159 14.5833 0.833252 14.375 0.833252 14.1667V2C1.33325 1.625 1.87492 1.375 2.49992 1.16667C3.42492 0.875 4.44159 0.75 5.41659 0.75C7.04159 0.75 8.79159 1.08333 9.99992 2C11.2083 1.08333 12.9583 0.75 14.5833 0.75C15.5583 0.75 16.5749 0.875 17.4999 1.16667C18.1249 1.375 18.6666 1.625 19.1666 2V14.1667C19.1666 14.375 18.9583 14.5833 18.7499 14.5833C18.6666 14.5833 18.6249 14.5833 18.5416 14.5417C17.3749 13.9167 15.9583 13.6667 14.5833 13.6667C13.1666 13.6667 11.1249 14.2083 9.99992 14.9167ZM9.16659 3.25C8.03325 2.75 6.53325 2.41667 5.41659 2.41667C4.41659 2.41667 3.41659 2.54167 2.49992 2.83333V12.4167C3.41659 12.125 4.41659 12 5.41659 12C6.53325 12 8.03325 12.3333 9.16659 12.8333V3.25ZM10.8333 12.8333C11.9666 12.3333 13.4666 12 14.5833 12C15.5833 12 16.5833 12.125 17.4999 12.4167V2.83333C16.5833 2.54167 15.5833 2.41667 14.5833 2.41667C13.4666 2.41667 11.9666 2.75 10.8333 3.25V12.8333Z"
-        fill="currentColor"
+        fill="black"
       />
     </svg>
   ),
@@ -265,7 +265,7 @@ export const Icons = {
     >
       <path
         d="M15.1864 9.04859H9.0481V15.1868H7.00202V9.04859H0.86377V7.00251H7.00202V0.864258H9.0481V7.00251H15.1864V9.04859Z"
-        fill="currentColor"
+        fill="black"
       />
     </svg>
   ),
@@ -275,6 +275,9 @@ export const Icons = {
   ),
   clock: () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock-icon lucide-clock"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="10"/></svg>
+  ),
+  disc: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-disc3-icon lucide-disc-3"><circle cx="12" cy="12" r="10"/><path d="M6 12c0-1.7.7-3.2 1.8-4.2"/><circle cx="12" cy="12" r="2"/><path d="M18 12c0 1.7-.7 3.2-1.8 4.2"/></svg>
   ),
   files: () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-folders-icon lucide-folders"><path d="M5 8h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M7 8V6a2 2 0 0 1 2-2h2l2 2h6"/></svg>
