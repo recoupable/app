@@ -7,9 +7,18 @@ import SetupValuation from "@/components/Onboarding/SetupValuation";
 const replace = vi.fn();
 let catalogsResult: Record<string, unknown>;
 let valuationResult: Record<string, unknown>;
+let artists: { isWorkspace?: boolean }[];
+let artistsPending: boolean;
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace }),
+}));
+
+// useSetupValuation invalidates the measurements query to poll a seeded
+// catalog out of the measuring state (chat#1912 row 9); these tests render the
+// component directly, so there is no provider to supply the real client.
+vi.mock("@tanstack/react-query", () => ({
+  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }));
 
 vi.mock("@/hooks/useCatalogs", () => ({
@@ -20,6 +29,12 @@ vi.mock("@/hooks/useHomeValuation", () => ({
   default: () => valuationResult,
 }));
 
+// Seeding fires on the first artist add, so the roster is what tells this route
+// a catalog is still coming (chat#1912 row 9).
+vi.mock("@/providers/ArtistProvider", () => ({
+  useArtistProvider: () => ({ sorted: artists, isLoading: artistsPending }),
+}));
+
 vi.mock("@/components/Home/ValuationHero", () => ({
   default: () => <div>hero</div>,
 }));
@@ -28,6 +43,8 @@ describe("SetupValuation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     valuationResult = { show: false };
+    artists = [{ isWorkspace: false }];
+    artistsPending = false;
   });
 
   // `useCatalogs` is `enabled: !!accountId && authenticated`, and a *disabled*
@@ -48,18 +65,6 @@ describe("SetupValuation", () => {
     expect(replace).not.toHaveBeenCalled();
   });
 
-  it("redirects to /catalogs once settled with no catalog", () => {
-    catalogsResult = {
-      data: { catalogs: [] },
-      isLoading: false,
-      isPending: false,
-      isError: false,
-    };
-
-    render(<SetupValuation />);
-
-    expect(replace).toHaveBeenCalledWith("/catalogs");
-  });
 
   it("redirects to /catalogs when the catalogs read fails", () => {
     catalogsResult = {
@@ -107,10 +112,35 @@ describe("SetupValuation", () => {
       isError: false,
     };
     valuationResult = { show: false };
+    artists = [{ isWorkspace: false }];
 
     const { getByText } = render(<SetupValuation />);
 
     expect(getByText(/measuring your catalog/i)).toBeDefined();
     expect(replace).not.toHaveBeenCalled();
+  });
+
+  /**
+   * Measured on the preview 2026-07-31: the catalog appears ~15s after the
+   * artist is added, so a signup following the flow arrives here with an empty
+   * catalog list. Redirecting then dropped them on an empty /catalogs.
+   */
+  it("waits on the measuring state during seeding instead of redirecting", () => {
+    catalogsResult = { data: { catalogs: [] }, isPending: false, isError: false };
+    artists = [{ isWorkspace: false }];
+
+    const { getByText } = render(<SetupValuation />);
+
+    expect(getByText(/Measuring your catalog/i)).toBeDefined();
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("still redirects when there is no artist and no catalog", () => {
+    catalogsResult = { data: { catalogs: [] }, isPending: false, isError: false };
+    artists = [];
+
+    render(<SetupValuation />);
+
+    expect(replace).toHaveBeenCalledWith("/catalogs");
   });
 });
