@@ -12,6 +12,13 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace }),
 }));
 
+// useSetupValuation invalidates the measurements query to poll a seeded
+// catalog out of the measuring state (chat#1912 row 9); these tests render the
+// component directly, so there is no provider to supply the real client.
+vi.mock("@tanstack/react-query", () => ({
+  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+}));
+
 vi.mock("@/hooks/useCatalogs", () => ({
   default: () => catalogsResult,
 }));

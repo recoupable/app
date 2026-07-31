@@ -1,14 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ValuationHero from "@/components/Home/ValuationHero";
 import MeasuringCatalogPanel from "@/components/Onboarding/MeasuringCatalogPanel";
-import useCatalogs from "@/hooks/useCatalogs";
-import useHomeValuation from "@/hooks/useHomeValuation";
+import useSetupValuation from "@/hooks/useSetupValuation";
 import { cn } from "@/lib/utils";
 
 /**
@@ -17,27 +14,13 @@ import { cn } from "@/lib/utils";
  * to be a bare redirect to `/catalogs`, so the email's "See your baseline
  * valuation" link had no real destination.
  *
- * Falls back to `/catalogs` only when the account has no catalog to value, so a
- * cold-start signup still lands somewhere actionable rather than on an empty
- * hero.
+ * Status, the redirect for accounts with no catalog, and the measuring poll all
+ * live in `useSetupValuation`; this renders what the status describes.
  */
 const SetupValuation = () => {
-  const router = useRouter();
-  const valuation = useHomeValuation();
-  // `isPending`, not `isLoading`: useCatalogs is `enabled: !!accountId &&
-  // authenticated`, and a disabled TanStack Query v5 query reports
-  // isPending true / isFetching false — so isLoading is false while Privy is
-  // still resolving. Redirecting on that bounced every cold load of this
-  // route, which is exactly where the welcome email's payoff link points.
-  const { data, isPending, isError } = useCatalogs();
-  const hasCatalog = !!data?.catalogs?.length;
+  const { status, valuation } = useSetupValuation();
 
-  useEffect(() => {
-    if (isPending) return;
-    if (!hasCatalog || isError) router.replace("/catalogs");
-  }, [isPending, hasCatalog, isError, router]);
-
-  if (isPending) {
+  if (status === "loading" || status === "redirect") {
     return (
       <div className="mx-auto flex w-full max-w-xl flex-col gap-4 px-6 py-8">
         <Skeleton className="h-8 w-1/2 rounded-lg" />
@@ -47,8 +30,8 @@ const SetupValuation = () => {
   }
 
   // A catalog exists but has no valuation yet: routine while a seeded
-  // valuation is still measuring (chat#1889 row 8).
-  if (!valuation.show) return <MeasuringCatalogPanel />;
+  // valuation is still measuring (chat#1889 row 8). The hook polls it out.
+  if (status === "measuring" || !valuation.show) return <MeasuringCatalogPanel />;
 
   return (
     <section className="mx-auto flex w-full max-w-xl flex-col items-center gap-4 px-6 py-8">
