@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getSetupValuationStatus } from "@/lib/onboarding/getSetupValuationStatus";
 
 const base = {
+  artistsPending: false,
   catalogsPending: false,
   catalogsFailed: false,
   hasCatalog: true,
@@ -18,6 +19,24 @@ describe("getSetupValuationStatus", () => {
     expect(getSetupValuationStatus({ ...base, catalogsPending: true })).toBe(
       "loading",
     );
+  });
+
+  /**
+   * Second preview run, 2026-07-31: the roster loads asynchronously, so on a
+   * fresh page load `sorted` is briefly empty. Reading that as "no artists"
+   * redirected the signup before seeding could be detected — the same trap the
+   * catalogs `isPending` comment in this file warns about, repeated for the
+   * roster.
+   */
+  it("is loading while the roster has not resolved", () => {
+    expect(
+      getSetupValuationStatus({
+        ...base,
+        artistsPending: true,
+        hasCatalog: false,
+        hasArtists: false,
+      }),
+    ).toBe("loading");
   });
 
   it("redirects when the account has neither a catalog nor an artist", () => {

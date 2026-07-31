@@ -1,6 +1,8 @@
 export type SetupValuationStatus = "loading" | "redirect" | "measuring" | "ready";
 
 interface SetupValuationStatusInput {
+  /** The roster loads asynchronously; empty-while-loading is not "no artists". */
+  artistsPending: boolean;
   catalogsPending: boolean;
   catalogsFailed: boolean;
   hasCatalog: boolean;
@@ -23,13 +25,14 @@ interface SetupValuationStatusInput {
  * text (chat#1912 row 9).
  */
 export function getSetupValuationStatus({
+  artistsPending,
   catalogsPending,
   catalogsFailed,
   hasCatalog,
   hasArtists,
   valuationReady,
 }: SetupValuationStatusInput): SetupValuationStatus {
-  if (catalogsPending) return "loading";
+  if (catalogsPending || artistsPending) return "loading";
   if (catalogsFailed) return "redirect";
   // Seeding creates the catalog only after the measurements land, ~15s after
   // the artist is added. Redirecting on an empty list during that window sent a

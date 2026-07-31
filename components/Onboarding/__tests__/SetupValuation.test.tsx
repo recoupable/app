@@ -8,6 +8,7 @@ const replace = vi.fn();
 let catalogsResult: Record<string, unknown>;
 let valuationResult: Record<string, unknown>;
 let artists: { isWorkspace?: boolean }[];
+let artistsPending: boolean;
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace }),
@@ -31,7 +32,7 @@ vi.mock("@/hooks/useHomeValuation", () => ({
 // Seeding fires on the first artist add, so the roster is what tells this route
 // a catalog is still coming (chat#1912 row 9).
 vi.mock("@/providers/ArtistProvider", () => ({
-  useArtistProvider: () => ({ sorted: artists }),
+  useArtistProvider: () => ({ sorted: artists, isLoading: artistsPending }),
 }));
 
 vi.mock("@/components/Home/ValuationHero", () => ({
@@ -43,6 +44,7 @@ describe("SetupValuation", () => {
     vi.clearAllMocks();
     valuationResult = { show: false };
     artists = [{ isWorkspace: false }];
+    artistsPending = false;
   });
 
   // `useCatalogs` is `enabled: !!accountId && authenticated`, and a *disabled*

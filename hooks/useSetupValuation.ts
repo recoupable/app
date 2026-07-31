@@ -30,13 +30,14 @@ const useSetupValuation = (): {
   const queryClient = useQueryClient();
   const valuation = useHomeValuation();
   const { data, isPending, isError } = useCatalogs();
-  const { sorted } = useArtistProvider();
+  const { sorted, isLoading: artistsPending } = useArtistProvider();
 
   const status = getSetupValuationStatus({
+    artistsPending,
     catalogsPending: isPending,
     catalogsFailed: isError,
     hasCatalog: !!data?.catalogs?.length,
-    hasArtists: sorted.some(artist => !artist.isWorkspace),
+    hasArtists: (sorted ?? []).some(artist => !artist.isWorkspace),
     valuationReady: valuation.show,
   });
 
