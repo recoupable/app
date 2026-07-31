@@ -6,6 +6,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { addSpotifyArtist } from "@/lib/artists/addSpotifyArtist";
 import { runValuation } from "@/lib/valuation/runValuation";
+import {
+  MEASURING_TOAST_ERROR,
+  MEASURING_TOAST_SUCCESS,
+  measuringToastLoading,
+} from "@/lib/catalog/measuringCopy";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useOrganization } from "@/providers/OrganizationProvider";
 import useCatalogs from "@/hooks/useCatalogs";
@@ -56,10 +61,9 @@ export function useAddSpotifyArtist() {
             queryClient.invalidateQueries({ queryKey: ["catalogs"] });
           }),
           {
-            loading: `Valuing ${artist.name}'s catalog…`,
-            success: "Your catalog is ready",
-            error:
-              "Couldn't value the catalog automatically — you can claim it later",
+            loading: measuringToastLoading(artist.name),
+            success: MEASURING_TOAST_SUCCESS,
+            error: MEASURING_TOAST_ERROR,
           },
         );
       }
