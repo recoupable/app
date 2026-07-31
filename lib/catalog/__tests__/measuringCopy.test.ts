@@ -4,6 +4,7 @@ import {
   MEASURING_ESTIMATE,
   MEASURING_BODY,
   MEASURING_TOAST_SUCCESS,
+  MEASURING_TOAST_ERROR,
   measuringToastLoading,
 } from "@/lib/catalog/measuringCopy";
 import { getCatalogReportEmptyCopy } from "@/lib/catalog/getCatalogReportEmptyCopy";
@@ -33,14 +34,24 @@ describe("measuringCopy", () => {
     expect(copy.body.split("about a minute").length - 1).toBe(1);
   });
 
+  // Derived from the title rather than hard-coded, so the assertion fails if
+  // either side drifts — the point is that they agree, not that they are any
+  // particular word.
   it("uses the same verb in the seeding toast as on the pages", () => {
-    expect(measuringToastLoading("BennyJ504")).toBe("Measuring BennyJ504's catalog…");
-    expect(MEASURING_TOAST_SUCCESS.length).toBeGreaterThan(0);
+    const verb = MEASURING_TITLE.split(" ")[0];
+
+    expect(verb).toBe("Measuring");
+    expect(measuringToastLoading("BennyJ504")).toBe(`${verb} BennyJ504's catalog…`);
+  });
+
+  it("states the toast outcomes", () => {
+    expect(MEASURING_TOAST_SUCCESS).toBe("Your catalog is ready");
+    expect(MEASURING_TOAST_ERROR).toContain("claim it later");
   });
 
   // House style: em dashes read as machine-written in product copy.
   it("keeps the shared copy free of em dashes", () => {
-    const all = [MEASURING_TITLE, MEASURING_ESTIMATE, MEASURING_BODY, MEASURING_TOAST_SUCCESS].join(" ");
+    const all = [MEASURING_TITLE, MEASURING_ESTIMATE, MEASURING_BODY, MEASURING_TOAST_SUCCESS, MEASURING_TOAST_ERROR].join(" ");
     expect(all).not.toMatch(/[—–]/);
   });
 });
