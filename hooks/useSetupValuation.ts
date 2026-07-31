@@ -4,6 +4,7 @@ import { useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import useCatalogs from "./useCatalogs";
+import { useArtistProvider } from "@/providers/ArtistProvider";
 import useHomeValuation, { type HomeValuationState } from "./useHomeValuation";
 import useMeasuringPoll from "./useMeasuringPoll";
 import { getSetupValuationStatus } from "@/lib/onboarding/getSetupValuationStatus";
@@ -29,11 +30,13 @@ const useSetupValuation = (): {
   const queryClient = useQueryClient();
   const valuation = useHomeValuation();
   const { data, isPending, isError } = useCatalogs();
+  const { sorted } = useArtistProvider();
 
   const status = getSetupValuationStatus({
     catalogsPending: isPending,
     catalogsFailed: isError,
     hasCatalog: !!data?.catalogs?.length,
+    hasArtists: sorted.some(artist => !artist.isWorkspace),
     valuationReady: valuation.show,
   });
 
@@ -41,13 +44,16 @@ const useSetupValuation = (): {
     if (status === "redirect") router.replace("/catalogs");
   }, [status, router]);
 
-  // The measurements query owns the valuation, so invalidating it is what
-  // actually re-reads; the catalog list is already correct by this point.
-  const refetchMeasurements = useCallback(() => {
+  // Both reads have to be re-run. During seeding the catalog itself does not
+  // exist yet (it is created ~15s after the artist is added, once the
+  // measurements land), so polling only the measurements would wait forever for
+  // a catalog nobody re-fetched.
+  const refetch = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["catalogs"] });
     queryClient.invalidateQueries({ queryKey: ["catalog-measurements"] });
   }, [queryClient]);
 
-  useMeasuringPoll(status === "measuring", refetchMeasurements);
+  useMeasuringPoll(status === "measuring", refetch);
 
   return { status, valuation };
 };

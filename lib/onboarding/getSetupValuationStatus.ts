@@ -4,6 +4,8 @@ interface SetupValuationStatusInput {
   catalogsPending: boolean;
   catalogsFailed: boolean;
   hasCatalog: boolean;
+  /** Seeding fires on the first artist add, so an artist means a catalog is coming. */
+  hasArtists: boolean;
   valuationReady: boolean;
 }
 
@@ -24,9 +26,15 @@ export function getSetupValuationStatus({
   catalogsPending,
   catalogsFailed,
   hasCatalog,
+  hasArtists,
   valuationReady,
 }: SetupValuationStatusInput): SetupValuationStatus {
   if (catalogsPending) return "loading";
-  if (catalogsFailed || !hasCatalog) return "redirect";
+  if (catalogsFailed) return "redirect";
+  // Seeding creates the catalog only after the measurements land, ~15s after
+  // the artist is added. Redirecting on an empty list during that window sent a
+  // signup who followed the flow to an empty /catalogs, which is a worse dead
+  // end than the static panel this row set out to fix.
+  if (!hasCatalog) return hasArtists ? "measuring" : "redirect";
   return valuationReady ? "ready" : "measuring";
 }

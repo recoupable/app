@@ -7,6 +7,7 @@ import SetupValuation from "@/components/Onboarding/SetupValuation";
 const replace = vi.fn();
 let catalogsResult: Record<string, unknown>;
 let valuationResult: Record<string, unknown>;
+let artists: { isWorkspace?: boolean }[];
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace }),
@@ -27,6 +28,12 @@ vi.mock("@/hooks/useHomeValuation", () => ({
   default: () => valuationResult,
 }));
 
+// Seeding fires on the first artist add, so the roster is what tells this route
+// a catalog is still coming (chat#1912 row 9).
+vi.mock("@/providers/ArtistProvider", () => ({
+  useArtistProvider: () => ({ sorted: artists }),
+}));
+
 vi.mock("@/components/Home/ValuationHero", () => ({
   default: () => <div>hero</div>,
 }));
@@ -35,6 +42,7 @@ describe("SetupValuation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     valuationResult = { show: false };
+    artists = [{ isWorkspace: false }];
   });
 
   // `useCatalogs` is `enabled: !!accountId && authenticated`, and a *disabled*
@@ -55,18 +63,6 @@ describe("SetupValuation", () => {
     expect(replace).not.toHaveBeenCalled();
   });
 
-  it("redirects to /catalogs once settled with no catalog", () => {
-    catalogsResult = {
-      data: { catalogs: [] },
-      isLoading: false,
-      isPending: false,
-      isError: false,
-    };
-
-    render(<SetupValuation />);
-
-    expect(replace).toHaveBeenCalledWith("/catalogs");
-  });
 
   it("redirects to /catalogs when the catalogs read fails", () => {
     catalogsResult = {
@@ -114,10 +110,35 @@ describe("SetupValuation", () => {
       isError: false,
     };
     valuationResult = { show: false };
+    artists = [{ isWorkspace: false }];
 
     const { getByText } = render(<SetupValuation />);
 
     expect(getByText(/measuring your catalog/i)).toBeDefined();
     expect(replace).not.toHaveBeenCalled();
+  });
+
+  /**
+   * Measured on the preview 2026-07-31: the catalog appears ~15s after the
+   * artist is added, so a signup following the flow arrives here with an empty
+   * catalog list. Redirecting then dropped them on an empty /catalogs.
+   */
+  it("waits on the measuring state during seeding instead of redirecting", () => {
+    catalogsResult = { data: { catalogs: [] }, isPending: false, isError: false };
+    artists = [{ isWorkspace: false }];
+
+    const { getByText } = render(<SetupValuation />);
+
+    expect(getByText(/Measuring your catalog/i)).toBeDefined();
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("still redirects when there is no artist and no catalog", () => {
+    catalogsResult = { data: { catalogs: [] }, isPending: false, isError: false };
+    artists = [];
+
+    render(<SetupValuation />);
+
+    expect(replace).toHaveBeenCalledWith("/catalogs");
   });
 });

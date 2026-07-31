@@ -5,6 +5,7 @@ const base = {
   catalogsPending: false,
   catalogsFailed: false,
   hasCatalog: true,
+  hasArtists: true,
   valuationReady: false,
 };
 
@@ -19,10 +20,25 @@ describe("getSetupValuationStatus", () => {
     );
   });
 
-  it("redirects when the account has no catalog to value", () => {
-    expect(getSetupValuationStatus({ ...base, hasCatalog: false })).toBe(
-      "redirect",
-    );
+  it("redirects when the account has neither a catalog nor an artist", () => {
+    expect(
+      getSetupValuationStatus({ ...base, hasCatalog: false, hasArtists: false }),
+    ).toBe("redirect");
+  });
+
+  /**
+   * Measured on the preview 2026-07-31: seeding creates the catalog **15
+   * seconds** after the artist is added (artist 00:59:04 → snapshot 00:59:07 →
+   * catalog 00:59:19), because createSnapshotCatalog runs only once the
+   * measurements land. For that whole window there is no catalog, so treating
+   * an empty list as "nothing to value" bounced a signup who followed the flow
+   * onto an empty /catalogs. The window this route was originally written for
+   * (catalog exists, not yet measured) is about one second by comparison.
+   */
+  it("is measuring when seeding is still in flight: artists but no catalog yet", () => {
+    expect(
+      getSetupValuationStatus({ ...base, hasCatalog: false, hasArtists: true }),
+    ).toBe("measuring");
   });
 
   it("redirects when the catalog list failed", () => {
