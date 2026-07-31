@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { MEASURING_BODY, MEASURING_TITLE } from "@/lib/catalog/measuringCopy";
 
 /**
  * Terminal state for `/setup/valuation` while a catalog exists but has no
@@ -15,12 +16,9 @@ import { cn } from "@/lib/utils";
  */
 const MeasuringCatalogPanel = () => (
   <section className="mx-auto flex w-full max-w-xl flex-col items-center gap-4 px-6 py-8 text-center">
-    <h1 className="text-2xl font-semibold text-foreground">
-      Measuring your catalog
-    </h1>
+    <h1 className="text-2xl font-semibold text-foreground">{MEASURING_TITLE}</h1>
     <p className="text-sm text-muted-foreground">
-      We are pulling play counts for every track. This usually takes a minute.
-      Your baseline value appears here as soon as it is ready.
+      {MEASURING_BODY} Your baseline value appears here as soon as it is ready.
     </p>
     <Link href="/setup/tasks" className={cn(buttonVariants(), "min-w-[200px]")}>
       Set up your weekly report

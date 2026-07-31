@@ -1,4 +1,5 @@
 import type { CatalogReportState } from "./getCatalogReportState";
+import { MEASURING_BODY, MEASURING_TITLE } from "./measuringCopy";
 
 export type CatalogReportEmptyState = Exclude<
   CatalogReportState,
@@ -24,8 +25,8 @@ const COPY: Record<CatalogReportEmptyState, CatalogReportEmptyCopy> = {
     cta: { label: "Sign in", action: "login" },
   },
   measuring: {
-    title: "Measuring your catalog",
-    body: "We are pulling live play counts for every track. This usually takes about a minute, and the report appears here on its own. There is no need to run the valuation again.",
+    title: MEASURING_TITLE,
+    body: `${MEASURING_BODY} The report appears here on its own, so there is no need to run the valuation again.`,
   },
   "other-account": {
     title: "This catalog was measured by another account",
