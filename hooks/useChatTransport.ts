@@ -40,6 +40,10 @@ export function useChatTransport({
   // Absolute index of the last stream chunk this client received, maintained
   // by `createChunkCountingFetch`. Drives `startIndex` on reconnect.
   const lastChunkIndexRef = useRef<number | null>(null);
+  // True until this transport has seen any stream of its own. A reconnect
+  // while it is set is a fresh page load resuming a turn it never watched, so
+  // it asks for a bounded tail rather than replaying the whole response.
+  const isFreshLoadRef = useRef(true);
   // Switching chats voids the position: the transport is memoised for the
   // lifetime of the hook, so without this a reconnect for the new chat could
   // resume at an index belonging to the old one.
@@ -74,6 +78,10 @@ export function useChatTransport({
           baseUrl,
           onPosition: (index) => {
             lastChunkIndexRef.current = index;
+            // Once a chunk lands, this transport has watched a turn of its
+            // own — later reconnects resume from the counted position rather
+            // than asking for a blind tail.
+            if (index !== null) isFreshLoadRef.current = false;
           },
         }),
         // Reconnect hits recoup-api's resume route, which is authenticated
@@ -86,11 +94,9 @@ export function useChatTransport({
 
           return {
             headers,
-            api: buildStreamReconnectUrl(
-              api,
-              chatIdRef.current,
-              lastChunkIndexRef.current,
-            ),
+            api: buildStreamReconnectUrl(api, chatIdRef.current, lastChunkIndexRef.current, {
+              isFreshLoad: isFreshLoadRef.current,
+            }),
           };
         },
       }),
