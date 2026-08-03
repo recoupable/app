@@ -5,7 +5,7 @@ import {
 } from "@/lib/chat/shouldRecoverStalledStream";
 
 /** How often we re-evaluate whether the stream has gone quiet. */
-const POLL_MS = 5_000;
+const POLL_MS = 3_000;
 
 interface UseStreamRecoveryOptions {
   /** Current `useChat` status. */
@@ -58,8 +58,8 @@ export function useStreamRecovery({
   }, [status]);
 
   // The evaluation itself lives in a ref so listeners keep a stable identity.
-  const maybeRecoverRef = useRef(() => {});
-  maybeRecoverRef.current = () => {
+  const maybeRecoverRef = useRef((_opts?: { isVisibilityCheck?: boolean }) => {});
+  maybeRecoverRef.current = (opts) => {
     const now = Date.now();
     if (
       !shouldRecoverStalledStream({
@@ -68,6 +68,7 @@ export function useStreamRecovery({
         lastChunkAt: lastChunkAtRef.current,
         lastRecoveryAt: lastRecoveryAtRef.current,
         isRecoveryInFlight: isRecoveryInFlightRef.current,
+        isVisibilityCheck: opts?.isVisibilityCheck,
       })
     ) {
       return;
@@ -92,7 +93,9 @@ export function useStreamRecovery({
   useEffect(() => {
     const interval = setInterval(() => maybeRecoverRef.current(), POLL_MS);
     const onVisible = () => {
-      if (document.visibilityState === "visible") maybeRecoverRef.current();
+      if (document.visibilityState === "visible") {
+        maybeRecoverRef.current({ isVisibilityCheck: true });
+      }
     };
     document.addEventListener("visibilitychange", onVisible);
 

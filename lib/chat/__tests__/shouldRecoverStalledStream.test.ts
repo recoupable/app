@@ -55,4 +55,32 @@ describe("shouldRecoverStalledStream", () => {
   it("treats a never-seen chunk timestamp as no reason to recover yet", () => {
     expect(shouldRecoverStalledStream({ ...base, lastChunkAt: null })).toBe(false);
   });
+
+  // Upstream's only live trigger is a visibility probe: a backgrounded tab can
+  // have its connection killed silently, and no amount of waiting will produce
+  // a chunk to time out on. On visibility we skip the silence window — but the
+  // cooldown still applies so a focus-flapping tab can't spam reconnects.
+  it("recovers immediately on a visibility check, without waiting out the stall window", () => {
+    const justStreamed = { ...base, lastChunkAt: base.now - 500 };
+
+    expect(shouldRecoverStalledStream(justStreamed)).toBe(false);
+    expect(shouldRecoverStalledStream({ ...justStreamed, isVisibilityCheck: true })).toBe(true);
+  });
+
+  it("still honours the cooldown on a visibility check", () => {
+    expect(
+      shouldRecoverStalledStream({
+        ...base,
+        lastChunkAt: base.now - 500,
+        isVisibilityCheck: true,
+        lastRecoveryAt: base.now - 1_000,
+      }),
+    ).toBe(false);
+  });
+
+  it("does not recover on a visibility check once the turn is finished", () => {
+    expect(
+      shouldRecoverStalledStream({ ...base, status: "ready", isVisibilityCheck: true }),
+    ).toBe(false);
+  });
 });
