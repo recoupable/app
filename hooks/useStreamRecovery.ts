@@ -58,7 +58,7 @@ export function useStreamRecovery({
   }, [status]);
 
   // The evaluation itself lives in a ref so listeners keep a stable identity.
-  const maybeRecoverRef = useRef((_opts?: { isVisibilityCheck?: boolean }) => {});
+  const maybeRecoverRef = useRef<(opts?: { isVisibilityCheck?: boolean }) => void>(() => {});
   maybeRecoverRef.current = (opts) => {
     const now = Date.now();
     if (
