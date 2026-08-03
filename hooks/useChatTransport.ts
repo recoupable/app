@@ -119,7 +119,7 @@ export function useChatTransport({
         // Reconnect hits `GET {api}/{chatId}/stream` — recoup-api's resume
         // route, which is authenticated like every other endpoint. Without
         // this the reconnect 401s and a dropped stream stays dropped.
-        prepareReconnectToStreamRequest: async ({ api, id }) => {
+        prepareReconnectToStreamRequest: async ({ api }) => {
           const accessToken = await getAccessToken().catch(() => null);
           const headers: Record<string, string> = {};
           if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
@@ -129,8 +129,15 @@ export function useChatTransport({
           // `api` of our own. Returning one replaces the whole URL, so the
           // path has to be rebuilt, not appended to: appending the query to
           // the base produced `POST`-only `/api/chat?startIndex=N` and 405s.
+          //
+          // Built from `chatIdRef`, NOT the `id` the callback is handed: that
+          // is the `useChat` INSTANCE id, which for a new chat is still the
+          // client placeholder while the api-minted id lives in the ref. Using
+          // it reconnected to a chat that does not exist and 404'd. This is the
+          // same ref the request body already sends as `chatId`.
           const last = lastChunkIndexRef.current;
-          const url = `${api}/${id}/stream${last === null ? "" : `?startIndex=${last + 1}`}`;
+          const chatId = chatIdRef.current;
+          const url = `${api}/${chatId}/stream${last === null ? "" : `?startIndex=${last + 1}`}`;
 
           return { headers, api: url };
         },
