@@ -26,6 +26,7 @@ import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { getChatPath } from "@/lib/chat/getChatPath";
 import { useInitialMessageAutoSend } from "./useInitialMessageAutoSend";
 import { usePersistSelectedModel } from "./usePersistSelectedModel";
+import { useStreamRecovery } from "./useStreamRecovery";
 
 interface UseVercelChatProps {
   id: string;
@@ -213,10 +214,13 @@ export function useVercelChat({
     [id, artistId, organizationId, accountIdOverride, model],
   );
 
-  const { messages, status, stop, sendMessage, setMessages, regenerate } =
+  const { messages, status, stop, sendMessage, setMessages, regenerate, resumeStream } =
     useChat({
       id,
       transport,
+      // Re-attach to an in-progress response on mount, so returning to a chat
+      // mid-turn keeps rendering instead of showing a frozen half-message.
+      resume: true,
       experimental_throttle: 100,
       generateId: generateUUID,
       onError: (e) => {
@@ -228,6 +232,14 @@ export function useVercelChat({
         await refetchCredits();
       },
     });
+
+  // A long turn's SSE stream can end before the run does (chat#1923). Watch
+  // for silence on an in-flight turn and reconnect via the resume route.
+  useStreamRecovery({
+    status,
+    activityMarker: messages,
+    resumeStream,
+  });
 
   const earliestFailedUserMessageId = useMemo(
     () => getEarliestFailedUserMessageId(messages),

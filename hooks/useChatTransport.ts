@@ -61,6 +61,15 @@ export function useChatTransport({
           if (recoupAccessToken) body.recoupAccessToken = recoupAccessToken;
           return body;
         },
+        // Reconnect hits `GET {api}/{chatId}/stream` — recoup-api's resume
+        // route, which is authenticated like every other endpoint. Without
+        // this the reconnect 401s and a dropped stream stays dropped.
+        prepareReconnectToStreamRequest: async () => {
+          const accessToken = await getAccessToken().catch(() => null);
+          const headers: Record<string, string> = {};
+          if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+          return { headers };
+        },
       }),
     [baseUrl, getAccessToken],
   );
