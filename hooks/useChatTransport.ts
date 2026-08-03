@@ -2,6 +2,8 @@ import { useMemo, useCallback, useRef } from "react";
 import { DefaultChatTransport } from "ai";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import { usePrivy } from "@privy-io/react-auth";
+import { createChunkCountingFetch } from "@/lib/chat/createChunkCountingFetch";
+import { buildStreamReconnectUrl } from "@/lib/chat/buildStreamReconnectUrl";
 
 interface UseChatTransportOptions {
   /** Chat row id (also the AI SDK `useChat({ id })` instance id). */
@@ -35,15 +37,13 @@ export function useChatTransport({
   // stable while always sending the ids current as of the request.
   const chatIdRef = useRef(chatId);
   const sessionIdRef = useRef(sessionId);
-  // Absolute index of the last stream chunk this client has actually received.
-  // Drives `startIndex` on reconnect so a resume is gap-free rather than a
-  // replay. Counted from the wire, NOT taken from
-  // `x-workflow-stream-tail-index`: that header reports the tail at the moment
-  // the read was opened, so a read that stays open past it under-reports (a
-  // live read returning 22 chunks advertised a tail of 9). The header is only
-  // a base for the read's starting position; what we have actually consumed is
-  // that base plus the chunks counted off the body.
+  // Absolute index of the last stream chunk this client received, maintained
+  // by `createChunkCountingFetch`. Drives `startIndex` on reconnect.
   const lastChunkIndexRef = useRef<number | null>(null);
+  // Switching chats voids the position: the transport is memoised for the
+  // lifetime of the hook, so without this a reconnect for the new chat could
+  // resume at an index belonging to the old one.
+  if (chatIdRef.current !== chatId) lastChunkIndexRef.current = null;
   chatIdRef.current = chatId;
   sessionIdRef.current = sessionId;
 
@@ -70,76 +70,28 @@ export function useChatTransport({
           if (recoupAccessToken) body.recoupAccessToken = recoupAccessToken;
           return body;
         },
-        // Track how far through the stream this client actually got, by
-        // counting SSE frames off a tee of the body. `startIndex` on the next
-        // reconnect is that position + 1, so a resume neither replays chunks
-        // we have rendered nor skips ones we have not.
-        fetch: (async (input, init) => {
-          const response = await globalThis.fetch(input as RequestInfo, init);
-          if (!response.body) return response;
-
-          const url = typeof input === "string" ? input : (input as Request).url;
-          const requested = Number(new URL(url, baseUrl).searchParams.get("startIndex") ?? "0");
-          let index = (Number.isInteger(requested) && requested >= 0 ? requested : 0) - 1;
-
-          const [toCaller, toCount] = response.body.tee();
-          void (async () => {
-            const reader = toCount.getReader();
-            const decoder = new TextDecoder();
-            let buffered = "";
-            try {
-              for (;;) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                buffered += decoder.decode(value, { stream: true });
-                const lines = buffered.split("\n");
-                buffered = lines.pop() ?? "";
-                for (const line of lines) {
-                  // `[DONE]` is the SSE terminator, not a stream chunk.
-                  if (line.startsWith("data: ") && !line.startsWith("data: [DONE]")) {
-                    index += 1;
-                    lastChunkIndexRef.current = index;
-                  }
-                }
-              }
-            } catch {
-              // Counting is best-effort; a torn read just means the next
-              // reconnect resumes from the last index we did count.
-            } finally {
-              reader.releaseLock();
-            }
-          })();
-
-          return new Response(toCaller, {
-            status: response.status,
-            statusText: response.statusText,
-            headers: response.headers,
-          });
-        }) as typeof globalThis.fetch,
-        // Reconnect hits `GET {api}/{chatId}/stream` — recoup-api's resume
-        // route, which is authenticated like every other endpoint. Without
-        // this the reconnect 401s and a dropped stream stays dropped.
+        fetch: createChunkCountingFetch({
+          baseUrl,
+          onPosition: (index) => {
+            lastChunkIndexRef.current = index;
+          },
+        }),
+        // Reconnect hits recoup-api's resume route, which is authenticated
+        // like every other endpoint. Without this the reconnect 401s and a
+        // dropped stream stays dropped.
         prepareReconnectToStreamRequest: async ({ api }) => {
           const accessToken = await getAccessToken().catch(() => null);
           const headers: Record<string, string> = {};
           if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-          // `api` here is the BASE (`…/api/chat`), not the reconnect URL — the
-          // SDK only falls back to `${api}/${id}/stream` when we return no
-          // `api` of our own. Returning one replaces the whole URL, so the
-          // path has to be rebuilt, not appended to: appending the query to
-          // the base produced `POST`-only `/api/chat?startIndex=N` and 405s.
-          //
-          // Built from `chatIdRef`, NOT the `id` the callback is handed: that
-          // is the `useChat` INSTANCE id, which for a new chat is still the
-          // client placeholder while the api-minted id lives in the ref. Using
-          // it reconnected to a chat that does not exist and 404'd. This is the
-          // same ref the request body already sends as `chatId`.
-          const last = lastChunkIndexRef.current;
-          const chatId = chatIdRef.current;
-          const url = `${api}/${chatId}/stream${last === null ? "" : `?startIndex=${last + 1}`}`;
-
-          return { headers, api: url };
+          return {
+            headers,
+            api: buildStreamReconnectUrl(
+              api,
+              chatIdRef.current,
+              lastChunkIndexRef.current,
+            ),
+          };
         },
       }),
     [baseUrl, getAccessToken],
