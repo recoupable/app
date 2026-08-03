@@ -119,14 +119,18 @@ export function useChatTransport({
         // Reconnect hits `GET {api}/{chatId}/stream` — recoup-api's resume
         // route, which is authenticated like every other endpoint. Without
         // this the reconnect 401s and a dropped stream stays dropped.
-        prepareReconnectToStreamRequest: async ({ api }) => {
+        prepareReconnectToStreamRequest: async ({ api, id }) => {
           const accessToken = await getAccessToken().catch(() => null);
           const headers: Record<string, string> = {};
           if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-          // Resume from the chunk after the last one we actually received.
+          // `api` here is the BASE (`…/api/chat`), not the reconnect URL — the
+          // SDK only falls back to `${api}/${id}/stream` when we return no
+          // `api` of our own. Returning one replaces the whole URL, so the
+          // path has to be rebuilt, not appended to: appending the query to
+          // the base produced `POST`-only `/api/chat?startIndex=N` and 405s.
           const last = lastChunkIndexRef.current;
-          const url = last === null ? api : `${api}?startIndex=${last + 1}`;
+          const url = `${api}/${id}/stream${last === null ? "" : `?startIndex=${last + 1}`}`;
 
           return { headers, api: url };
         },
