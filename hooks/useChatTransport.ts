@@ -26,6 +26,9 @@ export function useChatTransport({
   chatId,
   sessionId,
 }: UseChatTransportOptions) {
+  // Flipped when the resume route answers 204. Read by the recovery hook to
+  // stop probing a turn the server says is over.
+  const noActiveStreamRef = useRef(false);
   const { getAccessToken } = usePrivy();
   const baseUrl = getClientApiBaseUrl();
 
@@ -97,5 +100,5 @@ export function useChatTransport({
     [baseUrl, getAccessToken],
   );
 
-  return { transport, getHeaders };
+  return { transport, getHeaders, noActiveStreamRef };
 }

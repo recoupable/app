@@ -6,6 +6,13 @@ interface ChunkCountingFetchOptions {
    * a read starts from the beginning and any previous position is void.
    */
   onPosition: (index: number | null) => void;
+  /**
+   * Called when a read of the resume route answers 204 — the server saying
+   * there is nothing left to resume. The only authoritative end-of-turn
+   * signal available to the client, since a cut-off stream and a completed
+   * one both end with `[DONE]`.
+   */
+  onNoActiveStream?: () => void;
   /** Injectable for tests; defaults to the global fetch. */
   fetchImpl?: typeof globalThis.fetch;
 }
@@ -33,6 +40,7 @@ interface ChunkCountingFetchOptions {
 export function createChunkCountingFetch({
   baseUrl,
   onPosition,
+  onNoActiveStream,
   fetchImpl,
 }: ChunkCountingFetchOptions): typeof globalThis.fetch {
   return (async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -48,6 +56,12 @@ export function createChunkCountingFetch({
     if (resumesFrom === null) onPosition(null);
 
     const response = await doFetch(input, init);
+
+    // 204 on the resume path means the run is genuinely over.
+    if (response.status === 204 && new URL(url, baseUrl).pathname.endsWith("/stream")) {
+      onNoActiveStream?.();
+    }
+
     if (!response.body) return response;
 
     let index = (resumesFrom ?? 0) - 1;

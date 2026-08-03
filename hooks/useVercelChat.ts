@@ -77,7 +77,7 @@ export function useVercelChat({
   // client placeholder. Drives the transport, message load, and URL so
   // sends/persistence target the row recoup-api actually created.
   const transportChatId = workflowChatId ?? id;
-  const { transport, getHeaders } = useChatTransport({
+  const { transport, getHeaders, noActiveStreamRef } = useChatTransport({
     chatId: transportChatId,
     sessionId,
   });
@@ -237,6 +237,7 @@ export function useVercelChat({
   // for silence on an in-flight turn and reconnect via the resume route.
   useStreamRecovery({
     status,
+    serverConfirmedDone: noActiveStreamRef.current,
     activityMarker: messages,
     resumeStream,
   });

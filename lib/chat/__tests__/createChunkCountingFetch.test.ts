@@ -86,4 +86,37 @@ describe("createChunkCountingFetch", () => {
 
     expect(res.status).toBe(204);
   });
+
+  // A 204 from the resume route is the server saying "nothing to resume" —
+  // the signal that stops post-turn probing. Without it the client cannot
+  // tell a finished turn from a cut-off one.
+  it("reports when a resume read finds no active stream", async () => {
+    const done: boolean[] = [];
+    const inner = vi.fn(async () => new Response(null, { status: 204 }));
+
+    const f = createChunkCountingFetch({
+      baseUrl: BASE,
+      onPosition: () => {},
+      onNoActiveStream: () => done.push(true),
+      fetchImpl: inner,
+    });
+    await f(`${BASE}/api/chat/abc/stream`);
+
+    expect(done).toEqual([true]);
+  });
+
+  it("does not report no-active-stream for a normal streaming response", async () => {
+    const done: boolean[] = [];
+    const inner = vi.fn(async () => sseResponse(['data: {"a":1}']));
+
+    const f = createChunkCountingFetch({
+      baseUrl: BASE,
+      onPosition: () => {},
+      onNoActiveStream: () => done.push(true),
+      fetchImpl: inner,
+    });
+    await f(`${BASE}/api/chat/abc/stream`);
+
+    expect(done).toEqual([]);
+  });
 });

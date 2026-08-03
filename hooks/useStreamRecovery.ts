@@ -11,6 +11,12 @@ interface UseStreamRecoveryOptions {
   /** Current `useChat` status. */
   status: string;
   /**
+   * True once the resume route has answered 204 for this turn. Ends probing —
+   * the server is the only party that can distinguish a finished turn from a
+   * cut-off one.
+   */
+  serverConfirmedDone: boolean;
+  /**
    * Changes whenever the assistant produces output. Any value that moves as
    * chunks arrive works — the hook only reads it to timestamp "last activity".
    */
@@ -35,12 +41,18 @@ interface UseStreamRecoveryOptions {
  */
 export function useStreamRecovery({
   status,
+  serverConfirmedDone,
   activityMarker,
   resumeStream,
 }: UseStreamRecoveryOptions): void {
   const lastChunkAtRef = useRef<number | null>(null);
   const lastRecoveryAtRef = useRef(0);
   const isRecoveryInFlightRef = useRef(false);
+  // When the turn last stopped looking in-flight. Opens the post-turn probe
+  // window — the stream ends identically whether the turn finished or was cut
+  // off, so the client cannot tell them apart without asking.
+  const turnEndedAtRef = useRef<number | null>(null);
+  const wasInFlightRef = useRef(false);
 
   // Timestamp activity. Kept in a ref so the polling effect never re-registers
   // as output streams in.
@@ -54,7 +66,16 @@ export function useStreamRecovery({
     if (status === "submitted") {
       lastChunkAtRef.current = Date.now();
       lastRecoveryAtRef.current = 0;
+      turnEndedAtRef.current = null;
     }
+  }, [status]);
+
+  // Record the in-flight → not-in-flight edge. This is the moment the original
+  // bug becomes invisible to a status-gated trigger.
+  useEffect(() => {
+    const inFlight = status === "streaming" || status === "submitted";
+    if (wasInFlightRef.current && !inFlight) turnEndedAtRef.current = Date.now();
+    wasInFlightRef.current = inFlight;
   }, [status]);
 
   // The evaluation itself lives in a ref so listeners keep a stable identity.
@@ -69,6 +90,8 @@ export function useStreamRecovery({
         lastRecoveryAt: lastRecoveryAtRef.current,
         isRecoveryInFlight: isRecoveryInFlightRef.current,
         isVisibilityCheck: opts?.isVisibilityCheck,
+        turnEndedAt: turnEndedAtRef.current,
+        serverConfirmedDone,
       })
     ) {
       return;

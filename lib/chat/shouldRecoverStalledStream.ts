@@ -21,6 +21,22 @@ export const STREAM_STALL_MS = 10_000;
  */
 export const STREAM_RECOVERY_COOLDOWN_MS = 8_000;
 
+/**
+ * How long after a turn leaves in-flight we keep asking the server whether it
+ * is really finished.
+ *
+ * This window exists because the failure mode ends the stream *cleanly* — a
+ * `[DONE]` with no `finish` chunk — so `useChat` transitions out of
+ * `streaming` and any trigger gated on in-flight status goes silent exactly
+ * when the run is still going. Reproduced on prod 2026-08-03: a 123 s stream,
+ * zero reconnects, and the run alive for a further 3.25 minutes.
+ *
+ * It is only a backstop: the first 204 from the resume route ends probing
+ * immediately, so a normally-completed turn costs one extra request. The
+ * window bounds the pathological case where that answer never arrives.
+ */
+export const POST_TURN_PROBE_MS = 5 * 60_000;
+
 /** The `useChat` statuses that mean a turn is still expected to produce output. */
 const IN_FLIGHT_STATUSES = new Set(["streaming", "submitted"]);
 
@@ -43,6 +59,18 @@ export type StreamRecoveryInput = {
    * visibility probe.
    */
   isVisibilityCheck?: boolean;
+  /**
+   * When the turn last left in-flight, or `null` if no turn has run in this
+   * session. Opens the post-turn probe window.
+   */
+  turnEndedAt?: number | null;
+  /**
+   * True once the resume route has answered 204 — the server saying there is
+   * nothing left to resume. The only authoritative end-of-turn signal we get,
+   * since the stream itself ends the same way whether the turn finished or
+   * was cut off.
+   */
+  serverConfirmedDone?: boolean;
 };
 
 /**
@@ -68,10 +96,20 @@ export function shouldRecoverStalledStream({
   lastRecoveryAt,
   isRecoveryInFlight,
   isVisibilityCheck = false,
+  turnEndedAt = null,
+  serverConfirmedDone = false,
 }: StreamRecoveryInput): boolean {
-  if (!IN_FLIGHT_STATUSES.has(status)) return false;
   if (isRecoveryInFlight) return false;
+  // The server has told us there is nothing to resume. Believe it.
+  if (serverConfirmedDone) return false;
   if (now - lastRecoveryAt <= STREAM_RECOVERY_COOLDOWN_MS) return false;
+
+  // The turn looks finished to the client — but a cut-off stream and a
+  // completed one are indistinguishable from here, so keep asking the server
+  // for a bounded window rather than trusting the appearance.
+  if (!IN_FLIGHT_STATUSES.has(status)) {
+    return turnEndedAt !== null && now - turnEndedAt < POST_TURN_PROBE_MS;
+  }
 
   // A visibility check skips the silence window but keeps the cooldown, so a
   // focus-flapping tab can't spam reconnects.

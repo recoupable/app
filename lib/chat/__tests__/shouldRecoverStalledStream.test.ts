@@ -3,6 +3,7 @@ import {
   shouldRecoverStalledStream,
   STREAM_STALL_MS,
   STREAM_RECOVERY_COOLDOWN_MS,
+  POST_TURN_PROBE_MS,
 } from "@/lib/chat/shouldRecoverStalledStream";
 
 const base = {
@@ -11,6 +12,8 @@ const base = {
   lastChunkAt: 100_000 - STREAM_STALL_MS - 1,
   lastRecoveryAt: 0,
   isRecoveryInFlight: false,
+  turnEndedAt: null as number | null,
+  serverConfirmedDone: false,
 };
 
 describe("shouldRecoverStalledStream", () => {
@@ -81,6 +84,62 @@ describe("shouldRecoverStalledStream", () => {
   it("does not recover on a visibility check once the turn is finished", () => {
     expect(
       shouldRecoverStalledStream({ ...base, status: "ready", isVisibilityCheck: true }),
+    ).toBe(false);
+  });
+
+  // THE ORIGINAL BUG. A stream that ends with a clean `[DONE]` and no `finish`
+  // chunk moves useChat OUT of streaming, so a trigger gated on in-flight
+  // status goes silent exactly when the run is still going. Reproduced on prod
+  // 2026-08-03 after chat#1924 merged: 123 s stream, zero reconnects, run alive
+  // for a further 3.25 min.
+  it("recovers after the turn leaves in-flight, while the post-turn window is open", () => {
+    expect(
+      shouldRecoverStalledStream({
+        ...base,
+        status: "ready",
+        turnEndedAt: base.now - 2_000,
+      }),
+    ).toBe(true);
+  });
+
+  it("stops probing once the post-turn window has expired", () => {
+    expect(
+      shouldRecoverStalledStream({
+        ...base,
+        status: "ready",
+        turnEndedAt: base.now - POST_TURN_PROBE_MS - 1,
+      }),
+    ).toBe(false);
+  });
+
+  // Without this, every idle chat polls the resume route forever.
+  it("does not probe a turn that never ran", () => {
+    expect(shouldRecoverStalledStream({ ...base, status: "ready", turnEndedAt: null })).toBe(
+      false,
+    );
+  });
+
+  // The route answering 204 is the server saying "nothing to resume" — the
+  // only authoritative end-of-turn signal we get.
+  it("stops probing once the server has confirmed there is nothing to resume", () => {
+    expect(
+      shouldRecoverStalledStream({
+        ...base,
+        status: "ready",
+        turnEndedAt: base.now - 2_000,
+        serverConfirmedDone: true,
+      }),
+    ).toBe(false);
+  });
+
+  it("honours the cooldown on post-turn probes too", () => {
+    expect(
+      shouldRecoverStalledStream({
+        ...base,
+        status: "ready",
+        turnEndedAt: base.now - 2_000,
+        lastRecoveryAt: base.now - 1_000,
+      }),
     ).toBe(false);
   });
 });
