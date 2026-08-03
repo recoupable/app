@@ -35,10 +35,15 @@ export function useChatTransport({
   // stable while always sending the ids current as of the request.
   const chatIdRef = useRef(chatId);
   const sessionIdRef = useRef(sessionId);
-  // Highest chunk index the server has reported serving us, from the
-  // `x-workflow-stream-tail-index` response header. Drives `startIndex` on
-  // reconnect so a resume is gap-free rather than a replay.
-  const tailIndexRef = useRef<number | null>(null);
+  // Absolute index of the last stream chunk this client has actually received.
+  // Drives `startIndex` on reconnect so a resume is gap-free rather than a
+  // replay. Counted from the wire, NOT taken from
+  // `x-workflow-stream-tail-index`: that header reports the tail at the moment
+  // the read was opened, so a read that stays open past it under-reports (a
+  // live read returning 22 chunks advertised a tail of 9). The header is only
+  // a base for the read's starting position; what we have actually consumed is
+  // that base plus the chunks counted off the body.
+  const lastChunkIndexRef = useRef<number | null>(null);
   chatIdRef.current = chatId;
   sessionIdRef.current = sessionId;
 
@@ -65,19 +70,51 @@ export function useChatTransport({
           if (recoupAccessToken) body.recoupAccessToken = recoupAccessToken;
           return body;
         },
-        // Capture `x-workflow-stream-tail-index` off every response. The
-        // resume route reports where the read it just served ends, which is
-        // the only honest value to send as `startIndex` on the next
-        // reconnect — without it a reconnect replays the turn from chunk zero
-        // and the client re-renders content it already has.
+        // Track how far through the stream this client actually got, by
+        // counting SSE frames off a tee of the body. `startIndex` on the next
+        // reconnect is that position + 1, so a resume neither replays chunks
+        // we have rendered nor skips ones we have not.
         fetch: (async (input, init) => {
           const response = await globalThis.fetch(input as RequestInfo, init);
-          const tail = response.headers.get("x-workflow-stream-tail-index");
-          if (tail !== null) {
-            const parsed = Number(tail);
-            if (Number.isInteger(parsed) && parsed >= 0) tailIndexRef.current = parsed;
-          }
-          return response;
+          if (!response.body) return response;
+
+          const url = typeof input === "string" ? input : (input as Request).url;
+          const requested = Number(new URL(url, baseUrl).searchParams.get("startIndex") ?? "0");
+          let index = (Number.isInteger(requested) && requested >= 0 ? requested : 0) - 1;
+
+          const [toCaller, toCount] = response.body.tee();
+          void (async () => {
+            const reader = toCount.getReader();
+            const decoder = new TextDecoder();
+            let buffered = "";
+            try {
+              for (;;) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffered += decoder.decode(value, { stream: true });
+                const lines = buffered.split("\n");
+                buffered = lines.pop() ?? "";
+                for (const line of lines) {
+                  // `[DONE]` is the SSE terminator, not a stream chunk.
+                  if (line.startsWith("data: ") && !line.startsWith("data: [DONE]")) {
+                    index += 1;
+                    lastChunkIndexRef.current = index;
+                  }
+                }
+              }
+            } catch {
+              // Counting is best-effort; a torn read just means the next
+              // reconnect resumes from the last index we did count.
+            } finally {
+              reader.releaseLock();
+            }
+          })();
+
+          return new Response(toCaller, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers,
+          });
         }) as typeof globalThis.fetch,
         // Reconnect hits `GET {api}/{chatId}/stream` — recoup-api's resume
         // route, which is authenticated like every other endpoint. Without
@@ -87,10 +124,9 @@ export function useChatTransport({
           const headers: Record<string, string> = {};
           if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-          // Resume from the chunk after the last one we saw. The route reports
-          // a 0-based tail index, so the next unseen chunk is tail + 1.
-          const tail = tailIndexRef.current;
-          const url = tail === null ? api : `${api}?startIndex=${tail + 1}`;
+          // Resume from the chunk after the last one we actually received.
+          const last = lastChunkIndexRef.current;
+          const url = last === null ? api : `${api}?startIndex=${last + 1}`;
 
           return { headers, api: url };
         },
