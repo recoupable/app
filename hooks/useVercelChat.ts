@@ -236,9 +236,11 @@ export function useVercelChat({
   // A long turn's SSE stream can end before the run does (chat#1923). Watch
   // for silence on an in-flight turn and reconnect via the resume route.
   useStreamRecovery({
+    sessionId,
+    chatId: transportChatId,
     status,
-    activityMarker: messages,
     resumeStream,
+    getAccessToken,
   });
 
   const earliestFailedUserMessageId = useMemo(
