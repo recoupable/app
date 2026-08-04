@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { getStreamRecoveryDecision } from "@/lib/chat/getStreamRecoveryDecision";
-import { fetchChatIsStreaming } from "@/lib/chat/fetchChatIsStreaming";
+import { probeChatIsStreaming } from "@/lib/chat/probeChatIsStreaming";
 
 interface UseStreamRecoveryOptions {
   /** Session owning the chat — part of the probe URL. */
@@ -77,10 +77,14 @@ export function useStreamRecovery({
     isProbeInFlightRef.current = true;
     void (async () => {
       try {
-        const isStreaming = await fetchChatIsStreaming({
+        // A stream end is the only trigger with no follow-up: nothing else will
+        // fire on a focused tab, so it asks across the schedule rather than
+        // once. Browser events recur by nature and ask a single time.
+        const isStreaming = await probeChatIsStreaming({
           sessionId,
           chatId,
           getAccessToken,
+          delaysMs: opts?.isStreamEnd ? undefined : [0],
         });
         if (isStreaming) await resumeStream();
       } catch {

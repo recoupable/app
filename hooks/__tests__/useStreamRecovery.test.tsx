@@ -4,8 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useStreamRecovery } from "@/hooks/useStreamRecovery";
 
 const isStreaming = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/chat/fetchChatIsStreaming", () => ({
-  fetchChatIsStreaming: isStreaming,
+vi.mock("@/lib/chat/probeChatIsStreaming", () => ({
+  probeChatIsStreaming: isStreaming,
 }));
 
 const flush = () => vi.advanceTimersByTimeAsync(0);
