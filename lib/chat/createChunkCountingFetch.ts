@@ -6,6 +6,15 @@ interface ChunkCountingFetchOptions {
    * a read starts from the beginning and any previous position is void.
    */
   onPosition: (index: number | null) => void;
+  /**
+   * Called once when the response body ends, however it ends.
+   *
+   * A workflow stream connection is capped at ~120s and terminates with a
+   * clean `[DONE]` (chat#1928), so end-of-body is the moment a reconnect
+   * decision is due. It is read here rather than off `useChat`'s status,
+   * which does not reliably move when a resumed stream ends.
+   */
+  onStreamEnd?: () => void;
   /** Injectable for tests; defaults to the global fetch. */
   fetchImpl?: typeof globalThis.fetch;
 }
@@ -33,6 +42,7 @@ interface ChunkCountingFetchOptions {
 export function createChunkCountingFetch({
   baseUrl,
   onPosition,
+  onStreamEnd,
   fetchImpl,
 }: ChunkCountingFetchOptions): typeof globalThis.fetch {
   return (async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -77,6 +87,7 @@ export function createChunkCountingFetch({
         // resumes from the last index we did count, still ahead of replaying.
       } finally {
         reader.releaseLock();
+        onStreamEnd?.();
       }
     })();
 

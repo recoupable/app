@@ -78,6 +78,46 @@ describe("createChunkCountingFetch", () => {
     expect(text).toContain("data: [DONE]");
   });
 
+  /**
+   * The trigger for reconnecting. A workflow stream connection is capped at
+   * ~120s and ends with a clean `[DONE]` (chat#1928), and `useChat`'s status
+   * does not reliably move when it does — verified on preview, where a second
+   * drop produced no status edge and the turn froze. The teed reader here sees
+   * every body close, so it is the honest place to fire from.
+   */
+  it("reports when the response body ends", async () => {
+    const inner = vi.fn().mockResolvedValue(sseResponse(['data: {"a":1}', "data: [DONE]"]));
+    const ends: number[] = [];
+    const f = createChunkCountingFetch({
+      baseUrl: BASE,
+      onPosition: () => {},
+      onStreamEnd: () => ends.push(1),
+      fetchImpl: inner,
+    });
+
+    const res = await f(`${BASE}/api/chat/c1/stream`);
+    await res.text();
+    await flush();
+
+    expect(ends).toHaveLength(1);
+  });
+
+  it("does not report a stream end for a bodyless response", async () => {
+    const inner = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    const ends: number[] = [];
+    const f = createChunkCountingFetch({
+      baseUrl: BASE,
+      onPosition: () => {},
+      onStreamEnd: () => ends.push(1),
+      fetchImpl: inner,
+    });
+
+    await f(`${BASE}/api/chat/c1/stream`);
+    await flush();
+
+    expect(ends).toHaveLength(0);
+  });
+
   it("returns a bodyless response untouched", async () => {
     const inner = vi.fn(async () => new Response(null, { status: 204 }));
 

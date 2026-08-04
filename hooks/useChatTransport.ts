@@ -14,6 +14,12 @@ interface UseChatTransportOptions {
    * transport is never invoked without it.
    */
   sessionId?: string;
+  /**
+   * Called when a response stream ends. Read through a ref so recovery — which
+   * needs `resumeStream` from the `useChat` this transport is passed to — can
+   * be attached after the transport is built.
+   */
+  onStreamEndRef: { current: () => void };
 }
 
 /**
@@ -25,6 +31,7 @@ interface UseChatTransportOptions {
 export function useChatTransport({
   chatId,
   sessionId,
+  onStreamEndRef,
 }: UseChatTransportOptions) {
   const { getAccessToken } = usePrivy();
   const baseUrl = getClientApiBaseUrl();
@@ -75,6 +82,7 @@ export function useChatTransport({
           onPosition: (index) => {
             lastChunkIndexRef.current = index;
           },
+          onStreamEnd: () => onStreamEndRef.current(),
         }),
         // Reconnect hits recoup-api's resume route, which is authenticated
         // like every other endpoint. Without this the reconnect 401s and a
@@ -94,7 +102,9 @@ export function useChatTransport({
           };
         },
       }),
-    [baseUrl, getAccessToken],
+    // `onStreamEndRef` is a ref: stable identity, so this never rebuilds the
+    // transport — listed only to satisfy exhaustive-deps.
+    [baseUrl, getAccessToken, onStreamEndRef],
   );
 
   return { transport, getHeaders };

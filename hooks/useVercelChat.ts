@@ -77,9 +77,14 @@ export function useVercelChat({
   // client placeholder. Drives the transport, message load, and URL so
   // sends/persistence target the row recoup-api actually created.
   const transportChatId = workflowChatId ?? id;
+  // Recovery needs `resumeStream`, which only exists after `useChat` is built
+  // from this transport — so the transport calls through a ref that recovery
+  // fills in below.
+  const onStreamEndRef = useRef<() => void>(() => {});
   const { transport, getHeaders } = useChatTransport({
     chatId: transportChatId,
     sessionId,
+    onStreamEndRef,
   });
   const { authenticated, getAccessToken } = usePrivy();
 
@@ -233,9 +238,10 @@ export function useVercelChat({
       },
     });
 
-  // A long turn's SSE stream can end before the run does (chat#1923). Watch
-  // for silence on an in-flight turn and reconnect via the resume route.
-  useStreamRecovery({
+  // A long turn's SSE stream ends before the run does — connections are capped
+  // at ~120s (chat#1928). Ask the server at each stream end and resume from the
+  // last chunk received if the run is still live.
+  onStreamEndRef.current = useStreamRecovery({
     sessionId,
     chatId: transportChatId,
     status,

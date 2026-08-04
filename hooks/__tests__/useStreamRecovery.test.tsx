@@ -29,17 +29,15 @@ describe("useStreamRecovery", () => {
       }),
     );
 
-  const setupWithStatus = (resumeStream: () => Promise<void>) =>
-    renderHook(
-      ({ status }: { status: string }) =>
-        useStreamRecovery({
-          sessionId: "session-1",
-          chatId: "chat-1",
-          status,
-          resumeStream,
-          getAccessToken: async () => "token",
-        }),
-      { initialProps: { status: "streaming" } },
+  const setupStreaming = (resumeStream: () => Promise<void>) =>
+    renderHook(() =>
+      useStreamRecovery({
+        sessionId: "session-1",
+        chatId: "chat-1",
+        status: "streaming",
+        resumeStream,
+        getAccessToken: async () => "token",
+      }),
     );
 
   it("probes and reconnects when the tab regains focus", async () => {
@@ -100,21 +98,38 @@ describe("useStreamRecovery", () => {
    */
   it("probes and reconnects when the stream ends while the run is still live", async () => {
     const resumeStream = vi.fn().mockResolvedValue(undefined);
-    const { rerender } = setupWithStatus(resumeStream);
+    const { result } = setupStreaming(resumeStream);
 
-    rerender({ status: "ready" });
+    result.current();
     await flush();
 
     expect(isStreaming).toHaveBeenCalledTimes(1);
     expect(resumeStream).toHaveBeenCalledTimes(1);
   });
 
+  // The failure this trigger was moved to the transport for: on preview the
+  // first drop moved `useChat`'s status and the second did not, so the turn
+  // reconnected once and then froze. Every stream end must be answerable.
+  it("fires on every stream end, not just the first", async () => {
+    const resumeStream = vi.fn().mockResolvedValue(undefined);
+    const { result } = setupStreaming(resumeStream);
+
+    result.current();
+    await flush();
+    result.current();
+    await flush();
+    result.current();
+    await flush();
+
+    expect(resumeStream).toHaveBeenCalledTimes(3);
+  });
+
   it("accepts the turn as finished when the stream ends and the run is done", async () => {
     const resumeStream = vi.fn().mockResolvedValue(undefined);
     isStreaming.mockResolvedValue(false);
-    const { rerender } = setupWithStatus(resumeStream);
+    const { result } = setupStreaming(resumeStream);
 
-    rerender({ status: "ready" });
+    result.current();
     await flush();
 
     expect(isStreaming).toHaveBeenCalledTimes(1);

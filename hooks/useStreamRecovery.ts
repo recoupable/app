@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useRef } from "react";
-/** Statuses that mean chunks are, or are about to be, arriving. */
-const IN_FLIGHT = new Set(["streaming", "submitted"]);
 import { getStreamRecoveryDecision } from "@/lib/chat/getStreamRecoveryDecision";
 import { fetchChatIsStreaming } from "@/lib/chat/fetchChatIsStreaming";
 
@@ -29,8 +27,14 @@ interface UseStreamRecoveryOptions {
  * There is deliberately no polling and no stall timer. Upstream disables its
  * stall path outright, and our interval version drove `resumeStream()` — which
  * *opens a stream* — on a cadence, producing 16 reconnects for one turn
- * (chat#1923). A stream that dies mid-turn on a focused tab is a server defect
- * and is fixed there, not papered over here.
+ * (chat#1923).
+ *
+ * Upstream's browser events are not sufficient on their own: a connection is
+ * capped at ~120s (chat#1928) and someone sitting on the tab fires none of
+ * them, so a long turn froze. The returned handler adds the missing trigger —
+ * wire it to the transport's end-of-body.
+ *
+ * @returns A stable callback to invoke when a response stream ends.
  */
 export function useStreamRecovery({
   sessionId,
@@ -38,7 +42,7 @@ export function useStreamRecovery({
   status,
   resumeStream,
   getAccessToken,
-}: UseStreamRecoveryOptions): void {
+}: UseStreamRecoveryOptions): () => void {
   const lastRecoveryAtRef = useRef(0);
   const isProbeInFlightRef = useRef(false);
 
@@ -93,12 +97,11 @@ export function useStreamRecovery({
   // browser events below never fire for someone sitting on the tab, which is
   // exactly when a long turn goes quiet, so this is the trigger that covers it.
   // It fires once per connection (~1 per 2 min), bounded by the cap itself.
-  const wasInFlightRef = useRef(IN_FLIGHT.has(status));
-  useEffect(() => {
-    const wasInFlight = wasInFlightRef.current;
-    wasInFlightRef.current = IN_FLIGHT.has(status);
-    if (wasInFlight && !IN_FLIGHT.has(status)) recoverRef.current({ isStreamEnd: true });
-  }, [status]);
+  //
+  // Driven from the transport's teed reader rather than from `useChat`'s
+  // status: on preview a first drop moved the status and a second did not, so
+  // the turn reconnected once and then froze. End-of-body is unambiguous.
+  const onStreamEnd = useCallback(() => recoverRef.current({ isStreamEnd: true }), []);
 
   const recover = useCallback(() => recoverRef.current(), []);
   const recoverOnVisibility = useCallback(
@@ -120,4 +123,6 @@ export function useStreamRecovery({
       window.removeEventListener("online", recover);
     };
   }, [recover, recoverOnVisibility]);
+
+  return onStreamEnd;
 }
