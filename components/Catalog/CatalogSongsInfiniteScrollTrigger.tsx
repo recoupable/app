@@ -1,5 +1,5 @@
 interface CatalogSongsInfiniteScrollTriggerProps {
-  observerTarget: React.RefObject<HTMLDivElement>;
+  observerTarget: React.RefObject<HTMLDivElement | null>;
   isFetchingNextPage: boolean;
 }
 

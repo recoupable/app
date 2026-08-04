@@ -20,7 +20,7 @@ interface UseCatalogSongsOptions {
 type UseCatalogSongsReturn = UseInfiniteQueryResult<
   InfiniteData<CatalogSongsResponse>
 > & {
-  observerTarget: RefObject<HTMLDivElement>;
+  observerTarget: RefObject<HTMLDivElement | null>;
 };
 
 const useCatalogSongs = ({
