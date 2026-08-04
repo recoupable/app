@@ -83,16 +83,29 @@ export function useStreamRecovery({
 
     isProbeInFlightRef.current = true;
     void (async () => {
+      let isStreaming = false;
       try {
         // A stream end is the only trigger with no follow-up: nothing else will
         // fire on a focused tab, so it asks across the schedule rather than
         // once. Browser events recur by nature and ask a single time.
-        const isStreaming = await probeChatIsStreaming({
+        isStreaming = await probeChatIsStreaming({
           sessionId,
           chatId,
           getAccessToken,
           delaysMs: opts?.isStreamEnd ? undefined : [0],
         });
+      } catch {
+        // Transient failure — the next event will try again.
+      } finally {
+        // Release before resuming. `resumeStream()` does not settle until the
+        // resumed stream *ends*, so holding the flag across it kept recovery
+        // blocked for the whole ~120s connection — the next stream end was
+        // swallowed and the turn truncated while the run was still alive
+        // (preview 9b445ed0, run 1).
+        isProbeInFlightRef.current = false;
+      }
+
+      try {
         if (isStreaming) {
           await resumeStream();
         } else if (opts?.isStreamEnd) {
@@ -109,8 +122,6 @@ export function useStreamRecovery({
         }
       } catch {
         // Transient failure — the next event will try again.
-      } finally {
-        isProbeInFlightRef.current = false;
       }
     })();
   };

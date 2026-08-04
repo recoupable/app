@@ -189,6 +189,29 @@ describe("useStreamRecovery", () => {
     expect(stop).not.toHaveBeenCalled();
   });
 
+  /**
+   * Caught on preview 9b445ed0: `resumeStream()` does not settle until the
+   * resumed stream ends, so holding the probe's in-flight flag across it
+   * blocked recovery for the whole ~120s connection. The next stream end was
+   * swallowed and the turn truncated while the run was still generating.
+   */
+  it("can recover again while an earlier resume is still streaming", async () => {
+    let settleResume: () => void = () => {};
+    const resumeStream = vi.fn(() => new Promise<void>(res => { settleResume = res; }));
+    const { result } = setupStreaming(resumeStream);
+
+    result.current();
+    await flush();
+    expect(resumeStream).toHaveBeenCalledTimes(1);
+
+    // The resumed stream is still open — a second stream end must still work.
+    result.current();
+    await flush();
+    expect(resumeStream).toHaveBeenCalledTimes(2);
+
+    settleResume();
+  });
+
   it("leaves a live stream alone", async () => {
     const resumeStream = vi.fn().mockResolvedValue(undefined);
     setup(resumeStream, "streaming");
