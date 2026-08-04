@@ -1,19 +1,13 @@
-import { useEffect, useRef } from "react";
-import {
-  shouldResumeStream,
-  MAX_CONSECUTIVE_RESUME_FAILURES,
-} from "@/lib/chat/shouldResumeStream";
+import { useCallback, useEffect, useRef } from "react";
+import { getStreamRecoveryDecision } from "@/lib/chat/getStreamRecoveryDecision";
 import { fetchChatIsStreaming } from "@/lib/chat/fetchChatIsStreaming";
-
-/** How often we ask the server whether this chat is still streaming. */
-const PROBE_INTERVAL_MS = 5_000;
 
 interface UseStreamRecoveryOptions {
   /** Session owning the chat — part of the probe URL. */
   sessionId?: string;
   /** Api-minted chat id to probe for. */
   chatId: string;
-  /** Current `useChat` status; `streaming` means chunks are arriving. */
+  /** Current `useChat` status. */
   status: string;
   /** `resumeStream` from `useChat`; reconnects to the run's stream. */
   resumeStream: () => Promise<void> | void;
@@ -22,20 +16,19 @@ interface UseStreamRecoveryOptions {
 }
 
 /**
- * Reconnect a chat turn whose stream dropped, by asking the server whether the
- * run is still going.
+ * Reconnect a chat whose stream dropped while the tab was away.
  *
- * A dropped stream and a finished one are indistinguishable from the client:
- * both end with `[DONE]` and no `finish` chunk, and `useChat` leaves
- * `streaming` either way. So this stops inferring from silence or status and
- * asks instead — `GET /api/sessions/{sessionId}/chats` already reports
- * `isStreaming` per chat and carries no message bodies — resuming only on a
- * `yes`.
+ * Ported from open-agents' `useStreamRecovery`
+ * (apps/web/app/sessions/[sessionId]/chats/[chatId]/hooks/use-stream-recovery.ts):
+ * recovery runs on browser events — visibilitychange, focus, online — and asks
+ * the server before reconnecting, since a cut-off stream and a finished one
+ * look identical from the client.
  *
- * That answer is what makes a single trigger affordable. `resumeStream()`
- * *opens a stream*, so it can never itself be the poll: attaching a cadence to
- * it produced 24 reconnects re-downloading 12,146 chunks for a ~4,000-chunk
- * turn (chat#1923).
+ * There is deliberately no polling and no stall timer. Upstream disables its
+ * stall path outright, and our interval version drove `resumeStream()` — which
+ * *opens a stream* — on a cadence, producing 16 reconnects for one turn
+ * (chat#1923). A stream that dies mid-turn on a focused tab is a server defect
+ * and is fixed there, not papered over here.
  */
 export function useStreamRecovery({
   sessionId,
@@ -44,73 +37,68 @@ export function useStreamRecovery({
   resumeStream,
   getAccessToken,
 }: UseStreamRecoveryOptions): void {
-  const lastAttemptAtRef = useRef(0);
-  const isAttemptInFlightRef = useRef(false);
-  const failuresRef = useRef(0);
+  const lastRecoveryAtRef = useRef(0);
+  const isProbeInFlightRef = useRef(false);
 
-  // Live values via a ref so the interval effect never re-registers.
-  const stateRef = useRef({ sessionId, chatId, status, resumeStream, getAccessToken });
-  stateRef.current = { sessionId, chatId, status, resumeStream, getAccessToken };
+  // Held in a ref so the listener effect never re-registers mid-stream.
+  const recoverRef = useRef<(opts?: { isVisibilityRecovery?: boolean }) => void>(
+    () => {},
+  );
+  recoverRef.current = (opts?: { isVisibilityRecovery?: boolean }) => {
+    if (!sessionId) return;
 
-  // A new turn clears the failure budget, so a previous dead run cannot
-  // suppress recovery for the next one.
-  useEffect(() => {
-    if (status === "submitted") {
-      failuresRef.current = 0;
-      lastAttemptAtRef.current = 0;
+    const now = Date.now();
+    const decision = getStreamRecoveryDecision({
+      now,
+      lastRecoveryAt: lastRecoveryAtRef.current,
+      status,
+      isProbeInFlight: isProbeInFlightRef.current,
+      isVisibilityRecovery: opts?.isVisibilityRecovery,
+    });
+    if (decision === "none") return;
+
+    lastRecoveryAtRef.current = now;
+
+    if (decision === "retry-error") {
+      void resumeStream();
+      return;
     }
-  }, [status]);
+
+    isProbeInFlightRef.current = true;
+    void (async () => {
+      try {
+        const isStreaming = await fetchChatIsStreaming({
+          sessionId,
+          chatId,
+          getAccessToken,
+        });
+        if (isStreaming) await resumeStream();
+      } catch {
+        // Transient failure — the next event will try again.
+      } finally {
+        isProbeInFlightRef.current = false;
+      }
+    })();
+  };
+
+  const recover = useCallback(() => recoverRef.current(), []);
+  const recoverOnVisibility = useCallback(
+    () => recoverRef.current({ isVisibilityRecovery: true }),
+    [],
+  );
 
   useEffect(() => {
-    const tick = async () => {
-      const { sessionId: sid, chatId: cid, status: st, resumeStream: resume } = stateRef.current;
-      if (!sid) return;
-
-      // Cheap local rejections first — never spend a probe when the answer
-      // cannot change the outcome.
-      if (
-        isAttemptInFlightRef.current ||
-        st === "streaming" ||
-        failuresRef.current >= MAX_CONSECUTIVE_RESUME_FAILURES
-      ) {
-        return;
-      }
-
-      const isStreamingOnServer = await fetchChatIsStreaming({
-        sessionId: sid,
-        chatId: cid,
-        getAccessToken: stateRef.current.getAccessToken,
-      });
-      // A failed probe is not a failed resume — try again next tick rather
-      // than spending the failure budget on it.
-      if (isStreamingOnServer === null) return;
-
-      if (
-        !shouldResumeStream({
-          now: Date.now(),
-          isStreamingOnServer,
-          isReceiving: st === "streaming",
-          lastAttemptAt: lastAttemptAtRef.current,
-          isAttemptInFlight: isAttemptInFlightRef.current,
-          consecutiveFailures: failuresRef.current,
-        })
-      ) {
-        return;
-      }
-
-      lastAttemptAtRef.current = Date.now();
-      isAttemptInFlightRef.current = true;
-      try {
-        await resume();
-        failuresRef.current = 0;
-      } catch {
-        failuresRef.current += 1;
-      } finally {
-        isAttemptInFlightRef.current = false;
-      }
+    const onVisible = () => {
+      if (document.visibilityState === "visible") recoverOnVisibility();
     };
 
-    const interval = setInterval(() => void tick(), PROBE_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, []);
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", recoverOnVisibility);
+    window.addEventListener("online", recover);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", recoverOnVisibility);
+      window.removeEventListener("online", recover);
+    };
+  }, [recover, recoverOnVisibility]);
 }
