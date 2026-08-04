@@ -18,8 +18,11 @@ interface UseChatTransportOptions {
    * Called when a response stream ends. Read through a ref so recovery — which
    * needs `resumeStream` from the `useChat` this transport is passed to — can
    * be attached after the transport is built.
+   *
+   * Optional: transports for one-shot turns (`useFirstTaskReport`) have no
+   * recovery to drive.
    */
-  onStreamEndRef: { current: () => void };
+  onStreamEndRef?: { current: () => void };
 }
 
 /**
@@ -82,7 +85,7 @@ export function useChatTransport({
           onPosition: (index) => {
             lastChunkIndexRef.current = index;
           },
-          onStreamEnd: () => onStreamEndRef.current(),
+          onStreamEnd: () => onStreamEndRef?.current(),
         }),
         // Reconnect hits recoup-api's resume route, which is authenticated
         // like every other endpoint. Without this the reconnect 401s and a
