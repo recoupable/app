@@ -26,7 +26,6 @@ import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { getChatPath } from "@/lib/chat/getChatPath";
 import { useInitialMessageAutoSend } from "./useInitialMessageAutoSend";
 import { usePersistSelectedModel } from "./usePersistSelectedModel";
-import { useStreamRecovery } from "./useStreamRecovery";
 
 interface UseVercelChatProps {
   id: string;
@@ -233,13 +232,10 @@ export function useVercelChat({
       },
     });
 
-  // A long turn's SSE stream can end before the run does (chat#1923). Watch
-  // for silence on an in-flight turn and reconnect via the resume route.
-  useStreamRecovery({
-    status,
-    activityMarker: messages,
-    resumeStream,
-  });
+  // Reconnection through a dropped stream is the transport's job now — see
+  // `createWorkflowChatTransport`. A long turn's stream ends at the ~120s
+  // connection cap (chat#1928); the transport notices the missing `finish`
+  // chunk and resumes from its own chunk count without a hook involved.
 
   const earliestFailedUserMessageId = useMemo(
     () => getEarliestFailedUserMessageId(messages),
