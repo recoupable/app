@@ -29,6 +29,19 @@ describe("useStreamRecovery", () => {
       }),
     );
 
+  const setupWithStatus = (resumeStream: () => Promise<void>) =>
+    renderHook(
+      ({ status }: { status: string }) =>
+        useStreamRecovery({
+          sessionId: "session-1",
+          chatId: "chat-1",
+          status,
+          resumeStream,
+          getAccessToken: async () => "token",
+        }),
+      { initialProps: { status: "streaming" } },
+    );
+
   it("probes and reconnects when the tab regains focus", async () => {
     const resumeStream = vi.fn().mockResolvedValue(undefined);
     setup(resumeStream);
@@ -77,6 +90,35 @@ describe("useStreamRecovery", () => {
     await flush();
 
     expect(resumeStream).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * The trigger the other two could not cover. A connection to the workflow
+   * stream is capped at ~120s and ends with a clean `[DONE]`, identical to a
+   * finished turn (chat#1928) — so every stream end is a question, and a
+   * focused tab fires no visibility/focus event to ask it.
+   */
+  it("probes and reconnects when the stream ends while the run is still live", async () => {
+    const resumeStream = vi.fn().mockResolvedValue(undefined);
+    const { rerender } = setupWithStatus(resumeStream);
+
+    rerender({ status: "ready" });
+    await flush();
+
+    expect(isStreaming).toHaveBeenCalledTimes(1);
+    expect(resumeStream).toHaveBeenCalledTimes(1);
+  });
+
+  it("accepts the turn as finished when the stream ends and the run is done", async () => {
+    const resumeStream = vi.fn().mockResolvedValue(undefined);
+    isStreaming.mockResolvedValue(false);
+    const { rerender } = setupWithStatus(resumeStream);
+
+    rerender({ status: "ready" });
+    await flush();
+
+    expect(isStreaming).toHaveBeenCalledTimes(1);
+    expect(resumeStream).not.toHaveBeenCalled();
   });
 
   it("leaves a live stream alone", async () => {

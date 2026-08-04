@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
+/** Statuses that mean chunks are, or are about to be, arriving. */
+const IN_FLIGHT = new Set(["streaming", "submitted"]);
 import { getStreamRecoveryDecision } from "@/lib/chat/getStreamRecoveryDecision";
 import { fetchChatIsStreaming } from "@/lib/chat/fetchChatIsStreaming";
 
@@ -41,10 +43,13 @@ export function useStreamRecovery({
   const isProbeInFlightRef = useRef(false);
 
   // Held in a ref so the listener effect never re-registers mid-stream.
-  const recoverRef = useRef<(opts?: { isVisibilityRecovery?: boolean }) => void>(
-    () => {},
-  );
-  recoverRef.current = (opts?: { isVisibilityRecovery?: boolean }) => {
+  const recoverRef = useRef<
+    (opts?: { isVisibilityRecovery?: boolean; isStreamEnd?: boolean }) => void
+  >(() => {});
+  recoverRef.current = (opts?: {
+    isVisibilityRecovery?: boolean;
+    isStreamEnd?: boolean;
+  }) => {
     if (!sessionId) return;
 
     const now = Date.now();
@@ -54,6 +59,7 @@ export function useStreamRecovery({
       status,
       isProbeInFlight: isProbeInFlightRef.current,
       isVisibilityRecovery: opts?.isVisibilityRecovery,
+      isStreamEnd: opts?.isStreamEnd,
     });
     if (decision === "none") return;
 
@@ -80,6 +86,19 @@ export function useStreamRecovery({
       }
     })();
   };
+
+  // Stream-end trigger. A connection to the workflow stream is capped at
+  // ~120 s and ends with a clean `[DONE]` — byte-identical to a finished turn
+  // (chat#1928) — so the end of a stream is a question, not an answer. The
+  // browser events below never fire for someone sitting on the tab, which is
+  // exactly when a long turn goes quiet, so this is the trigger that covers it.
+  // It fires once per connection (~1 per 2 min), bounded by the cap itself.
+  const wasInFlightRef = useRef(IN_FLIGHT.has(status));
+  useEffect(() => {
+    const wasInFlight = wasInFlightRef.current;
+    wasInFlightRef.current = IN_FLIGHT.has(status);
+    if (wasInFlight && !IN_FLIGHT.has(status)) recoverRef.current({ isStreamEnd: true });
+  }, [status]);
 
   const recover = useCallback(() => recoverRef.current(), []);
   const recoverOnVisibility = useCallback(

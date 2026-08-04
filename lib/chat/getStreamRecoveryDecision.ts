@@ -14,6 +14,8 @@ export type StreamRecoveryInput = {
   isProbeInFlight: boolean;
   /** True when called from a visibilitychange or focus event. */
   isVisibilityRecovery?: boolean;
+  /** True when the chat's stream just ended. */
+  isStreamEnd?: boolean;
 };
 
 /**
@@ -38,7 +40,13 @@ export function getStreamRecoveryDecision({
   status,
   isProbeInFlight,
   isVisibilityRecovery = false,
+  isStreamEnd = false,
 }: StreamRecoveryInput): StreamRecoveryDecision {
+  // A stream end is the one moment we know something changed, and the cap that
+  // causes it (~120s, chat#1928) already rate-limits it — so it is not subject
+  // to the interval, which exists to collapse bursts of browser events.
+  if (isStreamEnd) return isProbeInFlight ? "none" : "probe";
+
   if (now - lastRecoveryAt < STREAM_RECOVERY_MIN_INTERVAL_MS) return "none";
 
   if (status === "error") return "retry-error";
