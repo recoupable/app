@@ -17,7 +17,10 @@ const useArtists = () => {
   const { selectedOrgId } = useOrganization();
   const { getAccessToken } = usePrivy();
   const [updating, setUpdating] = useState(false);
-  const [menuVisibleArtistId, setMenuVisibleArtistId] = useState<any>("");
+  // `null` is the closed state; callers set it to the artist id to open a menu.
+  const [menuVisibleArtistId, setMenuVisibleArtistId] = useState<string | null>(
+    null,
+  );
   const { isCreatingArtist, setIsCreatingArtist, updateChatState } =
     useCreateArtists();
   const loading = artistSetting.imageUploading || updating;

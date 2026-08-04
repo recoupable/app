@@ -20,7 +20,7 @@ const Artist = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDropDown = (e: any) => {
     e.preventDefault();
-    setMenuVisibleArtistId(artist.id);
+    setMenuVisibleArtistId(artist.id ?? null);
   };
 
   return (

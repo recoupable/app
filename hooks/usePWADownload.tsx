@@ -16,7 +16,8 @@ const usePWADownload = () => {
     const response = /Android/i.test(navigator.userAgent);
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
-      (window.navigator as any).standalone;
+      // `standalone` is a non-standard Safari/iOS flag, absent from lib.dom.
+      (window.navigator as Navigator & { standalone?: boolean }).standalone;
 
     if (!isStandalone && response) {
       setShowModal(true);
