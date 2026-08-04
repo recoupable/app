@@ -12,6 +12,11 @@ interface UseStreamRecoveryOptions {
   status: string;
   /** `resumeStream` from `useChat`; reconnects to the run's stream. */
   resumeStream: () => Promise<void> | void;
+  /**
+   * `stop` from `useChat` — local only, it aborts the transport and settles
+   * status. Used to end a turn the server no longer has a run for.
+   */
+  stop: () => void;
 }
 
 /**
@@ -40,6 +45,7 @@ export function useStreamRecovery({
   chatId,
   status,
   resumeStream,
+  stop,
 }: UseStreamRecoveryOptions): () => void {
   // Auth comes from the provider, like every other hook here; only
   // instance-scoped values are passed in.
@@ -87,7 +93,20 @@ export function useStreamRecovery({
           getAccessToken,
           delaysMs: opts?.isStreamEnd ? undefined : [0],
         });
-        if (isStreaming) await resumeStream();
+        if (isStreaming) {
+          await resumeStream();
+        } else if (opts?.isStreamEnd) {
+          // The stream closed and the run is gone, so no `finish` chunk is
+          // ever coming: once a run is terminal the resume route 204s and
+          // clears the slot, making that chunk unreachable. Settle the turn
+          // rather than leaving `useChat` in-flight with a stop control
+          // forever (the stall observed on preview 7f504929).
+          //
+          // Only on a stream end, and only after the full probe schedule has
+          // said no — ending a turn that is still generating would turn a
+          // stall into silent truncation, which reads as a complete answer.
+          stop();
+        }
       } catch {
         // Transient failure — the next event will try again.
       } finally {

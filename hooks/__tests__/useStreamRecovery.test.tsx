@@ -21,23 +21,25 @@ describe("useStreamRecovery", () => {
   });
   afterEach(() => vi.useRealTimers());
 
-  const setup = (resumeStream: () => Promise<void>, status = "ready") =>
+  const setup = (resumeStream: () => Promise<void>, status = "ready", stop = vi.fn()) =>
     renderHook(() =>
       useStreamRecovery({
         sessionId: "session-1",
         chatId: "chat-1",
         status,
         resumeStream,
+        stop,
       }),
     );
 
-  const setupStreaming = (resumeStream: () => Promise<void>) =>
+  const setupStreaming = (resumeStream: () => Promise<void>, stop = vi.fn()) =>
     renderHook(() =>
       useStreamRecovery({
         sessionId: "session-1",
         chatId: "chat-1",
         status: "streaming",
         resumeStream,
+        stop,
       }),
     );
 
@@ -135,6 +137,56 @@ describe("useStreamRecovery", () => {
 
     expect(isStreaming).toHaveBeenCalledTimes(1);
     expect(resumeStream).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The stall this PR exists to end. A run can finish — or be killed — without
+   * the client ever receiving a `finish` chunk, and once the run is terminal
+   * the resume route 204s, so that chunk is unreachable forever. Without a
+   * terminal state `useChat` stays in-flight and the composer keeps a stop
+   * control indefinitely (observed on preview 7f504929).
+   */
+  it("ends the turn when the stream closed and the run is gone", async () => {
+    const resumeStream = vi.fn().mockResolvedValue(undefined);
+    const stop = vi.fn();
+    isStreaming.mockResolvedValue(false);
+    const { result } = setupStreaming(resumeStream, stop);
+
+    result.current();
+    await flush();
+
+    expect(resumeStream).not.toHaveBeenCalled();
+    expect(stop).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * The failure mode this trigger could introduce if it fired too eagerly:
+   * ending a turn that is still generating turns a stall into silent
+   * truncation, which is worse because it looks like a complete answer.
+   */
+  it("never ends a turn while the server still reports it streaming", async () => {
+    const resumeStream = vi.fn().mockResolvedValue(undefined);
+    const stop = vi.fn();
+    isStreaming.mockResolvedValue(true);
+    const { result } = setupStreaming(resumeStream, stop);
+
+    result.current();
+    await flush();
+
+    expect(resumeStream).toHaveBeenCalledTimes(1);
+    expect(stop).not.toHaveBeenCalled();
+  });
+
+  it("does not end the turn from a browser event", async () => {
+    const resumeStream = vi.fn().mockResolvedValue(undefined);
+    const stop = vi.fn();
+    isStreaming.mockResolvedValue(false);
+    setup(resumeStream, "ready", stop);
+
+    window.dispatchEvent(new Event("focus"));
+    await flush();
+
+    expect(stop).not.toHaveBeenCalled();
   });
 
   it("leaves a live stream alone", async () => {
