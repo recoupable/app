@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 import { getStreamRecoveryDecision } from "@/lib/chat/getStreamRecoveryDecision";
 import { probeChatIsStreaming } from "@/lib/chat/probeChatIsStreaming";
 
@@ -11,8 +12,6 @@ interface UseStreamRecoveryOptions {
   status: string;
   /** `resumeStream` from `useChat`; reconnects to the run's stream. */
   resumeStream: () => Promise<void> | void;
-  /** Bearer token for the probe — same auth as every other call. */
-  getAccessToken: () => Promise<string | null>;
 }
 
 /**
@@ -41,8 +40,10 @@ export function useStreamRecovery({
   chatId,
   status,
   resumeStream,
-  getAccessToken,
 }: UseStreamRecoveryOptions): () => void {
+  // Auth comes from the provider, like every other hook here; only
+  // instance-scoped values are passed in.
+  const { getAccessToken } = usePrivy();
   const lastRecoveryAtRef = useRef(0);
   const isProbeInFlightRef = useRef(false);
 

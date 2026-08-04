@@ -1,4 +1,5 @@
 import { fetchChatIsStreaming } from "@/lib/chat/fetchChatIsStreaming";
+import { wait } from "@/lib/async/wait";
 
 /**
  * When to ask, in ms from the first attempt. Mirrors upstream open-agents'
@@ -14,8 +15,6 @@ interface ProbeChatIsStreamingOptions {
   /** Override the schedule; `[0]` asks exactly once. */
   delaysMs?: number[];
 }
-
-const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
  * Ask whether a chat's run is still going, and don't take the first no for an

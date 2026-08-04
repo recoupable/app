@@ -246,7 +246,6 @@ export function useVercelChat({
     chatId: transportChatId,
     status,
     resumeStream,
-    getAccessToken,
   });
 
   const earliestFailedUserMessageId = useMemo(

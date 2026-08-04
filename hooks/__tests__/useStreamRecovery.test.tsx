@@ -7,6 +7,9 @@ const isStreaming = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/chat/probeChatIsStreaming", () => ({
   probeChatIsStreaming: isStreaming,
 }));
+vi.mock("@privy-io/react-auth", () => ({
+  usePrivy: () => ({ getAccessToken: async () => "token" }),
+}));
 
 const flush = () => vi.advanceTimersByTimeAsync(0);
 
@@ -25,7 +28,6 @@ describe("useStreamRecovery", () => {
         chatId: "chat-1",
         status,
         resumeStream,
-        getAccessToken: async () => "token",
       }),
     );
 
@@ -36,7 +38,6 @@ describe("useStreamRecovery", () => {
         chatId: "chat-1",
         status: "streaming",
         resumeStream,
-        getAccessToken: async () => "token",
       }),
     );
 
