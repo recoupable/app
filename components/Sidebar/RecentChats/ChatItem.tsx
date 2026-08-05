@@ -14,7 +14,7 @@ type ChatItemProps = {
   isSelected?: boolean;
   isSelectionMode?: boolean;
   isShiftPressed?: boolean;
-  menuRef: RefObject<HTMLDivElement> | null;
+  menuRef: RefObject<HTMLDivElement | null> | null;
   setButtonRef: (el: HTMLButtonElement | null) => void;
   onMouseEnter: () => void;
   onMouseLeave: () => void;

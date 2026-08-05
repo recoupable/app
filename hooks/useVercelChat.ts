@@ -66,7 +66,7 @@ export function useVercelChat({
 
   const userId = userData?.account_id || userData?.id; // Use account_id if available, fallback to id
   const artistId = selectedArtist?.account_id;
-  const messagesLengthRef = useRef<number>();
+  const messagesLengthRef = useRef<number | undefined>(undefined);
   const { addOptimisticConversation } = useConversationsProvider();
   const { data: availableModels = [] } = useAvailableModels();
   const [input, setInput] = useState("");
