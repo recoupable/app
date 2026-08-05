@@ -44,24 +44,10 @@ const nextConfig = {
     ],
   },
   images: {
-    domains: [
-      "i.imgur.com",
-      "ipfs.decentralized-content.com",
-      "pbs.twimg.com", // Twitter profile images
-      "abs.twimg.com", // Twitter media
-      "cdn.discordapp.com", // Discord
-      "scontent.xx.fbcdn.net", // Facebook
-      "scontent.cdninstagram.com", // Instagram
-      "instagram.fyvr4-1.fna.fbcdn.net", // Instagram
-      "platform-lookaside.fbsbx.com", // Facebook
-      "static-cdn.jtvnw.net", // Twitch
-      "yt3.ggpht.com", // YouTube
-      "i.ytimg.com", // YouTube
-      "avatars.githubusercontent.com", // GitHub
-      "example.com", // Example domain from our mock data
-      "arweave.net", // Arweave
-      "storage.googleapis.com", // Fal AI image hosting (backup)
-    ],
+    // `images.domains` was deprecated in Next 16 in favour of `remotePatterns`,
+    // which scopes each host by protocol and path instead of trusting it over
+    // any scheme. Every former `domains` entry is listed here; the set of hosts
+    // we will load images from is unchanged.
     remotePatterns: [
       {
         protocol: 'https',
@@ -81,6 +67,28 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      // Migrated from `images.domains`.
+      { protocol: 'https', hostname: 'i.imgur.com', port: '', pathname: '/**' },
+      // Twitter profile images + media
+      { protocol: 'https', hostname: 'pbs.twimg.com', port: '', pathname: '/**' },
+      { protocol: 'https', hostname: 'abs.twimg.com', port: '', pathname: '/**' },
+      // Discord
+      { protocol: 'https', hostname: 'cdn.discordapp.com', port: '', pathname: '/**' },
+      // Facebook
+      { protocol: 'https', hostname: 'scontent.xx.fbcdn.net', port: '', pathname: '/**' },
+      { protocol: 'https', hostname: 'platform-lookaside.fbsbx.com', port: '', pathname: '/**' },
+      // Instagram
+      { protocol: 'https', hostname: 'scontent.cdninstagram.com', port: '', pathname: '/**' },
+      { protocol: 'https', hostname: 'instagram.fyvr4-1.fna.fbcdn.net', port: '', pathname: '/**' },
+      // Twitch
+      { protocol: 'https', hostname: 'static-cdn.jtvnw.net', port: '', pathname: '/**' },
+      // YouTube
+      { protocol: 'https', hostname: 'yt3.ggpht.com', port: '', pathname: '/**' },
+      { protocol: 'https', hostname: 'i.ytimg.com', port: '', pathname: '/**' },
+      // GitHub
+      { protocol: 'https', hostname: 'avatars.githubusercontent.com', port: '', pathname: '/**' },
+      // Fal AI image hosting (backup)
+      { protocol: 'https', hostname: 'storage.googleapis.com', port: '', pathname: '/**' },
     ],
   },
 };
