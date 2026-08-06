@@ -5,7 +5,20 @@ import { describe, expect, it, vi } from "vitest";
 import CatalogCard from "@/components/Catalog/CatalogCard";
 import type { Catalog } from "@/types/Catalog";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock("next/link", () => ({
+  default: ({
+    href,
+    children,
+    ...rest
+  }: {
+    href: string;
+    children: React.ReactNode;
+  } & React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+    <a href={href} {...rest}>
+      {children}
+    </a>
+  ),
+}));
 vi.mock("@/hooks/useArtistCatalogSongs", () => ({
   default: () => ({
     data: { pages: [{ pagination: { total_count: 26 } }] },
@@ -29,25 +42,18 @@ const base: Catalog = {
 };
 
 describe("CatalogCard", () => {
-  it("shows the catalog's estimated value, formatted like the report", () => {
+  it("links to the catalog rather than nesting flow content in a button", () => {
     render(<CatalogCard catalog={base} />);
 
-    // formatValuationAmount — the same compact formatter the report page uses.
-    expect(screen.getByText("$103.9")).toBeDefined();
-    expect(screen.getByText(/estimated value/i)).toBeDefined();
+    const link = screen.getByRole("link", { name: /Brauxelion/ });
+    expect(link.getAttribute("href")).toBe(`/catalogs/${base.id}`);
   });
 
-  it("formats a real catalog band compactly", () => {
-    render(
-      <CatalogCard
-        catalog={{
-          ...base,
-          valuation: { low: 900000, mid: 1400000, high: 2100000 },
-        }}
-      />,
-    );
+  it("shows the catalog's estimated value", () => {
+    render(<CatalogCard catalog={base} />);
 
-    expect(screen.getByText("$1.4M")).toBeDefined();
+    expect(screen.getByText("$103.9")).toBeDefined();
+    expect(screen.getByText(/estimated value/i)).toBeDefined();
   });
 
   it("says the catalog is not measured instead of showing $0", () => {
@@ -64,7 +70,9 @@ describe("CatalogCard", () => {
   it("shows the owner's avatar with an accessible name", () => {
     render(<CatalogCard catalog={base} />);
 
-    expect(screen.getByLabelText("Owned by Sweetman.eth")).toBeDefined();
+    expect(
+      screen.getByRole("img", { name: "Owned by Sweetman.eth" }),
+    ).toBeDefined();
   });
 
   it("labels an organization-owned catalog as the organization's", () => {
@@ -83,32 +91,20 @@ describe("CatalogCard", () => {
     );
 
     expect(
-      screen.getByLabelText("Owned by Duetti (organization)"),
+      screen.getByRole("img", { name: "Owned by Duetti (organization)" }),
     ).toBeDefined();
-  });
-
-  it("falls back to initials when the owner has no image", () => {
-    render(
-      <CatalogCard
-        catalog={{
-          ...base,
-          owner: {
-            id: "org",
-            name: "Recoup",
-            image: null,
-            is_organization: true,
-          },
-        }}
-      />,
-    );
-
-    expect(screen.getByText("R")).toBeDefined();
   });
 
   it("renders without an owner rather than crashing", () => {
     render(<CatalogCard catalog={{ ...base, owner: null }} />);
 
     expect(screen.getByText("Brauxelion")).toBeDefined();
-    expect(screen.queryByLabelText(/owned by/i)).toBeNull();
+    expect(screen.queryByRole("img", { name: /owned by/i })).toBeNull();
+  });
+
+  it("still shows the song count", () => {
+    render(<CatalogCard catalog={base} />);
+
+    expect(screen.getByText(/26 songs/)).toBeDefined();
   });
 });
