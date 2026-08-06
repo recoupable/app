@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { parseCsvFile } from "@/lib/catalog/parseCsvFile";
 import { uploadBatchSongs } from "@/lib/catalog/uploadBatchSongs";
 import { CatalogSongsResponse } from "@/lib/catalog/getCatalogSongs";
+import { usePrivy } from "@privy-io/react-auth";
 
 export interface UploadResult {
   success: boolean;
@@ -13,6 +14,7 @@ export interface UploadResult {
 }
 
 export function useCatalogSongsFileSelect(catalogId?: string) {
+  const { getAccessToken } = usePrivy();
   const [uploadProgress, setUploadProgress] = useState({
     current: 0,
     total: 0,
@@ -31,9 +33,18 @@ export function useCatalogSongsFileSelect(catalogId?: string) {
         throw new Error("No valid songs found in CSV file");
       }
 
-      const response = await uploadBatchSongs(songs, (current, total) => {
-        setUploadProgress({ current, total });
-      });
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        throw new Error("Not authenticated");
+      }
+
+      const response = await uploadBatchSongs(
+        accessToken,
+        songs,
+        (current, total) => {
+          setUploadProgress({ current, total });
+        },
+      );
 
       setUploadProgress({ current: 0, total: 0 });
 
