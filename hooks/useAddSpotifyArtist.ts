@@ -26,6 +26,11 @@ import type { SpotifyArtistSearchResult } from "@/types/spotify";
  * fire-and-forget kicks `POST /api/valuation` for that artist's Spotify id —
  * seeding the onboarding catalog in the background so the "Claim your catalog"
  * step is already complete by the time the user reaches it (chat#1867).
+ *
+ * The selected organization owns both the artist and that seeded catalog. The
+ * artist already followed the org; the catalog did not, so a catalog created
+ * while working inside an org was owned by the user and stayed out of the org's
+ * catalogs for every other member (chat#1943).
  */
 export function useAddSpotifyArtist() {
   const { getAccessToken } = usePrivy();
@@ -57,7 +62,7 @@ export function useAddSpotifyArtist() {
       const catalogs = catalogsQuery.data?.catalogs;
       if (catalogs && catalogs.length === 0) {
         toast.promise(
-          runValuation(accessToken, artist.id).then(() => {
+          runValuation(accessToken, artist.id, selectedOrgId).then(() => {
             queryClient.invalidateQueries({ queryKey: ["catalogs"] });
           }),
           {

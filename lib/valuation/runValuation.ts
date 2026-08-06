@@ -8,10 +8,15 @@ import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
  *
  * @param accessToken - Privy bearer for the owning account.
  * @param spotifyArtistId - The Spotify artist id to value.
+ * @param organizationId - Organization to own the resulting catalog, or `null`
+ *   on the personal account. Without it the catalog is owned by the caller even
+ *   when they are working inside an org, so it never appears in that org's
+ *   catalogs (chat#1943). The api authorizes membership and 403s a non-member.
  */
 export async function runValuation(
   accessToken: string,
   spotifyArtistId: string,
+  organizationId?: string | null,
 ): Promise<void> {
   const res = await fetch(`${getClientApiBaseUrl()}/api/valuation`, {
     method: "POST",
@@ -19,7 +24,10 @@ export async function runValuation(
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     },
-    body: JSON.stringify({ spotify_artist_id: spotifyArtistId }),
+    body: JSON.stringify({
+      spotify_artist_id: spotifyArtistId,
+      ...(organizationId ? { organization_id: organizationId } : {}),
+    }),
   });
 
   if (!res.ok) {
