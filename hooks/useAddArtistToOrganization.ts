@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
 interface UseAddArtistToOrganizationOptions {
@@ -10,19 +11,28 @@ interface UseAddArtistToOrganizationOptions {
  * Manages loading state and API call.
  */
 const useAddArtistToOrganization = (options?: UseAddArtistToOrganizationOptions) => {
+  const { getAccessToken } = usePrivy();
   const [addingToOrgId, setAddingToOrgId] = useState<string | null>(null);
 
   const addArtistToOrganization = useCallback(
     async (artistId: string, organizationId: string) => {
       setAddingToOrgId(organizationId);
       try {
+        const accessToken = await getAccessToken();
+        if (!accessToken) {
+          return false;
+        }
+
         const response = await fetch(`${getClientApiBaseUrl()}/api/organizations/artists`, {
           method: "POST",
           body: JSON.stringify({
             artistId,
             organizationId,
           }),
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
         });
 
         if (response.ok) {
@@ -34,7 +44,7 @@ const useAddArtistToOrganization = (options?: UseAddArtistToOrganizationOptions)
         setAddingToOrgId(null);
       }
     },
-    [options]
+    [options, getAccessToken]
   );
 
   return {

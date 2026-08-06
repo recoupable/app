@@ -4,6 +4,7 @@ import { CatalogSong } from "./getCatalogSongs";
 const BATCH_SIZE = 1000;
 
 export const uploadBatchSongs = async (
+  accessToken: string,
   songs: CatalogSongInput[],
   onProgress?: (current: number, total: number) => void,
 ) => {
@@ -16,7 +17,7 @@ export const uploadBatchSongs = async (
   for (let i = 0; i < batches.length; i++) {
     const batch = batches[i];
     onProgress?.(i + 1, batches.length);
-    const response = await postCatalogSongs(batch);
+    const response = await postCatalogSongs(accessToken, batch);
     allSongs = [...allSongs, ...response.songs];
   }
 

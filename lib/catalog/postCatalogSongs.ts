@@ -15,6 +15,7 @@ export interface CatalogSongInput {
  * Adds songs to a catalog by ISRC in batch
  */
 export async function postCatalogSongs(
+  accessToken: string,
   songs: CatalogSongInput[],
 ): Promise<CatalogSongsResponse> {
   try {
@@ -24,6 +25,7 @@ export async function postCatalogSongs(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({ songs }),
       },

@@ -26,6 +26,7 @@ export interface CatalogSongsResponse {
 }
 
 export async function getCatalogSongs(
+  accessToken: string,
   catalogId: string,
   pageSize: number = 100,
   page: number = 1,
@@ -48,6 +49,7 @@ export async function getCatalogSongs(
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
       },
     );
