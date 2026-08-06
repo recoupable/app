@@ -9,7 +9,11 @@ const DUETTI = "5d511b7e-de11-4566-ae90-b5fd5535d900";
 const RECOUP = "04e3aba9-c130-4fb8-8b92-34e95d43e66b";
 const SWEETS = "fb678396-a68f-4294-ae50-b8cacf9ce77b";
 
-const state = vi.hoisted(() => ({ selectedOrgId: null as string | null }));
+const state = vi.hoisted(() => ({
+  selectedOrgId: null as string | null,
+  isLoading: false,
+  error: null as Error | null,
+}));
 
 vi.mock("@/providers/OrganizationProvider", () => ({
   useOrganization: () => ({ selectedOrgId: state.selectedOrgId }),
@@ -50,14 +54,16 @@ const catalogs = [
 vi.mock("@/hooks/useCatalogs", () => ({
   default: () => ({
     data: { status: "success", catalogs },
-    isLoading: false,
-    error: null,
+    isLoading: state.isLoading,
+    error: state.error,
   }),
 }));
 
 describe("CatalogsPageContent", () => {
   beforeEach(() => {
     state.selectedOrgId = null;
+    state.isLoading = false;
+    state.error = null;
   });
 
   it("shows every catalog the account can see on the personal account", () => {
@@ -83,5 +89,37 @@ describe("CatalogsPageContent", () => {
 
     expect(screen.getByText("No catalogs in Recoup yet.")).toBeDefined();
     expect(screen.queryByText("Collie Buddz")).toBeNull();
+  });
+
+  it("shows everything when the stored selection is an org this account left", () => {
+    // selectedOrgId is persisted, so it survives an account switch. Scoping to
+    // it would empty the page and name an organization the viewer cannot see.
+    state.selectedOrgId = "an-org-from-a-previous-account";
+
+    render(<CatalogsPageContent />);
+
+    expect(screen.getByText("Collie Buddz")).toBeDefined();
+    expect(screen.getByText("Kevin Gates")).toBeDefined();
+    expect(screen.queryByText(/No catalogs in/)).toBeNull();
+  });
+
+  it("renders skeletons while the catalogs are loading, whatever the org", () => {
+    state.selectedOrgId = DUETTI;
+    state.isLoading = true;
+
+    render(<CatalogsPageContent />);
+
+    expect(screen.queryByText("Kevin Gates")).toBeNull();
+    expect(screen.queryByText(/No catalogs/)).toBeNull();
+  });
+
+  it("surfaces a load failure instead of an empty organization", () => {
+    state.selectedOrgId = DUETTI;
+    state.error = new Error("Failed to fetch");
+
+    render(<CatalogsPageContent />);
+
+    expect(screen.getByText("Failed to fetch")).toBeDefined();
+    expect(screen.queryByText(/No catalogs in/)).toBeNull();
   });
 });

@@ -20,14 +20,18 @@ describe("measuringCopy", () => {
   });
 
   it("is used by the catalog report's measuring state", () => {
-    const copy = getCatalogReportEmptyCopy("measuring", { hasOwnCatalogs: true });
+    const copy = getCatalogReportEmptyCopy("measuring", {
+      hasOwnCatalogs: true,
+    });
 
     expect(copy.title).toBe(MEASURING_TITLE);
     expect(copy.body).toContain(MEASURING_ESTIMATE);
   });
 
   it("keeps the report's own reassurance without restating the estimate", () => {
-    const copy = getCatalogReportEmptyCopy("measuring", { hasOwnCatalogs: true });
+    const copy = getCatalogReportEmptyCopy("measuring", {
+      hasOwnCatalogs: true,
+    });
 
     expect(copy.body).toContain("no need to run the valuation again");
     // The estimate must appear once in the sentence, not twice.
@@ -41,7 +45,9 @@ describe("measuringCopy", () => {
     const verb = MEASURING_TITLE.split(" ")[0];
 
     expect(verb).toBe("Measuring");
-    expect(measuringToastLoading("BennyJ504")).toBe(`${verb} BennyJ504's catalog…`);
+    expect(measuringToastLoading("BennyJ504")).toBe(
+      `${verb} BennyJ504's catalog…`,
+    );
   });
 
   it("states the toast outcomes", () => {
@@ -51,7 +57,13 @@ describe("measuringCopy", () => {
 
   // House style: em dashes read as machine-written in product copy.
   it("keeps the shared copy free of em dashes", () => {
-    const all = [MEASURING_TITLE, MEASURING_ESTIMATE, MEASURING_BODY, MEASURING_TOAST_SUCCESS, MEASURING_TOAST_ERROR].join(" ");
+    const all = [
+      MEASURING_TITLE,
+      MEASURING_ESTIMATE,
+      MEASURING_BODY,
+      MEASURING_TOAST_SUCCESS,
+      MEASURING_TOAST_ERROR,
+    ].join(" ");
     expect(all).not.toMatch(/[—–]/);
   });
 });

@@ -19,9 +19,9 @@ describe("getCatalogReportState", () => {
   // measurements", because the measurements query is gated on auth and never
   // runs — a disabled query is not a failure, and must not read as one.
   it("is signed-out for an anonymous visitor rather than an error", () => {
-    expect(
-      getCatalogReportState({ ...base, isAuthenticated: false }),
-    ).toBe("signed-out");
+    expect(getCatalogReportState({ ...base, isAuthenticated: false })).toBe(
+      "signed-out",
+    );
   });
 
   it("stays signed-out even though the disabled query left no error behind", () => {
