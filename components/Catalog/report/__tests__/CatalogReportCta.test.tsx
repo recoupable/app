@@ -19,7 +19,9 @@ vi.mock("next/link", () => ({
 describe("CatalogReportCta", () => {
   it("routes to the canonical /setup/tasks step, not a retired /onboarding mount", () => {
     render(<CatalogReportCta />);
-    const cta = screen.getByRole("link", { name: /set up your weekly report/i });
+    const cta = screen.getByRole("link", {
+      name: /set up your weekly report/i,
+    });
 
     // This CTA is the landing page for both the marketing valuation funnel and
     // the valuation email, so it must point at the canonical setup sequence
