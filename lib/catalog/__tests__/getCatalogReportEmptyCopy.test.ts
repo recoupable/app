@@ -53,7 +53,9 @@ describe("getCatalogReportEmptyCopy", () => {
   });
 
   it("offers no CTA while measuring, because there is nothing to do", () => {
-    expect(getCatalogReportEmptyCopy("measuring", withCatalogs).cta).toBeUndefined();
+    expect(
+      getCatalogReportEmptyCopy("measuring", withCatalogs).cta,
+    ).toBeUndefined();
   });
 
   // chat#1912 row 6 chain (recoupable/docs#282 -> recoupable/api#802): catalog
@@ -84,13 +86,19 @@ describe("getCatalogReportEmptyCopy", () => {
   });
 
   it("always gives the cross-account state something to click", () => {
-    expect(getCatalogReportEmptyCopy("other-account", withCatalogs).cta).toBeDefined();
-    expect(getCatalogReportEmptyCopy("other-account", withoutCatalogs).cta).toBeDefined();
+    expect(
+      getCatalogReportEmptyCopy("other-account", withCatalogs).cta,
+    ).toBeDefined();
+    expect(
+      getCatalogReportEmptyCopy("other-account", withoutCatalogs).cta,
+    ).toBeDefined();
   });
 
   // The measuring state resolves on its own, so a button would invite exactly
   // the redundant re-run this whole issue exists to stop.
   it("still offers nothing to click while measuring", () => {
-    expect(getCatalogReportEmptyCopy("measuring", withCatalogs).cta).toBeUndefined();
+    expect(
+      getCatalogReportEmptyCopy("measuring", withCatalogs).cta,
+    ).toBeUndefined();
   });
 });

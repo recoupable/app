@@ -4,11 +4,23 @@ import useCatalogs from "@/hooks/useCatalogs";
 import CatalogCard from "./CatalogCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserProvider } from "@/providers/UserProvder";
+import { useOrganization } from "@/providers/OrganizationProvider";
+import useAccountOrganizations from "@/hooks/useAccountOrganizations";
+import { filterCatalogsByOrg } from "@/lib/catalog/filterCatalogsByOrg";
+import { getCatalogsEmptyCopy } from "@/lib/catalog/getCatalogsEmptyCopy";
+import { resolveSelectedOrgId } from "@/lib/catalog/resolveSelectedOrgId";
 
 const CatalogsPageContent = () => {
   const { data, isLoading, error } = useCatalogs();
   const { userData } = useUserProvider();
+  const { selectedOrgId } = useOrganization();
+  const { data: organizations } = useAccountOrganizations();
   const accountId = userData?.account_id || "";
+
+  // The stored selection outlives the account that made it, so scope to it only
+  // while this account is actually a member — otherwise the page empties and
+  // names an organization the viewer cannot see.
+  const orgId = resolveSelectedOrgId(selectedOrgId, organizations);
 
   if (isLoading || !accountId) {
     return (
@@ -32,10 +44,21 @@ const CatalogsPageContent = () => {
     );
   }
 
-  const catalogs = data?.catalogs || [];
+  // Scoped here, not in `useCatalogs`: that hook is also the "does this account
+  // own a catalog" signal for onboarding and first-artist seeding, so an empty
+  // org must not read as an account with no catalogs (chat#1943).
+  const catalogs = filterCatalogsByOrg(data?.catalogs || [], orgId);
 
   if (!catalogs.length) {
-    return <p className="text-sm text-muted-foreground">No catalogs found.</p>;
+    const orgName = organizations?.find(
+      (organization) => organization.organization_id === orgId,
+    )?.organization_name;
+
+    return (
+      <p className="text-sm text-muted-foreground">
+        {getCatalogsEmptyCopy(orgId, orgName)}
+      </p>
+    );
   }
 
   return (
