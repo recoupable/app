@@ -7,7 +7,6 @@ describe("shouldResumeStream", () => {
       shouldResumeStream({
         authenticated: false,
         routeChatId: undefined,
-        workflowChatId: undefined,
       }),
     ).toBe(false);
   });
@@ -19,7 +18,21 @@ describe("shouldResumeStream", () => {
       shouldResumeStream({
         authenticated: true,
         routeChatId: undefined,
-        workflowChatId: undefined,
+      }),
+    ).toBe(false);
+  });
+
+  it("does not resume a freshly bootstrapped chat", () => {
+    // Verified on the preview deployment: gating on the bootstrap-minted id
+    // made `resume` flip false -> true once provisioning resolved, and
+    // `WorkflowChatTransport`'s `while (!gotFinish)` loop then reissued the
+    // resume GET 118 times against a brand-new chat that returns 204. A chat
+    // created seconds ago has no in-flight turn to re-attach to, so the
+    // bootstrap id is deliberately not an input to this decision.
+    expect(
+      shouldResumeStream({
+        authenticated: true,
+        routeChatId: undefined,
       }),
     ).toBe(false);
   });
@@ -31,27 +44,17 @@ describe("shouldResumeStream", () => {
       shouldResumeStream({
         authenticated: false,
         routeChatId: "5c7f1e0a-1111-2222-3333-444455556666",
-        workflowChatId: undefined,
       }),
     ).toBe(false);
   });
 
   it("resumes an existing chat opened from the canonical session route", () => {
+    // The only case a resume is for: you navigated back to a chat that may
+    // still be mid-turn.
     expect(
       shouldResumeStream({
         authenticated: true,
         routeChatId: "5c7f1e0a-1111-2222-3333-444455556666",
-        workflowChatId: undefined,
-      }),
-    ).toBe(true);
-  });
-
-  it("resumes once bootstrap mints a real chat id", () => {
-    expect(
-      shouldResumeStream({
-        authenticated: true,
-        routeChatId: undefined,
-        workflowChatId: "9a8b7c6d-0000-1111-2222-333344445555",
       }),
     ).toBe(true);
   });

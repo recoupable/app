@@ -219,14 +219,11 @@ export function useVercelChat({
       id,
       transport,
       // Re-attach to an in-progress response, so returning to a chat mid-turn
-      // keeps rendering instead of showing a frozen half-message. Gated until
-      // auth and a real chat id exist — unconditionally resuming 401s/404s on
-      // every cold load and surfaces as an error toast (chat#1949 F4a).
-      resume: shouldResumeStream({
-        authenticated,
-        routeChatId: chatId,
-        workflowChatId,
-      }),
+      // keeps rendering instead of showing a frozen half-message. Gated to an
+      // authenticated visit to an existing chat — resuming unconditionally
+      // 401s/404s on every cold load and surfaces as an error toast
+      // (chat#1949 F4a).
+      resume: shouldResumeStream({ authenticated, routeChatId: chatId }),
       experimental_throttle: 100,
       generateId: generateUUID,
       onError: (e) => {
