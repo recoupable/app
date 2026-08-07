@@ -39,6 +39,24 @@ describe("getAccountCredits", () => {
     expect(result).toEqual(apiResponse);
   });
 
+  // chat#1949 F4b: `useCredits` gates its query with react-query's `enabled`,
+  // but `refetch()` ignores `enabled`. `usePayment` exposes `refetchCredits`
+  // and `useVercelChat` calls it, so on a cold load the request fired with
+  // `account_id` still undefined and produced GET
+  // /api/accounts/undefined/credits -> 400. Guard where the URL is built, so
+  // no caller can interpolate a missing id again.
+  it.each([
+    ["undefined", undefined],
+    ["the literal string 'undefined'", "undefined"],
+    ["an empty string", ""],
+  ])("refuses to build a request when accountId is %s", async (_label, id) => {
+    await expect(
+      getAccountCredits(id as unknown as string, "test-token"),
+    ).rejects.toThrow(/account id/i);
+
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
   it("throws on a non-ok response", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
