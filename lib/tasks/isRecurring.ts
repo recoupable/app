@@ -2,6 +2,7 @@
  * Checks if a cron expression represents a recurring schedule (daily, weekly, or monthly)
  */
 export const isRecurring = (cronExpression: string): boolean => {
+  if (!cronExpression) return false;
   try {
     const parts = cronExpression.split(" ");
     if (parts.length >= 5) {
