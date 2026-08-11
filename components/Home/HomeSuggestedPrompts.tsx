@@ -4,6 +4,7 @@ import { useVercelChatContext } from "@/providers/VercelChatProvider";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import useHomeValuation from "@/hooks/useHomeValuation";
 import useHomeTasksModuleState from "@/hooks/useHomeTasksModuleState";
+import useCatalogs from "@/hooks/useCatalogs";
 import { getHomeSuggestedPrompts } from "@/lib/home/getHomeSuggestedPrompts";
 
 /**
@@ -19,11 +20,13 @@ const HomeSuggestedPrompts = () => {
   const { selectedArtist } = useArtistProvider();
   const valuation = useHomeValuation();
   const tasksState = useHomeTasksModuleState();
+  const { data: catalogsData } = useCatalogs();
 
   const prompts = getHomeSuggestedPrompts({
     hasValuation: valuation.show,
     hasRuns: tasksState.view === "runs",
     artistName: selectedArtist?.name || "",
+    catalogName: catalogsData?.catalogs?.[0]?.name || "",
   });
 
   if (prompts.length === 0) return null;
