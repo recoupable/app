@@ -9,6 +9,8 @@ export interface TaskRunItem {
   taskIdentifier: string;
   /** Originating scheduled task's title; null or absent when unresolvable. */
   title?: string | null;
+  /** Subject of the newest email this run sent; null/absent when none (chat#1958). */
+  email_subject?: string | null;
   createdAt: string;
   startedAt: string | null;
   finishedAt: string | null;

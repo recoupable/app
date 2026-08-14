@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { TaskRunItem } from "@/lib/tasks/getTaskRuns";
-import { getTaskDisplayName } from "@/lib/tasks/getTaskDisplayName";
+import { getRunDisplayName } from "@/lib/tasks/getRunDisplayName";
 import { getStatusColor } from "@/lib/tasks/getStatusColor";
 import { getStatusLabel } from "@/lib/tasks/getStatusLabel";
 import { formatDuration } from "@/lib/tasks/formatDuration";
@@ -20,7 +20,7 @@ const RunCard: React.FC<RunCardProps> = ({ run }) => {
       <div className="flex items-center space-x-4">
         <div>
           <h4 className="text-base font-medium text-foreground">
-            {getTaskDisplayName(run.taskIdentifier)}
+            {getRunDisplayName(run)}
           </h4>
           <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
             <AccountIdDisplay accountId={run.id} label="Run ID" />
