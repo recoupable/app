@@ -5,8 +5,9 @@ import {
   UIMessagePart,
   UIDataTypes,
   UITools,
+  ChatStatus,
 } from "ai";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useContext } from "react";
 import { cn } from "@/lib/utils";
 import ViewingMessage from "./ViewingMessage";
 import EditingMessage from "./EditingMessage";
@@ -16,16 +17,28 @@ import { EnhancedReasoning } from "@/components/reasoning/EnhancedReasoning";
 import { Actions, Action } from "@/components/actions";
 import { RefreshCcwIcon, Pencil } from "lucide-react";
 import CopyAction from "./CopyAction";
-import { useVercelChatContext } from "@/providers/VercelChatProvider";
+import { VercelChatContext } from "@/providers/VercelChatProvider";
 
 interface MessagePartsProps {
   message: UIMessage;
   mode: "view" | "edit";
   setMode: Dispatch<SetStateAction<"view" | "edit">>;
+  /** Injected when rendered outside a VercelChatProvider (onboarding pre-run). */
+  status?: ChatStatus;
+  reload?: () => void;
 }
 
-export function MessageParts({ message, mode, setMode }: MessagePartsProps) {
-  const { status, reload } = useVercelChatContext();
+export function MessageParts({
+  message,
+  mode,
+  setMode,
+  status: statusProp,
+  reload: reloadProp,
+}: MessagePartsProps) {
+  // Prefer injected props; fall back to the chat context when inside a provider.
+  const ctx = useContext(VercelChatContext);
+  const status = statusProp ?? ctx?.status;
+  const reload = reloadProp ?? ctx?.reload ?? (() => {});
   return (
     <div className={cn("flex flex-col gap-4 w-full group")}>
       {message.parts?.map(
@@ -71,7 +84,7 @@ export function MessageParts({ message, mode, setMode }: MessagePartsProps) {
                       {
                         "justify-start": message.role === "assistant",
                         "justify-end": message.role === "user",
-                      }
+                      },
                     )}
                   >
                     {message.role === "user" && (
@@ -113,7 +126,7 @@ export function MessageParts({ message, mode, setMode }: MessagePartsProps) {
               return getToolResultComponent(part as ToolUIPart);
             }
           }
-        }
+        },
       )}
     </div>
   );

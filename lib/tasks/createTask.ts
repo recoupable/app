@@ -10,6 +10,8 @@ export interface CreateTaskParams {
   /** When omitted, the API uses the authenticated account. When set, must be allowed for the caller (e.g. org membership). */
   account_id?: string;
   model?: string | null;
+  /** IANA timezone (e.g. "America/Los_Angeles") the cron schedule is interpreted in. */
+  timezone?: string;
 }
 
 /**
@@ -37,6 +39,10 @@ export async function createTask(
     params.model !== ""
   ) {
     body.model = params.model;
+  }
+
+  if (params.timezone !== undefined && params.timezone !== "") {
+    body.timezone = params.timezone;
   }
 
   const response = await fetch(`${getClientApiBaseUrl()}/api/tasks`, {

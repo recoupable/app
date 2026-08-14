@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Tables } from "@/types/database.types";
 import { DEFAULT_MODEL } from "@/lib/consts";
+import { getTaskTimezone } from "@/lib/timezone/getTaskTimezone";
 
 interface UseTaskDetailsDialogParams {
   task: Tables<"scheduled_actions">;
@@ -18,6 +19,7 @@ export const useTaskDetailsDialog = ({
     task.schedule?.trim() || "0 9 * * *"
   );
   const [editModel, setEditModel] = useState(task.model || DEFAULT_MODEL);
+  const [editTimezone, setEditTimezone] = useState(() => getTaskTimezone(task));
 
   // Sync edit state when task prop changes
   useEffect(() => {
@@ -25,6 +27,7 @@ export const useTaskDetailsDialog = ({
     setEditPrompt(task.prompt);
     setEditCron(task.schedule?.trim() || "0 9 * * *");
     setEditModel(task.model || DEFAULT_MODEL);
+    setEditTimezone(getTaskTimezone(task));
   }, [task]);
 
   const isActive = Boolean(task.enabled && !isDeleted);
@@ -42,6 +45,8 @@ export const useTaskDetailsDialog = ({
     setEditCron,
     editModel,
     setEditModel,
+    editTimezone,
+    setEditTimezone,
     isActive,
     isPaused,
     canEdit,

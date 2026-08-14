@@ -1,3 +1,5 @@
+import type { Tables } from "./database.types";
+
 export type FUNNEL_ANALYSIS = {
   id: string;
   chat_id: string;
@@ -11,7 +13,7 @@ export type FUNNEL_ANALYSIS = {
   accounts: {
     id: string;
     name: string;
-    account_info: Array<any>;
+    account_info: Array<Tables<"account_info">>;
     account_socials: Array<SOCIAL>;
   };
 };
@@ -36,7 +38,7 @@ export type ACCOUNT = {
   id: string;
   name: string;
   timestamp: number | null;
-  account_info: Array<any>;
+  account_info: Array<Tables<"account_info">>;
   account_socials: Array<SOCIAL>;
 };
 

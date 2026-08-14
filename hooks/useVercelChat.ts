@@ -26,6 +26,7 @@ import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { getChatPath } from "@/lib/chat/getChatPath";
 import { useInitialMessageAutoSend } from "./useInitialMessageAutoSend";
 import { usePersistSelectedModel } from "./usePersistSelectedModel";
+import shouldResumeStream from "@/lib/chat/shouldResumeStream";
 
 interface UseVercelChatProps {
   id: string;
@@ -66,7 +67,7 @@ export function useVercelChat({
 
   const userId = userData?.account_id || userData?.id; // Use account_id if available, fallback to id
   const artistId = selectedArtist?.account_id;
-  const messagesLengthRef = useRef<number>();
+  const messagesLengthRef = useRef<number | undefined>(undefined);
   const { addOptimisticConversation } = useConversationsProvider();
   const { data: availableModels = [] } = useAvailableModels();
   const [input, setInput] = useState("");
@@ -213,10 +214,16 @@ export function useVercelChat({
     [id, artistId, organizationId, accountIdOverride, model],
   );
 
-  const { messages, status, stop, sendMessage, setMessages, regenerate } =
+  const { messages, status, stop, sendMessage, setMessages, regenerate, resumeStream } =
     useChat({
       id,
       transport,
+      // Re-attach to an in-progress response, so returning to a chat mid-turn
+      // keeps rendering instead of showing a frozen half-message. Gated to an
+      // authenticated visit to an existing chat — resuming unconditionally
+      // 401s/404s on every cold load and surfaces as an error toast
+      // (chat#1949 F4a).
+      resume: shouldResumeStream({ authenticated, routeChatId: chatId }),
       experimental_throttle: 100,
       generateId: generateUUID,
       onError: (e) => {
@@ -228,6 +235,11 @@ export function useVercelChat({
         await refetchCredits();
       },
     });
+
+  // Reconnection through a dropped stream is the transport's job now — see
+  // `createWorkflowChatTransport`. A long turn's stream ends at the ~120s
+  // connection cap (chat#1928); the transport notices the missing `finish`
+  // chunk and resumes from its own chunk count without a hook involved.
 
   const earliestFailedUserMessageId = useMemo(
     () => getEarliestFailedUserMessageId(messages),

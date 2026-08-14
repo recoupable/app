@@ -7,6 +7,7 @@ import { useUserProvider } from "@/providers/UserProvder";
 import ArtistInstructionTextArea from "./ArtistInstructionTextArea";
 import Input from "../Input";
 import AccountIdDisplay from "../ArtistSetting/AccountIdDisplay";
+import BillingSection from "./BillingSection";
 
 const Account = () => {
   const {
@@ -103,6 +104,8 @@ const Account = () => {
         />
         </div>
       </div>
+
+      <BillingSection />
 
       {/* Actions Section */}
       <div className="w-full space-y-3 mt-2">

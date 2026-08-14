@@ -27,54 +27,57 @@ export interface FeaturedModelConfig {
  */
 export const FEATURED_MODELS: FeaturedModelConfig[] = [
   {
-    id: "openai/gpt-5.2",
-    displayName: "GPT-5.2",
+    id: "openai/gpt-5.5",
+    displayName: "GPT-5.5",
     isPro: true,
     pill: "New",
     description: "OpenAI's most intelligent model",
-    tooltip: "OpenAI's best general-purpose model for both general and agentic tasks",
+    tooltip:
+      "OpenAI's best general-purpose model for both general and agentic tasks",
   },
   {
     id: DEFAULT_MODEL,
-    displayName: "GPT-5.4 Mini",
+    displayName: "Kimi K3",
     isPro: false,
-    pill: "Fast",
+    pill: "New",
     description: "Great for everyday",
-    tooltip: "OpenAI's faster, cost-optimized model",
+    tooltip:
+      "Moonshot's latest model — reliable for long-form reports and agentic tasks",
   },
   {
-    id: "anthropic/claude-opus-4.5",
-    displayName: "Claude Opus 4.5",
+    id: "anthropic/claude-opus-4.8",
+    displayName: "Claude Opus 4.8",
     isPro: true,
     pill: "New",
     description: "Great for complex reasoning",
-    tooltip: "Anthropic's latest model for demanding reasoning and complex problem solving",
+    tooltip:
+      "Anthropic's latest model for demanding reasoning and complex problem solving",
   },
   {
-    id: "anthropic/claude-sonnet-4.5",
-    displayName: "Claude Sonnet 4.5",
+    id: "anthropic/claude-sonnet-5",
+    displayName: "Claude Sonnet 5",
     isPro: true,
     description: "Great for agents",
     tooltip: "Anthropic's balanced model for agentic workflows",
   },
   {
-    id: "google/gemini-2.5-flash-lite",
-    displayName: "Gemini 2.5 Flash",
+    id: "google/gemini-3.5-flash-lite",
+    displayName: "Gemini 3.5 Flash",
     isPro: false,
     pill: "Fast",
     description: "Great for speed",
     tooltip: "Google's fastest model",
   },
   {
-    id: "google/gemini-3-pro-preview",
-    displayName: "Gemini 3 Pro",
+    id: "google/gemini-3.1-pro-preview",
+    displayName: "Gemini 3.1 Pro",
     isPro: true,
     description: "Google's latest model",
     tooltip: "Google's newest Gemini 3 Pro preview model",
   },
   {
-    id: "xai/grok-4",
-    displayName: "Grok 4",
+    id: "xai/grok-4.5",
+    displayName: "Grok 4.5",
     isPro: true,
     description: "Great for writing",
     tooltip: "Xai's reasoning model",
@@ -85,12 +88,14 @@ export const FEATURED_MODELS: FeaturedModelConfig[] = [
  * Check if a model ID is in the featured list
  */
 export const isFeaturedModel = (modelId: string): boolean => {
-  return FEATURED_MODELS.some(model => model.id === modelId);
+  return FEATURED_MODELS.some((model) => model.id === modelId);
 };
 
 /**
  * Get featured model config by ID
  */
-export const getFeaturedModelConfig = (modelId: string): FeaturedModelConfig | undefined => {
-  return FEATURED_MODELS.find(model => model.id === modelId);
+export const getFeaturedModelConfig = (
+  modelId: string,
+): FeaturedModelConfig | undefined => {
+  return FEATURED_MODELS.find((model) => model.id === modelId);
 };

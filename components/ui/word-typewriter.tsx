@@ -1,7 +1,12 @@
 "use client";
 
-import { useEffect, useState, ReactNode } from "react";
+import { useEffect, useState, isValidElement, ReactNode } from "react";
 import { cn } from "@/lib/utils";
+
+// React 19's types give ReactElement `unknown` props instead of `any`, so
+// reaching for `.props.children` needs the element narrowed to a props shape
+// first. isValidElement's type parameter is what does that narrowing.
+type WithChildren = { children?: ReactNode };
 
 interface WordTypewriterProps {
   words: ReactNode[];
@@ -31,7 +36,7 @@ function WordTypewriter({
       if (!node) return '';
       
       // For components with children (like our wordComponent spans)
-      if (typeof node === 'object' && 'props' in node && node.props.children) {
+      if (isValidElement<WithChildren>(node) && node.props.children) {
         const children = node.props.children;
         if (Array.isArray(children)) {
           return children
@@ -81,20 +86,20 @@ function WordTypewriter({
   // Get the original ReactNode with icons
   const currentWord = words[currentWordIndex];
   
-  // Check if the current word has an icon
-  const hasIcon = typeof currentWord === 'object' && 
-    currentWord !== null &&
-    'props' in currentWord && 
-    currentWord.props.children && 
-    Array.isArray(currentWord.props.children) &&
-    currentWord.props.children.length > 1;
+  // Check if the current word has an icon. Held as the children array rather
+  // than a bare boolean so the narrowing survives into the JSX below.
+  const wordChildren = isValidElement<WithChildren>(currentWord)
+    ? currentWord.props.children
+    : undefined;
+  const iconChildren = Array.isArray(wordChildren) ? wordChildren : undefined;
+  const hasIcon = !!iconChildren && iconChildren.length > 1;
 
   return (
     <span className={cn("inline-flex items-center gap-3", className)}>
-      {hasIcon && typeof currentWord === 'object' && 'props' in currentWord ? (
+      {hasIcon ? (
         <>
           {/* Show icon immediately - already wrapped in consistent container */}
-          {currentWord.props.children[0]}
+          {iconChildren[0]}
           {/* Type out the text */}
           <span>
             {currentText}

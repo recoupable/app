@@ -9,6 +9,7 @@ import {
 } from "@/lib/catalog/getCatalogSongs";
 import useObserverTarget from "./useObserverTarget";
 import { RefObject } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface UseCatalogSongsOptions {
   catalogId: string;
@@ -20,7 +21,7 @@ interface UseCatalogSongsOptions {
 type UseCatalogSongsReturn = UseInfiniteQueryResult<
   InfiniteData<CatalogSongsResponse>
 > & {
-  observerTarget: RefObject<HTMLDivElement>;
+  observerTarget: RefObject<HTMLDivElement | null>;
 };
 
 const useCatalogSongs = ({
@@ -29,10 +30,22 @@ const useCatalogSongs = ({
   enabled = true,
   artistName,
 }: UseCatalogSongsOptions): UseCatalogSongsReturn => {
+  const { getAccessToken } = usePrivy();
+
   const queryResult = useInfiniteQuery({
     queryKey: ["catalogSongs", catalogId, pageSize, artistName],
     queryFn: async ({ pageParam = 1 }) => {
-      return await getCatalogSongs(catalogId, pageSize, pageParam, artistName);
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        throw new Error("Not authenticated");
+      }
+      return await getCatalogSongs(
+        accessToken,
+        catalogId,
+        pageSize,
+        pageParam,
+        artistName,
+      );
     },
     enabled: enabled && !!catalogId,
     getNextPageParam: (lastPage) => {

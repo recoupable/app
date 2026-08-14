@@ -82,4 +82,52 @@ describe("createTask", () => {
       model: "anthropic/claude-sonnet-4.5",
     });
   });
+
+  it("includes timezone in the body when provided", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({
+        status: "success",
+        tasks: [{ id: "task-3" }],
+      }),
+    }) as unknown as typeof fetch;
+
+    await createTask(accessToken, {
+      title: "Weekly report",
+      prompt: "Generate weekly report",
+      schedule: "0 9 * * 1",
+      artist_account_id: "artist-3",
+      timezone: "America/Los_Angeles",
+    });
+
+    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
+    expect(JSON.parse(String(init.body))).toEqual({
+      title: "Weekly report",
+      prompt: "Generate weekly report",
+      schedule: "0 9 * * 1",
+      artist_account_id: "artist-3",
+      timezone: "America/Los_Angeles",
+    });
+  });
+
+  it("omits timezone when it is an empty string", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({
+        status: "success",
+        tasks: [{ id: "task-4" }],
+      }),
+    }) as unknown as typeof fetch;
+
+    await createTask(accessToken, {
+      title: "No tz",
+      prompt: "Prompt",
+      schedule: "0 9 * * 1",
+      artist_account_id: "artist-4",
+      timezone: "",
+    });
+
+    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
+    expect(JSON.parse(String(init.body))).not.toHaveProperty("timezone");
+  });
 });

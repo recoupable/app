@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import type { RefObject } from 'react';
 
 type Props = {
-  menuRef: RefObject<HTMLElement>;
+  menuRef: RefObject<HTMLElement | null>;
   buttonRefs: RefObject<Record<string, HTMLElement | null>>;
   isOpen: boolean;
   onClose: () => void;

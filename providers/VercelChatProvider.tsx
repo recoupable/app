@@ -36,16 +36,21 @@ interface VercelChatContextType {
   attachments: FileUIPart[];
   pendingAttachments: FileUIPart[];
   setAttachments: (
-    attachments: FileUIPart[] | ((prev: FileUIPart[]) => FileUIPart[])
+    attachments: FileUIPart[] | ((prev: FileUIPart[]) => FileUIPart[]),
   ) => void;
   removeAttachment: (index: number) => void;
   clearAttachments: () => void;
   hasPendingUploads: boolean;
   textAttachments: TextAttachment[];
   setTextAttachments: (
-    attachments: TextAttachment[] | ((prev: TextAttachment[]) => TextAttachment[])
+    attachments:
+      | TextAttachment[]
+      | ((prev: TextAttachment[]) => TextAttachment[]),
   ) => void;
-  addTextAttachment: (file: File, type: TextAttachment["type"]) => Promise<void>;
+  addTextAttachment: (
+    file: File,
+    type: TextAttachment["type"],
+  ) => Promise<void>;
   removeTextAttachment: (index: number) => void;
   model: string;
   setModel: (model: string) => void;
@@ -53,10 +58,12 @@ interface VercelChatContextType {
   workspaceStatus: WorkspaceStatus;
 }
 
-// Create the context
-const VercelChatContext = createContext<VercelChatContextType | undefined>(
-  undefined
-);
+// Create the context. Exported so presentational components (e.g. Message /
+// MessageParts) can read it optionally and fall back to props when rendered
+// outside a provider — see the onboarding first-task pre-run.
+export const VercelChatContext = createContext<
+  VercelChatContextType | undefined
+>(undefined);
 
 // Props for the provider component
 interface VercelChatProviderProps {
@@ -144,7 +151,7 @@ export function VercelChatProvider({
 
   // When a message is sent successfully, clear the attachments
   const handleSendMessageWithClear = async (
-    event: React.FormEvent<HTMLFormElement>
+    event: React.FormEvent<HTMLFormElement>,
   ) => {
     await handleSendMessage(event);
 
@@ -206,7 +213,7 @@ export function useVercelChatContext() {
 
   if (context === undefined) {
     throw new Error(
-      "useVercelChatContext must be used within a VercelChatProvider"
+      "useVercelChatContext must be used within a VercelChatProvider",
     );
   }
 
