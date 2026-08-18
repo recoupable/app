@@ -5,6 +5,7 @@ import Providers from "@/providers/Providers";
 import { META_DESCRIPTION, TITLE } from "@/lib/consts";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
+import HideOnPublicRoutes from "@/components/HideOnPublicRoutes";
 import { Suspense } from "react";
 import ArtistSettingModal from "@/components/ArtistSettingModal";
 import AddArtistDialog from "@/components/Artists/AddArtistDialog";
@@ -83,8 +84,10 @@ export default function RootLayout({
           <Providers>
             <AccountOverrideBadge />
             <div className="flex flex-col md:flex-row">
-              <Sidebar />
-              <Header />
+              <HideOnPublicRoutes>
+                <Sidebar />
+                <Header />
+              </HideOnPublicRoutes>
               <ArtistSettingModal />
               <AddArtistDialog />
               <div className="grow flex h-[100dvh] pt-16 md:pt-0 md:h-screen overflow-hidden bg-sidebar">
@@ -93,7 +96,9 @@ export default function RootLayout({
                     {children}
                   </div>
                 </div>
-                <ArtistsSidebar />
+                <HideOnPublicRoutes>
+                  <ArtistsSidebar />
+                </HideOnPublicRoutes>
               </div>
               <MobileDownloadModal />
             </div>
