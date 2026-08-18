@@ -1,4 +1,5 @@
 import SocialIcon from "./SocialIcon";
+import { ensureAbsoluteUrl } from "@/lib/urls/ensureAbsoluteUrl";
 import type { ArtistProfileSocial } from "@/lib/recoup/getArtistProfile";
 
 /** Brand-correct display names where naive capitalization gets them wrong. */
@@ -19,7 +20,7 @@ const label = (type: string) =>
  */
 const SocialChip = ({ social }: { social: ArtistProfileSocial }) => (
   <a
-    href={social.profile_url}
+    href={ensureAbsoluteUrl(social.profile_url)}
     target="_blank"
     rel="noopener noreferrer"
     className="flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium text-foreground shadow-[0px_0px_0px_1px_var(--border)] transition-colors hover:bg-muted"

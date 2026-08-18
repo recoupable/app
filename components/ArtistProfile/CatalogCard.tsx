@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { formatMonthYear } from "@/lib/dates/formatMonthYear";
 import type { ArtistProfileCatalog } from "@/lib/recoup/getArtistProfile";
 
@@ -7,7 +8,9 @@ import type { ArtistProfileCatalog } from "@/lib/recoup/getArtistProfile";
 const CatalogCard = ({ catalog }: { catalog: ArtistProfileCatalog }) => {
   const updated = formatMonthYear(catalog.updated_at);
   return (
-    <div className="flex flex-col gap-3 rounded-xl bg-background p-6 shadow-[0px_0px_0px_1px_var(--border),0px_2px_4px_rgba(0,0,0,0.04)]">
+    <Link
+      href={`/catalogs/${catalog.id}`}
+      className="flex flex-col gap-3 rounded-xl bg-background p-6 shadow-[0px_0px_0px_1px_var(--border),0px_2px_4px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0px_0px_0px_1px_var(--border),0px_4px_8px_rgba(0,0,0,0.06),0px_8px_16px_-4px_rgba(0,0,0,0.04)]">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0 truncate text-[17px] font-semibold">{catalog.name}</div>
         <svg
@@ -29,7 +32,7 @@ const CatalogCard = ({ catalog }: { catalog: ArtistProfileCatalog }) => {
         </span>
         {updated && <span>Updated {updated}</span>}
       </div>
-    </div>
+    </Link>
   );
 };
 
