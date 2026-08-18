@@ -1,7 +1,16 @@
 import SocialIcon from "./SocialIcon";
 import type { ArtistProfileSocial } from "@/lib/recoup/getArtistProfile";
 
+/** Brand-correct display names where naive capitalization gets them wrong. */
+const BRAND_LABELS: Record<string, string> = {
+  TIKTOK: "TikTok",
+  YOUTUBE: "YouTube",
+  SOUNDCLOUD: "SoundCloud",
+  X: "X",
+};
+
 const label = (type: string) =>
+  BRAND_LABELS[type.toUpperCase()] ??
   type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
 
 /**
