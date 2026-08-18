@@ -31,6 +31,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
  * and linked catalogs. Server-rendered from the unauthenticated
  * GET /api/artists/{id}/profile endpoint; no account required to view.
  */
+// Fully dynamic so notFound() yields a real 404 status: with a prerendered
+// shell the response commits as 200 before the profile fetch resolves, and a
+// public page should give crawlers the true status, not a noindex'd 200.
+// The profile fetch itself still hits the ISR cache (revalidate: 300).
+export const dynamic = "force-dynamic";
+
 const ArtistProfilePage = async ({ params }: Params) => {
   const { id } = await params;
   const profile = await getArtistProfile(id);
