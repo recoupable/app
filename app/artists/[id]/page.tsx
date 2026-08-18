@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import getArtistProfile from "@/lib/recoup/getArtistProfile";
-import PublicHeader from "@/components/ArtistProfile/PublicHeader";
 import ArtistHero from "@/components/ArtistProfile/ArtistHero";
 import CatalogsSection from "@/components/ArtistProfile/CatalogsSection";
 import PublicFooter from "@/components/ArtistProfile/PublicFooter";
@@ -41,7 +40,6 @@ const ArtistProfilePage = async ({ params }: Params) => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <PublicHeader />
       <ArtistHero profile={profile} />
       {profile.catalogs.length > 0 && <CatalogsSection catalogs={profile.catalogs} />}
       <PublicFooter />
