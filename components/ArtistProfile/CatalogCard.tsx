@@ -1,4 +1,4 @@
-import { formatMonthYear } from "@/lib/utils/formatMonthYear";
+import { formatMonthYear } from "@/lib/dates/formatMonthYear";
 import type { ArtistProfileCatalog } from "@/lib/recoup/getArtistProfile";
 
 /**

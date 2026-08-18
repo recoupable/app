@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatMonthYear } from "@/lib/utils/formatMonthYear";
+import { formatMonthYear } from "@/lib/dates/formatMonthYear";
 
 describe("formatMonthYear", () => {
   it("formats an ISO timestamp as 'Mon YYYY'", () => {
