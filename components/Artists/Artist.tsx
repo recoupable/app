@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { ArtistRecord } from "@/types/Artist";
 import ImageWithFallback from "../ImageWithFallback";
@@ -38,6 +39,26 @@ const Artist = ({
           {artist.name}
         </div>
       </button>
+      {artist.id && (
+        <Link
+          href={`/artists/${artist.id}`}
+          onClick={(e) => e.stopPropagation()}
+          className="absolute right-3 bottom-3 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5 text-xs font-medium text-white opacity-90 transition-opacity hover:opacity-100"
+        >
+          <span>View profile</span>
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            aria-hidden
+          >
+            <path d="M3 8h9M8.5 4.5L12 8l-3.5 3.5" />
+          </svg>
+        </Link>
+      )}
       {isVisibleDropDown && <DropDown artist={artist} />}
     </div>
   );
