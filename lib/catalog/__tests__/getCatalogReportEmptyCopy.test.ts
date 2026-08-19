@@ -50,7 +50,13 @@ describe("getCatalogReportEmptyCopy", () => {
     expect(copy.title).toBe("No streams found yet");
     expect(copy.body).toContain("29 tracks");
     expect(copy.body.toLowerCase()).toContain("no spotify plays");
-    expect(copy.cta).toEqual({ label: "Connect your profiles", href: "/setup/socials" });
+    // Honest mechanism (chat#1972 review): measurements read the matched
+    // artist's releases, not connected socials — so the next step is checking
+    // the match, not "connecting" something. A wrong Spotify match is a real
+    // cause of a zero-stream verdict.
+    expect(copy.body.toLowerCase()).toContain("check that we matched the right artist");
+    expect(copy.body).not.toContain("Connect your artist profiles");
+    expect(copy.cta).toEqual({ label: "Check your matched profiles", href: "/setup/socials" });
   });
 
   it("pluralizes the zero-stream track count correctly for one track", () => {

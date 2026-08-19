@@ -15,11 +15,11 @@ const ZeroStreamsPanel = ({ measuredTrackCount }: { measuredTrackCount?: number 
     </h1>
     <p className="text-sm text-muted-foreground">
       We measured {measuredTrackCount ? `${measuredTrackCount} tracks in ` : ""}your catalog
-      and found no Spotify plays yet. Your baseline valuation will appear as plays start
-      logging; connecting your artist profiles helps future measurements pick them up.
+      and found no Spotify plays yet. If that looks wrong, check that we matched the right
+      artist profiles. Your baseline valuation will appear as plays start logging.
     </p>
     <Link href="/setup/socials" className={cn(buttonVariants(), "min-w-[200px]")}>
-      Connect your profiles
+      Check your matched profiles
     </Link>
   </section>
 );

@@ -45,8 +45,11 @@ const COPY: Record<CatalogReportEmptyState, CatalogReportEmptyCopy> = {
   },
   no_streams: {
     title: "No streams found yet",
-    body: "We measured this catalog and found no Spotify plays yet. Connect your artist profiles so future measurements can pick up your streams, and your valuation will appear as plays start logging.",
-    cta: { label: "Connect your profiles", href: "/setup/socials" },
+    // Measurements read the matched artist's releases, not connected socials,
+    // so the honest next step is checking the match: a wrong Spotify match is
+    // a real cause of a zero-stream verdict.
+    body: "We measured this catalog and found no Spotify plays yet. If that looks wrong, check that we matched the right artist profiles. Your valuation will appear as plays start logging.",
+    cta: { label: "Check your matched profiles", href: "/setup/socials" },
   },
 };
 
