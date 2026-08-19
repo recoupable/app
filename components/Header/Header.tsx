@@ -1,17 +1,17 @@
 "use client";
 
 import { MenuIcon, PlusCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import SideMenu from "../SideMenu";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import ImageWithFallback from "../ImageWithFallback";
 import useIsMobile from "@/hooks/useIsMobile";
-import SideArtists from "../SideArtists";
 import type { ArtistRecord } from "@/types/Artist";
 
 const Header = () => {
+  const { push } = useRouter();
   const [isOpenMobileMenu, setIsOpenMobileMenu] = useState(false);
-  const [isOpenSideArtists, setIsOpenSideArtists] = useState(false);
   const {
     selectedArtist,
     toggleSettingModal,
@@ -24,7 +24,7 @@ const Header = () => {
 
   const handleClickPfp = () => {
     if (isMobile) {
-      setIsOpenSideArtists(true);
+      push("/artists");
       return;
     }
     // Update the artist details for editing
@@ -53,9 +53,7 @@ const Header = () => {
           <button
             type="button"
             onClick={
-              sorted.length > 0
-                ? () => setIsOpenSideArtists(true)
-                : handleAddArtist
+              sorted.length > 0 ? () => push("/artists") : handleAddArtist
             }
             className="flex items-center gap-2 bg-card text-black font-medium py-2 px-4 rounded-md shadow-md z-[50]"
             aria-label={
@@ -91,11 +89,6 @@ const Header = () => {
             <SideMenu
               isVisible={isOpenMobileMenu}
               toggleModal={() => setIsOpenMobileMenu(!isOpenMobileMenu)}
-              onOpenArtists={() => setIsOpenSideArtists(true)}
-            />
-            <SideArtists
-              isVisible={isOpenSideArtists}
-              toggleModal={() => setIsOpenSideArtists(!isOpenSideArtists)}
             />
           </>
         )}

@@ -20,11 +20,9 @@ import ArtistsNavItem from "../Sidebar/ArtistsNavItem";
 const SideMenu = ({
   isVisible,
   toggleModal,
-  onOpenArtists,
 }: {
   isVisible: boolean;
   toggleModal: () => void;
-  onOpenArtists?: () => void;
 }) => {
   const { push } = useRouter();
   const pathname = usePathname();
@@ -47,10 +45,7 @@ const SideMenu = ({
 
   const handleArtistSelect = () => {
     if (hasArtists) {
-      // Open the artist selection sidebar
-      if (onOpenArtists) {
-        onOpenArtists();
-      }
+      push("/artists");
     } else {
       // No artists yet, open the artist creation modal
       toggleCreation();
