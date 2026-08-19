@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import getArtistProfile from "@/lib/recoup/getArtistProfile";
 import ArtistHero from "@/components/ArtistProfile/ArtistHero";
-import CatalogsSection from "@/components/ArtistProfile/CatalogsSection";
+import SongsSection from "@/components/ArtistProfile/SongsSection";
 import PublicFooter from "@/components/ArtistProfile/PublicFooter";
 
 type Params = { params: Promise<{ id: string }> };
@@ -41,7 +41,7 @@ const ArtistProfilePage = async ({ params }: Params) => {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <ArtistHero profile={profile} />
-      {profile.catalogs.length > 0 && <CatalogsSection catalogs={profile.catalogs} />}
+      <SongsSection catalogs={profile.catalogs} />
       <PublicFooter />
     </div>
   );

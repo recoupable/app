@@ -6,11 +6,27 @@ export interface ArtistProfileSocial {
   profile_url: string;
 }
 
+export interface ArtistProfileSong {
+  isrc: string;
+  name: string;
+  album: string | null;
+  artwork_url: string | null;
+  plays: number;
+  est_value_usd: number;
+}
+
 export interface ArtistProfileCatalog {
   id: string;
   name: string;
   song_count: number;
   updated_at: string;
+  songs: ArtistProfileSong[];
+}
+
+export interface ArtistProfileValuation {
+  low: number;
+  mid: number;
+  high: number;
 }
 
 export interface ArtistProfile {
@@ -19,6 +35,7 @@ export interface ArtistProfile {
   image: string | null;
   socials: ArtistProfileSocial[];
   catalogs: ArtistProfileCatalog[];
+  valuation: ArtistProfileValuation | null;
 }
 
 /**
