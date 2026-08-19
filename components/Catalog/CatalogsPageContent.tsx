@@ -9,6 +9,7 @@ import useAccountOrganizations from "@/hooks/useAccountOrganizations";
 import { filterCatalogsByOrg } from "@/lib/catalog/filterCatalogsByOrg";
 import { getCatalogsEmptyCopy } from "@/lib/catalog/getCatalogsEmptyCopy";
 import { resolveSelectedOrgId } from "@/lib/catalog/resolveSelectedOrgId";
+import RunValuationButton from "@/components/Valuation/RunValuationButton";
 
 const CatalogsPageContent = () => {
   const { data, isLoading, error } = useCatalogs();
@@ -55,9 +56,14 @@ const CatalogsPageContent = () => {
     )?.organization_name;
 
     return (
-      <p className="text-sm text-muted-foreground">
-        {getCatalogsEmptyCopy(orgId, orgName)}
-      </p>
+      <div className="flex flex-col items-start gap-4">
+        <p className="text-sm text-muted-foreground">
+          {getCatalogsEmptyCopy(orgId, orgName)}
+        </p>
+        {/* Personal scope only: a run always lands the catalog on the calling
+            account, so an org-scoped empty list is not this button's job. */}
+        {!orgId && <RunValuationButton />}
+      </div>
     );
   }
 
