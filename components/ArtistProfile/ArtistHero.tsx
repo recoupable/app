@@ -1,4 +1,5 @@
 import SocialChip from "./SocialChip";
+import ValuationBadge from "./ValuationBadge";
 import type { ArtistProfile } from "@/lib/recoup/getArtistProfile";
 
 /**
@@ -30,6 +31,7 @@ const ArtistHero = ({ profile }: { profile: ArtistProfile }) => (
       <h1 className="break-words text-center font-mono text-4xl font-bold uppercase leading-[1.05] tracking-tight md:text-left md:text-7xl">
         {profile.name}
       </h1>
+      {profile.valuation && <ValuationBadge valuation={profile.valuation} />}
       {profile.socials.length > 0 && (
         <div className="flex flex-wrap justify-center gap-2 md:justify-start md:gap-2.5">
           {profile.socials.map((social) => (
