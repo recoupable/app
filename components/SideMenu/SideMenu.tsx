@@ -15,6 +15,7 @@ import { usePathname } from "next/navigation";
 import TasksNavItem from "../Sidebar/TasksNavItem";
 import FilesNavItem from "../Sidebar/FilesNavItem";
 import CatalogsNavItem from "../Sidebar/CatalogsNavItem";
+import ArtistsNavItem from "../Sidebar/ArtistsNavItem";
 
 const SideMenu = ({
   isVisible,
@@ -35,6 +36,7 @@ const SideMenu = ({
   const isTasks = pathname.includes("/tasks");
   const isFiles = pathname.includes("/files");
   const isCatalogs = pathname.includes("/catalogs");
+  const isArtists = pathname.includes("/artists");
 
   const goToItem = (link?: string) => {
     if (isPrepared()) {
@@ -90,6 +92,10 @@ const SideMenu = ({
           </Button>
         )}
         <div className="flex flex-col gap-1 pt-2">
+          <ArtistsNavItem
+            isActive={isArtists}
+            onClick={() => goToItem("artists")}
+          />
           <CatalogsNavItem
             isActive={isCatalogs}
             onClick={() => goToItem("catalogs")}

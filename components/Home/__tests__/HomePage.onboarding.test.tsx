@@ -79,7 +79,7 @@ describe("HomePage onboarding gate — one canonical surface", () => {
       name: /onboarding checklist/i,
     });
     // Regression guard: `fixed` pinned the card to the viewport edge, where
-    // the z-[65] ArtistsSidebar rail clipped it off-screen.
+    // higher-z layout chrome clipped it off-screen.
     expect(checklist.className).not.toContain("fixed");
     expect(checklist.className).toContain("absolute");
     expect(checklist.parentElement?.className).toContain("relative");

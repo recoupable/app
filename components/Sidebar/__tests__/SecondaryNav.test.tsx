@@ -17,6 +17,7 @@ const renderNav = (overrides = {}) => {
       isTasks={false}
       isFiles={false}
       isCatalogs={false}
+      isArtists={false}
       onNavigate={onNavigate}
       {...overrides}
     />,
@@ -42,6 +43,16 @@ describe("SecondaryNav", () => {
     fireEvent.click(screen.getByRole("button", { name: /view catalogs/i }));
 
     expect(onNavigate).toHaveBeenCalledWith("catalogs");
+  });
+
+  // chat#1976: the right-side artist rail is removed; the roster's only
+  // entry point is this nav item, so its absence would strand switching.
+  it("links Artists and navigates to the roster route", () => {
+    const { onNavigate } = renderNav();
+
+    fireEvent.click(screen.getByRole("button", { name: /view artists/i }));
+
+    expect(onNavigate).toHaveBeenCalledWith("artists");
   });
 
   it("still links the pre-existing tools", () => {

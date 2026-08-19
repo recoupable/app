@@ -6,7 +6,6 @@ import { UserProvider } from "./UserProvder";
 import { ArtistProvider } from "./ArtistProvider";
 import { ConversationsProvider } from "./ConversationsProvider";
 import { PaymentProvider } from "./PaymentProvider";
-import { SidebarExpansionProvider } from "./SidebarExpansionContext";
 import { MiniKitProvider } from "./MiniKitProvider";
 import WagmiProvider from "./WagmiProvider";
 import { MiniAppProvider } from "./MiniAppProvider";
@@ -34,11 +33,9 @@ const Providers = ({ children }: { children: React.ReactNode }) => (
               <UserProvider>
                 <OrganizationProvider>
                   <ArtistProvider>
-                    <SidebarExpansionProvider>
-                      <ConversationsProvider>
-                        <PaymentProvider>{children}</PaymentProvider>
-                      </ConversationsProvider>
-                    </SidebarExpansionProvider>
+                    <ConversationsProvider>
+                      <PaymentProvider>{children}</PaymentProvider>
+                    </ConversationsProvider>
                   </ArtistProvider>
                 </OrganizationProvider>
               </UserProvider>

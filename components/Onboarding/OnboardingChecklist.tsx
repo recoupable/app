@@ -13,7 +13,7 @@ interface OnboardingChecklistProps {
  * persistent reminder of the remaining activation checkpoints with no
  * dismiss — the "Continue" button re-opens the sequence. Positioned
  * `absolute` within the (relative) home content area, never `fixed` to the
- * viewport where the z-[65] ArtistsSidebar rail overlaps and clips it.
+ * viewport, so layout chrome can never overlap or clip it.
  */
 const OnboardingChecklist = ({
   checkpoints,
