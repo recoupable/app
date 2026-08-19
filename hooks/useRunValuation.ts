@@ -17,7 +17,7 @@ import { getArtistSpotifyId } from "@/lib/artist/getArtistSpotifyId";
  * lib/valuation/runValuation) — surfaces render it, never a generic failure.
  * Auth and artist context come from providers per the chat hooks conventions.
  */
-const useRunValuation = () => {
+const useRunValuation = (spotifyArtistIdOverride?: string) => {
   const { getAccessToken, authenticated } = usePrivy();
   const { selectedArtist, sorted } = useArtistProvider();
   const queryClient = useQueryClient();
@@ -26,7 +26,8 @@ const useRunValuation = () => {
     (artist) => !!artist && !artist.isWorkspace,
   );
   const runnable = candidates.find((artist) => !!artist && getArtistSpotifyId(artist));
-  const spotifyArtistId = runnable ? getArtistSpotifyId(runnable) : null;
+  const spotifyArtistId =
+    spotifyArtistIdOverride ?? (runnable ? getArtistSpotifyId(runnable) : null);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -47,7 +48,7 @@ const useRunValuation = () => {
     isRunning: mutation.isPending,
     error: mutation.error,
     canRun: authenticated && !!spotifyArtistId,
-    artistName: runnable?.name ?? null,
+    artistName: spotifyArtistIdOverride ? null : (runnable?.name ?? null),
   };
 };
 

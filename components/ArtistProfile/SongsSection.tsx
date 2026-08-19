@@ -4,7 +4,8 @@ import { useState } from "react";
 import SongRow from "./SongRow";
 import { formatMonthYear } from "@/lib/dates/formatMonthYear";
 import { VALUATION_URL } from "@/lib/consts";
-import type { ArtistProfileCatalog } from "@/lib/recoup/getArtistProfile";
+import EmptySongsState from "./EmptySongsState";
+import type { ArtistProfileCatalog, ArtistProfileSocial } from "@/lib/recoup/getArtistProfile";
 
 const PREVIEW_COUNT = 5;
 
@@ -13,10 +14,20 @@ const PREVIEW_COUNT = 5;
  * column-labeled Spotify-style rows, top 5 with a "Show all N songs"
  * expander, and the valuation CTA card below.
  */
-const SongsSection = ({ catalogs }: { catalogs: ArtistProfileCatalog[] }) => {
+const SongsSection = ({
+  catalogs,
+  artistId,
+  socials,
+}: {
+  catalogs: ArtistProfileCatalog[];
+  artistId: string;
+  socials: ArtistProfileSocial[];
+}) => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const withSongs = catalogs.filter(c => c.songs.length > 0);
-  if (withSongs.length === 0) return null;
+  // Inverted from `return null` (chat#1973): the no-songs state is where the
+  // run button matters most, not a reason to hide the section.
+  if (withSongs.length === 0) return <EmptySongsState artistId={artistId} socials={socials} />;
 
   return (
     <section className="flex flex-col gap-6 px-5 pb-12 md:px-12 md:pb-16">
