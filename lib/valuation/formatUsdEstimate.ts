@@ -1,8 +1,12 @@
+// minimumFractionDigits and trailingZeroDisplay are set explicitly because
+// compact-currency defaults vary across ICU builds ("$84K" vs "$84.0K").
 const compact = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
   notation: "compact",
+  minimumFractionDigits: 0,
   maximumFractionDigits: 1,
+  trailingZeroDisplay: "stripIfInteger",
 });
 
 /**
