@@ -5,7 +5,7 @@ import { getValuationHeroState } from "@/lib/home/getValuationHeroState";
 import type { CatalogValuationBand } from "@/lib/catalog/getCatalogMeasurements";
 
 export type HomeValuationState =
-  | { show: false }
+  | { show: false; noStreams?: { measuredTrackCount: number } }
   | {
       show: true;
       artistName: string;
@@ -51,7 +51,7 @@ const useHomeValuation = (): HomeValuationState => {
     selectedArtistAccountId,
   });
 
-  if (!state.show) return { show: false };
+  if (!state.show) return state;
 
   return {
     show: true,

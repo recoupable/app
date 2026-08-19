@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getCatalogReportEmptyCopy } from "@/lib/catalog/getCatalogReportEmptyCopy";
 
-const states = ["signed-out", "measuring", "other-account", "error"] as const;
+const states = ["signed-out", "measuring", "other-account", "error", "no_streams"] as const;
 
 const withCatalogs = { hasOwnCatalogs: true };
 const withoutCatalogs = { hasOwnCatalogs: false };
@@ -38,6 +38,41 @@ describe("getCatalogReportEmptyCopy", () => {
     // The old copy claimed no valuation existed, which was false: the catalog
     // is measured, just not by this viewer.
     expect(copy.title.toLowerCase()).not.toContain("no valuation found");
+  });
+
+  // chat#1969: with the zero-stream shell email gone, this page is where a
+  // zero-stream signup learns what happened. Honest, with a next step.
+  it("tells a zero-stream viewer the catalog was measured with no plays yet", () => {
+    const copy = getCatalogReportEmptyCopy("no_streams", withCatalogs, {
+      measuredSongCount: 29,
+    });
+
+    expect(copy.title).toBe("No streams found yet");
+    expect(copy.body).toContain("29 tracks");
+    expect(copy.body.toLowerCase()).toContain("no spotify plays");
+    // Honest mechanism (chat#1972 review): measurements read the matched
+    // artist's releases, not connected socials — so the next step is checking
+    // the match, not "connecting" something. A wrong Spotify match is a real
+    // cause of a zero-stream verdict.
+    expect(copy.body.toLowerCase()).toContain("check that we matched the right artist");
+    expect(copy.body).not.toContain("Connect your artist profiles");
+    expect(copy.cta).toEqual({ label: "Check your matched profiles", href: "/setup/socials" });
+  });
+
+  it("pluralizes the zero-stream track count correctly for one track", () => {
+    const copy = getCatalogReportEmptyCopy("no_streams", withCatalogs, {
+      measuredSongCount: 1,
+    });
+
+    expect(copy.body).toContain("1 track ");
+    expect(copy.body).not.toContain("1 tracks");
+  });
+
+  it("keeps the zero-stream copy honest without a track count", () => {
+    const copy = getCatalogReportEmptyCopy("no_streams", withCatalogs);
+
+    expect(copy.body).not.toContain("undefined");
+    expect(copy.body.toLowerCase()).toContain("no spotify plays");
   });
 
   it("offers a signed-out visitor a way in", () => {

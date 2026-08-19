@@ -18,12 +18,14 @@ const CTA_CLASS =
 const CatalogReportEmptyState = ({
   state,
   hasOwnCatalogs,
+  measuredSongCount,
 }: {
   state: EmptyState;
   hasOwnCatalogs: boolean;
+  measuredSongCount?: number;
 }) => {
   const { login } = useUserProvider();
-  const copy = getCatalogReportEmptyCopy(state, { hasOwnCatalogs });
+  const copy = getCatalogReportEmptyCopy(state, { hasOwnCatalogs }, { measuredSongCount });
 
   return (
     <div className="max-w-3xl rounded-2xl bg-card p-6 sm:p-8 shadow-[0_0_0_1px_var(--border)]">

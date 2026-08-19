@@ -8,9 +8,23 @@ const base = {
   hasCatalog: true,
   hasArtists: true,
   valuationReady: false,
+  measuredButNoStreams: false,
 };
 
 describe("getSetupValuationStatus", () => {
+  // chat#1969: measured with zero plays is a terminal answer, not a pending
+  // one. Rendering "measuring" forever for a zero-stream catalog is the same
+  // dishonesty as the deleted shell email.
+  it("is no_streams when the catalog measured with zero plays", () => {
+    expect(
+      getSetupValuationStatus({ ...base, measuredButNoStreams: true }),
+    ).toBe("no_streams");
+  });
+
+  it("stays measuring when the valuation is pending without a zero-stream verdict", () => {
+    expect(getSetupValuationStatus({ ...base })).toBe("measuring");
+  });
+
   // `isPending`, not `isLoading`: useCatalogs is enabled: !!accountId &&
   // authenticated, and a disabled TanStack v5 query reports isPending true /
   // isFetching false. Redirecting on isLoading bounced every cold load of the
