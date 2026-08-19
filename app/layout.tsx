@@ -9,7 +9,6 @@ import { Suspense } from "react";
 import ArtistSettingModal from "@/components/ArtistSettingModal";
 import AddArtistDialog from "@/components/Artists/AddArtistDialog";
 import MobileDownloadModal from "@/components/ModalDownloadModal";
-import ArtistsSidebar from "@/components/Artists/ArtistsSidebar";
 import { ToastContainer } from "react-toastify";
 import { Toaster } from "sonner";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -93,7 +92,6 @@ export default function RootLayout({
                     {children}
                   </div>
                 </div>
-                <ArtistsSidebar />
               </div>
               <MobileDownloadModal />
             </div>
