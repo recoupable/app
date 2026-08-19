@@ -53,6 +53,15 @@ describe("getCatalogReportEmptyCopy", () => {
     expect(copy.cta).toEqual({ label: "Connect your profiles", href: "/setup/socials" });
   });
 
+  it("pluralizes the zero-stream track count correctly for one track", () => {
+    const copy = getCatalogReportEmptyCopy("no_streams", withCatalogs, {
+      measuredSongCount: 1,
+    });
+
+    expect(copy.body).toContain("1 track ");
+    expect(copy.body).not.toContain("1 tracks");
+  });
+
   it("keeps the zero-stream copy honest without a track count", () => {
     const copy = getCatalogReportEmptyCopy("no_streams", withCatalogs);
 

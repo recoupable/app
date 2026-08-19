@@ -52,6 +52,28 @@ describe("getValuationHeroState", () => {
     expect(state).toEqual({ show: false, noStreams: { measuredTrackCount: 29 } });
   });
 
+  it("does not trust a zero-stream verdict from a response outside the selected artist scope", () => {
+    // Artist selected, but the response does not echo that scope (pre-v2 api
+    // or unscoped read): whole-catalog zeros must not become a terminal
+    // no-streams verdict for the artist. Plain hide, no noStreams.
+    const state = getValuationHeroState({
+      catalog,
+      catalogsFailed: false,
+      measurements: {
+        ...wholeCatalogMeasurements,
+        total_streams: 0,
+        valuation: { low: 0, mid: 0, high: 0 },
+        measured_song_count: 29,
+        artist_account_id: null,
+      },
+      measurementsFailed: false,
+      selectedArtistName: "Nova",
+      selectedArtistAccountId: artistAccountId,
+    });
+
+    expect(state).toEqual({ show: false });
+  });
+
   it("still shows the hero when total_streams is absent (pre-v2 response shape)", () => {
     const state = getValuationHeroState({
       catalog,

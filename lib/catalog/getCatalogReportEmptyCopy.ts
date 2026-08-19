@@ -67,7 +67,7 @@ export function getCatalogReportEmptyCopy(
       ...copy,
       body: copy.body.replace(
         "We measured this catalog",
-        `We measured ${scope.measuredSongCount} tracks in this catalog`,
+        `We measured ${scope.measuredSongCount} track${scope.measuredSongCount === 1 ? "" : "s"} in this catalog`,
       ),
     };
   }

@@ -52,21 +52,23 @@ export function getValuationHeroState({
 
   if (!measurements.measured_song_count) return { show: false };
 
-  // Measured fine, zero plays (chat#1969): a $0 band is not a valuation. Hide
-  // the hero and say why, so /setup/valuation can render its honest zero state.
-  // Only an explicit 0 counts; an absent total_streams is the pre-v2 shape.
-  if (measurements.total_streams === 0) {
-    return {
-      show: false,
-      noStreams: { measuredTrackCount: measurements.measured_song_count },
-    };
-  }
-
   if (
     selectedArtistAccountId &&
     measurements.artist_account_id !== selectedArtistAccountId
   ) {
     return { show: false };
+  }
+
+  // Measured fine, zero plays (chat#1969): a $0 band is not a valuation. Hide
+  // the hero and say why, so /setup/valuation can render its honest zero state.
+  // Only an explicit 0 counts; an absent total_streams is the pre-v2 shape.
+  // After the scope check above, so an unscoped response can never mint a
+  // terminal zero-stream verdict for a selected artist.
+  if (measurements.total_streams === 0) {
+    return {
+      show: false,
+      noStreams: { measuredTrackCount: measurements.measured_song_count },
+    };
   }
 
   return {
