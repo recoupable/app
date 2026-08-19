@@ -54,6 +54,17 @@ const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
     totalStreams,
     catalogAgeYears: measurements.catalog_age_years,
   });
+  // Measured with zero plays (chat#1969): a $0 valuation card is not a report.
+  if (measuredSongCount > 0 && totalStreams === 0) {
+    return (
+      <CatalogReportEmptyState
+        state="no_streams"
+        hasOwnCatalogs={hasOwnCatalogs}
+        measuredSongCount={measuredSongCount}
+      />
+    );
+  }
+
   const insights = buildReportInsights({
     totalSongs: totalSongs ?? measuredSongCount,
     measuredSongCount,

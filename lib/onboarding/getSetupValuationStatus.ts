@@ -1,4 +1,9 @@
-export type SetupValuationStatus = "loading" | "redirect" | "measuring" | "ready";
+export type SetupValuationStatus =
+  | "loading"
+  | "redirect"
+  | "measuring"
+  | "ready"
+  | "no_streams";
 
 interface SetupValuationStatusInput {
   /** The roster loads asynchronously; empty-while-loading is not "no artists". */
@@ -9,6 +14,8 @@ interface SetupValuationStatusInput {
   /** Seeding fires on the first artist add, so an artist means a catalog is coming. */
   hasArtists: boolean;
   valuationReady: boolean;
+  /** Measured with zero plays (chat#1969) — a terminal verdict, not pending. */
+  measuredButNoStreams: boolean;
 }
 
 /**
@@ -31,6 +38,7 @@ export function getSetupValuationStatus({
   hasCatalog,
   hasArtists,
   valuationReady,
+  measuredButNoStreams,
 }: SetupValuationStatusInput): SetupValuationStatus {
   if (catalogsPending || artistsPending) return "loading";
   if (catalogsFailed) return "redirect";
@@ -39,5 +47,8 @@ export function getSetupValuationStatus({
   // signup who followed the flow to an empty /catalogs, which is a worse dead
   // end than the static panel this row set out to fix.
   if (!hasCatalog) return hasArtists ? "measuring" : "redirect";
+  // A measured-zero catalog must not spin as "measuring" forever — that is the
+  // same dishonesty as the shell email chat#1969 deleted.
+  if (measuredButNoStreams) return "no_streams";
   return valuationReady ? "ready" : "measuring";
 }

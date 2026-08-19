@@ -31,6 +31,40 @@ const artistScopedMeasurements: CatalogMeasurementsResponse = {
 };
 
 describe("getValuationHeroState", () => {
+  // chat#1969: with the zero-stream shell email deleted, the app must not show
+  // a $0 band either. The hero hides (homepage falls back to the chat
+  // greeting) and reports why, so /setup/valuation can render its honest state.
+  it("hides the hero for a measured catalog with zero streams and says why", () => {
+    const state = getValuationHeroState({
+      catalog,
+      catalogsFailed: false,
+      measurements: {
+        ...wholeCatalogMeasurements,
+        total_streams: 0,
+        valuation: { low: 0, mid: 0, high: 0 },
+        measured_song_count: 29,
+      },
+      measurementsFailed: false,
+      selectedArtistName: null,
+      selectedArtistAccountId: null,
+    });
+
+    expect(state).toEqual({ show: false, noStreams: { measuredTrackCount: 29 } });
+  });
+
+  it("still shows the hero when total_streams is absent (pre-v2 response shape)", () => {
+    const state = getValuationHeroState({
+      catalog,
+      catalogsFailed: false,
+      measurements: wholeCatalogMeasurements,
+      measurementsFailed: false,
+      selectedArtistName: null,
+      selectedArtistAccountId: null,
+    });
+
+    expect(state.show).toBe(true);
+  });
+
   it("hides the hero while catalogs are still loading / the account has none", () => {
     expect(
       getValuationHeroState({

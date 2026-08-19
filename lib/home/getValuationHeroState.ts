@@ -14,7 +14,7 @@ interface GetValuationHeroStateParams {
 }
 
 export type ValuationHeroState =
-  | { show: false }
+  | { show: false; noStreams?: { measuredTrackCount: number } }
   | {
       show: true;
       showArtist: boolean;
@@ -51,6 +51,16 @@ export function getValuationHeroState({
   if (!measurements?.valuation) return { show: false };
 
   if (!measurements.measured_song_count) return { show: false };
+
+  // Measured fine, zero plays (chat#1969): a $0 band is not a valuation. Hide
+  // the hero and say why, so /setup/valuation can render its honest zero state.
+  // Only an explicit 0 counts; an absent total_streams is the pre-v2 shape.
+  if (measurements.total_streams === 0) {
+    return {
+      show: false,
+      noStreams: { measuredTrackCount: measurements.measured_song_count },
+    };
+  }
 
   if (
     selectedArtistAccountId &&

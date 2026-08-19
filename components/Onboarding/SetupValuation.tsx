@@ -5,6 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ValuationHero from "@/components/Home/ValuationHero";
 import MeasuringCatalogPanel from "@/components/Onboarding/MeasuringCatalogPanel";
+import ZeroStreamsPanel from "@/components/Onboarding/ZeroStreamsPanel";
 import useSetupValuation from "@/hooks/useSetupValuation";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,15 @@ const SetupValuation = () => {
         <Skeleton className="h-8 w-1/2 rounded-lg" />
         <Skeleton className="h-[168px] w-full rounded-xl" />
       </div>
+    );
+  }
+
+  // Measured with zero plays: a terminal answer, never "measuring" (chat#1969).
+  if (status === "no_streams") {
+    return (
+      <ZeroStreamsPanel
+        measuredTrackCount={!valuation.show ? valuation.noStreams?.measuredTrackCount : undefined}
+      />
     );
   }
 

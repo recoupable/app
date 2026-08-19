@@ -1,10 +1,11 @@
 import type { CatalogReportState } from "./getCatalogReportState";
 import { MEASURING_BODY, MEASURING_TITLE } from "./measuringCopy";
 
-export type CatalogReportEmptyState = Exclude<
-  CatalogReportState,
-  "loading" | "ready"
->;
+export type CatalogReportEmptyState =
+  | Exclude<CatalogReportState, "loading" | "ready">
+  // Measured fine, zero plays: not a load/auth state, decided by the report
+  // body itself (chat#1969).
+  | "no_streams";
 
 export interface CatalogReportEmptyCopy {
   title: string;
@@ -16,6 +17,11 @@ export interface CatalogReportEmptyCopy {
 export interface CatalogReportViewer {
   /** Whether the signed-in viewer has any catalog of their own. */
   hasOwnCatalogs: boolean;
+}
+
+export interface CatalogReportMeasuredScope {
+  /** Tracks measured in scope, when the caller knows it. */
+  measuredSongCount?: number;
 }
 
 const COPY: Record<CatalogReportEmptyState, CatalogReportEmptyCopy> = {
@@ -37,6 +43,11 @@ const COPY: Record<CatalogReportEmptyState, CatalogReportEmptyCopy> = {
     title: "Couldn't load this report",
     body: "Something went wrong loading the measurements. Refresh to try again; your songs are still available in the Manage songs tab.",
   },
+  no_streams: {
+    title: "No streams found yet",
+    body: "We measured this catalog and found no Spotify plays yet. Connect your artist profiles so future measurements can pick up your streams, and your valuation will appear as plays start logging.",
+    cta: { label: "Connect your profiles", href: "/setup/socials" },
+  },
 };
 
 /**
@@ -47,8 +58,19 @@ const COPY: Record<CatalogReportEmptyState, CatalogReportEmptyCopy> = {
 export function getCatalogReportEmptyCopy(
   state: CatalogReportEmptyState,
   viewer: CatalogReportViewer,
+  scope: CatalogReportMeasuredScope = {},
 ): CatalogReportEmptyCopy {
   const copy = COPY[state];
+
+  if (state === "no_streams" && scope.measuredSongCount) {
+    return {
+      ...copy,
+      body: copy.body.replace(
+        "We measured this catalog",
+        `We measured ${scope.measuredSongCount} tracks in this catalog`,
+      ),
+    };
+  }
 
   // A viewer who cannot see this catalog still needs somewhere to go, and
   // "your catalogs" is only somewhere for people who have one. A stranger

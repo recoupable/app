@@ -39,6 +39,7 @@ const useSetupValuation = (): {
     hasCatalog: !!data?.catalogs?.length,
     hasArtists: (sorted ?? []).some(artist => !artist.isWorkspace),
     valuationReady: valuation.show,
+    measuredButNoStreams: !valuation.show && !!valuation.noStreams,
   });
 
   useEffect(() => {
