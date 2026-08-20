@@ -6,6 +6,8 @@ import EmptySongsState from "@/components/ArtistProfile/EmptySongsState";
 
 const ARTIST = "ec1443b3-6928-4eb9-955c-b426bae9e444";
 const SPOTIFY_SOCIAL = {
+  type: "SPOTIFY",
+  username: "Braden Hull",
   profile_url: "open.spotify.com/artist/6HhLzHoMHji3wtrHBFqXbz",
 };
 
