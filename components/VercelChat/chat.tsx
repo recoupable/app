@@ -5,6 +5,7 @@ import { Messages } from "./messages";
 import ChatInput from "./ChatInput";
 import ChatSkeleton from "../Chat/ChatSkeleton";
 import ChatGreeting from "../Chat/ChatGreeting";
+import ValuationRunStatusChip from "@/components/Valuation/ValuationRunStatusChip";
 import useVisibilityDelay from "@/hooks/useVisibilityDelay";
 import { useParams } from "next/navigation";
 import { useArtistFromChat } from "@/hooks/useArtistFromChat";
@@ -124,6 +125,9 @@ function ChatContentMemoized({
 
           {/* Centered greeting and chat input */}
           <div className="w-full max-w-3xl mx-auto">
+            <div className="mb-2 flex justify-center">
+              <ValuationRunStatusChip />
+            </div>
             <ChatGreeting isVisible={isVisible} />
             <div className="mt-1 md:mt-6">
               <ChatInput />
