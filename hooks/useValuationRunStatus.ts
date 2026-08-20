@@ -32,14 +32,21 @@ const useValuationRunStatus = (): {
     },
     enabled: !!accountId && authenticated,
     refetchInterval: (query) => getRunPollInterval(query.state.data?.runs?.[0]),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const run = data?.runs?.[0];
 
   // A run just landed: the catalog reads are stale the moment it is claimed.
+  // Any observed in-flight phase counts — a fast run can jump queued →
+  // claimed between polls. A run first observed already claimed does not
+  // invalidate: nothing this mount showed predates it.
   const previousState = useRef<ValuationRun["state"] | undefined>(undefined);
   useEffect(() => {
-    if (run?.state === "claimed" && previousState.current === "measuring") {
+    const wasInFlight =
+      previousState.current === "measuring" || previousState.current === "queued";
+    if (run?.state === "claimed" && wasInFlight) {
       queryClient.invalidateQueries({ queryKey: ["catalogs"] });
       queryClient.invalidateQueries({ queryKey: ["catalog-measurements"] });
     }
