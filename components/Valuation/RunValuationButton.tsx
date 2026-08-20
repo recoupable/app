@@ -25,7 +25,12 @@ const RunValuationButton = ({
   /** Run for this artist instead of the resolved roster artist (artist page). */
   spotifyArtistId?: string;
 }) => {
-  const { run, isRunning, error, canRun, artistName } = useRunValuation(spotifyArtistId);
+  const { run, isRunning, error, canRun, artistName, rosterPending } =
+    useRunValuation(spotifyArtistId);
+
+  // An unresolved roster is not "no runnable artist" — deciding on a pending
+  // roster would flash the setup route at accounts that can run.
+  if (rosterPending && !canRun) return null;
 
   if (!canRun) {
     return (
@@ -41,6 +46,7 @@ const RunValuationButton = ({
         type="button"
         onClick={run}
         disabled={isRunning}
+        aria-busy={isRunning}
         className={cn(buttonVariants(), "min-w-[200px]")}
       >
         {isRunning ? (

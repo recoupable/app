@@ -33,6 +33,21 @@ describe("runValuation", () => {
     );
   });
 
+  it("includes organization_id when an organization context is given", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({ status: "success" }),
+    }) as unknown as typeof fetch;
+
+    await runValuation("tok", "0xPoV", "org-1");
+
+    const [, options] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(JSON.parse(options.body)).toEqual({
+      spotify_artist_id: "0xPoV",
+      organization_id: "org-1",
+    });
+  });
+
   // The API's error string is the diagnostic ("No releases found for this
   // Spotify artist" exposed a wrong-duplicate profile pick in live use) — it
   // must reach the caller verbatim, never wrapped in a generic message.
