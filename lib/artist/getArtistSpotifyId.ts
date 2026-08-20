@@ -1,4 +1,5 @@
 import type { ArtistRecord } from "@/types/Artist";
+import { getSpotifyIdFromUrl } from "@/lib/artist/getSpotifyIdFromUrl";
 
 /**
  * The Spotify artist id from a roster artist's connected socials, or null when
@@ -8,8 +9,8 @@ import type { ArtistRecord } from "@/types/Artist";
  */
 export function getArtistSpotifyId(artist: ArtistRecord): string | null {
   for (const social of artist.account_socials ?? []) {
-    const match = social.link?.match(/spotify\.com\/artist\/([A-Za-z0-9]+)/);
-    if (match) return match[1];
+    const id = getSpotifyIdFromUrl(social.link);
+    if (id) return id;
   }
   return null;
 }

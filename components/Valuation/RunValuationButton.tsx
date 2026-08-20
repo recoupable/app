@@ -17,8 +17,16 @@ import useRunValuation from "@/hooks/useRunValuation";
  * Accounts with no roster artist carrying a Spotify profile fall back to the
  * /setup/artists route: there is no id to run against.
  */
-const RunValuationButton = ({ className }: { className?: string }) => {
-  const { run, isRunning, error, canRun, artistName, rosterPending } = useRunValuation();
+const RunValuationButton = ({
+  className,
+  spotifyArtistId,
+}: {
+  className?: string;
+  /** Run for this artist instead of the resolved roster artist (artist page). */
+  spotifyArtistId?: string;
+}) => {
+  const { run, isRunning, error, canRun, artistName, rosterPending } =
+    useRunValuation(spotifyArtistId);
 
   // An unresolved roster is not "no runnable artist" — deciding on a pending
   // roster would flash the setup route at accounts that can run.

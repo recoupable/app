@@ -41,7 +41,7 @@ const ArtistProfilePage = async ({ params }: Params) => {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <ArtistHero profile={profile} />
-      <SongsSection catalogs={profile.catalogs} />
+      <SongsSection catalogs={profile.catalogs} artistId={profile.id} socials={profile.socials} />
       <PublicFooter />
     </div>
   );
