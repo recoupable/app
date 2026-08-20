@@ -60,9 +60,9 @@ const CatalogsPageContent = () => {
         <p className="text-sm text-muted-foreground">
           {getCatalogsEmptyCopy(orgId, orgName)}
         </p>
-        {/* Personal scope only: a run always lands the catalog on the calling
-            account, so an org-scoped empty list is not this button's job. */}
-        {!orgId && <RunValuationButton />}
+        {/* Org-scoped runs land the catalog on the selected organization:
+            useRunValuation passes the selected org to POST /api/valuation. */}
+        <RunValuationButton />
       </div>
     );
   }

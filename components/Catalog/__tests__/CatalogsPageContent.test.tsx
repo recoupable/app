@@ -128,9 +128,10 @@ describe("CatalogsPageContent", () => {
     expect(screen.queryByText(/No catalogs in/)).toBeNull();
   });
 
-  // chat#1973: the personal-scope empty state is a primary no-valuation
-  // surface — it must carry the one-click run button, and an org-scoped empty
-  // view must not (a run always lands the catalog on the calling account).
+  // chat#1973: every empty catalogs view is a primary no-valuation surface —
+  // personal and org-scoped alike carry the one-click run button. The run
+  // inherits the selected organization (useRunValuation passes it, so the
+  // resulting catalog lands on the org, not the calling account).
   it("renders the run button on the personal-scope empty state", () => {
     state.selectedOrgId = null;
     state.catalogsOverride = [];
@@ -140,11 +141,12 @@ describe("CatalogsPageContent", () => {
     expect(screen.getByText("Run valuation")).toBeDefined();
   });
 
-  it("does not render the run button on an organization-scoped empty state", () => {
+  it("renders the run button on an organization-scoped empty state", () => {
     state.selectedOrgId = DUETTI;
     state.catalogsOverride = [];
     render(<CatalogsPageContent />);
 
-    expect(screen.queryByText("Run valuation")).toBeNull();
+    expect(screen.getByText("No catalogs in Duetti yet.")).toBeDefined();
+    expect(screen.getByText("Run valuation")).toBeDefined();
   });
 });
