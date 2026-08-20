@@ -1,5 +1,6 @@
 "use client";
 
+import { usePrivy } from "@privy-io/react-auth";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import RunValuationButton from "@/components/Valuation/RunValuationButton";
 import { getSpotifyIdFromUrl } from "@/lib/artist/getSpotifyIdFromUrl";
@@ -25,19 +26,29 @@ const EmptySongsState = ({
   artistId: string;
   socials: ArtistProfileSocial[];
 }) => {
+  const { ready, authenticated } = usePrivy();
   // The full roster, not the org-scoped `sorted`: rostering is an account
   // fact, and a selected organization must not hide the run from the owner.
-  const { artists, isLoading: rosterPending } = useArtistProvider();
-  const spotifySocial = socials.find((social) => getSpotifyIdFromUrl(social.profile_url));
+  const { artists, isLoading } = useArtistProvider();
+  const spotifySocial = socials.find((social) =>
+    getSpotifyIdFromUrl(social.profile_url),
+  );
   const spotifyArtistId = getSpotifyIdFromUrl(spotifySocial?.profile_url);
-  const rostersArtist = (artists ?? []).some((artist) => artist.account_id === artistId);
+  const rostersArtist = (artists ?? []).some(
+    (artist) => artist.account_id === artistId,
+  );
+  // The roster query is disabled while signed out, so its pending flag never
+  // resolves — only a signed-in viewer's roster is worth waiting for.
+  const rosterPending = !ready || (authenticated && isLoading);
 
   return (
     <section className="flex flex-col items-start gap-4 px-5 pb-12 md:px-12 md:pb-16">
-      <h2 className="font-mono text-lg font-bold uppercase tracking-wide md:text-[22px]">Songs</h2>
+      <h2 className="font-mono text-lg font-bold uppercase tracking-wide md:text-[22px]">
+        Songs
+      </h2>
       <p className="text-sm text-muted-foreground">
-        No songs measured yet. A valuation measures this artist&apos;s releases and builds the
-        catalog you see here.
+        No songs measured yet. A valuation measures this artist&apos;s releases
+        and builds the catalog you see here.
       </p>
       {rosterPending ? null : rostersArtist && spotifyArtistId ? (
         <>
@@ -53,7 +64,11 @@ const EmptySongsState = ({
               >
                 {spotifySocial.profile_url.replace(/^https?:\/\//i, "")}
               </a>
-              . Wrong profile? <a href="/setup/socials" className="underline underline-offset-2">Fix it in verify socials</a>.
+              . Wrong profile?{" "}
+              <a href="/setup/socials" className="underline underline-offset-2">
+                Fix it in verify socials
+              </a>
+              .
             </p>
           )}
         </>
