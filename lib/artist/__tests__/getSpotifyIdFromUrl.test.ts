@@ -18,4 +18,11 @@ describe("getSpotifyIdFromUrl", () => {
     expect(getSpotifyIdFromUrl("https://open.spotify.com/track/123")).toBeNull();
     expect(getSpotifyIdFromUrl("https://instagram.com/artist/nova")).toBeNull();
   });
+
+  // The host must actually be Spotify — a lookalike host or a Spotify-shaped
+  // path on another site must never mint a runnable id.
+  it("rejects lookalike hosts and spotify-shaped paths on other hosts", () => {
+    expect(getSpotifyIdFromUrl("https://notspotify.com/artist/abc123")).toBeNull();
+    expect(getSpotifyIdFromUrl("https://example.com/spotify.com/artist/abc123")).toBeNull();
+  });
 });
