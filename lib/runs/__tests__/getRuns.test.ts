@@ -33,6 +33,15 @@ describe("getRuns", () => {
     expect(result.runs[0].state).toBe("measuring");
   });
 
+  it("throws when a 2xx envelope carries status error", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({ status: "error", error: "backend hiccup" }),
+    }) as unknown as typeof fetch;
+
+    await expect(getRuns("tok")).rejects.toThrow("backend hiccup");
+  });
+
   it("throws on a non-ok response", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,

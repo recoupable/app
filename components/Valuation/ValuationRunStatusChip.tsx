@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import useValuationRunStatus from "@/hooks/useValuationRunStatus";
 
 /**
@@ -17,7 +18,10 @@ const ValuationRunStatusChip = ({ className }: { className?: string }) => {
   return (
     <span
       role="status"
-      className={`inline-flex items-center gap-2 rounded-full bg-card px-3 py-1 text-xs text-muted-foreground shadow-[0px_0px_0px_1px_var(--border)] ${className ?? ""}`}
+      className={cn(
+        "inline-flex items-center gap-2 rounded-full bg-card px-3 py-1 text-xs text-muted-foreground shadow-[0px_0px_0px_1px_var(--border)]",
+        className,
+      )}
     >
       <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
       Valuation in progress

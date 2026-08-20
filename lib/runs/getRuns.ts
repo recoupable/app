@@ -35,5 +35,11 @@ export async function getRuns(accessToken: string): Promise<GetRunsResponse> {
     throw new Error(`HTTP ${res.status}: ${detail}`.trim());
   }
 
-  return res.json();
+  const body: GetRunsResponse & { error?: string } = await res.json();
+  // A 2xx envelope can still carry status "error"; treating it as "no runs"
+  // would hide a real failure and stop the status poll.
+  if (body.status === "error") {
+    throw new Error(body.error || "Failed to fetch runs");
+  }
+  return body;
 }
