@@ -4,6 +4,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MEASURING_BODY, MEASURING_TITLE } from "@/lib/catalog/measuringCopy";
+import RunValuationButton from "@/components/Valuation/RunValuationButton";
 
 /**
  * Terminal state for `/setup/valuation` while a catalog exists but has no
@@ -23,6 +24,10 @@ const MeasuringCatalogPanel = () => (
     <Link href="/setup/tasks" className={cn(buttonVariants(), "min-w-[200px]")}>
       Set up your weekly report
     </Link>
+    <div className="mt-2 flex flex-col items-center gap-2">
+      <p className="text-xs text-muted-foreground">Been waiting a while?</p>
+      <RunValuationButton />
+    </div>
   </section>
 );
 

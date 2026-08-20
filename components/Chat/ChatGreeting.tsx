@@ -4,7 +4,7 @@ import ValuationHero from "@/components/Home/ValuationHero";
 import useHomeValuation from "@/hooks/useHomeValuation";
 import TasksModule from "@/components/Home/TasksModule";
 import HomeSuggestedPrompts from "@/components/Home/HomeSuggestedPrompts";
-import { VALUATION_URL } from "@/lib/consts";
+import HomeValuationCta from "@/components/Valuation/HomeValuationCta";
 
 /**
  * The empty chat's home header (recoupable/chat#1850), valuation first —
@@ -68,14 +68,7 @@ export function ChatGreeting({ isVisible }: { isVisible: boolean }) {
         {isArtistSelected ? artistName : "your roster"}
       </span>
       <div className="mb-4 mt-4">
-        <a
-          href={VALUATION_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="rounded-full bg-card px-4 py-2 text-sm font-normal text-muted-foreground shadow-[0px_0px_0px_1px_var(--border)] transition-colors hover:text-foreground"
-        >
-          Get a free catalog valuation &rarr;
-        </a>
+        <HomeValuationCta />
       </div>
       <div className="text-left text-sm font-normal tracking-normal">
         <TasksModule />

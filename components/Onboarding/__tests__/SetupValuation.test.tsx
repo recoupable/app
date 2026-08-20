@@ -10,6 +10,12 @@ let valuationResult: Record<string, unknown>;
 let artists: { isWorkspace?: boolean }[];
 let artistsPending: boolean;
 
+// The measuring panel renders the one-click run button (chat#1973), whose
+// hook is out of scope for this suite.
+vi.mock("@/components/Valuation/RunValuationButton", () => ({
+  default: () => null,
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace }),
 }));

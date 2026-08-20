@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import RunValuationButton from "@/components/Valuation/RunValuationButton";
 
 /**
  * `/setup/valuation` for a catalog that measured with zero plays (chat#1969):
@@ -21,6 +22,9 @@ const ZeroStreamsPanel = ({ measuredTrackCount }: { measuredTrackCount?: number 
     <Link href="/setup/socials" className={cn(buttonVariants(), "min-w-[200px]")}>
       Check your matched profiles
     </Link>
+    {/* Re-run is idempotent server-side (api#844): inside the reuse window it
+        converges on the same catalog instead of minting a duplicate. */}
+    <RunValuationButton />
   </section>
 );
 
