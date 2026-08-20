@@ -20,10 +20,14 @@ export interface RunValuationResult {
  *
  * @param accessToken - Privy bearer for the owning account.
  * @param spotifyArtistId - The Spotify artist id to value.
+ * @param organizationId - Optional organization to own the resulting catalog
+ *   (must match the caller's selected organization context, or the catalog
+ *   silently lands on the personal account).
  */
 export async function runValuation(
   accessToken: string,
   spotifyArtistId: string,
+  organizationId?: string,
 ): Promise<RunValuationResult> {
   const res = await fetch(`${getClientApiBaseUrl()}/api/valuation`, {
     method: "POST",
@@ -31,7 +35,10 @@ export async function runValuation(
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     },
-    body: JSON.stringify({ spotify_artist_id: spotifyArtistId }),
+    body: JSON.stringify({
+      spotify_artist_id: spotifyArtistId,
+      ...(organizationId && { organization_id: organizationId }),
+    }),
   });
 
   if (!res.ok) {

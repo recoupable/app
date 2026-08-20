@@ -18,7 +18,11 @@ import useRunValuation from "@/hooks/useRunValuation";
  * /setup/artists route: there is no id to run against.
  */
 const RunValuationButton = ({ className }: { className?: string }) => {
-  const { run, isRunning, error, canRun, artistName } = useRunValuation();
+  const { run, isRunning, error, canRun, artistName, rosterPending } = useRunValuation();
+
+  // An unresolved roster is not "no runnable artist" — deciding on a pending
+  // roster would flash the setup route at accounts that can run.
+  if (rosterPending && !canRun) return null;
 
   if (!canRun) {
     return (
@@ -34,6 +38,7 @@ const RunValuationButton = ({ className }: { className?: string }) => {
         type="button"
         onClick={run}
         disabled={isRunning}
+        aria-busy={isRunning}
         className={cn(buttonVariants(), "min-w-[200px]")}
       >
         {isRunning ? (
