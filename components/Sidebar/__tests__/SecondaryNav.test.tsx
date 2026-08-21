@@ -18,6 +18,7 @@ const renderNav = (overrides = {}) => {
       isFiles={false}
       isCatalogs={false}
       isArtists={false}
+      isMusic={false}
       onNavigate={onNavigate}
       {...overrides}
     />,
@@ -61,5 +62,15 @@ describe("SecondaryNav", () => {
     expect(screen.getByRole("button", { name: /view agents/i })).toBeDefined();
     expect(screen.getByRole("button", { name: /view tasks/i })).toBeDefined();
     expect(screen.getByRole("button", { name: /view files/i })).toBeDefined();
+  });
+
+  // chat#1992: /music is the generation surface; without a nav item it is
+  // reachable only by typing the URL, which is how /catalogs was stranded.
+  it("links Music and navigates to the music route", () => {
+    const { onNavigate } = renderNav();
+
+    fireEvent.click(screen.getByRole("button", { name: /view music/i }));
+
+    expect(onNavigate).toHaveBeenCalledWith("music");
   });
 });

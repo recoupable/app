@@ -15,6 +15,7 @@ import { usePathname } from "next/navigation";
 import TasksNavItem from "../Sidebar/TasksNavItem";
 import FilesNavItem from "../Sidebar/FilesNavItem";
 import CatalogsNavItem from "../Sidebar/CatalogsNavItem";
+import MusicNavItem from "../Sidebar/MusicNavItem";
 import ArtistsNavItem from "../Sidebar/ArtistsNavItem";
 
 const SideMenu = ({
@@ -35,6 +36,7 @@ const SideMenu = ({
   const isFiles = pathname.includes("/files");
   const isCatalogs = pathname.includes("/catalogs");
   const isArtists = pathname.includes("/artists");
+  const isMusic = pathname.includes("/music");
 
   const goToItem = (link?: string) => {
     if (isPrepared()) {
@@ -95,6 +97,7 @@ const SideMenu = ({
             isActive={isCatalogs}
             onClick={() => goToItem("catalogs")}
           />
+          <MusicNavItem isActive={isMusic} onClick={() => goToItem("music")} />
           <AgentsNavItem
             isActive={isAgents}
             onClick={() => goToItem("agents")}
