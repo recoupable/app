@@ -14,7 +14,11 @@ export const MUSIC_DEFAULTS = {
 export const MUSIC_RANGES = {
   duration: { min: 10, max: 300, step: 5 },
   numInferenceSteps: { min: 1, max: 100, step: 1 },
-  guidanceScale: { min: 0, max: 20, step: 0.5 },
+  // step 0.1, not fal's 0.5: the documented default is 1.7, which is not a
+  // multiple of 0.5, so a coarser step left the thumb snapped to 1.5 while the
+  // readout said 1.7 and made the default unreachable once dragged. fal can
+  // use 0.5 because its control is a number field you can type into.
+  guidanceScale: { min: 0, max: 20, step: 0.1 },
 } as const;
 
 /** Parameter descriptions, taken from the model's own schema. */
