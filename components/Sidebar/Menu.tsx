@@ -26,6 +26,7 @@ const Menu = ({ isExpanded, isPinned = false, onTogglePin }: MenuProps) => {
   const isFiles = pathname.includes("/files");
   const isCatalogs = pathname.includes("/catalogs");
   const isArtists = pathname.includes("/artists");
+  const isMusic = pathname.includes("/music");
 
   const goToItem = (link?: string) => {
     if (isPrepared()) {
@@ -51,6 +52,7 @@ const Menu = ({ isExpanded, isPinned = false, onTogglePin }: MenuProps) => {
         isFiles={isFiles}
         isCatalogs={isCatalogs}
         isArtists={isArtists}
+        isMusic={isMusic}
         onNavigate={goToItem}
       />
 
