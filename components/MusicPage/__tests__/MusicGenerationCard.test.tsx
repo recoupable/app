@@ -10,16 +10,9 @@ const generation = (over: Partial<MusicGeneration> = {}): MusicGeneration => ({
   status: "completed",
   prompt: "Genre: acoustic pop.",
   lyrics: "[verse]\nMorning light",
-  title: "Midnight Interstate",
   model: "minimax/music-3",
   duration_seconds: 60,
-  seed: 42,
-  num_inference_steps: 30,
-  guidance_scale: 1.7,
   audio_url: "https://cdn.example/music/abc.wav",
-  mime_type: "audio/wav",
-  file_size_bytes: 100,
-  organization_id: null,
   error_message: null,
   created_at: "2026-08-21T12:00:00.000Z",
   updated_at: "2026-08-21T12:00:00.000Z",
@@ -30,7 +23,7 @@ describe("MusicGenerationCard", () => {
   it("offers a download beside a completed song", () => {
     render(<MusicGenerationCard generation={generation()} />);
 
-    const download = screen.getByRole("link", { name: /download midnight interstate/i });
+    const download = screen.getByRole("link", { name: /download genre: acoustic pop/i });
     expect(download.getAttribute("href")).toBe("https://cdn.example/music/abc.wav");
     expect(download.hasAttribute("download")).toBe(true);
   });
@@ -61,8 +54,8 @@ describe("MusicGenerationCard", () => {
     expect(screen.queryByRole("link", { name: /download/i })).toBeNull();
   });
 
-  it("falls back to the prompt when a generation has no title", () => {
-    render(<MusicGenerationCard generation={generation({ title: null })} />);
+  it("identifies a song by its prompt, which is what the API returns", () => {
+    render(<MusicGenerationCard generation={generation()} />);
 
     expect(screen.getByText("Genre: acoustic pop.")).toBeDefined();
   });

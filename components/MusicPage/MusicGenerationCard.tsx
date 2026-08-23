@@ -7,7 +7,9 @@ import type { MusicGeneration } from "@/types/Music";
 
 const MusicGenerationCard = ({ generation }: { generation: MusicGeneration }) => {
   const isCompleted = generation.status === "completed" && !!generation.audio_url;
-  const title = generation.title || generation.prompt;
+  // The API returns no title: the prompt is what the user wrote and what
+  // identifies the song to them.
+  const title = generation.prompt;
 
   return (
     <div className="p-4 border rounded-lg">
