@@ -12,7 +12,10 @@ const MusicGenerationCard = ({ generation }: { generation: MusicGeneration }) =>
   const title = generation.prompt;
 
   return (
-    <div className="p-4 border rounded-lg">
+    // min-w-0 because a grid item defaults to min-width:auto and will not
+    // shrink below its content. Without it this card rendered 719px wide in a
+    // 342px cell on mobile, pushing the player off screen.
+    <div className="p-4 border rounded-lg min-w-0">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h2 className="font-semibold text-base truncate">{title}</h2>
