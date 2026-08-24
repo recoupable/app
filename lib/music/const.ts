@@ -1,3 +1,5 @@
+import { formatCreditsAsUsd } from "@/lib/credits/creditUnit";
+
 /**
  * Generation parameter defaults and ranges.
  *
@@ -61,5 +63,5 @@ export function creditCostForDuration(durationSeconds: number): number {
  * @returns The cost formatted as USD.
  */
 export function formatCreditCostUsd(credits: number): string {
-  return `$${(credits / 100).toFixed(2)}`;
+  return formatCreditsAsUsd(credits);
 }
