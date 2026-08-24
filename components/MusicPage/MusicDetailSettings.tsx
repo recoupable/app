@@ -15,14 +15,21 @@ import type { MusicGeneration } from "@/types/Music";
  *
  * @param generation - The card's summary, already in hand when the dialog opens.
  * @param seed - Read live from fal; null while rendering or when unavailable.
+ * @param seedPending - Whether that read is still in flight.
  */
 const MusicDetailSettings = ({
   generation,
   seed,
+  seedPending,
 }: {
   generation: MusicGeneration;
   seed: number | null;
+  seedPending: boolean;
 }) => {
+  // "Not available" is a verdict, so it waits for the fetch to settle. The
+  // rest of the dialog comes from the summary and is correct immediately.
+  const seedValue = seedPending ? "Loading" : seed === null ? "Not available" : String(seed);
+
   const rows: { label: string; value: string; testId: string }[] = [
     { label: "Model", value: generation.model, testId: "music-detail-model" },
     { label: "Status", value: generation.status, testId: "music-detail-status" },
@@ -36,7 +43,7 @@ const MusicDetailSettings = ({
     },
     {
       label: "Seed",
-      value: seed === null ? "Not available" : String(seed),
+      value: seedValue,
       testId: "music-detail-seed",
     },
   ];

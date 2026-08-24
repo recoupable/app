@@ -30,7 +30,7 @@ const MusicDetailDialog = ({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) => {
-  const { data } = useMusicGeneration(generation.id, open);
+  const { data, isLoading } = useMusicGeneration(generation.id, open);
   const detail = data?.generation;
 
   return (
@@ -61,7 +61,11 @@ const MusicDetailDialog = ({
             testId="music-detail-lyrics"
           />
 
-          <MusicDetailSettings generation={generation} seed={detail?.seed ?? null} />
+          <MusicDetailSettings
+            generation={generation}
+            seed={detail?.seed ?? null}
+            seedPending={isLoading}
+          />
 
           {generation.status === "failed" && generation.error_message && (
             <p className="text-xs text-destructive">{generation.error_message}</p>

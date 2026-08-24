@@ -103,6 +103,18 @@ describe("MusicDetailDialog", () => {
     expect(screen.getByText("1:00")).toBeDefined();
   });
 
+  it("does not claim the seed is unavailable while it is still being fetched", () => {
+    // "Not available" is a verdict. Showing it during the fetch made a seed
+    // that was about to arrive look like one that never would.
+    mockDetail(undefined, true);
+
+    render(<MusicDetailDialog generation={summary()} open onOpenChange={() => {}} />);
+
+    const seed = screen.getByTestId("music-detail-seed").textContent;
+    expect(seed).not.toBe("Not available");
+    expect(seed).toBe("Loading");
+  });
+
   it("says the seed is unavailable rather than rendering a blank or a zero", () => {
     mockDetail(detail({ seed: null }));
 
