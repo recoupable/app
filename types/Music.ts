@@ -27,9 +27,14 @@ export interface MusicGenerationLogEntry {
 }
 
 /**
- * The single-generation read adds the progress timeline, which the API fetches
- * live from fal rather than storing.
+ * The single-generation read adds the progress timeline and the seed, both of
+ * which the API fetches live from fal rather than storing.
+ *
+ * `seed` is the only generation parameter fal gives back. `num_inference_steps`
+ * and `guidance_scale` are consumed at submit and never echoed by any fal
+ * endpoint, so they are not part of this resource (recoupable/api#850).
  */
 export interface MusicGenerationDetail extends MusicGeneration {
+  seed: number | null;
   logs: MusicGenerationLogEntry[];
 }

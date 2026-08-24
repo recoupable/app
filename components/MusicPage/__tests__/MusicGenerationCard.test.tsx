@@ -1,9 +1,12 @@
 // @vitest-environment jsdom
 import React from "react";
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import MusicGenerationCard from "@/components/MusicPage/MusicGenerationCard";
+import useMusicGeneration from "@/hooks/useMusicGeneration";
 import type { MusicGeneration } from "@/types/Music";
+
+vi.mock("@/hooks/useMusicGeneration", () => ({ default: vi.fn() }));
 
 const generation = (over: Partial<MusicGeneration> = {}): MusicGeneration => ({
   id: "11111111-2222-4333-8444-555555555555",
@@ -20,6 +23,15 @@ const generation = (over: Partial<MusicGeneration> = {}): MusicGeneration => ({
 });
 
 describe("MusicGenerationCard", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useMusicGeneration).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: null,
+    } as never);
+  });
+
   it("offers a download beside a completed song", () => {
     render(<MusicGenerationCard generation={generation()} />);
 
@@ -82,5 +94,51 @@ describe("MusicGenerationCard", () => {
     render(<MusicGenerationCard generation={generation()} />);
 
     expect(screen.getByText("Genre: acoustic pop.")).toBeDefined();
+  });
+
+  it("opens the detail dialog when the song is clicked", () => {
+    render(<MusicGenerationCard generation={generation()} />);
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: /view details/i }));
+
+    expect(screen.getByRole("dialog")).toBeDefined();
+  });
+
+  it("does not open the dialog when the download is clicked", () => {
+    // The download and the player sit inside the clickable card. Without
+    // stopping propagation, saving a song would also pop the dialog open.
+    render(<MusicGenerationCard generation={generation()} />);
+
+    fireEvent.click(screen.getByRole("link", { name: /download/i }));
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("does not open the dialog when the audio player is clicked", () => {
+    const { container } = render(<MusicGenerationCard generation={generation()} />);
+
+    const audio = container.querySelector("audio");
+    expect(audio).not.toBeNull();
+    fireEvent.click(audio as Element);
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("opens the dialog for a failed song too, so the reason can be read in full", () => {
+    render(
+      <MusicGenerationCard
+        generation={generation({
+          status: "failed",
+          audio_url: null,
+          error_message: "Lyrics structure tags were rejected.",
+        })}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /view details/i }));
+
+    expect(screen.getByRole("dialog")).toBeDefined();
   });
 });
