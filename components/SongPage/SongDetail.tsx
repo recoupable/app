@@ -9,28 +9,15 @@ import { MusicGenerationRequestError } from "@/lib/music/getMusicGeneration";
 /**
  * One song at its own URL.
  *
- * Unlike the dialog, this starts from an id alone — there is no card summary
- * to render from — so it shows a skeleton until the read lands.
+ * Starts from an id alone — there is no card summary to render from — so it
+ * shows a skeleton until the read lands.
  *
  * A 403 is rendered as a sentence rather than an error. The URL is meant to be
  * passed around, so it will reach people who cannot open it: a forwarded link,
  * someone outside the org. "You do not have access" is the truthful answer and
  * reads nothing like a broken page.
  */
-const SongDetail = ({
-  generationId,
-  inDialog = false,
-}: {
-  generationId: string;
-  /**
-   * Omit the page heading, because the dialog supplies its own title.
-   *
-   * Rendering both meant the dialog carried two "Song details" headings and a
-   * screen reader announced it twice. This component stays free of Radix so it
-   * can be rendered and tested on its own.
-   */
-  inDialog?: boolean;
-}) => {
+const SongDetail = ({ generationId }: { generationId: string }) => {
   const { data, isLoading, error } = useMusicGeneration(generationId, true);
   const generation = data?.generation;
 
@@ -77,7 +64,7 @@ const SongDetail = ({
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          {!inDialog && <h1 className="font-heading text-xl font-bold">Song details</h1>}
+          <h1 className="font-heading text-xl font-bold">Song details</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             Generated {new Date(generation.created_at).toLocaleString()}
           </p>

@@ -99,18 +99,11 @@ describe("SongDetail", () => {
     expect(screen.getByText("Lyrics structure tags were rejected.")).toBeDefined();
   });
 
-  it("does not render its own heading inside a dialog", () => {
-    // The dialog carried two "Song details" headings: SongDetail's own plus a
-    // hidden DialogTitle in SongModal. Visually identical, but a screen reader
-    // announced it twice.
+  it("renders exactly one page heading", () => {
     mock({ data: { status: "success", generation: detail() }, isLoading: false, error: null });
 
-    const page = render(<SongDetail generationId={ID} />);
-    expect(page.getAllByText("Song details")).toHaveLength(1);
-    page.unmount();
+    render(<SongDetail generationId={ID} />);
 
-    // In a dialog the title comes from SongModal, so this renders none.
-    const dialog = render(<SongDetail generationId={ID} inDialog />);
-    expect(dialog.queryByText("Song details")).toBeNull();
+    expect(screen.getAllByText("Song details")).toHaveLength(1);
   });
 });

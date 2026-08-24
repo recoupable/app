@@ -68,11 +68,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function RootLayout({
   children,
-  modal,
 }: Readonly<{
   children: React.ReactNode;
-  /** Parallel route slot for intercepted dialogs, e.g. a song opened from /music. */
-  modal: React.ReactNode;
 }>) {
   return (
     <html
@@ -97,7 +94,6 @@ export default function RootLayout({
                 </div>
               </div>
               <MobileDownloadModal />
-            {modal}
             </div>
             <ToastContainer />
             <Toaster />
