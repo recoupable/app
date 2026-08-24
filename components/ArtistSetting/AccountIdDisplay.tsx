@@ -1,7 +1,7 @@
 "use client";
 
 import { Copy, Check } from "lucide-react";
-import { useState } from "react";
+import { useCopy } from "@/hooks/useCopy";
 
 interface AccountIdDisplayProps {
   accountId: string;
@@ -12,17 +12,9 @@ const AccountIdDisplay = ({
   accountId,
   label = "Artist ID",
 }: AccountIdDisplayProps) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(accountId);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy account ID:", err);
-    }
-  };
+  // silent: the tick beside the id is already the confirmation, and these
+  // chips appear several to a page — a toast each would be noise.
+  const { copied, copy } = useCopy(2000, { silent: true });
 
   // Truncate account ID for display
   const truncatedId =
@@ -35,7 +27,7 @@ const AccountIdDisplay = ({
       <span className="text-xs text-muted-foreground">{label}</span>
       <button
         type="button"
-        onClick={handleCopy}
+        onClick={() => copy(accountId)}
         className="flex items-center gap-1 px-2 py-0.5 rounded-md hover:bg-accent transition-colors"
       >
         <span className="text-xs text-muted-foreground font-mono">{truncatedId}</span>
