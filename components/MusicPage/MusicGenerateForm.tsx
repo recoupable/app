@@ -85,7 +85,8 @@ const MusicGenerateForm = () => {
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-xs text-muted-foreground">
-            Costs {formatCreditCostUsd(credits)} for {settings.duration}s ({credits} credits)
+            Up to {formatCreditCostUsd(credits)} for {settings.duration}s ({credits} credits).
+            You are charged for the audio actually generated.
           </span>
           <div className="flex gap-2">
             <Button variant="ghost" onClick={reset} disabled={isPending} className="flex-1 sm:flex-none">
