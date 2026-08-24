@@ -11,13 +11,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Copy, Check } from "lucide-react";
 import { toast } from "sonner";
-import { useCopy } from "@/hooks/useCopy";
+import CopyButton from "@/components/CopyButton";
 
 export default function AccessPage() {
   const { getAccessToken, ready, authenticated } = usePrivy();
-  const { copied, copy } = useCopy();
 
   const {
     data: accessToken,
@@ -43,11 +41,6 @@ export default function AccessPage() {
       console.error(error);
     }
   }, [isError, error]);
-
-  const handleCopy = async () => {
-    if (!accessToken) return;
-    await copy(accessToken);
-  };
 
   if (!ready) {
     return (
@@ -96,23 +89,12 @@ export default function AccessPage() {
                 </pre>
               </div>
               <div className="flex gap-2">
-                <Button
-                  onClick={handleCopy}
-                  variant="outline"
+                <CopyButton
+                  text={accessToken}
+                  label="Token"
+                  showLabel
                   className="flex items-center gap-2"
-                >
-                  {copied ? (
-                    <>
-                      <Check className="h-4 w-4" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-4 w-4" />
-                      Copy Token
-                    </>
-                  )}
-                </Button>
+                />
                 <Button onClick={() => refetch()} variant="outline">
                   Refresh Token
                 </Button>

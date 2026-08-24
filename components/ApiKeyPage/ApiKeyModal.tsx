@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Copy, Check, AlertTriangle } from "lucide-react";
-import { useCopy } from "@/hooks/useCopy";
+import { AlertTriangle } from "lucide-react";
+import CopyButton from "@/components/CopyButton";
 
 interface ApiKeyModalProps {
   isOpen: boolean;
@@ -20,12 +20,6 @@ interface ApiKeyModalProps {
 }
 
 export function ApiKeyModal({ isOpen, onClose, apiKey }: ApiKeyModalProps) {
-  const { copied, copy } = useCopy();
-
-  const handleCopy = () => {
-    copy(apiKey);
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -47,19 +41,7 @@ export function ApiKeyModal({ isOpen, onClose, apiKey }: ApiKeyModalProps) {
                 readOnly
                 className="font-mono text-sm"
               />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleCopy}
-                className="px-3"
-              >
-                {copied ? (
-                  <Check className="h-4 w-4 text-green-600" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
+              <CopyButton text={apiKey} label="API key" className="px-3" size="sm" />
             </div>
           </div>
 

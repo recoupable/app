@@ -1,6 +1,6 @@
 "use client";
 
-import MusicCopyButton from "./MusicCopyButton";
+import CopyButton from "@/components/CopyButton";
 
 /**
  * A labelled block of generation text with its own copy button.
@@ -27,7 +27,7 @@ const MusicDetailText = ({
       <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </h3>
-      <MusicCopyButton label={label.toLowerCase()} text={text} />
+      <CopyButton label={label.toLowerCase()} text={text} className="size-7 shrink-0" />
     </div>
     <p
       data-testid={testId}
