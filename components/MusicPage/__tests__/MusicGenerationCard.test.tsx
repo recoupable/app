@@ -8,6 +8,9 @@ import type { MusicGeneration } from "@/types/Music";
 
 vi.mock("@/hooks/useMusicGeneration", () => ({ default: vi.fn() }));
 
+const push = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+
 const generation = (over: Partial<MusicGeneration> = {}): MusicGeneration => ({
   id: "11111111-2222-4333-8444-555555555555",
   status: "completed",
@@ -25,6 +28,7 @@ const generation = (over: Partial<MusicGeneration> = {}): MusicGeneration => ({
 describe("MusicGenerationCard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    push.mockClear();
     vi.mocked(useMusicGeneration).mockReturnValue({
       data: undefined,
       isLoading: false,
@@ -96,85 +100,46 @@ describe("MusicGenerationCard", () => {
     expect(screen.getByText("Genre: acoustic pop.")).toBeDefined();
   });
 
-  it("opens the detail dialog when the song is clicked", () => {
+  it("links the title to the song's own URL", () => {
     render(<MusicGenerationCard generation={generation()} />);
 
-    expect(screen.queryByRole("dialog")).toBeNull();
-
-    fireEvent.click(screen.getByRole("button", { name: /view details/i }));
-
-    expect(screen.getByRole("dialog")).toBeDefined();
+    const link = screen.getByRole("link", { name: /view details/i });
+    expect(link.getAttribute("href")).toBe(`/music/${generation().id}`);
   });
 
-  it("does not open the dialog when the download is clicked", () => {
+  it("navigates to the song when the card is clicked", () => {
+    const { container } = render(<MusicGenerationCard generation={generation()} />);
+
+    fireEvent.click(container.querySelector("div.cursor-pointer") as Element);
+
+    expect(push).toHaveBeenCalledWith(`/music/${generation().id}`);
+  });
+
+  it("does not navigate when the download is clicked", () => {
     // The download and the player sit inside the clickable card. Without
-    // stopping propagation, saving a song would also pop the dialog open.
+    // stopping propagation, saving a song would also navigate away from the
+    // gallery.
     render(<MusicGenerationCard generation={generation()} />);
 
     fireEvent.click(screen.getByRole("link", { name: /download/i }));
 
-    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(push).not.toHaveBeenCalled();
   });
 
-  it("does not open the dialog when the audio player is clicked", () => {
+  it("does not navigate when the audio player is clicked", () => {
     const { container } = render(<MusicGenerationCard generation={generation()} />);
 
-    const audio = container.querySelector("audio");
-    expect(audio).not.toBeNull();
-    fireEvent.click(audio as Element);
+    fireEvent.click(container.querySelector("audio") as Element);
 
-    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(push).not.toHaveBeenCalled();
   });
 
-  it("opens the dialog for a failed song too, so the reason can be read in full", () => {
-    render(
-      <MusicGenerationCard
-        generation={generation({
-          status: "failed",
-          audio_url: null,
-          error_message: "Lyrics structure tags were rejected.",
-        })}
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: /view details/i }));
-
-    expect(screen.getByRole("dialog")).toBeDefined();
-  });
-
-  it("closes when the X is clicked", () => {
+  it("keeps the download an anchor outside the title link", () => {
+    // Nesting anchors is invalid HTML, which is why the link wraps the title
+    // rather than the whole card.
     render(<MusicGenerationCard generation={generation()} />);
-    fireEvent.click(screen.getByRole("button", { name: /view details/i }));
-    expect(screen.queryByRole("dialog")).not.toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: /^close$/i }));
-
-    expect(screen.queryByRole("dialog")).toBeNull();
-  });
-
-  it("stays closed after a click inside the dialog", () => {
-    // The dialog used to sit inside the card's clickable div. Radix portals it
-    // to document.body, but React events travel the React tree rather than the
-    // DOM tree, so a click in the dialog still reached the card handler and
-    // reopened it in the same tick. Radix closed it, the card reopened it.
-    render(<MusicGenerationCard generation={generation()} />);
-    fireEvent.click(screen.getByRole("button", { name: /view details/i }));
-
-    fireEvent.click(screen.getByTestId("music-detail-prompt"));
-
-    expect(screen.queryByRole("dialog")).not.toBeNull();
-
-    fireEvent.click(screen.getByRole("button", { name: /^close$/i }));
-
-    expect(screen.queryByRole("dialog")).toBeNull();
-  });
-
-  it("closes on Escape", () => {
-    render(<MusicGenerationCard generation={generation()} />);
-    fireEvent.click(screen.getByRole("button", { name: /view details/i }));
-
-    fireEvent.keyDown(document, { key: "Escape" });
-
-    expect(screen.queryByRole("dialog")).toBeNull();
+    const download = screen.getByRole("link", { name: /download/i });
+    expect(download.closest("a[href^='/music/']")).toBeNull();
   });
 });
