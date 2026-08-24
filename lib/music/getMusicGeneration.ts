@@ -1,6 +1,17 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import type { MusicGenerationDetail } from "@/types/Music";
 
+/** Carries the status code so callers can distinguish 403 and 404 from a fault. */
+export class MusicGenerationRequestError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "MusicGenerationRequestError";
+  }
+}
+
 export interface MusicGenerationResponse {
   status: string;
   generation: MusicGenerationDetail;
@@ -31,7 +42,7 @@ export async function getMusicGeneration(
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`HTTP ${response.status}: ${errorText}`);
+    throw new MusicGenerationRequestError(response.status, `HTTP ${response.status}: ${errorText}`);
   }
 
   return response.json();
