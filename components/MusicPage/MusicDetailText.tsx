@@ -6,8 +6,12 @@ import MusicCopyButton from "./MusicCopyButton";
  * A labelled block of generation text with its own copy button.
  *
  * The text is rendered in full and wraps: the card truncates a prompt to one
- * line, and seeing the whole of it is the reason this dialog exists. Long
- * lyrics scroll within the block rather than pushing the settings off screen.
+ * line, and seeing the whole of it is the reason this dialog exists.
+ *
+ * No inner scroll box. Capping the height put a second scroll context inside
+ * an already-scrollable dialog, which hid most of a long lyric behind a
+ * scrollbar that is easy to miss. The dialog scrolls instead, so the whole
+ * lyric is reachable by scrolling the thing the user is already scrolling.
  */
 const MusicDetailText = ({
   label,
@@ -27,7 +31,7 @@ const MusicDetailText = ({
     </div>
     <p
       data-testid={testId}
-      className="text-sm whitespace-pre-wrap break-words max-h-48 overflow-y-auto rounded-lg bg-muted/40 p-3"
+      className="text-sm whitespace-pre-wrap break-words rounded-lg bg-muted/40 p-3"
     >
       {text}
     </p>

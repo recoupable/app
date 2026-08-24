@@ -66,6 +66,17 @@ describe("MusicDetailDialog", () => {
     expect(lyrics.textContent).toContain("[verse 12]");
   });
 
+  it("does not put the lyrics in a scroll box of their own", () => {
+    // A capped inner block sat inside an already-scrollable dialog, so a long
+    // lyric was two thirds hidden behind a scrollbar that is easy to miss.
+    // The dialog is the only scroll context.
+    render(<MusicDetailDialog generation={summary()} open onOpenChange={() => {}} />);
+
+    const lyrics = screen.getByTestId("music-detail-lyrics");
+    expect(lyrics.className).not.toMatch(/overflow-y-auto/);
+    expect(lyrics.className).not.toMatch(/max-h-/);
+  });
+
   it("offers a copy button for the prompt and another for the lyrics", () => {
     render(<MusicDetailDialog generation={summary()} open onOpenChange={() => {}} />);
 
