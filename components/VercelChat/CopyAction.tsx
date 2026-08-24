@@ -1,32 +1,21 @@
-import React, { useState } from "react";
+import React from "react";
 import { Action } from "@/components/actions";
 import { CopyIcon, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCopy } from "@/hooks/useCopy";
 
 interface CopyActionProps {
   text: string;
 }
 
 const CopyAction: React.FC<CopyActionProps> = ({ text }) => {
-  const [isCopied, setIsCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setIsCopied(true);
-
-      // Reset back to copy icon after 1.5 seconds
-      setTimeout(() => {
-        setIsCopied(false);
-      }, 1500);
-    } catch {
-      console.error("Failed to copy to clipboard");
-    }
-  };
+  // silent: the animated tick below is already the confirmation, and a toast
+  // per copy would be noise in a chat where you copy often.
+  const { copied: isCopied, copy } = useCopy(1500, { silent: true });
 
   return (
     <Action
-      onClick={handleCopy}
+      onClick={() => copy(text)}
       label="Copy"
       tooltip="Copy response to clipboard"
     >
