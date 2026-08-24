@@ -141,4 +141,40 @@ describe("MusicGenerationCard", () => {
 
     expect(screen.getByRole("dialog")).toBeDefined();
   });
+
+  it("closes when the X is clicked", () => {
+    render(<MusicGenerationCard generation={generation()} />);
+    fireEvent.click(screen.getByRole("button", { name: /view details/i }));
+    expect(screen.queryByRole("dialog")).not.toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: /^close$/i }));
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("stays closed after a click inside the dialog", () => {
+    // The dialog used to sit inside the card's clickable div. Radix portals it
+    // to document.body, but React events travel the React tree rather than the
+    // DOM tree, so a click in the dialog still reached the card handler and
+    // reopened it in the same tick. Radix closed it, the card reopened it.
+    render(<MusicGenerationCard generation={generation()} />);
+    fireEvent.click(screen.getByRole("button", { name: /view details/i }));
+
+    fireEvent.click(screen.getByTestId("music-detail-prompt"));
+
+    expect(screen.queryByRole("dialog")).not.toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: /^close$/i }));
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("closes on Escape", () => {
+    render(<MusicGenerationCard generation={generation()} />);
+    fireEvent.click(screen.getByRole("button", { name: /view details/i }));
+
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
 });
