@@ -3,6 +3,7 @@
 import { Download } from "lucide-react";
 import MusicStatusPill from "./MusicStatusPill";
 import { formatDuration } from "@/lib/music/formatDuration";
+import { musicDownloadFilename, musicDownloadUrl } from "@/lib/music/musicDownloadUrl";
 import type { MusicGeneration } from "@/types/Music";
 
 const MusicGenerationCard = ({ generation }: { generation: MusicGeneration }) => {
@@ -10,6 +11,12 @@ const MusicGenerationCard = ({ generation }: { generation: MusicGeneration }) =>
   // The API returns no title: the prompt is what the user wrote and what
   // identifies the song to them.
   const title = generation.prompt;
+  const downloadHref = generation.audio_url
+    ? musicDownloadUrl(
+        generation.audio_url,
+        musicDownloadFilename(generation.prompt, generation.audio_url),
+      )
+    : null;
 
   return (
     // min-w-0 because a grid item defaults to min-width:auto and will not
@@ -48,7 +55,7 @@ const MusicGenerationCard = ({ generation }: { generation: MusicGeneration }) =>
             <track kind="captions" />
           </audio>
           <a
-            href={generation.audio_url ?? undefined}
+            href={downloadHref ?? undefined}
             download
             aria-label={`Download ${title}`}
             className="shrink-0 inline-flex items-center justify-center size-9 rounded-xl border hover:bg-muted transition-colors"
