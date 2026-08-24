@@ -24,8 +24,32 @@ describe("MusicGenerationCard", () => {
     render(<MusicGenerationCard generation={generation()} />);
 
     const download = screen.getByRole("link", { name: /download genre: acoustic pop/i });
-    expect(download.getAttribute("href")).toBe("https://cdn.example/music/abc.wav");
     expect(download.hasAttribute("download")).toBe(true);
+  });
+
+  // The download attribute alone shipped broken: browsers ignore it
+  // cross-origin, and our audio is on Supabase while the app is not, so the
+  // link navigated the tab to a bare audio file. Asserting the attribute
+  // exists is what let that through, so assert the url does the work.
+  it("asks storage for an attachment so the download survives being cross-origin", () => {
+    render(<MusicGenerationCard generation={generation()} />);
+
+    const href = screen
+      .getByRole("link", { name: /download genre: acoustic pop/i })
+      .getAttribute("href") as string;
+
+    expect(href).toContain("download=");
+    expect(href.startsWith("https://cdn.example/music/abc.wav")).toBe(true);
+  });
+
+  it("saves under a name taken from the prompt, not the generation id", () => {
+    render(<MusicGenerationCard generation={generation()} />);
+
+    const href = screen
+      .getByRole("link", { name: /download genre: acoustic pop/i })
+      .getAttribute("href") as string;
+
+    expect(href).toContain("download=genre-acoustic-pop.wav");
   });
 
   it("offers no download while a song is still generating", () => {
