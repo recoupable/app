@@ -17,10 +17,13 @@ const SongModal = ({ generationId }: { generationId: string }) => {
   return (
     <Dialog open onOpenChange={open => !open && router.back()}>
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-        {/* The heading lives in SongDetail, which also renders standalone;
-            this keeps the dialog announced without showing it twice. */}
-        <DialogTitle className="sr-only">Song details</DialogTitle>
-        <SongDetail generationId={generationId} />
+        {/* The dialog owns the title and SongDetail omits its page heading.
+            Rendering both meant two "Song details" headings, announced twice
+            by a screen reader. */}
+        <DialogTitle className="font-heading text-xl font-bold text-left">
+          Song details
+        </DialogTitle>
+        <SongDetail generationId={generationId} inDialog />
       </DialogContent>
     </Dialog>
   );

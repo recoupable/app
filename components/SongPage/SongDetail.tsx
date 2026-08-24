@@ -17,7 +17,20 @@ import { MusicGenerationRequestError } from "@/lib/music/getMusicGeneration";
  * someone outside the org. "You do not have access" is the truthful answer and
  * reads nothing like a broken page.
  */
-const SongDetail = ({ generationId }: { generationId: string }) => {
+const SongDetail = ({
+  generationId,
+  inDialog = false,
+}: {
+  generationId: string;
+  /**
+   * Omit the page heading, because the dialog supplies its own title.
+   *
+   * Rendering both meant the dialog carried two "Song details" headings and a
+   * screen reader announced it twice. This component stays free of Radix so it
+   * can be rendered and tested on its own.
+   */
+  inDialog?: boolean;
+}) => {
   const { data, isLoading, error } = useMusicGeneration(generationId, true);
   const generation = data?.generation;
 
@@ -64,7 +77,7 @@ const SongDetail = ({ generationId }: { generationId: string }) => {
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="font-heading text-xl font-bold">Song details</h1>
+          {!inDialog && <h1 className="font-heading text-xl font-bold">Song details</h1>}
           <p className="text-sm text-muted-foreground mt-0.5">
             Generated {new Date(generation.created_at).toLocaleString()}
           </p>
