@@ -1,5 +1,7 @@
 import { useTaskRuns } from "@/hooks/useTaskRuns";
+import { useScheduledActions } from "@/hooks/useScheduledActions";
 import { useArtistProvider } from "@/providers/ArtistProvider";
+import { findExistingWeeklyReportTask } from "@/lib/onboarding/findExistingWeeklyReportTask";
 import {
   getHomeTasksModuleState,
   HomeTasksModuleState,
@@ -8,17 +10,23 @@ import {
 /**
  * Composed hook behind the homepage tasks module. Shared by `TasksModule`
  * and `HomePage` (which needs the visibility to dock the command bar);
- * react-query dedupes the underlying `GET /api/tasks/runs` by key.
+ * react-query dedupes the underlying `GET /api/tasks/runs` and
+ * `GET /api/tasks` reads by key. The tasks read gates the starter card so
+ * an account with an enabled report is never offered a duplicate.
  */
 const useHomeTasksModuleState = (): HomeTasksModuleState => {
   const { data: runs, isLoading, isError } = useTaskRuns();
+  const tasksQuery = useScheduledActions({});
   const { selectedArtist } = useArtistProvider();
 
   return getHomeTasksModuleState({
     runs,
     runsFailed: isError,
-    isLoading,
+    isLoading: isLoading || tasksQuery.isLoading,
     hasArtist: !!selectedArtist?.account_id,
+    existingTask: tasksQuery.data
+      ? findExistingWeeklyReportTask(tasksQuery.data)
+      : undefined,
   });
 };
 

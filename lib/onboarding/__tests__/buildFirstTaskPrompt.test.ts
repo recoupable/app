@@ -62,3 +62,36 @@ describe("buildFirstTaskPrompt", () => {
     expect(buildFirstTaskPrompt(input)).toBe(buildFirstTaskPrompt(input));
   });
 });
+
+// Social scraping joined the report (chat#2006): the homepage starter card
+// and onboarding share this prompt, and the proven shape in prod (task
+// 734ee2ee, three consecutive Monday sends) is Spotify + social.
+describe("buildFirstTaskPrompt social section", () => {
+  const prompt = buildFirstTaskPrompt(base);
+
+  it("fires the artist-wide social scrape with a posts depth", () => {
+    expect(prompt).toContain("POST /api/artist/socials/scrape");
+    expect(prompt).toContain('"artist_account_id":"artist-123"');
+    expect(prompt).toContain('"posts":12');
+  });
+
+  it("polls the Apify run with a hard time cap and never re-fires", () => {
+    expect(prompt).toContain("GET /api/apify/runs/{runId}");
+    expect(prompt).toMatch(/AT MOST 3 MINUTES/);
+    expect(prompt.toLowerCase()).toContain("do not re-fire");
+  });
+
+  it("reads follower counts per platform from the artist's socials", () => {
+    expect(prompt).toContain("GET /api/artists/artist-123/socials");
+  });
+
+  it("asks for the top posts by engagement with thumbnails", () => {
+    expect(prompt).toMatch(/TOP 3 posts by engagement/i);
+    expect(prompt.toLowerCase()).toContain("thumbnail");
+  });
+
+  it("states a missing platform in one line instead of printing zeros", () => {
+    expect(prompt.toLowerCase()).toContain("not connected");
+    expect(prompt.toLowerCase()).toContain("never report zeros");
+  });
+});

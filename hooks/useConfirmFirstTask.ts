@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { createTask } from "@/lib/tasks/createTask";
 import type { Task } from "@/lib/tasks/getTasks";
 import { buildFirstTaskParams } from "@/lib/onboarding/buildFirstTaskParams";
+import { getBrowserTimezone } from "@/lib/home/getBrowserTimezone";
 import {
   getFirstTaskConfirmPhase,
   type FirstTaskConfirmPhase,
@@ -56,6 +57,7 @@ export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
           artistAccountId,
           recipientEmail,
           catalogName,
+          timezone: getBrowserTimezone(),
         }),
         model: DEFAULT_MODEL,
       });

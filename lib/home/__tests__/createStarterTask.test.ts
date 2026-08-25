@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createStarterTask } from "@/lib/home/createStarterTask";
+import { buildFirstTaskPrompt } from "@/lib/onboarding/buildFirstTaskPrompt";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import { DEFAULT_MODEL } from "@/lib/consts";
 
@@ -7,19 +8,12 @@ vi.mock("@/lib/api/getClientApiBaseUrl", () => ({
   getClientApiBaseUrl: vi.fn(),
 }));
 
-const starterTemplate = {
-  id: "9046c7e9-fd5a-4f08-a472-381d51bd6c90",
-  title: "Weekly Performance Dashboard",
-  description: "Weekly stats email",
-  prompt:
-    "Set up a weekly performance dashboard that emails me every Monday with my stats from all platforms.",
-  tags: ["Report"],
-  creator: null,
-  is_private: false,
-  created_at: null,
-  favorites_count: null,
-  updated_at: null,
-} as import("@/types/AgentTemplates").AgentTemplateRow;
+const input = {
+  artistName: "Del Water Gap",
+  artistAccountId: "artist-1",
+  recipientEmail: "manager@example.com",
+  timezone: "America/New_York",
+};
 
 describe("createStarterTask", () => {
   beforeEach(() => {
@@ -29,7 +23,7 @@ describe("createStarterTask", () => {
     );
   });
 
-  it("POSTs the pre-wired weekly report task to /api/tasks", async () => {
+  it("POSTs the shared weekly report task to /api/tasks", async () => {
     const createdTask = { id: "task-1" };
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -39,11 +33,7 @@ describe("createStarterTask", () => {
       }),
     }) as unknown as typeof fetch;
 
-    const result = await createStarterTask("test-token", {
-      template: starterTemplate,
-      artistName: "Del Water Gap",
-      artistAccountId: "artist-1",
-    });
+    const result = await createStarterTask("test-token", input);
 
     expect(fetch).toHaveBeenCalledWith(
       "https://api.recoupable.com/api/tasks",
@@ -57,12 +47,35 @@ describe("createStarterTask", () => {
     );
     const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
     const body = JSON.parse(String(init.body));
-    expect(body.title).toBe("Weekly Performance Dashboard — Del Water Gap");
+    expect(body.title).toBe("Weekly Catalog Report: Del Water Gap");
     expect(body.schedule).toBe("0 9 * * 1");
     expect(body.artist_account_id).toBe("artist-1");
     expect(body.model).toBe(DEFAULT_MODEL);
-    expect(body.prompt).toBe(starterTemplate.prompt);
+    expect(body.timezone).toBe("America/New_York");
     expect(result).toEqual(createdTask);
+  });
+
+  it("schedules exactly the onboarding prompt (run voice, emailed to the account)", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi
+        .fn()
+        .mockResolvedValue({ status: "success", tasks: [{ id: "t" }] }),
+    }) as unknown as typeof fetch;
+
+    await createStarterTask("test-token", input);
+
+    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
+    const body = JSON.parse(String(init.body));
+    expect(body.prompt).toBe(
+      buildFirstTaskPrompt({
+        artistName: "Del Water Gap",
+        artistAccountId: "artist-1",
+        recipientEmail: "manager@example.com",
+      }),
+    );
+    expect(body.prompt).not.toMatch(/^Set up a/);
+    expect(body.prompt).toContain("manager@example.com");
   });
 
   it("propagates API errors", async () => {
@@ -72,12 +85,8 @@ describe("createStarterTask", () => {
       text: vi.fn().mockResolvedValue("boom"),
     }) as unknown as typeof fetch;
 
-    await expect(
-      createStarterTask("test-token", {
-        template: starterTemplate,
-        artistName: "Del Water Gap",
-        artistAccountId: "artist-1",
-      }),
-    ).rejects.toThrow("HTTP 500");
+    await expect(createStarterTask("test-token", input)).rejects.toThrow(
+      "HTTP 500",
+    );
   });
 });
