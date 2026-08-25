@@ -95,3 +95,15 @@ describe("buildFirstTaskPrompt social section", () => {
     expect(prompt.toLowerCase()).toContain("never report zeros");
   });
 });
+
+describe("buildFirstTaskPrompt email header", () => {
+  const prompt = buildFirstTaskPrompt(base);
+
+  it("renders the artist photo as a small thumbnail beside the title, not a full-width hero", () => {
+    expect(prompt).toContain('width="72" height="72"');
+    expect(prompt.toLowerCase()).toContain(
+      "never render the artist photo full-width",
+    );
+    expect(prompt).not.toMatch(/full-width artist photo/i);
+  });
+});
