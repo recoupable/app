@@ -5,6 +5,7 @@ import { getTaskDisplayName } from "@/lib/tasks/getTaskDisplayName";
 import { getStatusColor } from "@/lib/tasks/getStatusColor";
 import { getStatusLabel } from "@/lib/tasks/getStatusLabel";
 import { formatTimestamp } from "@/lib/tasks/formatTimestamp";
+import { getRunHref } from "@/lib/tasks/getRunHref";
 
 /**
  * Compact task-run row for the homepage tasks module. Links to the
@@ -14,7 +15,7 @@ import { formatTimestamp } from "@/lib/tasks/formatTimestamp";
  */
 const HomeRunRow = ({ run }: { run: TaskRunItem }) => (
   <Link
-    href={`/tasks/${run.id}`}
+    href={getRunHref(run.id)}
     className="group -mx-2 flex items-center justify-between gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-muted"
   >
     <div className="min-w-0">
