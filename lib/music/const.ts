@@ -36,11 +36,16 @@ export const MUSIC_HINTS = {
 } as const;
 
 /** Credits charged per second of requested audio, with a floor. Mirrors the API. */
-const CREDITS_PER_SECOND = 0.5;
-const MIN_CREDIT_COST = 15;
+const CREDITS_PER_SECOND = 0.2;
 
 /**
- * Credits a generation of this length will cost.
+ * Most a generation of this length will cost.
+ *
+ * An upper bound, not a price. The API charges for the audio fal actually
+ * produces, and the model routinely stops short of the requested length, so
+ * the real deduction is usually lower (recoupable/api#853). Quoting the
+ * maximum keeps the promise safe in the only direction that matters: a
+ * customer is never charged more than they were shown.
  *
  * Duplicated from the API deliberately: the quote has to render before the
  * request is made, and a round trip to price a slider drag would be worse than
@@ -48,10 +53,12 @@ const MIN_CREDIT_COST = 15;
  * real price onto the row.
  *
  * @param durationSeconds - Requested length.
- * @returns Whole credits.
+ * @returns Whole credits, at fal's own rate.
  */
 export function creditCostForDuration(durationSeconds: number): number {
-  return Math.max(MIN_CREDIT_COST, Math.ceil(durationSeconds * CREDITS_PER_SECOND));
+  if (durationSeconds <= 0) return 0;
+
+  return Math.max(1, Math.ceil(durationSeconds * CREDITS_PER_SECOND));
 }
 
 /**
