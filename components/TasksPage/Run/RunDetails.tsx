@@ -1,12 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import type { TaskRunStatus } from "@/lib/tasks/getTaskRunStatus";
 import { getTaskDisplayName } from "@/lib/tasks/getTaskDisplayName";
+import { getRunWorkflowLink } from "@/lib/tasks/getRunWorkflowLink";
+import { getRunPageState } from "@/lib/tasks/getRunPageState";
+import { useChatRunStatus } from "@/hooks/useChatRunStatus";
 import { ERROR_STATUSES, STATUS_CONFIG, FALLBACK_CONFIG } from "./statusConfig";
-import RunLogsList from "./RunLogsList";
 import RunTimeline from "./RunTimeline";
-import RunOutput from "./RunOutput";
 import RunErrorDetails from "./RunErrorDetails";
+import RunPageSkeleton from "./RunPageSkeleton";
 import AccountIdDisplay from "@/components/ArtistSetting/AccountIdDisplay";
 
 interface RunDetailsProps {
@@ -14,11 +17,20 @@ interface RunDetailsProps {
   data: TaskRunStatus;
 }
 
+/**
+ * A scheduled run (chat#2006 item 4b). The Trigger.dev run only kicks the
+ * work off; status and timeline come from the workflow run linked in its
+ * metadata, and the transcript is the chat that run wrote to.
+ */
 export default function RunDetails({ runId, data }: RunDetailsProps) {
-  const config = STATUS_CONFIG[data.status] ?? FALLBACK_CONFIG;
-  const logs = data.metadata?.logs ?? [];
-  const currentStep = data.metadata?.currentStep;
+  const link = getRunWorkflowLink(data.metadata);
+  const { data: workflow } = useChatRunStatus(link?.workflowRunId);
+  const state = getRunPageState({ triggerRun: data, workflow });
   const displayName = getTaskDisplayName(data.taskIdentifier);
+
+  if (state.view === "loading") return <RunPageSkeleton />;
+
+  const config = STATUS_CONFIG[state.statusKey] ?? FALLBACK_CONFIG;
 
   return (
     <div className="mx-auto flex flex-col gap-6 p-6">
@@ -30,32 +42,35 @@ export default function RunDetails({ runId, data }: RunDetailsProps) {
         </div>
       </div>
 
-      <RunTimeline
-        createdAt={data.createdAt}
-        startedAt={data.startedAt}
-        finishedAt={data.finishedAt}
-        durationMs={data.durationMs}
-      />
-
-      {currentStep && (
-        <div className="rounded-md border bg-muted/30 px-4 py-2">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Current Step
+      {state.view === "linked" ? (
+        <>
+          <RunTimeline
+            createdAt={state.firedAt}
+            startedAt={state.startedAt}
+            finishedAt={state.finishedAt}
+            durationMs={state.durationMs}
+          />
+          <Link
+            href={state.chatHref}
+            className="w-fit rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:opacity-90"
+          >
+            Open chat
+          </Link>
+        </>
+      ) : (
+        <>
+          <RunTimeline
+            createdAt={state.firedAt}
+            startedAt={null}
+            finishedAt={null}
+            durationMs={null}
+          />
+          <p className="text-sm text-muted-foreground" role="status">
+            No chat recorded for this run. It fired before run pages linked to
+            their chats, so only the schedule status is available.
           </p>
-          <p className="text-sm font-medium">{currentStep}</p>
-        </div>
+        </>
       )}
-
-      {data.status === "COMPLETED" && data.output !== undefined && (
-        <RunOutput output={data.output} />
-      )}
-
-      <div className="flex-1 overflow-hidden">
-        <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Activity Log
-        </p>
-        <RunLogsList logs={logs as string[]} />
-      </div>
 
       {ERROR_STATUSES.has(data.status) && data.error && (
         <RunErrorDetails error={data.error} />
