@@ -1,42 +1,36 @@
 "use client";
 
-import { Copy, Check } from "lucide-react";
-import { useCopy } from "@/hooks/useCopy";
+import CopyButton from "@/components/CopyButton";
 
 interface AccountIdDisplayProps {
   accountId: string;
   label?: string;
 }
 
-const AccountIdDisplay = ({
-  accountId,
-  label = "Artist ID",
-}: AccountIdDisplayProps) => {
-  // silent: the tick beside the id is already the confirmation, and these
-  // chips appear several to a page — a toast each would be noise.
-  const { copied, copy } = useCopy(2000, { silent: true });
-
-  // Truncate account ID for display
+/**
+ * A truncated account id you can click to copy in full.
+ *
+ * The whole chip is the click target, id included, which is why the id is
+ * passed as `CopyButton`'s children rather than rendered beside it — a bare
+ * icon button would shrink the target to the icon alone.
+ */
+const AccountIdDisplay = ({ accountId, label = "Artist ID" }: AccountIdDisplayProps) => {
   const truncatedId =
-    accountId.length > 12
-      ? `${accountId.slice(0, 6)}...${accountId.slice(-6)}`
-      : accountId;
+    accountId.length > 12 ? `${accountId.slice(0, 6)}...${accountId.slice(-6)}` : accountId;
 
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <button
-        type="button"
-        onClick={() => copy(accountId)}
-        className="flex items-center gap-1 px-2 py-0.5 rounded-md hover:bg-accent transition-colors"
+      <CopyButton
+        text={accountId}
+        label={label}
+        variant="ghost"
+        silent
+        iconClassName="w-3 h-3"
+        className="flex h-auto w-auto items-center gap-1 rounded-md px-2 py-0.5 text-muted-foreground hover:bg-accent"
       >
-        <span className="text-xs text-muted-foreground font-mono">{truncatedId}</span>
-        {copied ? (
-          <Check className="w-3 h-3 text-green-600 dark:text-green-400" />
-        ) : (
-          <Copy className="w-3 h-3 text-muted-foreground" />
-        )}
-      </button>
+        <span className="font-mono text-xs">{truncatedId}</span>
+      </CopyButton>
     </div>
   );
 };
