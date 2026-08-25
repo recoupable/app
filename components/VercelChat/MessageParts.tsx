@@ -109,8 +109,12 @@ export function MessageParts({
                       text={part?.text || ""}
                       label="response"
                       tooltip="Copy response to clipboard"
-                      iconClassName="!w-3 !h-3"
+                      variant="ghost"
                       silent
+                      iconClassName="!w-3 !h-3"
+                      /* Matches the Action treatment used by Retry and Edit
+                         beside it; see components/actions.tsx. */
+                      className="size-8 p-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors"
                     />
                   </Actions>
                 </div>

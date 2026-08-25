@@ -37,15 +37,29 @@ describe("CopyButton", () => {
     expect(toast.success).not.toHaveBeenCalled();
   });
 
-  it("renders as a toolbar Action when given a tooltip", async () => {
-    // Replaces the deleted CopyAction: same ghost, rounded, muted treatment as
-    // the Retry and Edit controls it sits beside.
+  it("applies the caller's chrome, so a toolbar can match its neighbours", () => {
+    // CopyButton is always a Button; callers that need different chrome pass
+    // it in. The chat toolbar passes Action's treatment so Copy sits level
+    // with Retry and Edit.
     render(
-      <CopyButton text="hello" label="response" tooltip="Copy response to clipboard" silent />,
+      <CopyButton
+        text="hello"
+        label="response"
+        className="size-8 rounded-full text-muted-foreground"
+        silent
+      />,
     );
 
     const button = screen.getByRole("button", { name: /copy response/i });
     expect(button.className).toMatch(/rounded-full/);
+    expect(button.className).toMatch(/size-8/);
+  });
+
+  it("wraps in a tooltip trigger when given a tooltip", async () => {
+    render(<CopyButton text="hello" label="response" tooltip="Copy response to clipboard" silent />);
+
+    const button = screen.getByRole("button", { name: /copy response/i });
+    expect(button.getAttribute("data-slot") ?? button.closest("[data-state]")).toBeTruthy();
     fireEvent.click(button);
 
     await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalledWith("hello"));
