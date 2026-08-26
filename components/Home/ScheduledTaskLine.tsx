@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Task } from "@/lib/tasks/getTasks";
 import { getCronHumanPreview } from "@/lib/tasks/getCronHumanPreview";
+import { getTaskNextRun } from "@/lib/tasks/getTaskNextRun";
 import { formatScheduledActionDate } from "@/lib/utils/formatScheduledActionDate";
 
 /**
@@ -10,8 +11,9 @@ import { formatScheduledActionDate } from "@/lib/utils/formatScheduledActionDate
  * duplicate. Mirrors the confirm state of the onboarding first task.
  */
 const ScheduledTaskLine = ({ task }: { task: Task }) => {
-  const nextRun = task.next_run
-    ? formatScheduledActionDate(task.next_run)
+  const nextRunAt = getTaskNextRun(task);
+  const nextRun = nextRunAt
+    ? formatScheduledActionDate(nextRunAt)
     : (getCronHumanPreview(task.schedule) ?? task.schedule);
 
   return (

@@ -15,7 +15,7 @@ import dynamic from "next/dynamic";
 
 const CronEditor = dynamic(
   () => import("@/components/CronEditor").then((mod) => mod.CronEditor),
-  { ssr: false }
+  { ssr: false },
 );
 import TaskLastRunSection from "./TaskLastRunSection";
 import TaskScheduleSection from "./TaskScheduleSection";
@@ -23,6 +23,7 @@ import TimezoneSelect from "@/components/TimezoneSelect/TimezoneSelect";
 import TaskRecentRunsSection from "./TaskRecentRunsSection";
 import TaskUpcomingRunsSection from "./TaskUpcomingRunsSection";
 import { getFeaturedModelConfig } from "@/lib/ai/featuredModels";
+import { getTaskNextRun } from "@/lib/tasks/getTaskNextRun";
 import { organizeModels } from "@/lib/ai/organizeModels";
 import useAvailableModels from "@/hooks/useAvailableModels";
 
@@ -59,13 +60,14 @@ const TaskDetailsDialogContent: React.FC<TaskDetailsDialogContentProps> = ({
 }) => {
   const { data: availableModels = [] } = useAvailableModels();
   const modelConfig = getFeaturedModelConfig(editModel);
-  
+
   const organizedModels = useMemo(() => {
     return organizeModels(availableModels);
   }, [availableModels]);
 
-  const selectedModel = availableModels.find(m => m.id === editModel);
-  const displayName = modelConfig?.displayName || selectedModel?.name || editModel;
+  const selectedModel = availableModels.find((m) => m.id === editModel);
+  const displayName =
+    modelConfig?.displayName || selectedModel?.name || editModel;
 
   return (
     <div className={cn("flex flex-col gap-3 mt-1 overflow-y-auto")}>
@@ -109,7 +111,7 @@ const TaskDetailsDialogContent: React.FC<TaskDetailsDialogContentProps> = ({
       ) : (
         <TaskScheduleSection
           schedule={task.schedule}
-          nextRun={task.next_run || ""}
+          nextRun={getTaskNextRun(task) ?? ""}
           timezone={editTimezone}
           isDeleted={isDeleted}
         />
@@ -119,7 +121,10 @@ const TaskDetailsDialogContent: React.FC<TaskDetailsDialogContentProps> = ({
       <div className="space-y-2">
         <label className="text-xs font-medium text-foreground">Model</label>
         {canEdit ? (
-          <PromptInputModelSelect value={editModel} onValueChange={onModelChange}>
+          <PromptInputModelSelect
+            value={editModel}
+            onValueChange={onModelChange}
+          >
             <PromptInputModelSelectTrigger>
               <PromptInputModelSelectValue placeholder="Select a model">
                 {displayName}
@@ -155,10 +160,18 @@ const TaskDetailsDialogContent: React.FC<TaskDetailsDialogContentProps> = ({
       </div>
 
       {/* Last Run Information - Read-only */}
-      <TaskLastRunSection lastRun={task.last_run} isDeleted={isDeleted} />
+      {/* `last_run` is a dead column (nothing writes it since the Trigger.dev
+          migration); the latest Trigger run is the real last run. */}
+      <TaskLastRunSection
+        lastRun={task.recent_runs?.[0]?.createdAt ?? null}
+        isDeleted={isDeleted}
+      />
 
       {/* Recent Runs from Trigger.dev */}
-      <TaskRecentRunsSection recentRuns={task.recent_runs} isDeleted={isDeleted} />
+      <TaskRecentRunsSection
+        recentRuns={task.recent_runs}
+        isDeleted={isDeleted}
+      />
 
       {/* Upcoming Scheduled Runs from Trigger.dev */}
       <TaskUpcomingRunsSection upcoming={task.upcoming} isDeleted={isDeleted} />

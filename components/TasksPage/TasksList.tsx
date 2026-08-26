@@ -35,7 +35,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError }) => {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">
-          You have no scheduled tasks for this artist.
+          You have no scheduled tasks yet.
         </p>
       </div>
     );
@@ -51,7 +51,11 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError }) => {
               index !== tasks.length - 1 ? "border-b border-border " : ""
             }
           >
-            <TaskCard task={task} ownerEmail={task.owner_email ?? undefined} />
+            <TaskCard
+              task={task}
+              ownerEmail={task.owner_email ?? undefined}
+              artistName={task.artist_name}
+            />
           </div>
         </TaskDetailsDialog>
       ))}
