@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import type { TaskRunStatus } from "@/lib/tasks/getTaskRunStatus";
 import { getTaskDisplayName } from "@/lib/tasks/getTaskDisplayName";
 import { ERROR_STATUSES, STATUS_CONFIG, FALLBACK_CONFIG } from "./statusConfig";
@@ -20,8 +18,6 @@ export default function RunDetails({ runId, data }: RunDetailsProps) {
   const config = STATUS_CONFIG[data.status] ?? FALLBACK_CONFIG;
   const logs = data.metadata?.logs ?? [];
   const currentStep = data.metadata?.currentStep;
-  const pathname = usePathname();
-  const isOnRunPage = pathname === `/tasks/${runId}`;
   const displayName = getTaskDisplayName(data.taskIdentifier);
 
   return (
@@ -29,17 +25,7 @@ export default function RunDetails({ runId, data }: RunDetailsProps) {
       <div className="flex items-center gap-3">
         {config.icon}
         <div>
-          {isOnRunPage ? (
-            <h1 className="text-lg font-semibold">{displayName}</h1>
-          ) : (
-            <Link
-              href={`/tasks/${runId}`}
-              target="_blank"
-              className="text-lg font-semibold hover:underline"
-            >
-              {displayName}
-            </Link>
-          )}
+          <h1 className="text-lg font-semibold">{displayName}</h1>
           <p className={`text-sm ${config.color}`}>{config.label}</p>
         </div>
       </div>
