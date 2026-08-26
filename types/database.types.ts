@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           account: string | null;
           created_at: string;
+          expires_at: string | null;
           id: string;
           key_hash: string | null;
           last_used: string | null;
@@ -26,6 +27,7 @@ export type Database = {
         Insert: {
           account?: string | null;
           created_at?: string;
+          expires_at?: string | null;
           id?: string;
           key_hash?: string | null;
           last_used?: string | null;
@@ -34,6 +36,7 @@ export type Database = {
         Update: {
           account?: string | null;
           created_at?: string;
+          expires_at?: string | null;
           id?: string;
           key_hash?: string | null;
           last_used?: string | null;
@@ -166,8 +169,6 @@ export type Database = {
           job_title: string | null;
           knowledges: Json | null;
           label: string | null;
-          onboarding_data: Json | null;
-          onboarding_status: Json | null;
           organization: string | null;
           role_type: string | null;
           updated_at: string;
@@ -181,8 +182,6 @@ export type Database = {
           job_title?: string | null;
           knowledges?: Json | null;
           label?: string | null;
-          onboarding_data?: Json | null;
-          onboarding_status?: Json | null;
           organization?: string | null;
           role_type?: string | null;
           updated_at?: string;
@@ -196,8 +195,6 @@ export type Database = {
           job_title?: string | null;
           knowledges?: Json | null;
           label?: string | null;
-          onboarding_data?: Json | null;
-          onboarding_status?: Json | null;
           organization?: string | null;
           role_type?: string | null;
           updated_at?: string;
@@ -272,6 +269,67 @@ export type Database = {
             foreignKeyName: "account_phone_numbers_account_id_fkey";
             columns: ["account_id"];
             isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      account_sandboxes: {
+        Row: {
+          account_id: string;
+          created_at: string;
+          id: string;
+          sandbox_id: string;
+        };
+        Insert: {
+          account_id: string;
+          created_at?: string;
+          id?: string;
+          sandbox_id: string;
+        };
+        Update: {
+          account_id?: string;
+          created_at?: string;
+          id?: string;
+          sandbox_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "account_sandboxes_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      account_snapshots: {
+        Row: {
+          account_id: string;
+          created_at: string | null;
+          expires_at: string | null;
+          github_repo: string | null;
+          snapshot_id: string | null;
+        };
+        Insert: {
+          account_id: string;
+          created_at?: string | null;
+          expires_at?: string | null;
+          github_repo?: string | null;
+          snapshot_id?: string | null;
+        };
+        Update: {
+          account_id?: string;
+          created_at?: string | null;
+          expires_at?: string | null;
+          github_repo?: string | null;
+          snapshot_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "account_snapshots_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: true;
             referencedRelation: "accounts";
             referencedColumns: ["id"];
           },
@@ -685,6 +743,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      apify_scraper_runs: {
+        Row: {
+          account_id: string;
+          batch_id: string | null;
+          completed_at: string | null;
+          created_at: string;
+          new_post_urls: Json | null;
+          platform: string | null;
+          run_id: string;
+          social_id: string | null;
+        };
+        Insert: {
+          account_id: string;
+          batch_id?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          new_post_urls?: Json | null;
+          platform?: string | null;
+          run_id: string;
+          social_id?: string | null;
+        };
+        Update: {
+          account_id?: string;
+          batch_id?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          new_post_urls?: Json | null;
+          platform?: string | null;
+          run_id?: string;
+          social_id?: string | null;
+        };
+        Relationships: [];
+      };
       app_store_link_clicked: {
         Row: {
           clientId: string | null;
@@ -702,41 +793,6 @@ export type Database = {
           timestamp?: number | null;
         };
         Relationships: [];
-      };
-      apple_login_button_clicked: {
-        Row: {
-          campaignId: string | null;
-          clientId: string | null;
-          fanId: string | null;
-          game: string | null;
-          id: string | null;
-          timestamp: number | null;
-        };
-        Insert: {
-          campaignId?: string | null;
-          clientId?: string | null;
-          fanId?: string | null;
-          game?: string | null;
-          id?: string | null;
-          timestamp?: number | null;
-        };
-        Update: {
-          campaignId?: string | null;
-          clientId?: string | null;
-          fanId?: string | null;
-          game?: string | null;
-          id?: string | null;
-          timestamp?: number | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "apple_login_button_clicked_campaignId_fkey";
-            columns: ["campaignId"];
-            isOneToOne: false;
-            referencedRelation: "campaigns";
-            referencedColumns: ["id"];
-          },
-        ];
       };
       apple_music: {
         Row: {
@@ -799,45 +855,6 @@ export type Database = {
             columns: ["campaignId"];
             isOneToOne: false;
             referencedRelation: "campaigns";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      artist_fan_segment: {
-        Row: {
-          artist_social_id: string | null;
-          fan_social_id: string | null;
-          id: string;
-          segment_name: string | null;
-          updated_at: string;
-        };
-        Insert: {
-          artist_social_id?: string | null;
-          fan_social_id?: string | null;
-          id?: string;
-          segment_name?: string | null;
-          updated_at?: string;
-        };
-        Update: {
-          artist_social_id?: string | null;
-          fan_social_id?: string | null;
-          id?: string;
-          segment_name?: string | null;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "artist_fan_segment_artist_social_id_fkey";
-            columns: ["artist_social_id"];
-            isOneToOne: false;
-            referencedRelation: "socials";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "artist_fan_segment_fan_social_id_fkey";
-            columns: ["fan_social_id"];
-            isOneToOne: false;
-            referencedRelation: "socials";
             referencedColumns: ["id"];
           },
         ];
@@ -1009,6 +1026,50 @@ export type Database = {
           },
         ];
       };
+      catalog_valuations: {
+        Row: {
+          catalog_id: string;
+          created_at: string;
+          high: number;
+          id: string;
+          low: number;
+          measured_at: string;
+          measured_song_count: number;
+          mid: number;
+          total_streams: number;
+        };
+        Insert: {
+          catalog_id: string;
+          created_at?: string;
+          high: number;
+          id?: string;
+          low: number;
+          measured_at?: string;
+          measured_song_count: number;
+          mid: number;
+          total_streams: number;
+        };
+        Update: {
+          catalog_id?: string;
+          created_at?: string;
+          high?: number;
+          id?: string;
+          low?: number;
+          measured_at?: string;
+          measured_song_count?: number;
+          mid?: number;
+          total_streams?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "catalog_valuations_catalog_id_fkey";
+            columns: ["catalog_id"];
+            isOneToOne: false;
+            referencedRelation: "catalogs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       catalogs: {
         Row: {
           created_at: string;
@@ -1029,6 +1090,118 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      chat_messages: {
+        Row: {
+          chat_id: string;
+          created_at: string;
+          id: string;
+          parts: Json;
+          role: string;
+        };
+        Insert: {
+          chat_id: string;
+          created_at?: string;
+          id: string;
+          parts: Json;
+          role: string;
+        };
+        Update: {
+          chat_id?: string;
+          created_at?: string;
+          id?: string;
+          parts?: Json;
+          role?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_chat_id_fkey";
+            columns: ["chat_id"];
+            isOneToOne: false;
+            referencedRelation: "chats";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      chat_reads: {
+        Row: {
+          account_id: string;
+          chat_id: string;
+          created_at: string;
+          last_read_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          account_id: string;
+          chat_id: string;
+          created_at?: string;
+          last_read_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          account_id?: string;
+          chat_id?: string;
+          created_at?: string;
+          last_read_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "chat_reads_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "chat_reads_chat_id_fkey";
+            columns: ["chat_id"];
+            isOneToOne: false;
+            referencedRelation: "chats";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      chats: {
+        Row: {
+          active_stream_id: string | null;
+          created_at: string;
+          id: string;
+          last_assistant_message_at: string | null;
+          model_id: string | null;
+          session_id: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          active_stream_id?: string | null;
+          created_at?: string;
+          id: string;
+          last_assistant_message_at?: string | null;
+          model_id?: string | null;
+          session_id: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          active_stream_id?: string | null;
+          created_at?: string;
+          id?: string;
+          last_assistant_message_at?: string | null;
+          model_id?: string | null;
+          session_id?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "chats_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: false;
+            referencedRelation: "sessions";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       config: {
         Row: {
@@ -1071,6 +1244,51 @@ export type Database = {
           uniquePlayerID?: string | null;
         };
         Relationships: [];
+      };
+      credit_grants: {
+        Row: {
+          account_id: string;
+          created_at: string;
+          granted_by: string;
+          id: string;
+          previous_credits: number | null;
+          reason: string;
+          remaining_credits: number;
+        };
+        Insert: {
+          account_id: string;
+          created_at?: string;
+          granted_by: string;
+          id?: string;
+          previous_credits?: number | null;
+          reason: string;
+          remaining_credits: number;
+        };
+        Update: {
+          account_id?: string;
+          created_at?: string;
+          granted_by?: string;
+          id?: string;
+          previous_credits?: number | null;
+          reason?: string;
+          remaining_credits?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "credit_grants_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "credit_grants_granted_by_fkey";
+            columns: ["granted_by"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       credits_usage: {
         Row: {
@@ -1119,6 +1337,36 @@ export type Database = {
           id?: number;
           timestamp?: string | null;
           url?: string | null;
+        };
+        Relationships: [];
+      };
+      email_send_log: {
+        Row: {
+          account_id: string | null;
+          chat_id: string | null;
+          created_at: string;
+          id: string;
+          raw_body: string | null;
+          resend_id: string | null;
+          status: string;
+        };
+        Insert: {
+          account_id?: string | null;
+          chat_id?: string | null;
+          created_at?: string;
+          id?: string;
+          raw_body?: string | null;
+          resend_id?: string | null;
+          status: string;
+        };
+        Update: {
+          account_id?: string | null;
+          chat_id?: string | null;
+          created_at?: string;
+          id?: string;
+          raw_body?: string | null;
+          resend_id?: string | null;
+          status?: string;
         };
         Relationships: [];
       };
@@ -1677,33 +1925,6 @@ export type Database = {
           },
         ];
       };
-      funnel_reports: {
-        Row: {
-          id: string;
-          next_steps: string | null;
-          report: string | null;
-          stack_unique_id: string | null;
-          timestamp: string;
-          type: Database["public"]["Enums"]["social_type"] | null;
-        };
-        Insert: {
-          id?: string;
-          next_steps?: string | null;
-          report?: string | null;
-          stack_unique_id?: string | null;
-          timestamp?: string;
-          type?: Database["public"]["Enums"]["social_type"] | null;
-        };
-        Update: {
-          id?: string;
-          next_steps?: string | null;
-          report?: string | null;
-          stack_unique_id?: string | null;
-          timestamp?: string;
-          type?: Database["public"]["Enums"]["social_type"] | null;
-        };
-        Relationships: [];
-      };
       game_start: {
         Row: {
           clientId: string | null;
@@ -1927,6 +2148,94 @@ export type Database = {
           },
         ];
       };
+      memory_emails: {
+        Row: {
+          created_at: string;
+          email_id: string;
+          id: string;
+          memory: string;
+          message_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          email_id: string;
+          id?: string;
+          memory: string;
+          message_id: string;
+        };
+        Update: {
+          created_at?: string;
+          email_id?: string;
+          id?: string;
+          memory?: string;
+          message_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "memory_emails_memory_fkey";
+            columns: ["memory"];
+            isOneToOne: false;
+            referencedRelation: "memories";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      music_generations: {
+        Row: {
+          account_id: string;
+          created_at: string;
+          duration_seconds: number | null;
+          error_message: string | null;
+          fal_request_id: string | null;
+          id: string;
+          lyrics: string;
+          model: string;
+          prompt: string;
+          status: string;
+          storage_key: string | null;
+          updated_at: string;
+          workflow_run_id: string | null;
+        };
+        Insert: {
+          account_id: string;
+          created_at?: string;
+          duration_seconds?: number | null;
+          error_message?: string | null;
+          fal_request_id?: string | null;
+          id?: string;
+          lyrics: string;
+          model?: string;
+          prompt: string;
+          status?: string;
+          storage_key?: string | null;
+          updated_at?: string;
+          workflow_run_id?: string | null;
+        };
+        Update: {
+          account_id?: string;
+          created_at?: string;
+          duration_seconds?: number | null;
+          error_message?: string | null;
+          fal_request_id?: string | null;
+          id?: string;
+          lyrics?: string;
+          model?: string;
+          prompt?: string;
+          status?: string;
+          storage_key?: string | null;
+          updated_at?: string;
+          workflow_run_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "music_generations_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       notifications: {
         Row: {
           account_id: string;
@@ -2095,32 +2404,65 @@ export type Database = {
         };
         Relationships: [];
       };
-      popup_open: {
+      playcount_snapshots: {
         Row: {
-          campaignId: string | null;
-          clientId: string | null;
-          fanId: string | null;
-          game: string | null;
-          id: string | null;
-          timestamp: string | null;
+          account: string;
+          album_count: number | null;
+          album_ids: string[] | null;
+          catalog: string | null;
+          created_at: string;
+          estimated_cost_usd: number | null;
+          id: string;
+          isrcs: string[] | null;
+          platforms: string[];
+          schedule: string;
+          state: string;
+          updated_at: string;
         };
         Insert: {
-          campaignId?: string | null;
-          clientId?: string | null;
-          fanId?: string | null;
-          game?: string | null;
-          id?: string | null;
-          timestamp?: string | null;
+          account: string;
+          album_count?: number | null;
+          album_ids?: string[] | null;
+          catalog?: string | null;
+          created_at?: string;
+          estimated_cost_usd?: number | null;
+          id?: string;
+          isrcs?: string[] | null;
+          platforms: string[];
+          schedule?: string;
+          state?: string;
+          updated_at?: string;
         };
         Update: {
-          campaignId?: string | null;
-          clientId?: string | null;
-          fanId?: string | null;
-          game?: string | null;
-          id?: string | null;
-          timestamp?: string | null;
+          account?: string;
+          album_count?: number | null;
+          album_ids?: string[] | null;
+          catalog?: string | null;
+          created_at?: string;
+          estimated_cost_usd?: number | null;
+          id?: string;
+          isrcs?: string[] | null;
+          platforms?: string[];
+          schedule?: string;
+          state?: string;
+          updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "playcount_snapshots_account_fkey";
+            columns: ["account"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "playcount_snapshots_catalog_fkey";
+            columns: ["catalog"];
+            isOneToOne: false;
+            referencedRelation: "catalogs";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       post_comments: {
         Row: {
@@ -2215,6 +2557,32 @@ export type Database = {
         };
         Relationships: [];
       };
+      pulse_accounts: {
+        Row: {
+          account_id: string;
+          active: boolean;
+          id: string;
+        };
+        Insert: {
+          account_id: string;
+          active?: boolean;
+          id?: string;
+        };
+        Update: {
+          account_id?: string;
+          active?: boolean;
+          id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "pulse_accounts_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: true;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       role_permissions: {
         Row: {
           id: number;
@@ -2255,39 +2623,6 @@ export type Database = {
           name?: string;
         };
         Relationships: [];
-      };
-      room_reports: {
-        Row: {
-          id: string;
-          report_id: string;
-          room_id: string | null;
-        };
-        Insert: {
-          id?: string;
-          report_id?: string;
-          room_id?: string | null;
-        };
-        Update: {
-          id?: string;
-          report_id?: string;
-          room_id?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "room_reports_report_id_fkey";
-            columns: ["report_id"];
-            isOneToOne: false;
-            referencedRelation: "segment_reports";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "room_reports_room_id_fkey";
-            columns: ["room_id"];
-            isOneToOne: false;
-            referencedRelation: "rooms";
-            referencedColumns: ["id"];
-          },
-        ];
       };
       rooms: {
         Row: {
@@ -2564,38 +2899,6 @@ export type Database = {
           },
         ];
       };
-      segment_reports: {
-        Row: {
-          artist_id: string | null;
-          id: string;
-          next_steps: string | null;
-          report: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          artist_id?: string | null;
-          id?: string;
-          next_steps?: string | null;
-          report?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          artist_id?: string | null;
-          id?: string;
-          next_steps?: string | null;
-          report?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "segment_reports_artist_id_fkey";
-            columns: ["artist_id"];
-            isOneToOne: false;
-            referencedRelation: "accounts";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       segment_rooms: {
         Row: {
           id: string;
@@ -2649,6 +2952,114 @@ export type Database = {
           updated_at?: string | null;
         };
         Relationships: [];
+      };
+      sessions: {
+        Row: {
+          account_id: string;
+          artist_id: string | null;
+          branch: string | null;
+          cached_diff: Json | null;
+          cached_diff_updated_at: string | null;
+          clone_url: string | null;
+          created_at: string;
+          global_skill_refs: Json;
+          hibernate_after: string | null;
+          id: string;
+          is_new_branch: boolean;
+          last_activity_at: string | null;
+          lifecycle_error: string | null;
+          lifecycle_run_id: string | null;
+          lifecycle_state: string | null;
+          lifecycle_version: number;
+          lines_added: number | null;
+          lines_removed: number | null;
+          repo_name: string | null;
+          repo_owner: string | null;
+          sandbox_expires_at: string | null;
+          sandbox_state: Json | null;
+          snapshot_created_at: string | null;
+          snapshot_size_bytes: number | null;
+          snapshot_url: string | null;
+          status: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          account_id: string;
+          artist_id?: string | null;
+          branch?: string | null;
+          cached_diff?: Json | null;
+          cached_diff_updated_at?: string | null;
+          clone_url?: string | null;
+          created_at?: string;
+          global_skill_refs?: Json;
+          hibernate_after?: string | null;
+          id: string;
+          is_new_branch?: boolean;
+          last_activity_at?: string | null;
+          lifecycle_error?: string | null;
+          lifecycle_run_id?: string | null;
+          lifecycle_state?: string | null;
+          lifecycle_version?: number;
+          lines_added?: number | null;
+          lines_removed?: number | null;
+          repo_name?: string | null;
+          repo_owner?: string | null;
+          sandbox_expires_at?: string | null;
+          sandbox_state?: Json | null;
+          snapshot_created_at?: string | null;
+          snapshot_size_bytes?: number | null;
+          snapshot_url?: string | null;
+          status?: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          account_id?: string;
+          artist_id?: string | null;
+          branch?: string | null;
+          cached_diff?: Json | null;
+          cached_diff_updated_at?: string | null;
+          clone_url?: string | null;
+          created_at?: string;
+          global_skill_refs?: Json;
+          hibernate_after?: string | null;
+          id?: string;
+          is_new_branch?: boolean;
+          last_activity_at?: string | null;
+          lifecycle_error?: string | null;
+          lifecycle_run_id?: string | null;
+          lifecycle_state?: string | null;
+          lifecycle_version?: number;
+          lines_added?: number | null;
+          lines_removed?: number | null;
+          repo_name?: string | null;
+          repo_owner?: string | null;
+          sandbox_expires_at?: string | null;
+          sandbox_state?: Json | null;
+          snapshot_created_at?: string | null;
+          snapshot_size_bytes?: number | null;
+          snapshot_url?: string | null;
+          status?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sessions_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sessions_artist_id_fkey";
+            columns: ["artist_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       social_fans: {
         Row: {
@@ -2738,78 +3149,6 @@ export type Database = {
           },
         ];
       };
-      social_spotify_albums: {
-        Row: {
-          album_id: string | null;
-          id: string;
-          social_id: string | null;
-          updated_at: string;
-        };
-        Insert: {
-          album_id?: string | null;
-          id?: string;
-          social_id?: string | null;
-          updated_at?: string;
-        };
-        Update: {
-          album_id?: string | null;
-          id?: string;
-          social_id?: string | null;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "social_spotify_albums_album_id_fkey";
-            columns: ["album_id"];
-            isOneToOne: false;
-            referencedRelation: "spotify_albums";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "social_spotify_albums_social_id_fkey";
-            columns: ["social_id"];
-            isOneToOne: false;
-            referencedRelation: "socials";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      social_spotify_tracks: {
-        Row: {
-          id: string;
-          social_id: string;
-          track_id: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          social_id?: string;
-          track_id?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          social_id?: string;
-          track_id?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "social_spotify_tracks_social_id_fkey";
-            columns: ["social_id"];
-            isOneToOne: false;
-            referencedRelation: "socials";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "social_spotify_tracks_track_id_fkey";
-            columns: ["track_id"];
-            isOneToOne: false;
-            referencedRelation: "spotify_tracks";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       socials: {
         Row: {
           avatar: string | null;
@@ -2885,9 +3224,102 @@ export type Database = {
           },
         ];
       };
+      song_identifiers: {
+        Row: {
+          created_at: string;
+          id: string;
+          identifier_type: string;
+          platform: string;
+          song: string;
+          updated_at: string;
+          value: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          identifier_type: string;
+          platform: string;
+          song: string;
+          updated_at?: string;
+          value: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          identifier_type?: string;
+          platform?: string;
+          song?: string;
+          updated_at?: string;
+          value?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "song_identifiers_song_fkey";
+            columns: ["song"];
+            isOneToOne: false;
+            referencedRelation: "songs";
+            referencedColumns: ["isrc"];
+          },
+        ];
+      };
+      song_measurements: {
+        Row: {
+          captured_at: string;
+          created_at: string;
+          data_source: string;
+          id: string;
+          metric: string;
+          platform: string;
+          raw_ref: string | null;
+          snapshot: string | null;
+          song: string;
+          value: number;
+        };
+        Insert: {
+          captured_at: string;
+          created_at?: string;
+          data_source: string;
+          id?: string;
+          metric: string;
+          platform: string;
+          raw_ref?: string | null;
+          snapshot?: string | null;
+          song: string;
+          value: number;
+        };
+        Update: {
+          captured_at?: string;
+          created_at?: string;
+          data_source?: string;
+          id?: string;
+          metric?: string;
+          platform?: string;
+          raw_ref?: string | null;
+          snapshot?: string | null;
+          song?: string;
+          value?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "song_measurements_snapshot_fkey";
+            columns: ["snapshot"];
+            isOneToOne: false;
+            referencedRelation: "playcount_snapshots";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "song_measurements_song_fkey";
+            columns: ["song"];
+            isOneToOne: false;
+            referencedRelation: "songs";
+            referencedColumns: ["isrc"];
+          },
+        ];
+      };
       songs: {
         Row: {
           album: string | null;
+          artwork_url: string | null;
           isrc: string;
           name: string | null;
           notes: string | null;
@@ -2895,6 +3327,7 @@ export type Database = {
         };
         Insert: {
           album?: string | null;
+          artwork_url?: string | null;
           isrc: string;
           name?: string | null;
           notes?: string | null;
@@ -2902,12 +3335,48 @@ export type Database = {
         };
         Update: {
           album?: string | null;
+          artwork_url?: string | null;
           isrc?: string;
           name?: string | null;
           notes?: string | null;
           updated_at?: string;
         };
         Relationships: [];
+      };
+      songstats_backfill_queue: {
+        Row: {
+          created_at: string;
+          id: string;
+          rank_score: number;
+          song: string;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          rank_score?: number;
+          song: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          rank_score?: number;
+          song?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "songstats_backfill_queue_song_fkey";
+            columns: ["song"];
+            isOneToOne: true;
+            referencedRelation: "songs";
+            referencedColumns: ["isrc"];
+          },
+        ];
       };
       spotify: {
         Row: {
@@ -3074,106 +3543,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      spotify_albums: {
-        Row: {
-          id: string;
-          name: string | null;
-          release_date: string | null;
-          updated_at: string;
-          uri: string;
-        };
-        Insert: {
-          id?: string;
-          name?: string | null;
-          release_date?: string | null;
-          updated_at?: string;
-          uri: string;
-        };
-        Update: {
-          id?: string;
-          name?: string | null;
-          release_date?: string | null;
-          updated_at?: string;
-          uri?: string;
-        };
-        Relationships: [];
-      };
-      spotify_analytics_albums: {
-        Row: {
-          analysis_id: string | null;
-          artist_name: string | null;
-          created_at: string;
-          id: string;
-          name: string | null;
-          release_date: number | null;
-          uri: string | null;
-        };
-        Insert: {
-          analysis_id?: string | null;
-          artist_name?: string | null;
-          created_at?: string;
-          id?: string;
-          name?: string | null;
-          release_date?: number | null;
-          uri?: string | null;
-        };
-        Update: {
-          analysis_id?: string | null;
-          artist_name?: string | null;
-          created_at?: string;
-          id?: string;
-          name?: string | null;
-          release_date?: number | null;
-          uri?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "spotify_analytics_albums_analysis_id_fkey";
-            columns: ["analysis_id"];
-            isOneToOne: false;
-            referencedRelation: "funnel_analytics";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      spotify_analytics_tracks: {
-        Row: {
-          analysis_id: string | null;
-          artist_name: string | null;
-          created_at: string;
-          id: string;
-          name: string | null;
-          popularity: number | null;
-          uri: string | null;
-        };
-        Insert: {
-          analysis_id?: string | null;
-          artist_name?: string | null;
-          created_at?: string;
-          id?: string;
-          name?: string | null;
-          popularity?: number | null;
-          uri?: string | null;
-        };
-        Update: {
-          analysis_id?: string | null;
-          artist_name?: string | null;
-          created_at?: string;
-          id?: string;
-          name?: string | null;
-          popularity?: number | null;
-          uri?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "spotify_analytics_tracks_analysis_id_fkey";
-            columns: ["analysis_id"];
-            isOneToOne: false;
-            referencedRelation: "funnel_analytics";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       spotify_login_button_clicked: {
         Row: {
           campaignId: string | null;
@@ -3253,30 +3622,6 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
-      };
-      spotify_tracks: {
-        Row: {
-          id: string;
-          name: string | null;
-          popularity: number | null;
-          updated_at: string;
-          uri: string;
-        };
-        Insert: {
-          id?: string;
-          name?: string | null;
-          popularity?: number | null;
-          updated_at?: string;
-          uri: string;
-        };
-        Update: {
-          id?: string;
-          name?: string | null;
-          popularity?: number | null;
-          updated_at?: string;
-          uri?: string;
-        };
-        Relationships: [];
       };
       subscription_items: {
         Row: {
@@ -3435,6 +3780,171 @@ export type Database = {
         };
         Relationships: [];
       };
+      usage_events: {
+        Row: {
+          account_id: string;
+          agent_type: string;
+          cached_input_tokens: number;
+          created_at: string;
+          credits_deducted_cents: number;
+          id: string;
+          input_tokens: number;
+          model_id: string | null;
+          output_tokens: number;
+          provider: string | null;
+          source: string;
+          tool_call_count: number;
+        };
+        Insert: {
+          account_id: string;
+          agent_type?: string;
+          cached_input_tokens?: number;
+          created_at?: string;
+          credits_deducted_cents?: number;
+          id: string;
+          input_tokens?: number;
+          model_id?: string | null;
+          output_tokens?: number;
+          provider?: string | null;
+          source?: string;
+          tool_call_count?: number;
+        };
+        Update: {
+          account_id?: string;
+          agent_type?: string;
+          cached_input_tokens?: number;
+          created_at?: string;
+          credits_deducted_cents?: number;
+          id?: string;
+          input_tokens?: number;
+          model_id?: string | null;
+          output_tokens?: number;
+          provider?: string | null;
+          source?: string;
+          tool_call_count?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "usage_events_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      workflow_run_steps: {
+        Row: {
+          created_at: string;
+          duration_ms: number;
+          finish_reason: string | null;
+          finished_at: string;
+          id: string;
+          raw_finish_reason: string | null;
+          started_at: string;
+          step_number: number;
+          workflow_run_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          duration_ms: number;
+          finish_reason?: string | null;
+          finished_at: string;
+          id: string;
+          raw_finish_reason?: string | null;
+          started_at: string;
+          step_number: number;
+          workflow_run_id: string;
+        };
+        Update: {
+          created_at?: string;
+          duration_ms?: number;
+          finish_reason?: string | null;
+          finished_at?: string;
+          id?: string;
+          raw_finish_reason?: string | null;
+          started_at?: string;
+          step_number?: number;
+          workflow_run_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "workflow_run_steps_workflow_run_id_fkey";
+            columns: ["workflow_run_id"];
+            isOneToOne: false;
+            referencedRelation: "workflow_runs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      workflow_runs: {
+        Row: {
+          chat_id: string;
+          created_at: string;
+          finished_at: string;
+          id: string;
+          model_id: string | null;
+          started_at: string;
+          status: string;
+          total_duration_ms: number;
+        };
+        Insert: {
+          chat_id: string;
+          created_at?: string;
+          finished_at: string;
+          id: string;
+          model_id?: string | null;
+          started_at: string;
+          status: string;
+          total_duration_ms: number;
+        };
+        Update: {
+          chat_id?: string;
+          created_at?: string;
+          finished_at?: string;
+          id?: string;
+          model_id?: string | null;
+          started_at?: string;
+          status?: string;
+          total_duration_ms?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "workflow_runs_chat_id_fkey";
+            columns: ["chat_id"];
+            isOneToOne: false;
+            referencedRelation: "chats";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      zz_probe_cleanup_20260805: {
+        Row: {
+          artist_id: string | null;
+          captured_at: string;
+          created_at: string | null;
+          id: string | null;
+          organization_id: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          artist_id?: string | null;
+          captured_at?: string;
+          created_at?: string | null;
+          id?: string | null;
+          organization_id?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          artist_id?: string | null;
+          captured_at?: string;
+          created_at?: string | null;
+          id?: string | null;
+          organization_id?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -3454,6 +3964,23 @@ export type Database = {
       can_action_account_member: {
         Args: { target_team_account_id: string; target_user_id: string };
         Returns: boolean;
+      };
+      claim_songstats_backfill_rows: {
+        Args: { batch_size: number };
+        Returns: {
+          created_at: string;
+          id: string;
+          rank_score: number;
+          song: string;
+          status: string;
+          updated_at: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "songstats_backfill_queue";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
       };
       count_reports_by_day: {
         Args: { end_date: string; start_date: string };
@@ -3500,6 +4027,15 @@ export type Database = {
         Args: { account_id: string; amount: number };
         Returns: undefined;
       };
+      deduct_credits_with_audit: {
+        Args: {
+          p_account_id: string;
+          p_amount: number;
+          p_event: Json;
+          p_event_id: string;
+        };
+        Returns: undefined;
+      };
       extract_domain: { Args: { email: string }; Returns: string };
       get_account_invitations: {
         Args: { account_slug: string };
@@ -3542,7 +4078,32 @@ export type Database = {
         Args: { artistid: string; email: string };
         Returns: Json;
       };
+      get_catalog_measurements_aggregate: {
+        Args: { p_artist?: string; p_catalog: string };
+        Returns: {
+          measured_song_count: number;
+          total_streams: number;
+        }[];
+      };
+      get_catalog_measurements_page: {
+        Args: {
+          p_artist?: string;
+          p_catalog: string;
+          p_limit?: number;
+          p_offset?: number;
+        };
+        Returns: {
+          isrc: string;
+          measured_at: string;
+          playcount: number;
+          title: string;
+        }[];
+      };
       get_config: { Args: never; Returns: Json };
+      get_credit_spend_digest: {
+        Args: { p_limit?: number; p_since: string };
+        Returns: Json;
+      };
       get_fans_listening_top_songs: {
         Args: { artistid: string; email: string };
         Returns: Json;
@@ -3577,6 +4138,29 @@ export type Database = {
         }[];
       };
       get_upper_system_role: { Args: never; Returns: string };
+      grant_credits_with_audit: {
+        Args: {
+          p_account_id: string;
+          p_granted_by: string;
+          p_reason: string;
+          p_remaining_credits: number;
+        };
+        Returns: {
+          account_id: string;
+          created_at: string;
+          granted_by: string;
+          id: string;
+          previous_credits: number | null;
+          reason: string;
+          remaining_credits: number;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "credit_grants";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       has_active_subscription: {
         Args: { target_account_id: string };
         Returns: boolean;
