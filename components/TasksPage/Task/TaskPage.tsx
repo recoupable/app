@@ -2,20 +2,16 @@
 
 import { XCircle } from "lucide-react";
 import { useTask } from "@/hooks/useTask";
-import { getTaskTimezone } from "@/lib/timezone/getTaskTimezone";
-import { DEFAULT_MODEL } from "@/lib/consts";
 import RunPageSkeleton from "@/components/TasksPage/Run/RunPageSkeleton";
-import TaskDetailsDialogContent from "@/components/VercelChat/dialogs/tasks/TaskDetailsDialogContent";
 import TaskBreadcrumb from "./TaskBreadcrumb";
 import TaskPageHeader from "./TaskPageHeader";
-
-const noop = () => {};
+import TaskEditor from "./TaskEditor";
 
 /**
- * `/tasks/{taskId}` (chat#2006 item 2): a task with zero runs finally has
- * a page. Read-only view of the same sections the task dialog renders:
- * prompt, schedule + timezone, model, last run, recent runs (linking to
- * their run pages), and upcoming runs. Editing stays in the dialog.
+ * `/tasks/{taskId}`: the one place a task is viewed and edited (chat#2006
+ * items 2 and 8). Name, instructions, schedule, timezone and model are
+ * editable with Save, Pause / Resume and Delete; below them the task's run
+ * history from Trigger.dev, each recent run linking to its run page.
  */
 export default function TaskPage({ taskId }: { taskId: string }) {
   const { data: task, isLoading, error } = useTask(taskId);
@@ -50,20 +46,7 @@ export default function TaskPage({ taskId }: { taskId: string }) {
       <TaskBreadcrumb title={task.title} />
       <div className="mx-auto flex flex-col gap-4 p-6">
         <TaskPageHeader task={task} />
-        <TaskDetailsDialogContent
-          task={task}
-          editTitle={task.title}
-          editPrompt={task.prompt}
-          editCron={task.schedule}
-          editModel={task.model || DEFAULT_MODEL}
-          editTimezone={getTaskTimezone(task)}
-          onTitleChange={noop}
-          onPromptChange={noop}
-          onCronChange={noop}
-          onModelChange={noop}
-          onTimezoneChange={noop}
-          canEdit={false}
-        />
+        <TaskEditor key={task.updated_at ?? task.id} task={task} />
       </div>
     </div>
   );

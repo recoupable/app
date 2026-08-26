@@ -3,10 +3,7 @@ import { cn } from "@/lib/utils";
 import type { Task } from "@/lib/tasks/getTasks";
 import AccountIdDisplay from "@/components/ArtistSetting/AccountIdDisplay";
 
-/**
- * Title + enabled state for the task page. Same visual language as the
- * task dialog's header, without the Dialog primitives.
- */
+/** Title + enabled state for the task page. */
 const TaskPageHeader = ({ task }: { task: Task }) => {
   const isActive = Boolean(task.enabled);
 

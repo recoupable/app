@@ -1,7 +1,8 @@
 import { Task } from "@/lib/tasks/getTasks";
 import TaskCard from "@/components/VercelChat/tools/tasks/TaskCard";
 import TaskSkeleton from "./TaskSkeleton";
-import TaskDetailsDialog from "@/components/VercelChat/dialogs/tasks/TaskDetailsDialog";
+import Link from "next/link";
+import { getTaskHref } from "@/lib/tasks/getTaskHref";
 import { useUserProvider } from "@/providers/UserProvder";
 
 interface TasksListProps {
@@ -44,20 +45,21 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError }) => {
   return (
     <div className="mt-4">
       {tasks.map((task: Task, index) => (
-        <TaskDetailsDialog key={task.id} task={task}>
-          <div
-            data-task-dialog-trigger={task.id}
-            className={
-              index !== tasks.length - 1 ? "border-b border-border " : ""
-            }
-          >
-            <TaskCard
-              task={task}
-              ownerEmail={task.owner_email ?? undefined}
-              artistName={task.artist_name}
-            />
-          </div>
-        </TaskDetailsDialog>
+        <Link
+          key={task.id}
+          href={getTaskHref(task.id)}
+          className={
+            index !== tasks.length - 1
+              ? "block border-b border-border"
+              : "block"
+          }
+        >
+          <TaskCard
+            task={task}
+            ownerEmail={task.owner_email ?? undefined}
+            artistName={task.artist_name}
+          />
+        </Link>
       ))}
     </div>
   );

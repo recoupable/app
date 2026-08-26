@@ -5,46 +5,36 @@ import { Pause, Trash2 } from "lucide-react";
 import { useUpdateScheduledAction } from "@/hooks/useUpdateScheduledAction";
 import { useDeleteScheduledAction } from "@/hooks/useDeleteScheduledAction";
 
-interface TaskDetailsDialogActionButtonsProps {
+interface TaskActionsProps {
   taskId: string;
   editTitle: string;
   editPrompt: string;
   editCron: string;
   editModel: string;
   editTimezone: string;
-  onSaveSuccess: () => void;
-  onDeleteSuccess: () => void;
   isEnabled: boolean;
-  canEdit: boolean;
+  onDeleteSuccess: () => void;
 }
 
-const TaskDetailsDialogActionButtons: React.FC<
-  TaskDetailsDialogActionButtonsProps
-> = ({
+/** Save / Pause-Resume / Delete for the task page. */
+const TaskActions: React.FC<TaskActionsProps> = ({
   taskId,
   editTitle,
   editPrompt,
   editCron,
   editModel,
   editTimezone,
-  onSaveSuccess,
-  onDeleteSuccess,
   isEnabled,
-  canEdit,
+  onDeleteSuccess,
 }) => {
   const { updateAction, isLoading: isUpdating } = useUpdateScheduledAction();
   const { deleteAction, isLoading: isDeleting } = useDeleteScheduledAction();
   const isLoading = isUpdating || isDeleting;
 
   const handlePause = async () => {
-    if (!canEdit) return;
-
     try {
       await updateAction({
-        updates: {
-          id: taskId,
-          enabled: !isEnabled,
-        },
+        updates: { id: taskId, enabled: !isEnabled },
         successMessage: isEnabled ? "Task paused" : "Task activated",
       });
     } catch (error) {
@@ -53,36 +43,23 @@ const TaskDetailsDialogActionButtons: React.FC<
   };
 
   const handleDelete = async () => {
-    if (!canEdit) return;
-
     try {
-      await deleteAction({
-        actionId: taskId,
-        onSuccess: () => {
-          onDeleteSuccess();
-        },
-      });
+      await deleteAction({ actionId: taskId, onSuccess: onDeleteSuccess });
     } catch (error) {
       console.error("Failed to delete task:", error);
     }
   };
 
   const handleSave = async () => {
-    if (!canEdit) return;
-
     try {
-      const cronExpression = editCron.trim();
       await updateAction({
         updates: {
           id: taskId,
           title: editTitle,
           prompt: editPrompt,
-          schedule: cronExpression,
+          schedule: editCron.trim(),
           model: editModel,
           timezone: editTimezone,
-        },
-        onSuccess: () => {
-          onSaveSuccess();
         },
         successMessage: "Task updated successfully",
       });
@@ -90,6 +67,7 @@ const TaskDetailsDialogActionButtons: React.FC<
       console.error("Failed to save task:", error);
     }
   };
+
   return (
     <div className="flex gap-2 mt-4 pt-4 border-t border-border justify-between shrink-0">
       <div className="flex gap-2">
@@ -113,15 +91,11 @@ const TaskDetailsDialogActionButtons: React.FC<
           Delete
         </Button>
       </div>
-      <Button
-        onClick={handleSave}
-        disabled={isLoading}
-        size="sm"
-      >
+      <Button onClick={handleSave} disabled={isLoading} size="sm">
         {isLoading ? "Saving..." : "Save"}
       </Button>
     </div>
   );
 };
 
-export default TaskDetailsDialogActionButtons;
+export default TaskActions;
