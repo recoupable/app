@@ -36,3 +36,18 @@ describe("buildFirstTaskParams", () => {
     expect(params.prompt).toContain("manager@example.com");
   });
 });
+
+describe("buildFirstTaskParams timezone", () => {
+  it("passes the caller's timezone through so 9am means the user's 9am", () => {
+    const params = buildFirstTaskParams({
+      ...input,
+      timezone: "America/Los_Angeles",
+    });
+    expect(params.timezone).toBe("America/Los_Angeles");
+  });
+
+  it("omits timezone when none is known (API default zone)", () => {
+    const params = buildFirstTaskParams(input);
+    expect(params).not.toHaveProperty("timezone");
+  });
+});
