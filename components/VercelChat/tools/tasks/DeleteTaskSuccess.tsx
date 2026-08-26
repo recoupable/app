@@ -2,7 +2,6 @@ import React from "react";
 import { Trash2, CheckCircle } from "lucide-react";
 import { ScheduledAction } from "@/components/VercelChat/types";
 import TaskCard from "./TaskCard";
-import TaskDetailsDialog from "../../dialogs/tasks/TaskDetailsDialog";
 
 export interface DeleteTaskSuccessProps {
   result: ScheduledAction;
@@ -52,9 +51,7 @@ const DeleteTaskSuccess: React.FC<DeleteTaskSuccessProps> = ({
           </div>
         ) : (
           <div className="space-y-3">
-            <TaskDetailsDialog task={task} isDeleted={true}>
-              <TaskCard task={task} isDeleted={true} />
-            </TaskDetailsDialog>
+            <TaskCard task={task} isDeleted={true} />
           </div>
         )}
       </div>

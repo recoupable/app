@@ -4,12 +4,14 @@ import Link from "next/link";
 import useHomeTasksModuleState from "@/hooks/useHomeTasksModuleState";
 import HomeRunRow from "./HomeRunRow";
 import StarterTaskCard from "./StarterTaskCard";
+import ScheduledTaskLine from "./ScheduledTaskLine";
 
 /**
  * "Your label at work" homepage module: recent task runs (existing
- * GET /api/tasks/runs) or the one-click starter suggestion for fresh
- * accounts (recoupable/chat#1850). Renders nothing while loading or on
- * failure so the homepage never blocks on it.
+ * GET /api/tasks/runs), the already-scheduled report for accounts whose
+ * task hasn't fired yet, or the one-click starter suggestion for fresh
+ * accounts (recoupable/chat#1850, chat#2006). Renders nothing while
+ * loading or on failure so the homepage never blocks on it.
  */
 const TasksModule = () => {
   const state = useHomeTasksModuleState();
@@ -38,6 +40,8 @@ const TasksModule = () => {
             <HomeRunRow key={run.id} run={run} />
           ))}
         </div>
+      ) : state.view === "scheduled" ? (
+        <ScheduledTaskLine task={state.task} />
       ) : (
         <StarterTaskCard />
       )}
