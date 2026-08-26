@@ -3,8 +3,6 @@ import TaskCard from "@/components/VercelChat/tools/tasks/TaskCard";
 import TaskSkeleton from "./TaskSkeleton";
 import TaskDetailsDialog from "@/components/VercelChat/dialogs/tasks/TaskDetailsDialog";
 import { useUserProvider } from "@/providers/UserProvder";
-import { useArtistProvider } from "@/providers/ArtistProvider";
-import { getTaskArtistName } from "@/lib/tasks/getTaskArtistName";
 
 interface TasksListProps {
   tasks: Task[];
@@ -14,7 +12,6 @@ interface TasksListProps {
 
 const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError }) => {
   const { userData } = useUserProvider();
-  const { artists } = useArtistProvider();
 
   if (isError) {
     return (
@@ -57,7 +54,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError }) => {
             <TaskCard
               task={task}
               ownerEmail={task.owner_email ?? undefined}
-              artistName={getTaskArtistName(task, artists)}
+              artistName={task.artist_name}
             />
           </div>
         </TaskDetailsDialog>
