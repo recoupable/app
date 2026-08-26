@@ -160,7 +160,12 @@ const TaskDetailsDialogContent: React.FC<TaskDetailsDialogContentProps> = ({
       </div>
 
       {/* Last Run Information - Read-only */}
-      <TaskLastRunSection lastRun={task.last_run} isDeleted={isDeleted} />
+      {/* `last_run` is a dead column (nothing writes it since the Trigger.dev
+          migration); the latest Trigger run is the real last run. */}
+      <TaskLastRunSection
+        lastRun={task.recent_runs?.[0]?.createdAt ?? null}
+        isDeleted={isDeleted}
+      />
 
       {/* Recent Runs from Trigger.dev */}
       <TaskRecentRunsSection
