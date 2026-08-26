@@ -1,14 +1,14 @@
 import { TASKS_API_URL } from "@/lib/consts";
 
-export interface TaskRunMetadata {
-  currentStep?: string;
-  logs?: string[];
-  [key: string]: unknown;
-}
+/**
+ * Trigger.dev run metadata. For scheduled runs `api` writes the link to the
+ * workflow that does the work here (`sessionId`, `chatId`, `workflowRunId`,
+ * chat#2006 item 4a); read it with `getRunWorkflowLink`.
+ */
+export type TaskRunMetadata = Record<string, unknown>;
 
 export interface TaskRunStatus {
   status: string;
-  output?: unknown;
   error?: { message: string; name?: string; stackTrace?: string } | null;
   metadata: TaskRunMetadata | null;
   taskIdentifier: string;
@@ -19,7 +19,9 @@ export interface TaskRunStatus {
 }
 
 /**
- * Fetches the current status of a Trigger.dev task run from the Recoup API.
+ * Fetches a Trigger.dev task run from the Recoup API. For a scheduled task
+ * this is the ~30s kickoff; the work happens in the workflow run linked in
+ * `metadata` (see `getRunWorkflowLink`).
  */
 export async function getTaskRunStatus(
   runId: string,
@@ -48,7 +50,6 @@ export async function getTaskRunStatus(
 
   return {
     status: run.status,
-    output: run.output ?? undefined,
     error: run.error ?? null,
     metadata: run.metadata ?? null,
     taskIdentifier: run.taskIdentifier,

@@ -1,4 +1,5 @@
 import { usePathname, useRouter } from "next/navigation";
+import { isTasksSection } from "@/lib/navigation/isTasksSection";
 import { useUserProvider } from "@/providers/UserProvder";
 import RecentChats from "../Sidebar/RecentChats";
 import UserInfo from "../Sidebar/UserInfo";
@@ -22,10 +23,11 @@ const Menu = ({ isExpanded, isPinned = false, onTogglePin }: MenuProps) => {
   const pathname = usePathname();
   const { email, isPrepared } = useUserProvider();
   const isAgents = pathname.includes("/agents");
-  const isTasks = pathname.includes("/tasks");
+  const isTasks = isTasksSection(pathname);
   const isFiles = pathname.includes("/files");
   const isCatalogs = pathname.includes("/catalogs");
   const isArtists = pathname.includes("/artists");
+  const isMusic = pathname.includes("/music");
 
   const goToItem = (link?: string) => {
     if (isPrepared()) {
@@ -40,9 +42,17 @@ const Menu = ({ isExpanded, isPinned = false, onTogglePin }: MenuProps) => {
 
   return (
     <div className="w-full h-screen pt-5 pb-2 px-2 hidden md:flex flex-col">
-      <LogoRow isExpanded={isExpanded} isPinned={isPinned} onTogglePin={onTogglePin} />
+      <LogoRow
+        isExpanded={isExpanded}
+        isPinned={isPinned}
+        onTogglePin={onTogglePin}
+      />
 
-      <NewChatButton isExpanded={isExpanded} email={email} onClick={() => goToItem("chat")} />
+      <NewChatButton
+        isExpanded={isExpanded}
+        email={email}
+        onClick={() => goToItem("chat")}
+      />
 
       <SecondaryNav
         isExpanded={isExpanded}
@@ -51,6 +61,7 @@ const Menu = ({ isExpanded, isPinned = false, onTogglePin }: MenuProps) => {
         isFiles={isFiles}
         isCatalogs={isCatalogs}
         isArtists={isArtists}
+        isMusic={isMusic}
         onNavigate={goToItem}
       />
 
