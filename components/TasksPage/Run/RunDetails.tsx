@@ -17,6 +17,9 @@ interface RunDetailsProps {
   data: TaskRunStatus;
 }
 
+const openChatClass =
+  "w-fit rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:opacity-90";
+
 /**
  * A scheduled run (chat#2006 item 4b). The Trigger.dev run only kicks the
  * work off; status and timeline come from the workflow run linked in its
@@ -24,13 +27,20 @@ interface RunDetailsProps {
  */
 export default function RunDetails({ runId, data }: RunDetailsProps) {
   const link = getRunWorkflowLink(data.metadata);
-  const { data: workflow } = useChatRunStatus(link?.workflowRunId);
-  const state = getRunPageState({ triggerRun: data, workflow });
+  const { data: workflow, isError } = useChatRunStatus(link?.workflowRunId);
+  const state = getRunPageState({
+    triggerRun: data,
+    workflow,
+    workflowFailed: isError,
+  });
   const displayName = getTaskDisplayName(data.taskIdentifier);
 
   if (state.view === "loading") return <RunPageSkeleton />;
 
-  const config = STATUS_CONFIG[state.statusKey] ?? FALLBACK_CONFIG;
+  const config =
+    state.view === "unavailable"
+      ? FALLBACK_CONFIG
+      : (STATUS_CONFIG[state.statusKey] ?? FALLBACK_CONFIG);
 
   return (
     <div className="mx-auto flex flex-col gap-6 p-6">
@@ -38,38 +48,30 @@ export default function RunDetails({ runId, data }: RunDetailsProps) {
         {config.icon}
         <div>
           <h1 className="text-lg font-semibold">{displayName}</h1>
-          <p className={`text-sm ${config.color}`}>{config.label}</p>
+          <p className={`text-sm ${config.color}`}>
+            {state.view === "unavailable"
+              ? "Workflow status unavailable"
+              : config.label}
+          </p>
         </div>
       </div>
 
-      {state.view === "linked" ? (
-        <>
-          <RunTimeline
-            createdAt={state.firedAt}
-            startedAt={state.startedAt}
-            finishedAt={state.finishedAt}
-            durationMs={state.durationMs}
-          />
-          <Link
-            href={state.chatHref}
-            className="w-fit rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:opacity-90"
-          >
-            Open chat
-          </Link>
-        </>
+      <RunTimeline
+        createdAt={state.firedAt}
+        startedAt={state.view === "unavailable" ? null : state.startedAt}
+        finishedAt={state.view === "unavailable" ? null : state.finishedAt}
+        durationMs={state.view === "unavailable" ? null : state.durationMs}
+      />
+
+      {state.view === "unlinked" ? (
+        <p className="text-sm text-muted-foreground" role="status">
+          No chat recorded for this run. It fired before run pages linked to
+          their chats, so only the schedule status is available.
+        </p>
       ) : (
-        <>
-          <RunTimeline
-            createdAt={state.firedAt}
-            startedAt={null}
-            finishedAt={null}
-            durationMs={null}
-          />
-          <p className="text-sm text-muted-foreground" role="status">
-            No chat recorded for this run. It fired before run pages linked to
-            their chats, so only the schedule status is available.
-          </p>
-        </>
+        <Link href={state.chatHref} className={openChatClass}>
+          Open chat
+        </Link>
       )}
 
       {ERROR_STATUSES.has(data.status) && data.error && (

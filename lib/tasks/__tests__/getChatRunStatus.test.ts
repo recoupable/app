@@ -47,4 +47,15 @@ describe("getChatRunStatus", () => {
       "Run not found",
     );
   });
+
+  it("reports the HTTP status when the error body is not JSON (gateway page)", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 502,
+      json: async () => {
+        throw new SyntaxError("Unexpected token <");
+      },
+    }) as unknown as typeof fetch;
+    await expect(getChatRunStatus("wrun_x", "t")).rejects.toThrow("502");
+  });
 });

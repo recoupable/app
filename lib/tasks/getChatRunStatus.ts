@@ -28,10 +28,16 @@ export async function getChatRunStatus(
     `${NEW_API_BASE_URL}/api/chat/runs/${workflowRunId}`,
     { method: "GET", headers: { Authorization: `Bearer ${accessToken}` } },
   );
-  const data = await response.json();
   if (!response.ok) {
-    throw new Error(data.error || "Failed to fetch workflow run status");
+    let message = `Failed to fetch workflow run status (HTTP ${response.status})`;
+    try {
+      message = (await response.json()).error || message;
+    } catch {
+      // non-JSON error body (gateway page): keep the status-bearing message
+    }
+    throw new Error(message);
   }
+  const data = await response.json();
   return {
     status: data.status,
     createdAt: data.createdAt ?? null,

@@ -58,7 +58,7 @@ describe("getRunPageState", () => {
     });
   });
 
-  it("degrades to 'unlinked' with the Trigger status for runs fired before the link existed", () => {
+  it("degrades to 'unlinked' with the Trigger run's own status and timings for runs fired before the link existed", () => {
     expect(
       getRunPageState({
         triggerRun: { ...triggerRun, metadata: null },
@@ -68,6 +68,23 @@ describe("getRunPageState", () => {
       view: "unlinked",
       statusKey: "COMPLETED",
       firedAt: "2026-08-25T19:33:00.000Z",
+      startedAt: "2026-08-25T19:33:10.000Z",
+      finishedAt: "2026-08-25T19:33:40.000Z",
+      durationMs: 30000,
+    });
+  });
+
+  it("is 'unavailable' when the link exists but the workflow status fetch failed, keeping the chat link", () => {
+    expect(
+      getRunPageState({
+        triggerRun,
+        workflow: undefined,
+        workflowFailed: true,
+      }),
+    ).toEqual({
+      view: "unavailable",
+      firedAt: "2026-08-25T19:33:00.000Z",
+      chatHref: "/sessions/sess-1/chats/chat-1",
     });
   });
 });

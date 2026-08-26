@@ -4,12 +4,11 @@ import {
   getChatRunStatus,
   type ChatRunStatus,
 } from "@/lib/tasks/getChatRunStatus";
-
-const TERMINAL = new Set(["completed", "failed", "cancelled"]);
+import { getChatRunPollInterval } from "@/lib/tasks/getChatRunPollInterval";
 
 /**
- * Polls a workflow run's status every 3s until it settles (chat#2006
- * item 4b). Disabled until a workflow run id is known.
+ * Polls a workflow run's status every 3s until it settles or the fetch
+ * fails (chat#2006 item 4b). Disabled until a workflow run id is known.
  */
 export function useChatRunStatus(workflowRunId: string | undefined) {
   const { getAccessToken, authenticated } = usePrivy();
@@ -22,7 +21,10 @@ export function useChatRunStatus(workflowRunId: string | undefined) {
     },
     enabled: !!workflowRunId && authenticated,
     refetchInterval: (query) =>
-      TERMINAL.has(query.state.data?.status ?? "") ? false : 3000,
+      getChatRunPollInterval({
+        status: query.state.data?.status,
+        error: query.state.error,
+      }),
     retry: 3,
     staleTime: 1000,
   });
