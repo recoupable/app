@@ -7,13 +7,12 @@ import {
 import { DEFAULT_MODEL } from "@/lib/consts";
 
 /**
- * Creates the homepage starter task through the existing task-creation
- * path (`POST /api/tasks`, which also mints the schedule). It schedules the
- * same weekly report onboarding does — `buildFirstTaskParams` — so both
- * entry points produce one prompt, in run voice, emailed to the account
- * (chat#2006).
+ * Schedules the weekly report through `POST /api/tasks` (which also mints
+ * the Trigger schedule). The one creator behind both entry points, the
+ * onboarding confirm and the homepage starter card, so they produce the
+ * same task (chat#1867, chat#2006).
  */
-export async function createStarterTask(
+export async function createWeeklyReportTask(
   accessToken: string,
   input: BuildFirstTaskParamsInput,
 ): Promise<Task> {

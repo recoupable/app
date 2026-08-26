@@ -12,7 +12,7 @@ import { useCreateStarterTask } from "@/hooks/useCreateStarterTask";
  */
 const StarterTaskCard = () => {
   const { selectedArtist } = useArtistProvider();
-  const { handleCreateStarterTask, isCreating, isScheduled } =
+  const { handleCreateStarterTask, isCreating, isPreparing, isScheduled } =
     useCreateStarterTask();
   const artistName = selectedArtist?.name || "your artist";
 
@@ -38,7 +38,7 @@ const StarterTaskCard = () => {
       <button
         type="button"
         onClick={() => handleCreateStarterTask()}
-        disabled={isCreating}
+        disabled={isCreating || isPreparing}
         className="shrink-0 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isCreating ? "Scheduling..." : "Schedule it"}

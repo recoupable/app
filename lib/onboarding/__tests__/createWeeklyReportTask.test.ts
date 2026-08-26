@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createStarterTask } from "@/lib/home/createStarterTask";
+import { createWeeklyReportTask } from "@/lib/onboarding/createWeeklyReportTask";
 import { buildFirstTaskPrompt } from "@/lib/onboarding/buildFirstTaskPrompt";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import { DEFAULT_MODEL } from "@/lib/consts";
@@ -12,10 +12,11 @@ const input = {
   artistName: "Del Water Gap",
   artistAccountId: "artist-1",
   recipientEmail: "manager@example.com",
+  catalogName: "Debut",
   timezone: "America/New_York",
 };
 
-describe("createStarterTask", () => {
+describe("createWeeklyReportTask", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getClientApiBaseUrl).mockReturnValue(
@@ -33,7 +34,7 @@ describe("createStarterTask", () => {
       }),
     }) as unknown as typeof fetch;
 
-    const result = await createStarterTask("test-token", input);
+    const result = await createWeeklyReportTask("test-token", input);
 
     expect(fetch).toHaveBeenCalledWith(
       "https://api.recoupable.com/api/tasks",
@@ -55,7 +56,7 @@ describe("createStarterTask", () => {
     expect(result).toEqual(createdTask);
   });
 
-  it("schedules exactly the onboarding prompt (run voice, emailed to the account)", async () => {
+  it("schedules exactly the prompt the onboarding pre-run streamed (run voice, catalog named, emailed to the account)", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: vi
@@ -63,7 +64,7 @@ describe("createStarterTask", () => {
         .mockResolvedValue({ status: "success", tasks: [{ id: "t" }] }),
     }) as unknown as typeof fetch;
 
-    await createStarterTask("test-token", input);
+    await createWeeklyReportTask("test-token", input);
 
     const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
     const body = JSON.parse(String(init.body));
@@ -72,10 +73,12 @@ describe("createStarterTask", () => {
         artistName: "Del Water Gap",
         artistAccountId: "artist-1",
         recipientEmail: "manager@example.com",
+        catalogName: "Debut",
       }),
     );
     expect(body.prompt).not.toMatch(/^Set up a/);
     expect(body.prompt).toContain("manager@example.com");
+    expect(body.prompt).toContain('"Debut"');
   });
 
   it("propagates API errors", async () => {
@@ -85,7 +88,7 @@ describe("createStarterTask", () => {
       text: vi.fn().mockResolvedValue("boom"),
     }) as unknown as typeof fetch;
 
-    await expect(createStarterTask("test-token", input)).rejects.toThrow(
+    await expect(createWeeklyReportTask("test-token", input)).rejects.toThrow(
       "HTTP 500",
     );
   });

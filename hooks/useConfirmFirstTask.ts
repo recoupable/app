@@ -4,17 +4,15 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
 import { toast } from "sonner";
-import { createTask } from "@/lib/tasks/createTask";
 import type { Task } from "@/lib/tasks/getTasks";
-import { buildFirstTaskParams } from "@/lib/onboarding/buildFirstTaskParams";
-import { getBrowserTimezone } from "@/lib/home/getBrowserTimezone";
+import { createWeeklyReportTask } from "@/lib/onboarding/createWeeklyReportTask";
+import { getWeeklyReportErrorMessage } from "@/lib/onboarding/getWeeklyReportErrorMessage";
 import {
   getFirstTaskConfirmPhase,
   type FirstTaskConfirmPhase,
   type FirstTaskDecision,
 } from "@/lib/onboarding/getFirstTaskConfirmPhase";
-import { useArtistProvider } from "@/providers/ArtistProvider";
-import { DEFAULT_MODEL } from "@/lib/consts";
+import { useWeeklyReportTaskInput } from "@/hooks/useWeeklyReportTaskInput";
 
 interface UseConfirmFirstTaskInput {
   catalogName?: string;
@@ -27,8 +25,8 @@ interface UseConfirmFirstTaskInput {
  * decline creates nothing. Auth + artist come from providers.
  */
 export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
-  const { getAccessToken, user } = usePrivy();
-  const { selectedArtist } = useArtistProvider();
+  const { getAccessToken } = usePrivy();
+  const { resolve } = useWeeklyReportTaskInput();
   const queryClient = useQueryClient();
   const [decision, setDecision] = useState<FirstTaskDecision>("pending");
 
@@ -38,29 +36,10 @@ export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
     data: task,
   } = useMutation<Task>({
     mutationFn: async () => {
-      const artistAccountId = selectedArtist?.account_id;
-      const artistName = selectedArtist?.name;
-      if (!artistAccountId || !artistName) {
-        throw new Error("ARTIST_REQUIRED");
-      }
-      const recipientEmail = user?.email?.address;
-      if (!recipientEmail) {
-        throw new Error("EMAIL_REQUIRED");
-      }
+      const input = resolve();
       const accessToken = await getAccessToken();
-      if (!accessToken) {
-        throw new Error("AUTH_REQUIRED");
-      }
-      return createTask(accessToken, {
-        ...buildFirstTaskParams({
-          artistName,
-          artistAccountId,
-          recipientEmail,
-          catalogName,
-          timezone: getBrowserTimezone(),
-        }),
-        model: DEFAULT_MODEL,
-      });
+      if (!accessToken) throw new Error("AUTH_REQUIRED");
+      return createWeeklyReportTask(accessToken, { ...input, catalogName });
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
@@ -68,15 +47,7 @@ export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
         exact: false,
       });
     },
-    onError: (error) => {
-      // A missing email is permanent for wallet/social-only logins — tell the
-      // user to link one instead of "try again", which can't succeed.
-      const message =
-        error instanceof Error && error.message === "EMAIL_REQUIRED"
-          ? "Add an email address to your account to receive your weekly report."
-          : "Couldn't schedule the weekly report. Please try again.";
-      toast.error(message);
-    },
+    onError: (error) => toast.error(getWeeklyReportErrorMessage(error)),
   });
 
   const confirm = () => {
