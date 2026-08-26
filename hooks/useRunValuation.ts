@@ -25,7 +25,7 @@ const useRunValuation = (spotifyArtistIdOverride?: string) => {
   const queryClient = useQueryClient();
 
   const candidates = [selectedArtist, ...(sorted ?? [])].filter(
-    (artist) => !!artist && !artist.isWorkspace,
+    (artist) => !!artist,
   );
   const runnable = candidates.find((artist) => !!artist && getArtistSpotifyId(artist));
   const spotifyArtistId =
