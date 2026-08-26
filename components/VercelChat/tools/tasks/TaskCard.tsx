@@ -20,9 +20,16 @@ export interface TaskCardProps {
   task: ScheduledAction;
   isDeleted?: boolean;
   ownerEmail?: string;
+  /** Shown under the title; the task list is account-wide (chat#2006 item 6). */
+  artistName?: string | null;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, isDeleted, ownerEmail }) => {
+const TaskCard: React.FC<TaskCardProps> = ({
+  task,
+  isDeleted,
+  ownerEmail,
+  artistName,
+}) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { updateAction, isLoading: isUpdating } = useUpdateScheduledAction();
   const { deleteAction, isLoading: isDeleting } = useDeleteScheduledAction();
@@ -61,17 +68,24 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, isDeleted, ownerEmail }) => {
         `group flex items-center justify-between py-4 px-4 hover:bg-muted dark:hover:bg-[#1a1a1a] transition-colors -mx-4`,
         {
           "opacity-70": isDeleted,
-        }
+        },
       )}
     >
       <div className="flex items-center space-x-4">
         <TaskArtistImage artistAccountId={task.artist_account_id} />
-        <div className="flex items-center gap-2">
-          <h4 className="text-base font-medium text-foreground">{task.title}</h4>
-          {ownerEmail && (
-            <span className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded-full">
-              {ownerEmail}
-            </span>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <h4 className="text-base font-medium text-foreground">
+              {task.title}
+            </h4>
+            {ownerEmail && (
+              <span className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded-full">
+                {ownerEmail}
+              </span>
+            )}
+          </div>
+          {artistName && (
+            <span className="text-xs text-muted-foreground">{artistName}</span>
           )}
         </div>
       </div>
