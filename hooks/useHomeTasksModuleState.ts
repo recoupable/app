@@ -24,7 +24,9 @@ const useHomeTasksModuleState = (): HomeTasksModuleState => {
     runsFailed: isError,
     isLoading: isLoading || tasksQuery.isLoading,
     hasArtist: !!selectedArtist?.account_id,
-    existingTask: tasksQuery.data
+    // isSuccess, not data: react-query keeps the last list around after a
+    // failed refetch, and an unknown task list must hide the starter.
+    existingTask: tasksQuery.isSuccess
       ? findExistingWeeklyReportTask(tasksQuery.data)
       : undefined,
   });

@@ -92,7 +92,9 @@ describe("buildFirstTaskPrompt social section", () => {
 
   it("states a missing platform in one line instead of printing zeros", () => {
     expect(prompt.toLowerCase()).toContain("not connected");
-    expect(prompt.toLowerCase()).toContain("never report zeros");
+    expect(prompt.toLowerCase()).toContain(
+      "never present a missing platform as a zero",
+    );
   });
 });
 
@@ -105,5 +107,21 @@ describe("buildFirstTaskPrompt email header", () => {
       "never render the artist photo full-width",
     );
     expect(prompt).not.toMatch(/full-width artist photo/i);
+  });
+});
+
+describe("buildFirstTaskPrompt image and escaping rules", () => {
+  const prompt = buildFirstTaskPrompt(base);
+
+  it("scopes the Spotify-only image rule to Spotify artwork so social thumbnails are allowed", () => {
+    expect(prompt).toContain("Spotify artwork");
+    expect(prompt).not.toMatch(
+      /All images must use https URLs from the Spotify API/,
+    );
+  });
+
+  it("requires escaped captions and https-only social URLs in the email", () => {
+    expect(prompt.toLowerCase()).toContain("html-escape");
+    expect(prompt).toContain("https:");
   });
 });

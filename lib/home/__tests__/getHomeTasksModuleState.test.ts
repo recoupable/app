@@ -30,15 +30,15 @@ const fresh = {
 
 describe("getHomeTasksModuleState", () => {
   it("hides the module while runs or tasks are loading", () => {
-    expect(
-      getHomeTasksModuleState({ ...fresh, runs: undefined, isLoading: true }),
-    ).toEqual({ view: "hidden" });
+    expect(getHomeTasksModuleState({ ...fresh, isLoading: true })).toEqual({
+      view: "hidden",
+    });
   });
 
   it("hides the module when the runs request failed", () => {
-    expect(
-      getHomeTasksModuleState({ ...fresh, runs: undefined, runsFailed: true }),
-    ).toEqual({ view: "hidden" });
+    expect(getHomeTasksModuleState({ ...fresh, runsFailed: true })).toEqual({
+      view: "hidden",
+    });
   });
 
   it("shows recent runs when the account has task history", () => {
