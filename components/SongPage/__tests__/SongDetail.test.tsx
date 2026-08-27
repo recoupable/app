@@ -166,4 +166,43 @@ describe("SongDetail", () => {
     expect(crumb.querySelector('a[href="/music"]')).not.toBeNull();
     expect(crumb.textContent).toContain("Song");
   });
+
+  // The page is where a Telegram link lands; the card had the player and the
+  // download, the page had neither (recoupable/app#1999).
+  it("plays and downloads a completed song, named after its prompt", () => {
+    mock({
+      data: { status: "success", generation: detail() },
+      isLoading: false,
+      error: null,
+    });
+    const { container } = render(<SongDetail generationId={ID} />);
+    expect(container.querySelector("audio")?.getAttribute("src")).toBe(
+      "https://cdn.example/a.wav",
+    );
+    const download = screen.getByRole("link", {
+      name: /download genre: lo-fi soul/i,
+    });
+    expect(download.getAttribute("href")).toContain(
+      "download=genre-lo-fi-soul-bpm-82.wav",
+    );
+  });
+
+  it("shows no player while a song is still generating", () => {
+    mock({
+      data: {
+        status: "success",
+        generation: detail({
+          status: "processing",
+          audio_url: null,
+          seed: null,
+        }),
+      },
+      isLoading: false,
+      error: null,
+    });
+    const { container } = render(<SongDetail generationId={ID} />);
+    expect(container.querySelector("audio")).toBeNull();
+    expect(screen.queryByRole("link", { name: /download/i })).toBeNull();
+    expect(screen.getByText(/Generating\. This usually takes/)).toBeDefined();
+  });
 });
