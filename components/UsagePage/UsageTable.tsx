@@ -10,7 +10,7 @@ const UsageTable = ({ events }: { events: UsageEvent[] }) => (
     <table className="w-full">
       <thead>
         <tr className="border-b border-border text-left text-[11px] uppercase tracking-wide text-muted-foreground">
-          <th className="py-2 pr-3 font-medium">When</th>
+          <th className="min-w-[5.5rem] py-2 pr-3 font-medium">When</th>
           <th className="w-full py-2 px-3 font-medium">Model / endpoint</th>
           <th className="hidden md:table-cell py-2 px-3 font-medium">Tokens</th>
           <th className="py-2 pl-3 font-medium text-right">Cost</th>
