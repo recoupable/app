@@ -8,6 +8,7 @@ import getAccountUsage, {
   AccountUsagePage,
 } from "@/lib/recoup/getAccountUsage";
 import { useUserProvider } from "@/providers/UserProvder";
+import type { UsageSort } from "@/lib/usage/usageSort";
 import rangeToPeriod from "@/lib/usage/rangeToPeriod";
 import type { UsageRange } from "@/lib/usage/usageRanges";
 import { useMemo } from "react";
@@ -15,15 +16,17 @@ import { useMemo } from "react";
 const PAGE_SIZE = 20;
 
 /**
- * The signed-in account's charge line items for a range, newest first, one
- * page per `next_cursor`. Auth and account come from the providers; the range
- * is the one instance-scoped input. A new range is a new query, so paging
- * starts over.
+ * The signed-in account's charge line items for a range, newest first or most
+ * expensive first, one page per `next_cursor`. Auth and account come from the
+ * providers; the range and the sort are the instance-scoped inputs, and a new
+ * range or sort is a new query, so paging starts over.
  */
 const useAccountUsage = ({
   range,
+  sort,
 }: {
   range: UsageRange;
+  sort: UsageSort;
 }): UseInfiniteQueryResult<InfiniteData<AccountUsagePage>> => {
   const { userData } = useUserProvider();
   const { getAccessToken, authenticated } = usePrivy();
@@ -31,7 +34,7 @@ const useAccountUsage = ({
   const period = useMemo(() => rangeToPeriod(range, new Date()), [range]);
 
   return useInfiniteQuery({
-    queryKey: ["usage", accountId, period.from, period.to],
+    queryKey: ["usage", accountId, period.from, period.to, sort],
     initialPageParam: undefined as string | undefined,
     queryFn: async ({ pageParam }) => {
       const accessToken = await getAccessToken();
@@ -39,6 +42,7 @@ const useAccountUsage = ({
       return getAccountUsage(accountId as string, accessToken, {
         limit: PAGE_SIZE,
         cursor: pageParam,
+        sort,
         ...period,
       });
     },

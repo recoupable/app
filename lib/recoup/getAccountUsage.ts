@@ -1,4 +1,5 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import type { UsageSort } from "@/lib/usage/usageSort";
 
 export interface UsageEvent {
   id: string;
@@ -52,11 +53,19 @@ async function getAccountUsage(
     cursor,
     from,
     to,
-  }: { limit: number; cursor?: string; from?: string; to?: string },
+    sort,
+  }: {
+    limit: number;
+    cursor?: string;
+    from?: string;
+    to?: string;
+    sort?: UsageSort;
+  },
 ): Promise<AccountUsagePage> {
   const params = new URLSearchParams({ limit: String(limit) });
   if (from) params.set("from", from);
   if (to) params.set("to", to);
+  if (sort) params.set("sort", sort);
   if (cursor) params.set("cursor", cursor);
 
   const response = await fetch(

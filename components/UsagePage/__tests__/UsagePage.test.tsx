@@ -131,6 +131,18 @@ describe("UsagePage", () => {
     expect(fetchNextPage).toHaveBeenCalledTimes(1);
   });
 
+  it("re-queries the hook with sort=cost when the Cost header is clicked", () => {
+    loaded([page([EVENT])]);
+    render(<UsagePage />);
+    expect(vi.mocked(useAccountUsage)).toHaveBeenLastCalledWith(
+      expect.objectContaining({ sort: "created_at" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Cost/ }));
+    expect(vi.mocked(useAccountUsage)).toHaveBeenLastCalledWith(
+      expect.objectContaining({ sort: "cost" }),
+    );
+  });
+
   it("defaults to 30d and re-queries the hook with the picked range", () => {
     loaded([page([EVENT])]);
     render(<UsagePage />);
