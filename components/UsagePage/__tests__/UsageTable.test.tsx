@@ -80,7 +80,7 @@ describe("UsageTable", () => {
     expect(cells).toHaveLength(5);
     expect(cells[4].textContent).toBe("");
     expect(cells[0].textContent).toBe("Aug 27, 1:47 PM");
-    expect(cells[1].textContent).toBe("fal / minimax/music-3");
+    expect(cells[1].textContent).toBe("minimax/music-3");
     expect(collapses(cells[2])).toBe(true);
     expect(cells[3].textContent).toBe("$0.12");
     expect(screen.queryByText(/api · main/)).toBeNull();

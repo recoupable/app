@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import describeUsageModel from "@/lib/usage/describeUsageModel";
 
 describe("describeUsageModel", () => {
-  it("joins provider and model", () => {
+  it("shows the model alone, never the third-party provider", () => {
     expect(
       describeUsageModel({ provider: "fal", model_id: "minimax/music-3" }),
-    ).toBe("fal / minimax/music-3");
+    ).toBe("minimax/music-3");
   });
 
-  it("shows the model alone when the provider is unknown", () => {
+  it("shows the model when the provider is unknown", () => {
     expect(describeUsageModel({ provider: null, model_id: "gpt-5" })).toBe(
       "gpt-5",
     );
