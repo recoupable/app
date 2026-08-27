@@ -54,6 +54,15 @@ const loaded = (pages: unknown[], extra: Record<string, unknown> = {}) =>
     ...extra,
   });
 
+// recharts' ResponsiveContainer observes its box; jsdom has no ResizeObserver.
+class ResizeObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+globalThis.ResizeObserver =
+  ResizeObserverStub as unknown as typeof ResizeObserver;
+
 describe("UsagePage", () => {
   beforeEach(() => vi.clearAllMocks());
 
@@ -120,6 +129,38 @@ describe("UsagePage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Load more" }));
     expect(fetchNextPage).toHaveBeenCalledTimes(1);
+  });
+
+  it("defaults to 30d and re-queries the hook with the picked range", () => {
+    loaded([page([EVENT])]);
+    render(<UsagePage />);
+    expect(vi.mocked(useAccountUsage)).toHaveBeenLastCalledWith(
+      expect.objectContaining({ range: "30d" }),
+    );
+    fireEvent.mouseDown(screen.getByRole("tab", { name: "7d" }));
+    fireEvent.click(screen.getByRole("tab", { name: "7d" }));
+    expect(vi.mocked(useAccountUsage)).toHaveBeenLastCalledWith(
+      expect.objectContaining({ range: "7d" }),
+    );
+  });
+
+  it("draws the chart from the first page's series", () => {
+    loaded([
+      {
+        ...page([EVENT]),
+        series_bucket: "day",
+        series: [
+          {
+            start: "2026-08-27T00:00:00.000Z",
+            credits_deducted: 20000,
+            usd: "$0.02",
+            events: 1,
+          },
+        ],
+      },
+    ]);
+    const { container } = render(<UsagePage />);
+    expect(container.querySelector("[data-chart]")).not.toBeNull();
   });
 
   it("renders every loaded page in one list", () => {

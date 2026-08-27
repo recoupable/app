@@ -15,7 +15,9 @@ vi.mock("@/providers/UserProvder", () => ({
 }));
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+  <QueryClientProvider
+    client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+  >
     {children}
   </QueryClientProvider>
 );
@@ -32,18 +34,35 @@ describe("useAccountUsage", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("fetches the signed-in account's usage and pages with next_cursor", async () => {
-    vi.mocked(getAccountUsage).mockResolvedValueOnce(page("cur-1")).mockResolvedValueOnce(page(null));
+    vi.mocked(getAccountUsage)
+      .mockResolvedValueOnce(page("cur-1"))
+      .mockResolvedValueOnce(page(null));
 
-    const { result } = renderHook(() => useAccountUsage(), { wrapper });
+    const { result } = renderHook(() => useAccountUsage({ range: "7d" }), {
+      wrapper,
+    });
     await waitFor(() => expect(result.current.data?.pages).toHaveLength(1));
 
-    expect(getAccountUsage).toHaveBeenCalledWith("acct-1", "tok", { limit: 20, cursor: undefined });
+    expect(getAccountUsage).toHaveBeenCalledWith(
+      "acct-1",
+      "tok",
+      expect.objectContaining({
+        limit: 20,
+        cursor: undefined,
+        from: expect.any(String),
+        to: expect.any(String),
+      }),
+    );
     expect(result.current.hasNextPage).toBe(true);
 
     await result.current.fetchNextPage();
     await waitFor(() => expect(result.current.data?.pages).toHaveLength(2));
 
-    expect(getAccountUsage).toHaveBeenLastCalledWith("acct-1", "tok", { limit: 20, cursor: "cur-1" });
+    expect(getAccountUsage).toHaveBeenLastCalledWith(
+      "acct-1",
+      "tok",
+      expect.objectContaining({ limit: 20, cursor: "cur-1" }),
+    );
     expect(result.current.hasNextPage).toBe(false);
   });
 });
