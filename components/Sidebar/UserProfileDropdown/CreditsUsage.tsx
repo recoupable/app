@@ -1,13 +1,8 @@
+import Link from "next/link";
 import { usePaymentProvider } from "@/providers/PaymentProvider";
 import { formatCreditsAsUsd } from "@/lib/credits/formatCreditsAsUsd";
 
-/**
- * Compact inline balance that lives inside the identity block.
- *
- * Shown as currency rather than a credit count. A count is only readable while
- * a credit happens to be worth a cent; at a micro-dollar the same balance
- * reads "3,330,000 / 3,330,000 credits" (chat#2000).
- */
+/** Remaining / monthly balance as currency, linking to the charges behind it. */
 const CreditsUsage = () => {
   const { totalCredits, credits, isLoading } = usePaymentProvider();
 
@@ -16,7 +11,9 @@ const CreditsUsage = () => {
       {isLoading ? (
         <span className="inline-block h-3 w-16 bg-muted animate-pulse rounded" />
       ) : (
-        `${formatCreditsAsUsd(credits)} / ${formatCreditsAsUsd(totalCredits)}`
+        <Link href="/usage" className="hover:underline" title="See what used your balance">
+          {`${formatCreditsAsUsd(credits)} / ${formatCreditsAsUsd(totalCredits)}`}
+        </Link>
       )}
     </p>
   );
