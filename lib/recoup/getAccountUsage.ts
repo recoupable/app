@@ -17,6 +17,16 @@ export interface UsageEvent {
   usd: string;
 }
 
+export type UsageSeriesBucket = "hour" | "day" | "week" | "month";
+
+export interface UsageSeriesPoint {
+  start: string;
+  /** Micro-dollars. Display `usd`; never print this integer. */
+  credits_deducted: number;
+  usd: string;
+  events: number;
+}
+
 export interface AccountUsagePage {
   account_id: string;
   period: { from: string; to: string };
@@ -24,19 +34,37 @@ export interface AccountUsagePage {
   total_usd: string;
   events: UsageEvent[];
   next_cursor: string | null;
+  /** Only on a first page (no cursor): spend per bucket across the period. */
+  series_bucket?: UsageSeriesBucket;
+  series?: UsageSeriesPoint[];
 }
 
 /**
  * GET /api/accounts/{id}/usage on the Recoup API (Privy bearer): the charges
- * behind the balance, newest first. The thrown error carries the HTTP status
+ * behind the balance, newest first, for the `from`/`to` period (the api
+ * defaults to the current UTC month when omitted). The thrown error carries the HTTP status
  * so a 403 can render as a no-access state rather than a failure.
  */
 async function getAccountUsage(
   accountId: string,
   accessToken: string,
-  { limit, cursor, sort }: { limit: number; cursor?: string; sort?: UsageSort },
+  {
+    limit,
+    cursor,
+    from,
+    to,
+    sort,
+  }: {
+    limit: number;
+    cursor?: string;
+    from?: string;
+    to?: string;
+    sort?: UsageSort;
+  },
 ): Promise<AccountUsagePage> {
   const params = new URLSearchParams({ limit: String(limit) });
+  if (from) params.set("from", from);
+  if (to) params.set("to", to);
   if (sort) params.set("sort", sort);
   if (cursor) params.set("cursor", cursor);
 

@@ -17,12 +17,12 @@ export function useTextAttachments() {
         { filename: file.name, content, lineCount, type },
       ]);
     },
-    []
+    [],
   );
 
   const removeTextAttachment = useCallback((indexToRemove: number) => {
     setTextAttachments((prev) =>
-      prev.filter((_, index) => index !== indexToRemove)
+      prev.filter((_, index) => index !== indexToRemove),
     );
   }, []);
 

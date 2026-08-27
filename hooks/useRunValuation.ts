@@ -20,25 +20,36 @@ import { getArtistSpotifyId } from "@/lib/artist/getArtistSpotifyId";
  */
 const useRunValuation = (spotifyArtistIdOverride?: string) => {
   const { getAccessToken, authenticated } = usePrivy();
-  const { selectedArtist, sorted, isLoading: rosterPending } = useArtistProvider();
+  const {
+    selectedArtist,
+    sorted,
+    isLoading: rosterPending,
+  } = useArtistProvider();
   const { selectedOrgId } = useOrganization();
   const queryClient = useQueryClient();
 
   const candidates = [selectedArtist, ...(sorted ?? [])].filter(
     (artist) => !!artist,
   );
-  const runnable = candidates.find((artist) => !!artist && getArtistSpotifyId(artist));
+  const runnable = candidates.find(
+    (artist) => !!artist && getArtistSpotifyId(artist),
+  );
   const spotifyArtistId =
     spotifyArtistIdOverride ?? (runnable ? getArtistSpotifyId(runnable) : null);
 
   const mutation = useMutation({
     mutationFn: async () => {
-      if (!spotifyArtistId) throw new Error("No roster artist with a linked Spotify profile");
+      if (!spotifyArtistId)
+        throw new Error("No roster artist with a linked Spotify profile");
       const accessToken = await getAccessToken();
       if (!accessToken) throw new Error("Please sign in to run a valuation");
       // The selected organization owns the resulting catalog; without it an
       // organization-roster run would land on the personal account.
-      return runValuation(accessToken, spotifyArtistId, selectedOrgId ?? undefined);
+      return runValuation(
+        accessToken,
+        spotifyArtistId,
+        selectedOrgId ?? undefined,
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["catalogs"] });

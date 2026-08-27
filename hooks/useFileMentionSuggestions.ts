@@ -28,9 +28,9 @@ export default function useFileMentionSuggestions(value: string) {
           const lastSlash = rel.lastIndexOf("/");
           const group = lastSlash > 0 ? rel.slice(0, lastSlash) : "Home";
           const name = lastSlash > -1 ? rel.slice(lastSlash + 1) : rel;
-          return { 
-            id: f.id, 
-            display: name, 
+          return {
+            id: f.id,
+            display: name,
             group,
             mime_type: f.mime_type,
             path: f.path,
@@ -40,16 +40,16 @@ export default function useFileMentionSuggestions(value: string) {
         .filter(
           (it) =>
             (it.display || String(it.id)).toLowerCase().includes(q) ||
-            it.group.toLowerCase().includes(q)
+            it.group.toLowerCase().includes(q),
         )
         .sort((a, b) =>
           a.group === b.group
             ? (a.display ?? "").localeCompare(b.display ?? "")
-            : a.group.localeCompare(b.group)
+            : a.group.localeCompare(b.group),
         );
       return items.slice(0, 20);
     },
-    [artistFiles, mentionedIds]
+    [artistFiles, mentionedIds],
   );
 
   const provideSuggestions = useCallback(
@@ -58,9 +58,8 @@ export default function useFileMentionSuggestions(value: string) {
       setLastResults(grouped);
       callback(grouped);
     },
-    [buildGroupedResults]
+    [buildGroupedResults],
   );
 
   return { provideSuggestions, lastResults };
 }
-
