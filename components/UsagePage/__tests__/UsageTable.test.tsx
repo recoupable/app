@@ -23,14 +23,18 @@ describe("UsageTable", () => {
     const headers = screen.getAllByRole("columnheader");
     const byText = (t: string) =>
       headers.find((h) => h.textContent === t) as HTMLElement;
-    expect(byText("Model").className).toContain("hidden md:table-cell");
-    expect(byText("Tokens").className).toContain("hidden md:table-cell");
+    const collapses = (el: HTMLElement) => {
+      const classes = el.className.split(/\s+/);
+      return classes.includes("hidden") && classes.includes("md:table-cell");
+    };
+    expect(collapses(byText("Model"))).toBe(true);
+    expect(collapses(byText("Tokens"))).toBe(true);
     for (const t of ["When", "What ran", "Cost"])
       expect(byText(t).className).not.toContain("hidden");
     // the cells follow their headers
     const cells = screen.getAllByRole("cell");
-    expect(cells[2].className).toContain("hidden md:table-cell");
-    expect(cells[3].className).toContain("hidden md:table-cell");
+    expect(collapses(cells[2])).toBe(true);
+    expect(collapses(cells[3])).toBe(true);
     expect(cells[4].textContent).toBe("$0.12");
     expect(cells[4].className).not.toContain("hidden");
   });
