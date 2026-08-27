@@ -12,7 +12,7 @@ const UsageRow = ({ event }: { event: UsageEvent }) => (
     </td>
     <td className="max-w-0 py-2.5 px-3">
       <span
-        className={`block truncate ${isEndpointModel(event.model_id) ? "font-mono text-xs" : ""}`}
+        className={`block break-all md:truncate ${isEndpointModel(event.model_id) ? "font-mono text-xs" : ""}`}
         title={describeUsageModel(event)}
       >
         {describeUsageModel(event)}
