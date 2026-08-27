@@ -34,7 +34,7 @@ export function useVisibilityDelay({
   deps = [],
 }: UseVisibilityDelayOptions) {
   const [isVisible, setIsVisible] = useState(false);
-
+  
   useEffect(() => {
     // Only proceed if conditions are met
     if (!shouldBeVisible) {

@@ -45,8 +45,7 @@ const useValuationRunStatus = (): {
   const previousState = useRef<ValuationRun["state"] | undefined>(undefined);
   useEffect(() => {
     const wasInFlight =
-      previousState.current === "measuring" ||
-      previousState.current === "queued";
+      previousState.current === "measuring" || previousState.current === "queued";
     if (run?.state === "claimed" && wasInFlight) {
       queryClient.invalidateQueries({ queryKey: ["catalogs"] });
       queryClient.invalidateQueries({ queryKey: ["catalog-measurements"] });

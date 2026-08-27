@@ -21,18 +21,14 @@ const Probe = ({ silent }: { silent?: boolean }) => {
 describe("useCopy", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    Object.assign(navigator, {
-      clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
-    });
+    Object.assign(navigator, { clipboard: { writeText: vi.fn().mockResolvedValue(undefined) } });
   });
 
   it("writes the text and reports copied", async () => {
     render(<Probe />);
     fireEvent.click(screen.getByRole("button"));
 
-    await waitFor(() =>
-      expect(screen.getByRole("button").textContent).toBe("copied"),
-    );
+    await waitFor(() => expect(screen.getByRole("button").textContent).toBe("copied"));
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith("hello");
   });
 
@@ -47,9 +43,7 @@ describe("useCopy", () => {
     render(<Probe silent />);
     fireEvent.click(screen.getByRole("button"));
 
-    await waitFor(() =>
-      expect(screen.getByRole("button").textContent).toBe("copied"),
-    );
+    await waitFor(() => expect(screen.getByRole("button").textContent).toBe("copied"));
     expect(toast.success).not.toHaveBeenCalled();
   });
 });

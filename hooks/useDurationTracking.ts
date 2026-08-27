@@ -1,11 +1,11 @@
 /**
  * Duration Tracking Hook
- *
+ * 
  * Tracks how long a streaming/thinking process takes.
  * Single responsibility: Time duration of streaming operations.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 const MS_IN_S = 1000;
 
@@ -19,9 +19,7 @@ interface UseDurationTrackingReturn {
  * @param isStreaming - Whether the operation is currently streaming
  * @returns Object with duration in seconds and start time
  */
-export function useDurationTracking(
-  isStreaming: boolean,
-): UseDurationTrackingReturn {
+export function useDurationTracking(isStreaming: boolean): UseDurationTrackingReturn {
   const [startTime, setStartTime] = useState<number | null>(null);
   const [duration, setDuration] = useState(0);
 

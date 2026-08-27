@@ -5,7 +5,10 @@ import {
 } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import { fetchArtistFans, type FansResponse } from "@/lib/fans/fetchArtistFans";
+import {
+  fetchArtistFans,
+  type FansResponse,
+} from "@/lib/fans/fetchArtistFans";
 
 /**
  * Hook to fetch and manage fans for an artist with automatic pagination
@@ -13,7 +16,7 @@ import { fetchArtistFans, type FansResponse } from "@/lib/fans/fetchArtistFans";
  */
 export function useArtistFans(
   artistAccountId?: string,
-  limit: number = 20,
+  limit: number = 20
 ): UseInfiniteQueryResult<InfiniteData<FansResponse, unknown>, Error> {
   const { getAccessToken, authenticated } = usePrivy();
 

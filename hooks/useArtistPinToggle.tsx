@@ -20,9 +20,7 @@ export const useArtistPinToggle = (artist: ArtistRecord | null) => {
 
     setArtists((prevArtists: ArtistRecord[]) =>
       prevArtists.map((a: ArtistRecord) =>
-        a.account_id === artist.account_id
-          ? { ...a, pinned: newPinnedStatus }
-          : a,
+        a.account_id === artist.account_id ? { ...a, pinned: newPinnedStatus } : a,
       ),
     );
 
@@ -34,9 +32,7 @@ export const useArtistPinToggle = (artist: ArtistRecord | null) => {
         throw new Error("Missing access token");
       }
 
-      await saveArtist(accessToken, artist.account_id, {
-        pinned: newPinnedStatus,
-      });
+      await saveArtist(accessToken, artist.account_id, { pinned: newPinnedStatus });
 
       await getArtists();
     } catch (error) {
@@ -44,9 +40,7 @@ export const useArtistPinToggle = (artist: ArtistRecord | null) => {
 
       setArtists((prevArtists: ArtistRecord[]) =>
         prevArtists.map((a: ArtistRecord) =>
-          a.account_id === artist.account_id
-            ? { ...a, pinned: previousPinnedStatus }
-            : a,
+          a.account_id === artist.account_id ? { ...a, pinned: previousPinnedStatus } : a,
         ),
       );
     } finally {

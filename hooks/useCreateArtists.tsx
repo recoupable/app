@@ -38,7 +38,7 @@ const useCreateArtists = () => {
       setChatStatus(status);
       setChatMessages(messages);
     },
-    [],
+    []
   );
 
   return {

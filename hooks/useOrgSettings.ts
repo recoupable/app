@@ -50,7 +50,7 @@ const useOrgSettings = (orgId: string | null) => {
 
     // Find the organization from the list (same as button does)
     const selectedOrg = organizations.find(
-      (org) => org.organization_id === orgId,
+      (org) => org.organization_id === orgId
     );
 
     if (!selectedOrg) {
@@ -67,7 +67,7 @@ const useOrgSettings = (orgId: string | null) => {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `${getClientApiBaseUrl()}/api/accounts/${orgId}`,
+          `${getClientApiBaseUrl()}/api/accounts/${orgId}`
         );
         if (response.ok) {
           const data = await response.json();
@@ -100,7 +100,7 @@ const useOrgSettings = (orgId: string | null) => {
         setImageUploading(false);
       }
     },
-    [],
+    []
   );
 
   const removeImage = useCallback(() => {
@@ -132,7 +132,7 @@ const useOrgSettings = (orgId: string | null) => {
         }
       }
     },
-    [],
+    []
   );
 
   const handleDeleteKnowledge = useCallback((index: number) => {
@@ -158,22 +158,12 @@ const useOrgSettings = (orgId: string | null) => {
         knowledges,
       });
       setOrgData(data);
-      await queryClient.invalidateQueries({
-        queryKey: ["accountOrganizations"],
-      });
+      await queryClient.invalidateQueries({ queryKey: ["accountOrganizations"] });
       return true;
     } finally {
       setIsSaving(false);
     }
-  }, [
-    orgId,
-    name,
-    image,
-    instruction,
-    knowledges,
-    queryClient,
-    getAccessToken,
-  ]);
+  }, [orgId, name, image, instruction, knowledges, queryClient, getAccessToken]);
 
   return {
     orgData,

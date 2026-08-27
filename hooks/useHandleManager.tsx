@@ -25,7 +25,7 @@ export const useHandleManager = ({
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    platform: string,
+    platform: string
   ) => {
     onHandlesChange({
       ...handles,

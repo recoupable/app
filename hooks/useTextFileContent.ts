@@ -6,9 +6,7 @@ export type TextFileState = {
   error: string | null;
 };
 
-export const useTextFileContent = (
-  url: string | null | undefined,
-): TextFileState => {
+export const useTextFileContent = (url: string | null | undefined): TextFileState => {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,3 +41,5 @@ export const useTextFileContent = (
 };
 
 export default useTextFileContent;
+
+
