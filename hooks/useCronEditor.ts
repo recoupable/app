@@ -23,7 +23,7 @@ const useCronEditor = ({
 }: UseCronEditorArgs) => {
   const parsedParts = useMemo(
     () => parseCronParts(cronExpression),
-    [cronExpression]
+    [cronExpression],
   );
   const [fieldValues, setFieldValues] = useState<string[]>(parsedParts);
   const [mode, setMode] = useState<"simple" | "advanced">("simple");
@@ -44,7 +44,7 @@ const useCronEditor = ({
       const updated = [...prev];
       updated[index] = value;
       const normalizedParts = updated.map((part) =>
-        part.trim() === "" ? "*" : part.trim()
+        part.trim() === "" ? "*" : part.trim(),
       );
       onCronExpressionChange(normalizedParts.join(" "));
       return updated;
@@ -61,7 +61,7 @@ const useCronEditor = ({
 
   const handleSimpleModeChange = (
     field: keyof SimpleModeSettings,
-    value: string
+    value: string,
   ) => {
     setSimpleMode((prev) => {
       const updated = { ...prev, [field]: value };

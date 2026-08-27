@@ -19,7 +19,9 @@ export const useKnowledgeEditor = ({ isText, textContent }: Args) => {
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       if (isText && isEditing && editedText !== textContent) {
-        const shouldClose = window.confirm("You have unsaved edits. Discard changes?");
+        const shouldClose = window.confirm(
+          "You have unsaved edits. Discard changes?",
+        );
         if (!shouldClose) return;
       }
     }

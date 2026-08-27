@@ -26,9 +26,9 @@ export function useResearchTimer(isActive: boolean): UseResearchTimerResult {
     }
 
     const timer = setInterval(() => {
-      setElapsedSeconds(prev => prev + 1);
+      setElapsedSeconds((prev) => prev + 1);
     }, 1000);
-    
+
     return () => clearInterval(timer);
   }, [isActive]);
 
@@ -40,9 +40,9 @@ export function useResearchTimer(isActive: boolean): UseResearchTimerResult {
     }
 
     const messageTimer = setInterval(() => {
-      setMessageIndex(prev => (prev + 1) % ACTIVITY_MESSAGES.length);
+      setMessageIndex((prev) => (prev + 1) % ACTIVITY_MESSAGES.length);
     }, 5000);
-    
+
     return () => clearInterval(messageTimer);
   }, [isActive]);
 
@@ -52,4 +52,3 @@ export function useResearchTimer(isActive: boolean): UseResearchTimerResult {
     activityMessages: ACTIVITY_MESSAGES,
   };
 }
-

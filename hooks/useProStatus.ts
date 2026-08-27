@@ -14,7 +14,10 @@ const fetchProStatus = async (
   accountId: string,
   accessToken: string,
 ): Promise<ProStatusResponse> => {
-  const url = new URL(`/api/accounts/${accountId}/subscription`, NEW_API_BASE_URL);
+  const url = new URL(
+    `/api/accounts/${accountId}/subscription`,
+    NEW_API_BASE_URL,
+  );
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,

@@ -83,8 +83,8 @@ export function usePureFileAttachments() {
                 mediaType: data.fileType,
                 url: data.url,
               } as FileUIPart)
-            : attachment
-        )
+            : attachment,
+        ),
       );
 
       // Revoke the temporary object URL to avoid memory leaks
@@ -93,7 +93,7 @@ export function usePureFileAttachments() {
       console.error("Error uploading file:", error);
       // Remove the failed attachment
       setAttachments((prev: FileUIPart[]) =>
-        prev.filter((a: FileUIPart) => a.url !== tempUrl)
+        prev.filter((a: FileUIPart) => a.url !== tempUrl),
       );
       // Revoke the temporary object URL
       URL.revokeObjectURL(tempUrl);
