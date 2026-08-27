@@ -38,4 +38,12 @@ describe("CreditsUsage", () => {
 
     expect(container.querySelector(".animate-pulse")).not.toBeNull();
   });
+
+  it("links the balance to the usage page, where the charges behind it are listed", () => {
+    mock({ totalCredits: 3_330_000, credits: 1_200_000, isLoading: false });
+
+    render(<CreditsUsage />);
+
+    expect(screen.getByRole("link", { name: "$1.20 / $3.33" }).getAttribute("href")).toBe("/usage");
+  });
 });
