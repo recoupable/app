@@ -16,6 +16,7 @@ const event = {
   tool_call_count: 0,
   credits_deducted: 120_000,
   usd: "$0.12",
+  resource_url: null,
 };
 
 describe("UsageTable", () => {
@@ -62,6 +63,7 @@ describe("UsageTable", () => {
       "Model / endpoint",
       "Tokens",
       "Cost",
+      "Open",
     ]);
     const byText = (t: string) =>
       screen
@@ -75,7 +77,8 @@ describe("UsageTable", () => {
     for (const t of ["When", "Model / endpoint", "Cost"])
       expect(collapses(byText(t))).toBe(false);
     const cells = screen.getAllByRole("cell");
-    expect(cells).toHaveLength(4);
+    expect(cells).toHaveLength(5);
+    expect(cells[4].textContent).toBe("");
     expect(cells[0].textContent).toBe("Aug 27, 1:47 PM");
     expect(cells[1].textContent).toBe("fal / minimax/music-3");
     expect(collapses(cells[2])).toBe(true);

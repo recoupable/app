@@ -20,6 +20,7 @@ const EVENT = {
   tool_call_count: 0,
   credits_deducted: 20000,
   usd: "$0.02",
+  resource_url: null,
 };
 const CHAT_EVENT = {
   ...EVENT,

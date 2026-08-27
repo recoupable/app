@@ -15,6 +15,8 @@ export interface UsageEvent {
   /** Micro-dollars. Display `usd`; never print this integer. */
   credits_deducted: number;
   usd: string;
+  /** App-relative link to what produced the charge (a chat, a song, a task run); null for a plain API call. */
+  resource_url: string | null;
 }
 
 export type UsageSeriesBucket = "hour" | "day" | "week" | "month";
