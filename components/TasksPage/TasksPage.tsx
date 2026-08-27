@@ -6,7 +6,7 @@ import { TasksPageHeader } from "./TasksPageHeader";
 
 const TasksPage = () => {
   return (
-    <div className="max-w-full md:max-w-[calc(100vw-200px)] grow py-8 px-6 md:px-12">
+    <div className="grow py-8">
       <PageContainer>
         <TasksPageHeader />
         <TasksTabs />
