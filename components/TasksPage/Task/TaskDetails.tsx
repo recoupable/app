@@ -4,9 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import TimezoneSelect from "@/components/TimezoneSelect/TimezoneSelect";
 import TaskModelSelect from "./TaskModelSelect";
-import TaskLastRunSection from "./TaskLastRunSection";
 import TaskRecentRunsSection from "./TaskRecentRunsSection";
-import TaskUpcomingRunsSection from "./TaskUpcomingRunsSection";
 
 const CronEditor = dynamic(
   () => import("@/components/CronEditor").then((mod) => mod.CronEditor),
@@ -29,8 +27,8 @@ interface TaskDetailsProps {
 
 /**
  * The task page body: an edit form for name, instructions, schedule,
- * timezone and model, followed by the task's run history from Trigger.dev
- * (last run, recent runs linking to their run pages, upcoming runs).
+ * timezone and model, followed by the task's recent runs from Trigger.dev,
+ * each linking to its run page. Last and next run live in the page header.
  */
 const TaskDetails: React.FC<TaskDetailsProps> = ({
   task,
@@ -72,9 +70,7 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({
     />
     <TimezoneSelect value={editTimezone} onValueChange={onTimezoneChange} />
     <TaskModelSelect value={editModel} onValueChange={onModelChange} />
-    <TaskLastRunSection lastRun={task.recent_runs?.[0]?.createdAt ?? null} />
     <TaskRecentRunsSection recentRuns={task.recent_runs} />
-    <TaskUpcomingRunsSection upcoming={task.upcoming} />
   </div>
 );
 

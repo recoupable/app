@@ -2,10 +2,17 @@ import { Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Task } from "@/lib/tasks/getTasks";
 import AccountIdDisplay from "@/components/ArtistSetting/AccountIdDisplay";
+import { formatScheduledActionDate } from "@/lib/utils/formatScheduledActionDate";
+import { getTaskNextRunLabel } from "@/lib/tasks/getTaskNextRunLabel";
 
-/** Title + enabled state for the task page. */
+/**
+ * Title, enabled state and the two facts a task page must answer at a glance:
+ * when it last ran and when it runs next, always rendered, with words in
+ * place of a missing value (app#2016 item 1).
+ */
 const TaskPageHeader = ({ task }: { task: Task }) => {
   const isActive = Boolean(task.enabled);
+  const lastRun = task.recent_runs?.[0]?.createdAt ?? null;
 
   return (
     <div className="flex flex-col gap-1">
@@ -28,6 +35,16 @@ const TaskPageHeader = ({ task }: { task: Task }) => {
         </span>
       </div>
       <AccountIdDisplay accountId={task.id} label="Task ID" />
+      <dl className="mt-1 flex flex-col gap-0.5 text-xs text-muted-foreground">
+        <div className="flex gap-1.5">
+          <dt className="font-medium text-foreground">Last run:</dt>
+          <dd>{lastRun ? formatScheduledActionDate(lastRun) : "Never run"}</dd>
+        </div>
+        <div className="flex gap-1.5">
+          <dt className="font-medium text-foreground">Next run:</dt>
+          <dd>{getTaskNextRunLabel(task)}</dd>
+        </div>
+      </dl>
     </div>
   );
 };
