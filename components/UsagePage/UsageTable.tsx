@@ -12,6 +12,9 @@ const UsageTable = ({ events }: { events: UsageEvent[] }) => (
           <th className="hidden md:table-cell py-2 px-3 font-medium">Model</th>
           <th className="hidden md:table-cell py-2 px-3 font-medium">Tokens</th>
           <th className="py-2 pl-3 font-medium text-right">Cost</th>
+          <th className="py-2 pl-3">
+            <span className="sr-only">Open</span>
+          </th>
         </tr>
       </thead>
       <tbody>

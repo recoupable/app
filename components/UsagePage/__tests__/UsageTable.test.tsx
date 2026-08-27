@@ -16,6 +16,7 @@ const event = {
   tool_call_count: 0,
   credits_deducted: 120_000,
   usd: "$0.12",
+  resource_url: null,
 };
 
 describe("UsageTable", () => {

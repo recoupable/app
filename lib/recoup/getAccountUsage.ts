@@ -14,6 +14,8 @@ export interface UsageEvent {
   /** Micro-dollars. Display `usd`; never print this integer. */
   credits_deducted: number;
   usd: string;
+  /** App-relative link to what produced the charge (a chat, a song, a task run); null for a plain API call. */
+  resource_url: string | null;
 }
 
 export interface AccountUsagePage {
@@ -38,14 +40,20 @@ async function getAccountUsage(
   const params = new URLSearchParams({ limit: String(limit) });
   if (cursor) params.set("cursor", cursor);
 
-  const response = await fetch(`${getClientApiBaseUrl()}/api/accounts/${accountId}/usage?${params}`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  const response = await fetch(
+    `${getClientApiBaseUrl()}/api/accounts/${accountId}/usage?${params}`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    },
+  );
 
   if (!response.ok) {
-    throw Object.assign(new Error(`Failed to fetch usage: ${response.status}`), {
-      status: response.status,
-    });
+    throw Object.assign(
+      new Error(`Failed to fetch usage: ${response.status}`),
+      {
+        status: response.status,
+      },
+    );
   }
 
   return response.json();

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { UsageEvent } from "@/lib/recoup/getAccountUsage";
 import describeUsageEvent from "@/lib/usage/describeUsageEvent";
 import describeUsageModel from "@/lib/usage/describeUsageModel";
@@ -21,6 +22,16 @@ const UsageRow = ({ event }: { event: UsageEvent }) => (
     </td>
     <td className="py-2.5 pl-3 whitespace-nowrap text-right font-medium">
       {event.usd}
+    </td>
+    <td className="py-2.5 pl-3 text-right">
+      {event.resource_url && (
+        <Link
+          href={event.resource_url}
+          className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+        >
+          View
+        </Link>
+      )}
     </td>
   </tr>
 );
