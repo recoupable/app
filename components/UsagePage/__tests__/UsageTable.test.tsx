@@ -19,24 +19,29 @@ const event = {
 };
 
 describe("UsageTable", () => {
-  it("keeps When, What ran and Cost on every width and collapses Model and Tokens below md", () => {
+  it("shows When, Model / endpoint and Cost on every width, collapses Tokens below md, and has no What ran column", () => {
     render(<UsageTable events={[event]} />);
-    const headers = screen.getAllByRole("columnheader");
+    const headers = screen
+      .getAllByRole("columnheader")
+      .map((h) => h.textContent);
+    expect(headers).toEqual(["When", "Model / endpoint", "Tokens", "Cost"]);
     const byText = (t: string) =>
-      headers.find((h) => h.textContent === t) as HTMLElement;
+      screen
+        .getAllByRole("columnheader")
+        .find((h) => h.textContent === t) as HTMLElement;
     const collapses = (el: HTMLElement) => {
       const classes = el.className.split(/\s+/);
       return classes.includes("hidden") && classes.includes("md:table-cell");
     };
-    expect(collapses(byText("Model"))).toBe(true);
     expect(collapses(byText("Tokens"))).toBe(true);
-    for (const t of ["When", "What ran", "Cost"])
-      expect(byText(t).className).not.toContain("hidden");
-    // the cells follow their headers
+    for (const t of ["When", "Model / endpoint", "Cost"])
+      expect(collapses(byText(t))).toBe(false);
     const cells = screen.getAllByRole("cell");
+    expect(cells).toHaveLength(4);
+    expect(cells[0].textContent).toBe("Aug 27, 1:47 PM");
+    expect(cells[1].textContent).toBe("fal / minimax/music-3");
     expect(collapses(cells[2])).toBe(true);
-    expect(collapses(cells[3])).toBe(true);
-    expect(cells[4].textContent).toBe("$0.12");
-    expect(cells[4].className).not.toContain("hidden");
+    expect(cells[3].textContent).toBe("$0.12");
+    expect(screen.queryByText(/api · main/)).toBeNull();
   });
 });
