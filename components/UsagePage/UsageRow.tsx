@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { TableCell, TableRow } from "@/components/ui/table";
 import type { UsageEvent } from "@/lib/recoup/getAccountUsage";
 import describeUsageModel from "@/lib/usage/describeUsageModel";
@@ -24,6 +25,16 @@ const UsageRow = ({ event }: { event: UsageEvent }) => (
     </TableCell>
     <TableCell className="py-2.5 pl-3 whitespace-nowrap text-right font-medium">
       {event.usd}
+    </TableCell>
+    <TableCell className="py-2.5 pl-3 text-right">
+      {event.resource_url && (
+        <Link
+          href={event.resource_url}
+          className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+        >
+          View
+        </Link>
+      )}
     </TableCell>
   </TableRow>
 );

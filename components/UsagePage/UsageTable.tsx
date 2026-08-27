@@ -36,6 +36,9 @@ const UsageTable = ({ events, sort, onSortChange }: UsageTableProps) => (
             Tokens
           </TableHead>
           <UsageCostHeader sort={sort} onSortChange={onSortChange} />
+          <TableHead className={`${HEAD} pl-3`}>
+            <span className="sr-only">Open</span>
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
