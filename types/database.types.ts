@@ -397,42 +397,6 @@ export type Database = {
           },
         ];
       };
-      account_workspace_ids: {
-        Row: {
-          account_id: string | null;
-          id: string;
-          updated_at: string | null;
-          workspace_id: string | null;
-        };
-        Insert: {
-          account_id?: string | null;
-          id?: string;
-          updated_at?: string | null;
-          workspace_id?: string | null;
-        };
-        Update: {
-          account_id?: string | null;
-          id?: string;
-          updated_at?: string | null;
-          workspace_id?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "account_workspace_ids_account_id_fkey";
-            columns: ["account_id"];
-            isOneToOne: false;
-            referencedRelation: "accounts";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "account_workspace_ids_workspace_id_fkey";
-            columns: ["workspace_id"];
-            isOneToOne: false;
-            referencedRelation: "accounts";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       accounts: {
         Row: {
           id: string;
