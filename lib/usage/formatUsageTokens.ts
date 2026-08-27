@@ -13,9 +13,7 @@ const formatUsageTokens = (counts: TokenCounts): string => {
     [counts.output_tokens, "out"],
     [counts.tool_call_count, "tools"],
   ] as const;
-  const shown = parts
-    .filter(([n]) => n > 0)
-    .map(([n, label]) => `${n.toLocaleString("en-US")} ${label}`);
+  const shown = parts.filter(([n]) => n > 0).map(([n, label]) => `${n.toLocaleString("en-US")} ${label}`);
   return shown.length ? shown.join(" · ") : "-";
 };
 
