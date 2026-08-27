@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Check, Copy } from "lucide-react";
 import {
   Tooltip,
@@ -26,6 +27,9 @@ import { cn } from "@/lib/utils";
  * @param label - Names the target for a screen reader, and is shown beside the
  *   icon when `showLabel` is set. Icon-only otherwise.
  * @param tooltip - Wraps the button in a tooltip when set.
+ * @param children - Content rendered inside the button, before the icon, for
+ *   callers whose click target is a piece of content rather than an icon —
+ *   an account id chip, say. `showLabel` renders a call to action instead.
  * @param silent - Suppress the success toast, for callers whose own tick is
  *   already the confirmation and where a toast per copy would be noise.
  */
@@ -33,6 +37,7 @@ const CopyButton = ({
   text,
   label,
   tooltip,
+  children,
   showLabel = false,
   silent = false,
   variant = "outline",
@@ -43,6 +48,7 @@ const CopyButton = ({
   text: string;
   label: string;
   tooltip?: string;
+  children?: React.ReactNode;
   showLabel?: boolean;
   silent?: boolean;
   variant?: "outline" | "ghost";
@@ -62,6 +68,7 @@ const CopyButton = ({
       aria-label={`Copy ${label}`}
       className={className}
     >
+      {children}
       <Icon className={cn("size-4", iconClassName)} />
       {showLabel && (copied ? "Copied!" : `Copy ${label}`)}
     </Button>
