@@ -48,8 +48,9 @@ export function useArtistSelection(orgKey: string, artists: ArtistRecord[]) {
     if (userOverride && userOverride.orgKey === orgKey) {
       if (!userOverride.artist) return null;
       return (
-        artists.find((a) => a.account_id === userOverride.artist!.account_id) ??
-        null
+        artists.find(
+          (a) => a.account_id === userOverride.artist!.account_id,
+        ) ?? null
       );
     }
     if (artists.length === 0) return null;

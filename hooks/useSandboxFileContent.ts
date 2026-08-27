@@ -42,9 +42,12 @@ export default function useSandboxFileContent(
     },
   });
 
-  const select = useCallback((path: string) => {
-    setSelectedPath(path);
-  }, []);
+  const select = useCallback(
+    (path: string) => {
+      setSelectedPath(path);
+    },
+    [],
+  );
 
   return {
     selectedPath: effectivePath,

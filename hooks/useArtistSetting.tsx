@@ -25,7 +25,7 @@ const useArtistSetting = () => {
   const [knowledgeUploading, setKnowledgeUploading] = useState(false);
   const [question, setQuestion] = useState("");
   const [editableArtist, setEditableArtist] = useState<ArtistRecord | null>(
-    null,
+    null
   );
 
   const handleDeleteKnowledge = (index: number) => {
@@ -35,7 +35,7 @@ const useArtistSetting = () => {
   };
 
   const handleImageSelected = async (
-    e: React.ChangeEvent<HTMLInputElement>,
+    e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setImageUploading(true);
     const file = e.target.files?.[0];
@@ -53,7 +53,7 @@ const useArtistSetting = () => {
   };
 
   const handleKnowledgesSelected = async (
-    e: React.ChangeEvent<HTMLInputElement>,
+    e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setKnowledgeUploading(true);
     const files = e.target.files;
@@ -114,7 +114,7 @@ const useArtistSetting = () => {
       };
       Object.entries(socialMediaTypes).forEach(([type, setter]) => {
         const link = editableArtist?.account_socials?.find(
-          (item) => item.type === type,
+          (item) => item.type === type
         )?.link;
         setter(link || "");
       });

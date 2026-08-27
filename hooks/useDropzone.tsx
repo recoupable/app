@@ -23,7 +23,7 @@ export const useDropzone = () => {
         }
       });
     },
-    [uploadFile, MAX_FILES],
+    [uploadFile, MAX_FILES]
   );
 
   return useReactDropzone({

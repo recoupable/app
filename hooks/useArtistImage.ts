@@ -7,7 +7,7 @@ interface UseArtistImageResult {
 }
 
 export const useArtistImage = (
-  artistAccountId?: string | null,
+  artistAccountId?: string | null
 ): UseArtistImageResult => {
   const { artists } = useArtistProvider();
 
@@ -17,7 +17,7 @@ export const useArtistImage = (
     }
 
     const match = artists.find(
-      (candidate) => candidate.account_id === artistAccountId,
+      (candidate) => candidate.account_id === artistAccountId
     );
     if (match) {
       return match;

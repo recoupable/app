@@ -10,9 +10,7 @@ interface UseAddArtistToOrganizationOptions {
  * Hook to handle adding an artist to an organization.
  * Manages loading state and API call.
  */
-const useAddArtistToOrganization = (
-  options?: UseAddArtistToOrganizationOptions,
-) => {
+const useAddArtistToOrganization = (options?: UseAddArtistToOrganizationOptions) => {
   const { getAccessToken } = usePrivy();
   const [addingToOrgId, setAddingToOrgId] = useState<string | null>(null);
 
@@ -25,20 +23,17 @@ const useAddArtistToOrganization = (
           return false;
         }
 
-        const response = await fetch(
-          `${getClientApiBaseUrl()}/api/organizations/artists`,
-          {
-            method: "POST",
-            body: JSON.stringify({
-              artistId,
-              organizationId,
-            }),
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-            },
+        const response = await fetch(`${getClientApiBaseUrl()}/api/organizations/artists`, {
+          method: "POST",
+          body: JSON.stringify({
+            artistId,
+            organizationId,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
           },
-        );
+        });
 
         if (response.ok) {
           options?.onSuccess?.(organizationId);
@@ -49,7 +44,7 @@ const useAddArtistToOrganization = (
         setAddingToOrgId(null);
       }
     },
-    [options, getAccessToken],
+    [options, getAccessToken]
   );
 
   return {
@@ -60,3 +55,4 @@ const useAddArtistToOrganization = (
 };
 
 export default useAddArtistToOrganization;
+

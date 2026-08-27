@@ -9,8 +9,7 @@ import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
  * Encapsulates API call, loading state, and success handling.
  */
 const useCreateOrganization = () => {
-  const { isCreateOrgOpen, closeCreateOrg, setSelectedOrgId } =
-    useOrganization();
+  const { isCreateOrgOpen, closeCreateOrg, setSelectedOrgId } = useOrganization();
   const { userData } = useUserProvider();
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
@@ -21,24 +20,19 @@ const useCreateOrganization = () => {
 
     setIsCreating(true);
     try {
-      const response = await fetch(
-        `${getClientApiBaseUrl()}/api/organizations`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            name: name.trim(),
-            accountId: userData.account_id,
-          }),
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+      const response = await fetch(`${getClientApiBaseUrl()}/api/organizations`, {
+        method: "POST",
+        body: JSON.stringify({
+          name: name.trim(),
+          accountId: userData.account_id,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
 
       if (response.ok) {
         const data = await response.json();
         // Invalidate the organizations query to refetch
-        await queryClient.invalidateQueries({
-          queryKey: ["accountOrganizations"],
-        });
+        await queryClient.invalidateQueries({ queryKey: ["accountOrganizations"] });
         // Select the new org
         setSelectedOrgId(data.organization.id);
         // Reset and close
@@ -50,13 +44,7 @@ const useCreateOrganization = () => {
     } finally {
       setIsCreating(false);
     }
-  }, [
-    name,
-    userData?.account_id,
-    queryClient,
-    setSelectedOrgId,
-    closeCreateOrg,
-  ]);
+  }, [name, userData?.account_id, queryClient, setSelectedOrgId, closeCreateOrg]);
 
   const handleClose = useCallback(() => {
     setName("");
@@ -74,3 +62,4 @@ const useCreateOrganization = () => {
 };
 
 export default useCreateOrganization;
+
