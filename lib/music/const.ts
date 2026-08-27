@@ -1,3 +1,5 @@
+import { usdToCredits } from "@/lib/credits/usdToCredits";
+
 /**
  * Generation parameter defaults and ranges.
  *
@@ -35,38 +37,22 @@ export const MUSIC_HINTS = {
   guidanceScale: "Classifier-free guidance scale of the flow-matching stage.",
 } as const;
 
-/** Credits charged per second of requested audio, with a floor. Mirrors the API. */
-const CREDITS_PER_SECOND = 0.2;
+/**
+ * fal's rate for the music model, passed through with no markup
+ * (recoupable/api#856). The api charges the same rate on the audio actually
+ * generated, so a quote from this constant equals the charge for a full-length
+ * result.
+ */
+const MUSIC_USD_PER_SECOND = 0.002;
 
 /**
- * Most a generation of this length will cost.
+ * Upper-bound cost of a generation, in credits.
  *
- * An upper bound, not a price. The API charges for the audio fal actually
- * produces, and the model routinely stops short of the requested length, so
- * the real deduction is usually lower (recoupable/api#853). Quoting the
- * maximum keeps the promise safe in the only direction that matters: a
- * customer is never charged more than they were shown.
- *
- * Duplicated from the API deliberately: the quote has to render before the
- * request is made, and a round trip to price a slider drag would be worse than
- * one shared constant restated. The API stays authoritative and freezes the
- * real price onto the row.
- *
- * @param durationSeconds - Requested length.
- * @returns Whole credits, at fal's own rate.
+ * @param durationSeconds - Requested duration.
+ * @returns Credits for the full duration at fal's rate; 0 for a non-positive
+ *   duration, which the api also does not charge.
  */
 export function creditCostForDuration(durationSeconds: number): number {
   if (durationSeconds <= 0) return 0;
-
-  return Math.max(1, Math.ceil(durationSeconds * CREDITS_PER_SECOND));
-}
-
-/**
- * Dollar cost of a generation, for display beside the credit figure.
- *
- * @param credits - Credits the generation will cost.
- * @returns The cost formatted as USD.
- */
-export function formatCreditCostUsd(credits: number): string {
-  return `$${(credits / 100).toFixed(2)}`;
+  return usdToCredits(durationSeconds * MUSIC_USD_PER_SECOND);
 }

@@ -1,30 +1,26 @@
 import { describe, expect, it } from "vitest";
-import {
-  creditCostForDuration,
-  formatCreditCostUsd,
-  MUSIC_DEFAULTS,
-  MUSIC_RANGES,
-} from "@/lib/music/const";
+import { creditCostForDuration, MUSIC_DEFAULTS, MUSIC_RANGES } from "@/lib/music/const";
+import { formatCreditsAsUsd } from "@/lib/credits/formatCreditsAsUsd";
 
 describe("music pricing shown in the form", () => {
-  // Must track recoupable/api#853: fal charges $0.002/s and a credit is $0.01,
-  // so 0.2 credits/s is fal's rate with no markup. A quote that disagrees with
-  // the API is worse than no quote.
-  it("quotes the same 12 credits for a default song as the API charges", () => {
-    expect(creditCostForDuration(60)).toBe(12);
+  // Must track recoupable/api#856: fal charges $0.002/s and a credit is a
+  // micro-dollar, so 2,000 credits/s is fal's rate with no markup. A quote that
+  // disagrees with the API is worse than no quote.
+  it("quotes the same $0.12 for a default song as the API charges", () => {
+    expect(creditCostForDuration(60)).toBe(120_000);
   });
 
   it("applies no floor, matching the API", () => {
-    expect(creditCostForDuration(10)).toBe(2);
+    expect(creditCostForDuration(10)).toBe(20_000);
   });
 
   it("scales with duration", () => {
-    expect(creditCostForDuration(300)).toBe(60);
+    expect(creditCostForDuration(300)).toBe(600_000);
   });
 
   it("shows the price in dollars, which is what a customer reasons about", () => {
-    expect(formatCreditCostUsd(12)).toBe("$0.12");
-    expect(formatCreditCostUsd(60)).toBe("$0.60");
+    expect(formatCreditsAsUsd(120_000)).toBe("$0.12");
+    expect(formatCreditsAsUsd(600_000)).toBe("$0.60");
   });
 });
 
