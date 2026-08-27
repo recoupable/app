@@ -38,9 +38,12 @@ describe("useAccountUsage", () => {
       .mockResolvedValueOnce(page("cur-1"))
       .mockResolvedValueOnce(page(null));
 
-    const { result } = renderHook(() => useAccountUsage({ range: "7d" }), {
-      wrapper,
-    });
+    const { result } = renderHook(
+      () => useAccountUsage({ range: "7d", sort: "cost" }),
+      {
+        wrapper,
+      },
+    );
     await waitFor(() => expect(result.current.data?.pages).toHaveLength(1));
 
     expect(getAccountUsage).toHaveBeenCalledWith(
@@ -49,6 +52,7 @@ describe("useAccountUsage", () => {
       expect.objectContaining({
         limit: 20,
         cursor: undefined,
+        sort: "cost",
         from: expect.any(String),
         to: expect.any(String),
       }),
@@ -61,7 +65,7 @@ describe("useAccountUsage", () => {
     expect(getAccountUsage).toHaveBeenLastCalledWith(
       "acct-1",
       "tok",
-      expect.objectContaining({ limit: 20, cursor: "cur-1" }),
+      expect.objectContaining({ limit: 20, cursor: "cur-1", sort: "cost" }),
     );
     expect(result.current.hasNextPage).toBe(false);
   });

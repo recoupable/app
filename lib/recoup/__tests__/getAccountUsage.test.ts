@@ -62,4 +62,15 @@ describe("getAccountUsage", () => {
       getAccountUsage(ACCOUNT, "tok", { limit: 20 }),
     ).rejects.toMatchObject({ status: 403 });
   });
+
+  it("sends the sort when one is given", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue({ ok: true, status: 200, json: async () => PAGE });
+    vi.stubGlobal("fetch", fetchMock);
+    await getAccountUsage(ACCOUNT, "tok", { limit: 20, sort: "cost" });
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      `https://api.test/api/accounts/${ACCOUNT}/usage?limit=20&sort=cost`,
+    );
+  });
 });

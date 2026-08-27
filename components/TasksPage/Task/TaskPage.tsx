@@ -4,6 +4,7 @@ import { XCircle } from "lucide-react";
 import { useTask } from "@/hooks/useTask";
 import RunPageSkeleton from "@/components/TasksPage/Run/RunPageSkeleton";
 import TaskBreadcrumb from "./TaskBreadcrumb";
+import PageContainer from "@/components/TasksPage/PageContainer";
 import TaskPageHeader from "./TaskPageHeader";
 import TaskEditor from "./TaskEditor";
 
@@ -14,20 +15,23 @@ import TaskEditor from "./TaskEditor";
  * history from Trigger.dev, each recent run linking to its run page.
  */
 export default function TaskPage({ taskId }: { taskId: string }) {
-  const { data: task, isLoading, error } = useTask(taskId);
+  const { data: task, isPending, error } = useTask(taskId);
 
-  if (isLoading) {
+  // isPending covers both the window where the query is disabled waiting
+  // for Privy auth and the fetch itself; isLoading is false in the first
+  // window, so gating on it would show the not-found copy (app#2016 item 4).
+  if (isPending) {
     return (
-      <div className="h-screen max-w-2xl">
+      <PageContainer className="h-screen">
         <TaskBreadcrumb title="…" />
         <RunPageSkeleton />
-      </div>
+      </PageContainer>
     );
   }
 
   if (error || !task) {
     return (
-      <div className="h-screen max-w-2xl">
+      <PageContainer className="h-screen">
         <TaskBreadcrumb title="Not found" />
         <div className="flex flex-col items-center justify-center p-6">
           <XCircle className="size-8 text-muted-foreground" />
@@ -37,17 +41,17 @@ export default function TaskPage({ taskId }: { taskId: string }) {
               : "No task with this id on your account."}
           </p>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="h-screen max-w-2xl">
+    <PageContainer className="h-screen">
       <TaskBreadcrumb title={task.title} />
-      <div className="mx-auto flex flex-col gap-4 p-6">
+      <div className="flex flex-col gap-4 py-6">
         <TaskPageHeader task={task} />
         <TaskEditor key={task.updated_at ?? task.id} task={task} />
       </div>
-    </div>
+    </PageContainer>
   );
 }
