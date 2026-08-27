@@ -10,7 +10,7 @@ const event = {
   source: "chat",
   agent_type: "main",
   provider: null,
-  model_id: "moonshotai/kimi-k3",
+  model_id: "moonshotai/kimi-k3" as string | null,
   input_tokens: 10,
   cached_input_tokens: 0,
   output_tokens: 5,
