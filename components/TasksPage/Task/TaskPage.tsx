@@ -15,9 +15,12 @@ import TaskEditor from "./TaskEditor";
  * history from Trigger.dev, each recent run linking to its run page.
  */
 export default function TaskPage({ taskId }: { taskId: string }) {
-  const { data: task, isLoading, error } = useTask(taskId);
+  const { data: task, isPending, error } = useTask(taskId);
 
-  if (isLoading) {
+  // isPending covers both the window where the query is disabled waiting
+  // for Privy auth and the fetch itself; isLoading is false in the first
+  // window, so gating on it would show the not-found copy (app#2016 item 4).
+  if (isPending) {
     return (
       <PageContainer className="h-screen">
         <TaskBreadcrumb title="…" />
