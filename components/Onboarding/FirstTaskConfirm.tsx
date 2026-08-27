@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useConfirmFirstTask } from "@/hooks/useConfirmFirstTask";
 import { getFirstTaskSchedule } from "@/lib/onboarding/getFirstTaskSchedule";
 import { getCronHumanPreview } from "@/lib/tasks/getCronHumanPreview";
+import { getTaskNextRun } from "@/lib/tasks/getTaskNextRun";
 import { formatScheduledActionDate } from "@/lib/utils/formatScheduledActionDate";
 
 interface FirstTaskConfirmProps {
@@ -33,8 +34,9 @@ const FirstTaskConfirm = ({ catalogName }: FirstTaskConfirmProps) => {
   }
 
   if (phase === "scheduled") {
-    const nextRun = task?.next_run
-      ? formatScheduledActionDate(task.next_run)
+    const nextRunAt = task ? getTaskNextRun(task) : null;
+    const nextRun = nextRunAt
+      ? formatScheduledActionDate(nextRunAt)
       : getCronHumanPreview(getFirstTaskSchedule());
     return (
       <div role="status">

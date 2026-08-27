@@ -1,27 +1,22 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import { toast } from "sonner";
 import { createTask } from "@/lib/tasks/createTask";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { DEFAULT_MODEL } from "@/lib/consts";
 import { getLocalTimezone } from "@/lib/timezone/getLocalTimezone";
+import { getTaskHref } from "@/lib/tasks/getTaskHref";
 
 const DEFAULT_SCHEDULE = "0 9 * * *";
-
-function clickTaskDialogTrigger(taskId: string) {
-  requestAnimationFrame(() => {
-    document
-      .querySelector<HTMLElement>(`[data-task-dialog-trigger="${taskId}"]`)
-      ?.click();
-  });
-}
 
 export function useCreateTask() {
   const { getAccessToken } = usePrivy();
   const { selectedArtist } = useArtistProvider();
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const { mutate: handleCreateTask, isPending: isCreating } = useMutation({
     mutationFn: async () => {
@@ -54,7 +49,7 @@ export function useCreateTask() {
       toast.success("Task created", {
         action: {
           label: "View",
-          onClick: () => clickTaskDialogTrigger(task.id),
+          onClick: () => router.push(getTaskHref(task.id)),
         },
       });
     },

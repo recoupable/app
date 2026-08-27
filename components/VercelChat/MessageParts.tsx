@@ -16,7 +16,7 @@ import MessageFileViewer from "./message-file-viewer";
 import { EnhancedReasoning } from "@/components/reasoning/EnhancedReasoning";
 import { Actions, Action } from "@/components/actions";
 import { RefreshCcwIcon, Pencil } from "lucide-react";
-import CopyAction from "./CopyAction";
+import CopyButton from "@/components/CopyButton";
 import { VercelChatContext } from "@/providers/VercelChatProvider";
 
 interface MessagePartsProps {
@@ -105,7 +105,17 @@ export function MessageParts({
                         <RefreshCcwIcon className="!w-3 !h-3" />
                       </Action>
                     )}
-                    <CopyAction text={part?.text || ""} />
+                    <CopyButton
+                      text={part?.text || ""}
+                      label="response"
+                      tooltip="Copy response to clipboard"
+                      variant="ghost"
+                      silent
+                      iconClassName="!w-3 !h-3"
+                      /* Matches the Action treatment used by Retry and Edit
+                         beside it; see components/actions.tsx. */
+                      className="size-8 p-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                    />
                   </Actions>
                 </div>
               );

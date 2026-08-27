@@ -1,35 +1,23 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { createStarterTask } from "@/lib/home/createStarterTask";
-import { findStarterTemplate } from "@/lib/home/findStarterTemplate";
-import fetchAgentTemplates from "@/lib/agent-templates/fetchAgentTemplates";
-import type { AgentTemplateRow } from "@/types/AgentTemplates";
-import { useArtistProvider } from "@/providers/ArtistProvider";
-import { useUserProvider } from "@/providers/UserProvder";
+import { createWeeklyReportTask } from "@/lib/onboarding/createWeeklyReportTask";
+import { getWeeklyReportErrorMessage } from "@/lib/onboarding/getWeeklyReportErrorMessage";
+import { useWeeklyReportTaskInput } from "@/hooks/useWeeklyReportTaskInput";
 
 /**
- * One-click creation of the homepage starter task. The task is sourced
- * from an existing /agents template (DRY — findStarterTemplate picks it
- * from the shared agent-templates query); auth + artist come from
- * providers and the mutation goes through the existing `POST /api/tasks`
- * path which also mints the schedule (recoupable/chat#1850).
+ * One-click creation of the homepage starter task: the same weekly report
+ * onboarding schedules, through the existing `POST /api/tasks` path which
+ * also mints the schedule (recoupable/chat#1850, chat#2006).
  */
 export function useCreateStarterTask() {
   const { getAccessToken } = usePrivy();
-  const { selectedArtist } = useArtistProvider();
-  const { userData } = useUserProvider();
+  const { resolve, isPreparing } = useWeeklyReportTaskInput();
   const queryClient = useQueryClient();
-
-  const { data: templates } = useQuery<AgentTemplateRow[]>({
-    queryKey: ["agent-templates"],
-    queryFn: () => fetchAgentTemplates(userData!),
-    retry: 1,
-    enabled: !!userData?.id,
-  });
-  const starterTemplate = findStarterTemplate(templates);
+  const router = useRouter();
 
   const {
     mutate: handleCreateStarterTask,
@@ -37,43 +25,27 @@ export function useCreateStarterTask() {
     isSuccess: isScheduled,
   } = useMutation({
     mutationFn: async () => {
-      const artistAccountId = selectedArtist?.account_id;
-      const artistName = selectedArtist?.name;
-      if (!artistAccountId || !artistName) {
-        throw new Error("ARTIST_REQUIRED");
-      }
-      if (!starterTemplate) {
-        throw new Error("TEMPLATE_REQUIRED");
-      }
+      const input = resolve();
       const accessToken = await getAccessToken();
-      if (!accessToken) {
-        throw new Error("AUTH_REQUIRED");
-      }
-      return createStarterTask(accessToken, {
-        template: starterTemplate,
-        artistName,
-        artistAccountId,
-      });
+      if (!accessToken) throw new Error("AUTH_REQUIRED");
+      return createWeeklyReportTask(accessToken, input);
     },
-    onSuccess: async () => {
+    onSuccess: async (task) => {
       await queryClient.invalidateQueries({
         queryKey: ["scheduled-actions"],
         exact: false,
       });
-      toast.success("Task scheduled for Mondays at 9am");
+      // The created task's own page (chat#2006 item 3): the id comes from
+      // the API response, never a guessed path.
+      toast.success("Task scheduled for Mondays at 9am", {
+        action: {
+          label: "View task",
+          onClick: () => router.push(`/tasks/${task.id}`),
+        },
+      });
     },
-    onError: (error) => {
-      if (error instanceof Error && error.message === "ARTIST_REQUIRED") {
-        toast.error("Please select an artist first.");
-        return;
-      }
-      if (error instanceof Error && error.message === "AUTH_REQUIRED") {
-        toast.error("Please sign in to create a task.");
-        return;
-      }
-      toast.error("Failed to create the task. Please try again.");
-    },
+    onError: (error) => toast.error(getWeeklyReportErrorMessage(error)),
   });
 
-  return { handleCreateStarterTask, isCreating, isScheduled, starterTemplate };
+  return { handleCreateStarterTask, isCreating, isPreparing, isScheduled };
 }

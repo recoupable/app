@@ -1,12 +1,9 @@
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import ValuationRunStatusChip from "@/components/Valuation/ValuationRunStatusChip";
 import Artist from "./Artist";
-import CreateWorkspaceModal from "@/components/CreateWorkspaceModal";
-import { useCreateWorkspaceModal } from "@/hooks/useCreateWorkspaceModal";
 
 const Artists = () => {
   const { artists, toggleCreation, menuVisibleArtistId } = useArtistProvider();
-  const { isOpen: isModalOpen, open: openModal, close: closeModal } = useCreateWorkspaceModal();
 
   return (
     <div className="grow h-[calc(100vh-64px)] md:h-screen overflow-hidden md:bg-grey-light-3 md:p-4">
@@ -34,16 +31,7 @@ const Artists = () => {
             Add New Artist
           </button>
         </div>
-        <button
-          type="button"
-          className="pb-4 text-sm text-grey-dark underline underline-offset-4 hover:text-foreground"
-          onClick={openModal}
-          aria-label="Create a new workspace"
-        >
-          New workspace
-        </button>
       </div>
-      <CreateWorkspaceModal isOpen={isModalOpen} onClose={closeModal} />
     </div>
   );
 };

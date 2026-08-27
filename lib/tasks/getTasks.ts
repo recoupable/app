@@ -8,6 +8,8 @@ export type Task = ScheduledAction & {
   recent_runs?: TaskRunItem[];
   upcoming?: string[];
   owner_email?: string | null;
+  /** Display name of the artist the task runs for (api#859); null when that account is gone. */
+  artist_name?: string | null;
 };
 
 export interface GetTasksParams {

@@ -37,7 +37,7 @@ const useSetupValuation = (): {
     catalogsPending: isPending,
     catalogsFailed: isError,
     hasCatalog: !!data?.catalogs?.length,
-    hasArtists: (sorted ?? []).some(artist => !artist.isWorkspace),
+    hasArtists: (sorted ?? []).length > 0,
     valuationReady: valuation.show,
     measuredButNoStreams: !valuation.show && !!valuation.noStreams,
   });

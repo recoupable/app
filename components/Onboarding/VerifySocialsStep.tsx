@@ -13,8 +13,7 @@ import ArtistSocialsCard from "./ArtistSocialsCard";
  * proceeds; an artist with no socials simply has none.
  */
 const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
-  const { sorted } = useArtistProvider();
-  const artists = sorted.filter((artist) => !artist.isWorkspace);
+  const { sorted: artists } = useArtistProvider();
   const { fixSocial, fixingArtistId } = useSocialFix();
   const { removeSocial, removingSocialId } = useSocialRemove();
 

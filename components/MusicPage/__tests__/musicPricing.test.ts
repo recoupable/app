@@ -7,21 +7,24 @@ import {
 } from "@/lib/music/const";
 
 describe("music pricing shown in the form", () => {
-  it("quotes the same 30 credits for a default song as the API charges", () => {
-    expect(creditCostForDuration(60)).toBe(30);
+  // Must track recoupable/api#853: fal charges $0.002/s and a credit is $0.01,
+  // so 0.2 credits/s is fal's rate with no markup. A quote that disagrees with
+  // the API is worse than no quote.
+  it("quotes the same 12 credits for a default song as the API charges", () => {
+    expect(creditCostForDuration(60)).toBe(12);
   });
 
-  it("applies the same floor as the API", () => {
-    expect(creditCostForDuration(10)).toBe(15);
+  it("applies no floor, matching the API", () => {
+    expect(creditCostForDuration(10)).toBe(2);
   });
 
   it("scales with duration", () => {
-    expect(creditCostForDuration(300)).toBe(150);
+    expect(creditCostForDuration(300)).toBe(60);
   });
 
   it("shows the price in dollars, which is what a customer reasons about", () => {
-    expect(formatCreditCostUsd(30)).toBe("$0.30");
-    expect(formatCreditCostUsd(150)).toBe("$1.50");
+    expect(formatCreditCostUsd(12)).toBe("$0.12");
+    expect(formatCreditCostUsd(60)).toBe("$0.60");
   });
 });
 
