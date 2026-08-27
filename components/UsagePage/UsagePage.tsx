@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import useAccountUsage from "@/hooks/useAccountUsage";
+import PageContainer from "@/components/TasksPage/PageContainer";
 import { DEFAULT_USAGE_SORT, type UsageSort } from "@/lib/usage/usageSort";
 import { DEFAULT_USAGE_RANGE, type UsageRange } from "@/lib/usage/usageRanges";
 import UsageRangeSelector from "./UsageRangeSelector";
@@ -30,7 +31,7 @@ const UsagePage = () => {
   const events = data?.pages.flatMap((page) => page.events) ?? [];
 
   return (
-    <div className="max-w-full md:max-w-[calc(100vw-200px)] grow py-8 px-6 md:px-12">
+    <PageContainer className="max-w-4xl py-8">
       <UsagePageHeader />
       <div className="mb-4">
         <UsageRangeSelector value={range} onChange={setRange} />
@@ -68,7 +69,7 @@ const UsagePage = () => {
           )}
         </>
       )}
-    </div>
+    </PageContainer>
   );
 };
 
