@@ -10,8 +10,6 @@ export type Task = ScheduledAction & {
   owner_email?: string | null;
   /** Display name of the artist the task runs for (api#859); null when that account is gone. */
   artist_name?: string | null;
-  /** True when the Trigger.dev lookup errored, so `recent_runs` / `upcoming` are not authoritative (api#806). */
-  trigger_lookup_failed?: boolean;
 };
 
 export interface GetTasksParams {

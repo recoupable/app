@@ -42,30 +42,14 @@ describe("TaskPageHeader last / next run (app#2016 item 1)", () => {
     expect(row("Next run:")).toContain("Paused, no upcoming runs");
   });
 
-  it("says Not scheduled for an enabled task with no upcoming runs and a successful lookup", () => {
-    header({
-      enabled: true,
-      recent_runs: [],
-      upcoming: [],
-      trigger_lookup_failed: false,
-    });
-    expect(row("Next run:")).toContain("Not scheduled");
-  });
-
-  it("says Schedule unavailable when the Trigger lookup failed, instead of claiming there is no schedule", () => {
-    header({
-      enabled: true,
-      recent_runs: [],
-      upcoming: [],
-      trigger_lookup_failed: true,
-    });
-    expect(row("Next run:")).toContain("Schedule unavailable");
-    expect(screen.queryByText(/Not scheduled/)).toBeNull();
+  it("says No upcoming runs for an enabled task with an empty upcoming list (true whether the schedule is empty or Trigger could not be read)", () => {
+    header({ enabled: true, recent_runs: [], upcoming: [] });
+    expect(row("Next run:")).toContain("No upcoming runs");
   });
 
   it("still renders both lines when the API omits the run fields entirely", () => {
     header({});
     expect(row("Last run:")).toContain("Never run");
-    expect(row("Next run:")).toContain("Not scheduled");
+    expect(row("Next run:")).toContain("No upcoming runs");
   });
 });
