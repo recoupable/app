@@ -11,7 +11,14 @@ import UsageSkeleton from "./UsageSkeleton";
 import UsageLoadMore from "./UsageLoadMore";
 
 const UsagePage = () => {
-  const { data, isLoading, error, hasNextPage, isFetchingNextPage, fetchNextPage } = useAccountUsage();
+  const {
+    data,
+    isLoading,
+    error,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useAccountUsage();
   const first = data?.pages[0];
   const events = data?.pages.flatMap((page) => page.events) ?? [];
 
@@ -21,13 +28,27 @@ const UsagePage = () => {
       {isLoading && <UsageSkeleton />}
       {!isLoading && isForbiddenError(error) && <UsageNoAccess />}
       {!isLoading && error && !isForbiddenError(error) && (
-        <p className="text-sm text-muted-foreground">Usage could not be loaded. Try again in a moment.</p>
+        <p className="text-sm text-muted-foreground">
+          Usage could not be loaded. Try again in a moment.
+        </p>
       )}
       {first && (
         <>
-          <UsagePeriodSummary period={first.period} totalUsd={first.total_usd} />
-          {events.length === 0 ? <UsageEmptyState /> : <UsageTable events={events} />}
-          {hasNextPage && <UsageLoadMore onClick={() => fetchNextPage()} isLoading={isFetchingNextPage} />}
+          <UsagePeriodSummary
+            period={first.period}
+            totalUsd={first.total_usd}
+          />
+          {events.length === 0 ? (
+            <UsageEmptyState />
+          ) : (
+            <UsageTable events={events} />
+          )}
+          {hasNextPage && (
+            <UsageLoadMore
+              onClick={() => fetchNextPage()}
+              isLoading={isFetchingNextPage}
+            />
+          )}
         </>
       )}
     </div>

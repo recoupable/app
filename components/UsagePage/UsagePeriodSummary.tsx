@@ -9,10 +9,14 @@ interface UsagePeriodSummaryProps {
 const UsagePeriodSummary = ({ period, totalUsd }: UsagePeriodSummaryProps) => (
   <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
     <p className="text-sm text-muted-foreground">
-      {formatUsageDate(period.from, false)} to {formatUsageDate(period.to, false)}
+      {formatUsageDate(period.from, false)} to{" "}
+      {formatUsageDate(period.to, false)}
     </p>
     <p className="text-sm text-muted-foreground">
-      Total <span className="font-heading text-2xl font-bold text-foreground">{totalUsd}</span>
+      Total{" "}
+      <span className="font-heading text-2xl font-bold text-foreground">
+        {totalUsd}
+      </span>
     </p>
   </div>
 );

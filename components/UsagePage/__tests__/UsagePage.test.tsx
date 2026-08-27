@@ -41,7 +41,8 @@ const page = (events: (typeof EVENT)[], next_cursor: string | null = null) => ({
   events,
   next_cursor,
 });
-const mock = (v: Record<string, unknown>) => vi.mocked(useAccountUsage).mockReturnValue(v as never);
+const mock = (v: Record<string, unknown>) =>
+  vi.mocked(useAccountUsage).mockReturnValue(v as never);
 const loaded = (pages: unknown[], extra: Record<string, unknown> = {}) =>
   mock({
     data: { pages },
@@ -89,11 +90,17 @@ describe("UsagePage", () => {
   });
 
   it("explains a 403 instead of failing", () => {
-    mock({ data: undefined, isLoading: false, error: Object.assign(new Error("forbidden"), { status: 403 }) });
+    mock({
+      data: undefined,
+      isLoading: false,
+      error: Object.assign(new Error("forbidden"), { status: 403 }),
+    });
 
     render(<UsagePage />);
 
-    expect(screen.getByText("You do not have access to this account's usage.")).toBeDefined();
+    expect(
+      screen.getByText("You do not have access to this account's usage."),
+    ).toBeDefined();
   });
 
   it("shows a skeleton while loading", () => {
@@ -106,7 +113,10 @@ describe("UsagePage", () => {
 
   it("offers Load more only while a next cursor exists, and asks for the next page", () => {
     const fetchNextPage = vi.fn();
-    loaded([page([EVENT], "2026-08-27T11:56:58.000Z")], { hasNextPage: true, fetchNextPage });
+    loaded([page([EVENT], "2026-08-27T11:56:58.000Z")], {
+      hasNextPage: true,
+      fetchNextPage,
+    });
 
     render(<UsagePage />);
 
