@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
 import UsageTable from "@/components/UsagePage/UsageTable";
 
 const event = {
@@ -19,11 +19,44 @@ const event = {
 };
 
 describe("UsageTable", () => {
+  it("makes Cost a button that asks for the cost sort, and back", () => {
+    const onSortChange = vi.fn();
+    render(
+      <UsageTable
+        events={[event]}
+        sort="created_at"
+        onSortChange={onSortChange}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Cost/ }));
+    expect(onSortChange).toHaveBeenCalledWith("cost");
+  });
+
+  it("marks the active cost sort and toggles back to newest first", () => {
+    const onSortChange = vi.fn();
+    render(
+      <UsageTable events={[event]} sort="cost" onSortChange={onSortChange} />,
+    );
+    const button = screen.getByRole("button", { name: /Cost/ });
+    expect(
+      button.getAttribute("aria-sort") ??
+        button.closest("th")?.getAttribute("aria-sort"),
+    ).toBe("descending");
+    fireEvent.click(button);
+    expect(onSortChange).toHaveBeenCalledWith("created_at");
+  });
+
   it("keeps When, What ran and Cost on every width and collapses Model and Tokens below md", () => {
-    render(<UsageTable events={[event]} />);
+    render(
+      <UsageTable
+        events={[event]}
+        sort="created_at"
+        onSortChange={() => undefined}
+      />,
+    );
     const headers = screen.getAllByRole("columnheader");
     const byText = (t: string) =>
-      headers.find((h) => h.textContent === t) as HTMLElement;
+      headers.find((h) => (h.textContent ?? "").startsWith(t)) as HTMLElement;
     const collapses = (el: HTMLElement) => {
       const classes = el.className.split(/\s+/);
       return classes.includes("hidden") && classes.includes("md:table-cell");

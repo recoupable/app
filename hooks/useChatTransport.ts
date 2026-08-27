@@ -22,7 +22,10 @@ interface UseChatTransportOptions {
  * `sendMessage`. Reconnection through a dropped stream is the transport's own
  * job — see `createWorkflowChatTransport`.
  */
-export function useChatTransport({ chatId, sessionId }: UseChatTransportOptions) {
+export function useChatTransport({
+  chatId,
+  sessionId,
+}: UseChatTransportOptions) {
   const { getAccessToken } = usePrivy();
   const baseUrl = getClientApiBaseUrl();
 
@@ -46,7 +49,10 @@ export function useChatTransport({ chatId, sessionId }: UseChatTransportOptions)
     () =>
       createWorkflowChatTransport({
         baseUrl,
-        getIds: () => ({ sessionId: sessionIdRef.current, chatId: chatIdRef.current }),
+        getIds: () => ({
+          sessionId: sessionIdRef.current,
+          chatId: chatIdRef.current,
+        }),
         getAccessToken,
       }),
     [baseUrl, getAccessToken],

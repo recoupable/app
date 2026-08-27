@@ -20,7 +20,7 @@ const useObserverTarget = ({
           onIntersect();
         }
       },
-      { threshold }
+      { threshold },
     );
 
     const currentTarget = observerTarget.current;

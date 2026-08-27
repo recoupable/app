@@ -19,10 +19,15 @@ describe("getAccountUsage", () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it("calls GET /api/accounts/{id}/usage with the bearer, limit and cursor", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => PAGE });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue({ ok: true, status: 200, json: async () => PAGE });
     vi.stubGlobal("fetch", fetchMock);
 
-    const page = await getAccountUsage(ACCOUNT, "tok", { limit: 20, cursor: "2026-08-27T11:00:00.000Z" });
+    const page = await getAccountUsage(ACCOUNT, "tok", {
+      limit: 20,
+      cursor: "2026-08-27T11:00:00.000Z",
+    });
 
     expect(page).toEqual(PAGE);
     const [url, init] = fetchMock.mock.calls[0];
@@ -33,17 +38,39 @@ describe("getAccountUsage", () => {
   });
 
   it("omits the cursor on the first page", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => PAGE });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue({ ok: true, status: 200, json: async () => PAGE });
     vi.stubGlobal("fetch", fetchMock);
 
     await getAccountUsage(ACCOUNT, "tok", { limit: 20 });
 
-    expect(fetchMock.mock.calls[0][0]).toBe(`https://api.test/api/accounts/${ACCOUNT}/usage?limit=20`);
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      `https://api.test/api/accounts/${ACCOUNT}/usage?limit=20`,
+    );
   });
 
   it("throws an error carrying the status so a 403 can render as no-access", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 403, json: async () => ({}) }));
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue({ ok: false, status: 403, json: async () => ({}) }),
+    );
 
-    await expect(getAccountUsage(ACCOUNT, "tok", { limit: 20 })).rejects.toMatchObject({ status: 403 });
+    await expect(
+      getAccountUsage(ACCOUNT, "tok", { limit: 20 }),
+    ).rejects.toMatchObject({ status: 403 });
+  });
+
+  it("sends the sort when one is given", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue({ ok: true, status: 200, json: async () => PAGE });
+    vi.stubGlobal("fetch", fetchMock);
+    await getAccountUsage(ACCOUNT, "tok", { limit: 20, sort: "cost" });
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      `https://api.test/api/accounts/${ACCOUNT}/usage?limit=20&sort=cost`,
+    );
   });
 });

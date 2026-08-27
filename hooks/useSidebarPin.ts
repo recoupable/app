@@ -13,7 +13,10 @@ const useSidebarPin = () => {
   // initial state (false), preventing a hydration mismatch.
   useEffect(() => {
     try {
-      if (typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY) === "true") {
+      if (
+        typeof window !== "undefined" &&
+        localStorage.getItem(STORAGE_KEY) === "true"
+      ) {
         setIsPinned(true);
       }
     } catch {

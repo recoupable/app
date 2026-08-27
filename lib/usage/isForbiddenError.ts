@@ -3,6 +3,8 @@
  * signed-in user may not read it.
  */
 const isForbiddenError = (error: unknown): boolean =>
-  typeof error === "object" && error !== null && (error as { status?: number }).status === 403;
+  typeof error === "object" &&
+  error !== null &&
+  (error as { status?: number }).status === 403;
 
 export default isForbiddenError;

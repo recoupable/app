@@ -31,21 +31,19 @@ const useCreateChat = ({
         if (!accessToken) return;
 
         // Extract first message from optimistic memories
-        const firstMessage = chatRoom.memories?.find(
-          (memory) => {
-            const content = memory?.content as {
-              optimistic?: boolean;
-              parts?: { text: string }[];
-            };
-            return (
-              content &&
-              typeof content === "object" &&
-              "optimistic" in content &&
-              content.optimistic === true &&
-              content.parts?.[0]?.text
-            );
-          },
-        );
+        const firstMessage = chatRoom.memories?.find((memory) => {
+          const content = memory?.content as {
+            optimistic?: boolean;
+            parts?: { text: string }[];
+          };
+          return (
+            content &&
+            typeof content === "object" &&
+            "optimistic" in content &&
+            content.optimistic === true &&
+            content.parts?.[0]?.text
+          );
+        });
 
         if (!firstMessage) {
           console.error("No first message found in optimistic chat");

@@ -9,7 +9,7 @@ import { useEffect, RefObject } from "react";
 const useClickOutside = (
   ref: RefObject<HTMLElement | null>,
   handler: () => void,
-  enabled: boolean = true
+  enabled: boolean = true,
 ) => {
   useEffect(() => {
     if (!enabled) return;
@@ -26,4 +26,3 @@ const useClickOutside = (
 };
 
 export default useClickOutside;
-

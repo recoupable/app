@@ -1,8 +1,16 @@
 import type { UsageEvent } from "@/lib/recoup/getAccountUsage";
+import type { UsageSort } from "@/lib/usage/usageSort";
 import UsageRow from "./UsageRow";
+import UsageCostHeader from "./UsageCostHeader";
 
-/** Line items, newest first. Model and tokens collapse below `md` so the cost stays in view on a phone. */
-const UsageTable = ({ events }: { events: UsageEvent[] }) => (
+interface UsageTableProps {
+  events: UsageEvent[];
+  sort: UsageSort;
+  onSortChange: (sort: UsageSort) => void;
+}
+
+/** Line items in the api's order. Model and tokens collapse below `md` so the cost stays in view on a phone. */
+const UsageTable = ({ events, sort, onSortChange }: UsageTableProps) => (
   <div className="overflow-x-auto rounded-2xl bg-card p-4 sm:p-6 shadow-[0_0_0_1px_var(--border)]">
     <table className="w-full">
       <thead>
@@ -11,7 +19,7 @@ const UsageTable = ({ events }: { events: UsageEvent[] }) => (
           <th className="py-2 px-3 font-medium">What ran</th>
           <th className="hidden md:table-cell py-2 px-3 font-medium">Model</th>
           <th className="hidden md:table-cell py-2 px-3 font-medium">Tokens</th>
-          <th className="py-2 pl-3 font-medium text-right">Cost</th>
+          <UsageCostHeader sort={sort} onSortChange={onSortChange} />
         </tr>
       </thead>
       <tbody>

@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import useAccountUsage from "@/hooks/useAccountUsage";
+import { DEFAULT_USAGE_SORT, type UsageSort } from "@/lib/usage/usageSort";
 import isForbiddenError from "@/lib/usage/isForbiddenError";
 import UsagePageHeader from "./UsagePageHeader";
 import UsagePeriodSummary from "./UsagePeriodSummary";
@@ -11,6 +13,7 @@ import UsageSkeleton from "./UsageSkeleton";
 import UsageLoadMore from "./UsageLoadMore";
 
 const UsagePage = () => {
+  const [sort, setSort] = useState<UsageSort>(DEFAULT_USAGE_SORT);
   const {
     data,
     isLoading,
@@ -18,7 +21,7 @@ const UsagePage = () => {
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
-  } = useAccountUsage();
+  } = useAccountUsage({ sort });
   const first = data?.pages[0];
   const events = data?.pages.flatMap((page) => page.events) ?? [];
 
@@ -41,7 +44,7 @@ const UsagePage = () => {
           {events.length === 0 ? (
             <UsageEmptyState />
           ) : (
-            <UsageTable events={events} />
+            <UsageTable events={events} sort={sort} onSortChange={setSort} />
           )}
           {hasNextPage && (
             <UsageLoadMore

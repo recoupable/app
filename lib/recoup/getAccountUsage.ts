@@ -1,4 +1,5 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import type { UsageSort } from "@/lib/usage/usageSort";
 
 export interface UsageEvent {
   id: string;
@@ -33,19 +34,26 @@ export interface AccountUsagePage {
 async function getAccountUsage(
   accountId: string,
   accessToken: string,
-  { limit, cursor }: { limit: number; cursor?: string },
+  { limit, cursor, sort }: { limit: number; cursor?: string; sort?: UsageSort },
 ): Promise<AccountUsagePage> {
   const params = new URLSearchParams({ limit: String(limit) });
+  if (sort) params.set("sort", sort);
   if (cursor) params.set("cursor", cursor);
 
-  const response = await fetch(`${getClientApiBaseUrl()}/api/accounts/${accountId}/usage?${params}`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  const response = await fetch(
+    `${getClientApiBaseUrl()}/api/accounts/${accountId}/usage?${params}`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    },
+  );
 
   if (!response.ok) {
-    throw Object.assign(new Error(`Failed to fetch usage: ${response.status}`), {
-      status: response.status,
-    });
+    throw Object.assign(
+      new Error(`Failed to fetch usage: ${response.status}`),
+      {
+        status: response.status,
+      },
+    );
   }
 
   return response.json();
