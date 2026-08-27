@@ -49,17 +49,16 @@ Part 1 - Take this week's catalog measurement (Spotify play counts per track):
 1. GET /api/spotify/artist/albums?id={spotify_artist_id}&include_groups=album,single&limit=50 - the artist's current albums and singles (picks up new releases automatically). Keep each album's id, name, release_date, and images array - the art and links are used in the email.
 2. POST /api/research/measurement-jobs with JSON body {"scope":{"album_ids":[all album ids from step 1]},"source":"current","platforms":["spotify"]} - captures today's displayed play count for every track into the measurement store.
 3. Wait for the capture to finish (usually 2-5 minutes): poll GET /api/research/playcounts?spotify_album_id={any album id from step 1} about once a minute until captured_at is later than the moment you created this run's measurement job, then continue. If it has not completed after 10 minutes, continue anyway and note in the report that this week's measurement was still in flight.
-4. Also GET /api/spotify/artist?id={spotify_artist_id} and keep an artist image URL for the email header thumbnail (the ~160px image if available, otherwise the largest).
+4. Also GET /api/spotify/artist?id={spotify_artist_id} and keep an artist image URL for the email header thumbnail (the ~160px image if available, otherwise the largest), plus followers.total, popularity and genres from the same response for the Audience Snapshot.
 
 Part 2 - Week-over-week stream deltas per track (the core of the report):
 5. Build the focus set of tracks (roughly 20-30): every track on the most recent album, every single released in the last 12 months, and the top 10 catalog tracks by total play count. Get each track's ISRC, spotify_track_id, and total play count from GET /api/research/playcounts?spotify_album_id={id} for the relevant albums from step 1.
 6. For each focus track: GET /api/research/tracks/{ISRC}/measurements - the full dated series of every past capture. Compute the change between the latest capture (today's) and the most recent earlier capture from a previous day - always skip other captures taken the same day as the latest (retries or ad-hoc snapshots make same-day windows meaninglessly short) - and report the actual time span it covers (e.g. "+23,741 plays over 22 days"). Never report a zero delta just because a chosen window excluded older captures; if a track truly has only one capture ever, label it "first measurement" instead of zero.
 7. Aggregate per-track deltas by album/project and rank tracks by streams gained. Treat a play count of 0 as missing data (not captured), never as a real zero.
 
-Part 3 - Context metrics (use the artist name "${artistName}" as the artist parameter; the artist UUID and Songstats IDs are not accepted):
-8. GET /api/research/metrics?artist=${encodeURIComponent(artistName)}&source=spotify - monthly listeners, followers, popularity, playlist counts and reach.
-9. GET /api/research/insights?artist=${encodeURIComponent(artistName)} - dated activity feed of playlist placements and chart entries.
-10. GET /api/research/playlists?artist=${encodeURIComponent(artistName)} - current Spotify playlist placements with follower counts and links.
+Part 3 - Context (there is no structured artist-stats provider; these are the only two context sources):
+8. Spotify audience: the followers.total, popularity and genres kept in step 4. Monthly listeners are not available from any endpoint - never estimate them.
+9. POST /api/research/web with JSON body {"query":"${artistName} music news playlist press"} - one call. From the results keep only items clearly about this artist from the last 14 days: title, source URL, date, one-line summary (press, playlist adds, announcements, collaborations). If nothing qualifies, record that.
 
 Part 4 - Top social posts (3 min including polling):
 11. Poll GET /api/apify/runs/{runId} for every runId from Part 0b, every ~30s, for AT MOST 3 MINUTES from now; then use whatever succeeded and drop the rest. Do not re-fire the scrape.
@@ -69,9 +68,9 @@ Part 4 - Top social posts (3 min including polling):
 Report content, in order:
 - Performance Summary: 2-3 sentences led by total catalog streams gained this week (from Part 2).
 - Track & Album Momentum: the per-track table described in the design spec below - one row per focus track with art, linked title, project, streams gained this week, and total plays - followed by per-album totals. These are platform-displayed play counts measured by Recoup at both points in time - real deltas, not estimates. State the time span the deltas cover.
-- Audience Snapshot: current Spotify monthly listeners, followers, and playlist reach (endpoint 8), plus the follower count per connected social platform (Part 0b). Monthly-listener week-over-week change is not measured; report the current value only and do not estimate it.
+- Audience Snapshot: current Spotify followers and popularity (step 8), plus the follower count per connected social platform (Part 0b). Week-over-week audience change is not measured; report the current values only and do not estimate them.
 - Top Posts: the three posts from Part 4 as the table described in the design spec below. Any platform that is not connected gets one line saying so - never present a missing platform as a zero.
-- Recent Activity: playlist placements and chart entries from the last 7 days (endpoints 9 and 10, with playlist names and follower counts).
+- Recent Activity: the items from step 9, each with its source hyperlinked; if nothing qualified, one line saying nothing notable was found this week.
 - Recommendation: one specific, actionable step based on which tracks actually gained streams this week.
 
 HTML email design spec (send the email with an HTML body; build it exactly to this spec):
