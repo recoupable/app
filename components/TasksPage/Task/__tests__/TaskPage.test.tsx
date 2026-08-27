@@ -52,4 +52,12 @@ describe("TaskPage (chat#2006 item 8)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
     expect(push).toHaveBeenCalledWith("/tasks");
   });
+
+  it("renders inside the shared centered container (app#2016 item 3)", () => {
+    const { container } = render(<TaskPage taskId="task-a" />);
+    const root = container.firstElementChild as HTMLElement;
+    for (const cls of ["mx-auto", "w-full", "max-w-2xl", "px-6"]) {
+      expect(root.className).toContain(cls);
+    }
+  });
 });

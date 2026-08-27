@@ -3,6 +3,7 @@
 import { XCircle } from "lucide-react";
 import { useTaskRunStatus } from "@/hooks/useTaskRunStatus";
 import RunBreadcrumb from "./RunBreadcrumb";
+import PageContainer from "@/components/TasksPage/PageContainer";
 import RunPageSkeleton from "./RunPageSkeleton";
 import RunDetails from "./RunDetails";
 
@@ -31,9 +32,9 @@ export default function RunPage({ runId }: RunPageProps) {
   }
 
   return (
-    <div className="h-screen max-w-2xl">
+    <PageContainer className="h-screen">
       <RunBreadcrumb runId={runId} />
       {content}
-    </div>
+    </PageContainer>
   );
 }
