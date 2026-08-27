@@ -3,6 +3,7 @@
 import { XCircle } from "lucide-react";
 import { useTaskRunStatus } from "@/hooks/useTaskRunStatus";
 import RunBreadcrumb from "./RunBreadcrumb";
+import PageContainer from "@/components/TasksPage/PageContainer";
 import RunPageSkeleton from "./RunPageSkeleton";
 import RunDetails from "./RunDetails";
 
@@ -11,13 +12,13 @@ interface RunPageProps {
 }
 
 export default function RunPage({ runId }: RunPageProps) {
-  const { data, isLoading, error } = useTaskRunStatus(runId);
+  const { data, isPending, error } = useTaskRunStatus(runId);
 
   let content;
 
-  if (isLoading || !data) {
+  if (isPending) {
     content = <RunPageSkeleton />;
-  } else if (error) {
+  } else if (error || !data) {
     content = (
       <div className="flex flex-col items-center justify-center p-4">
         <XCircle className="size-8 text-red-500" />
@@ -31,9 +32,9 @@ export default function RunPage({ runId }: RunPageProps) {
   }
 
   return (
-    <div className="h-screen max-w-2xl">
+    <PageContainer className="h-screen">
       <RunBreadcrumb runId={runId} />
       {content}
-    </div>
+    </PageContainer>
   );
 }

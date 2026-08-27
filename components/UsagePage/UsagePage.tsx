@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import useAccountUsage from "@/hooks/useAccountUsage";
+import PageContainer from "@/components/TasksPage/PageContainer";
+import { DEFAULT_USAGE_SORT, type UsageSort } from "@/lib/usage/usageSort";
 import { DEFAULT_USAGE_RANGE, type UsageRange } from "@/lib/usage/usageRanges";
 import UsageRangeSelector from "./UsageRangeSelector";
 import UsageChart from "./UsageChart";
@@ -15,6 +17,7 @@ import UsageSkeleton from "./UsageSkeleton";
 import UsageLoadMore from "./UsageLoadMore";
 
 const UsagePage = () => {
+  const [sort, setSort] = useState<UsageSort>(DEFAULT_USAGE_SORT);
   const [range, setRange] = useState<UsageRange>(DEFAULT_USAGE_RANGE);
   const {
     data,
@@ -23,12 +26,12 @@ const UsagePage = () => {
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
-  } = useAccountUsage({ range });
+  } = useAccountUsage({ range, sort });
   const first = data?.pages[0];
   const events = data?.pages.flatMap((page) => page.events) ?? [];
 
   return (
-    <div className="max-w-full md:max-w-[calc(100vw-200px)] grow py-8 px-6 md:px-12">
+    <PageContainer className="max-w-4xl py-8">
       <UsagePageHeader />
       <div className="mb-4">
         <UsageRangeSelector value={range} onChange={setRange} />
@@ -56,7 +59,7 @@ const UsagePage = () => {
           {events.length === 0 ? (
             <UsageEmptyState />
           ) : (
-            <UsageTable events={events} />
+            <UsageTable events={events} sort={sort} onSortChange={setSort} />
           )}
           {hasNextPage && (
             <UsageLoadMore
@@ -66,7 +69,7 @@ const UsagePage = () => {
           )}
         </>
       )}
-    </div>
+    </PageContainer>
   );
 };
 
