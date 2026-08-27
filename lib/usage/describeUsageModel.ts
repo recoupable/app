@@ -1,7 +1,12 @@
-/** "fal / minimax/music-3", the model alone, or a dash for a fixed-price charge. */
-const describeUsageModel = ({ provider, model_id }: { provider: string | null; model_id: string | null }): string => {
-  if (!model_id) return "-";
-  return provider ? `${provider} / ${model_id}` : model_id;
-};
+/**
+ * The model behind a charge, or a dash for a fixed-price call. The provider
+ * is never shown: the customer bought a model, not a vendor relationship.
+ */
+const describeUsageModel = ({
+  model_id,
+}: {
+  provider?: string | null;
+  model_id: string | null;
+}): string => model_id ?? "-";
 
 export default describeUsageModel;
