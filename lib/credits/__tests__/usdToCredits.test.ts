@@ -7,9 +7,9 @@ describe("usdToCredits", () => {
     expect(usdToCredits(99.99)).toBe(99_990_000);
   });
 
-  it("truncates below one unit instead of rounding up", () => {
-    expect(usdToCredits(0.0000019)).toBe(1);
-    expect(usdToCredits(0.1234567)).toBe(123_456);
+  it("rounds to the nearest unit, and accepts amounts String() would print in exponent notation", () => {
+    expect(usdToCredits(0.1234567)).toBe(123_457);
+    expect(usdToCredits(0.0000007)).toBe(1);
   });
 
   it("never quotes less than one unit", () => {

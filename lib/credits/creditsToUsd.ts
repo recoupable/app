@@ -9,5 +9,5 @@ import { CREDIT_DECIMALS } from "@/lib/credits/creditDecimals";
  * @returns Dollars, unformatted.
  */
 export function creditsToUsd(credits: number): number {
-  return Number(formatUnits(BigInt(Math.trunc(credits)), CREDIT_DECIMALS));
+  return Number(formatUnits(BigInt(credits), CREDIT_DECIMALS));
 }
