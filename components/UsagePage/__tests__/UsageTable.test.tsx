@@ -19,6 +19,29 @@ const event = {
 };
 
 describe("UsageTable", () => {
+  it("renders an endpoint charge in monospace under the Model / endpoint header", () => {
+    render(
+      <UsageTable
+        events={[
+          {
+            ...event,
+            model_id: "POST /api/artist/socials/scrape",
+            provider: null,
+          },
+        ]}
+      />,
+    );
+    const cell = screen.getByText("POST /api/artist/socials/scrape");
+    expect(cell.className).toContain("font-mono");
+  });
+
+  it("renders a model charge in the normal face", () => {
+    render(<UsageTable events={[{ ...event, provider: null }]} />);
+    expect(screen.getByText("minimax/music-3").className).not.toContain(
+      "font-mono",
+    );
+  });
+
   it("keeps When, What ran and Cost on every width and collapses Model and Tokens below md", () => {
     render(<UsageTable events={[event]} />);
     const headers = screen.getAllByRole("columnheader");
@@ -28,7 +51,7 @@ describe("UsageTable", () => {
       const classes = el.className.split(/\s+/);
       return classes.includes("hidden") && classes.includes("md:table-cell");
     };
-    expect(collapses(byText("Model"))).toBe(true);
+    expect(collapses(byText("Model / endpoint"))).toBe(true);
     expect(collapses(byText("Tokens"))).toBe(true);
     for (const t of ["When", "What ran", "Cost"])
       expect(byText(t).className).not.toContain("hidden");

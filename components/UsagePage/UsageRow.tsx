@@ -1,6 +1,7 @@
 import type { UsageEvent } from "@/lib/recoup/getAccountUsage";
 import describeUsageEvent from "@/lib/usage/describeUsageEvent";
 import describeUsageModel from "@/lib/usage/describeUsageModel";
+import isEndpointModel from "@/lib/usage/isEndpointModel";
 import formatUsageDate from "@/lib/usage/formatUsageDate";
 import formatUsageTokens from "@/lib/usage/formatUsageTokens";
 
@@ -14,7 +15,13 @@ const UsageRow = ({ event }: { event: UsageEvent }) => (
       {describeUsageEvent(event)}
     </td>
     <td className="hidden md:table-cell py-2.5 px-3 whitespace-nowrap">
-      {describeUsageModel(event)}
+      <span
+        className={
+          isEndpointModel(event.model_id) ? "font-mono text-xs" : undefined
+        }
+      >
+        {describeUsageModel(event)}
+      </span>
     </td>
     <td className="hidden md:table-cell py-2.5 px-3 whitespace-nowrap text-muted-foreground">
       {formatUsageTokens(event)}

@@ -9,7 +9,9 @@ const UsageTable = ({ events }: { events: UsageEvent[] }) => (
         <tr className="border-b border-border text-left text-[11px] uppercase tracking-wide text-muted-foreground">
           <th className="py-2 pr-3 font-medium">When</th>
           <th className="py-2 px-3 font-medium">What ran</th>
-          <th className="hidden md:table-cell py-2 px-3 font-medium">Model</th>
+          <th className="hidden md:table-cell py-2 px-3 font-medium">
+            Model / endpoint
+          </th>
           <th className="hidden md:table-cell py-2 px-3 font-medium">Tokens</th>
           <th className="py-2 pl-3 font-medium text-right">Cost</th>
         </tr>
