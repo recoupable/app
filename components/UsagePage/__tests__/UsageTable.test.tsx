@@ -25,7 +25,13 @@ describe("UsageTable", () => {
     const headers = screen
       .getAllByRole("columnheader")
       .map((h) => h.textContent);
-    expect(headers).toEqual(["When", "Model / endpoint", "Tokens", "Cost"]);
+    expect(headers).toEqual([
+      "When",
+      "Model / endpoint",
+      "Tokens",
+      "Cost",
+      "Open",
+    ]);
     const byText = (t: string) =>
       screen
         .getAllByRole("columnheader")
@@ -38,7 +44,8 @@ describe("UsageTable", () => {
     for (const t of ["When", "Model / endpoint", "Cost"])
       expect(collapses(byText(t))).toBe(false);
     const cells = screen.getAllByRole("cell");
-    expect(cells).toHaveLength(4);
+    expect(cells).toHaveLength(5);
+    expect(cells[4].textContent).toBe("");
     expect(cells[0].textContent).toBe("Aug 27, 1:47 PM");
     expect(cells[1].textContent).toBe("fal / minimax/music-3");
     expect(collapses(cells[2])).toBe(true);
