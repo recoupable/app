@@ -6,6 +6,7 @@ import { getStatusColor } from "@/lib/tasks/getStatusColor";
 import { getStatusLabel } from "@/lib/tasks/getStatusLabel";
 import { formatDuration } from "@/lib/tasks/formatDuration";
 import { formatTimestamp } from "@/lib/tasks/formatTimestamp";
+import { getRunHref } from "@/lib/tasks/getRunHref";
 import AccountIdDisplay from "@/components/ArtistSetting/AccountIdDisplay";
 
 interface RunCardProps {
@@ -16,13 +17,21 @@ const RunCard: React.FC<RunCardProps> = ({ run }) => {
   const duration = formatDuration(run.durationMs);
 
   return (
-    <Link href={`/tasks/${run.id}`} className="group flex items-center justify-between py-4 px-4 hover:bg-muted dark:hover:bg-[#1a1a1a] transition-colors -mx-4 cursor-pointer">
+    <Link
+      href={getRunHref(run.id)}
+      className="group flex items-center justify-between py-4 px-4 hover:bg-muted dark:hover:bg-[#1a1a1a] transition-colors -mx-4 cursor-pointer"
+    >
       <div className="flex items-center space-x-4">
         <div>
           <h4 className="text-base font-medium text-foreground">
             {getTaskDisplayName(run.taskIdentifier)}
           </h4>
-          <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+          <div
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
             <AccountIdDisplay accountId={run.id} label="Run ID" />
           </div>
           <p className="text-sm text-muted-foreground">

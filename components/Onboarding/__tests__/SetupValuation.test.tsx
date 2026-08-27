@@ -7,7 +7,7 @@ import SetupValuation from "@/components/Onboarding/SetupValuation";
 const replace = vi.fn();
 let catalogsResult: Record<string, unknown>;
 let valuationResult: Record<string, unknown>;
-let artists: { isWorkspace?: boolean }[];
+let artists: Record<string, unknown>[];
 let artistsPending: boolean;
 
 // The measuring panel renders the one-click run button (chat#1973), whose
@@ -49,7 +49,7 @@ describe("SetupValuation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     valuationResult = { show: false };
-    artists = [{ isWorkspace: false }];
+    artists = [{}];
     artistsPending = false;
   });
 
@@ -118,7 +118,7 @@ describe("SetupValuation", () => {
       isError: false,
     };
     valuationResult = { show: false };
-    artists = [{ isWorkspace: false }];
+    artists = [{}];
 
     const { getByText } = render(<SetupValuation />);
 
@@ -133,7 +133,7 @@ describe("SetupValuation", () => {
    */
   it("waits on the measuring state during seeding instead of redirecting", () => {
     catalogsResult = { data: { catalogs: [] }, isPending: false, isError: false };
-    artists = [{ isWorkspace: false }];
+    artists = [{}];
 
     const { getByText } = render(<SetupValuation />);
 

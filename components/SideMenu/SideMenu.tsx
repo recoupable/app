@@ -1,4 +1,5 @@
 import SideModal from "../SideModal";
+import { isTasksSection } from "@/lib/navigation/isTasksSection";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useUserProvider } from "@/providers/UserProvder";
@@ -32,7 +33,7 @@ const SideMenu = ({
   const hasArtists = sorted.length > 0;
   const isArtistSelected = !!selectedArtist;
   const isAgents = pathname.includes("/agents");
-  const isTasks = pathname.includes("/tasks");
+  const isTasks = isTasksSection(pathname);
   const isFiles = pathname.includes("/files");
   const isCatalogs = pathname.includes("/catalogs");
   const isArtists = pathname.includes("/artists");

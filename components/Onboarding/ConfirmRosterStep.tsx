@@ -14,9 +14,8 @@ import RosterArtistRow from "./RosterArtistRow";
  * and advances once the user confirms the list.
  */
 const ConfirmRosterStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
-  const { sorted, isLoading } = useArtistProvider();
+  const { sorted: artists, isLoading } = useArtistProvider();
   const { data: catalogsData } = useCatalogs();
-  const artists = sorted.filter((artist) => !artist.isWorkspace);
   const hasValuation = (catalogsData?.catalogs?.length ?? 0) > 0;
 
   return (

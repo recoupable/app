@@ -10,7 +10,7 @@ export function TasksPageHeader() {
           Tasks
         </h1>
         <p className="text-lg text-muted-foreground text-left font-light font-sans max-w-2xl">
-          View and manage all the tasks for your selected artist.
+          View and manage all the tasks on your account.
         </p>
       </div>
       <CreateTaskButton />
