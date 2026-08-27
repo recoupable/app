@@ -19,7 +19,7 @@ export type PostsInfiniteResponse = {
  */
 export function useArtistPosts(
   artistAccountId?: string,
-  limit: number = 20,
+  limit: number = 20
 ): UseInfiniteQueryResult<InfiniteData<PostsResponse>, PostsError> {
   const { getAccessToken, authenticated } = usePrivy();
 

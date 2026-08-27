@@ -8,10 +8,7 @@ interface DeleteArtistOptions {
 }
 
 interface UseDeleteArtistReturn {
-  deleteArtist: (
-    artistId: string,
-    options?: DeleteArtistOptions,
-  ) => Promise<void>;
+  deleteArtist: (artistId: string, options?: DeleteArtistOptions) => Promise<void>;
 }
 
 export default function useDeleteArtist(): UseDeleteArtistReturn {
@@ -23,9 +20,7 @@ export default function useDeleteArtist(): UseDeleteArtistReturn {
     options?: DeleteArtistOptions,
   ): Promise<void> => {
     const previousArtists = artists;
-    const nextArtists = artists.filter(
-      (artist) => artist.account_id !== artistId,
-    );
+    const nextArtists = artists.filter(artist => artist.account_id !== artistId);
     setArtists(nextArtists);
 
     try {
@@ -38,9 +33,7 @@ export default function useDeleteArtist(): UseDeleteArtistReturn {
       options?.onSuccess?.();
     } catch (error) {
       setArtists(previousArtists);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to delete artist",
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to delete artist");
       return;
     }
 

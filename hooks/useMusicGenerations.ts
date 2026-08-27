@@ -25,11 +25,10 @@ const useMusicGenerations = (): UseQueryResult<MusicGenerationsResponse> => {
     // Poll only while something is actually rendering, then stop. A gallery of
     // finished songs is static, and polling it forever would bill every idle
     // tab a request every five seconds.
-    refetchInterval: (query) => {
+    refetchInterval: query => {
       const generations = query.state.data?.generations ?? [];
       const inFlight = generations.some(
-        (generation) =>
-          generation.status === "pending" || generation.status === "processing",
+        generation => generation.status === "pending" || generation.status === "processing",
       );
       return inFlight ? IN_FLIGHT_POLL_MS : false;
     },

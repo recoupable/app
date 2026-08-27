@@ -31,7 +31,7 @@ const TasksTabs = () => {
   const runs = taskRuns ?? [];
 
   return (
-    <Tabs defaultValue={defaultTab} className="max-w-2xl">
+    <Tabs defaultValue={defaultTab} className="w-full">
       <TabsList>
         <TabsTrigger value="schedules">Schedules</TabsTrigger>
         <TabsTrigger value="recents">Recents</TabsTrigger>

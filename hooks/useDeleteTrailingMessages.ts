@@ -21,10 +21,7 @@ export function useDeleteTrailingMessages({
   const { getAccessToken } = usePrivy();
 
   const mutation = useMutation({
-    mutationFn: async ({
-      chatId,
-      fromMessageId,
-    }: DeleteTrailingMessagesMutationInput) => {
+    mutationFn: async ({ chatId, fromMessageId }: DeleteTrailingMessagesMutationInput) => {
       const accessToken = await getAccessToken();
       if (!accessToken) {
         throw new Error("Missing access token");

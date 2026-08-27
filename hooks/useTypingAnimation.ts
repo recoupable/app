@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 /**
  * A custom hook that creates a typing animation effect
- *
+ * 
  * @param words Array of words to animate typing
  * @param isActive Whether the animation should be active
  * @param typingSpeed Speed for typing animation in ms
@@ -14,17 +14,17 @@ export function useTypingAnimation(
   isActive: boolean,
   typingSpeed = 200,
   deletingSpeed = 100,
-  pauseTime = 1000,
+  pauseTime = 1000
 ) {
   const [currentWord, setCurrentWord] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [wordIndex, setWordIndex] = useState(0);
-
+  
   useEffect(() => {
     if (!isActive) return;
-
+    
     const currentFullWord = words[wordIndex];
-
+    
     const typeNextCharacter = () => {
       if (isDeleting) {
         // Deleting logic
@@ -45,23 +45,14 @@ export function useTypingAnimation(
     };
 
     const timer = setTimeout(
-      typeNextCharacter,
-      isDeleting ? deletingSpeed : typingSpeed,
+      typeNextCharacter, 
+      isDeleting ? deletingSpeed : typingSpeed
     );
-
+    
     return () => clearTimeout(timer);
-  }, [
-    currentWord,
-    isDeleting,
-    wordIndex,
-    words,
-    isActive,
-    typingSpeed,
-    deletingSpeed,
-    pauseTime,
-  ]);
+  }, [currentWord, isDeleting, wordIndex, words, isActive, typingSpeed, deletingSpeed, pauseTime]);
 
   return { currentWord };
 }
 
-export default useTypingAnimation;
+export default useTypingAnimation; 
