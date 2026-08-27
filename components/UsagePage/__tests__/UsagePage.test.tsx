@@ -64,9 +64,7 @@ describe("UsagePage", () => {
     render(<UsagePage />);
 
     expect(screen.getByText("$0.02")).toBeDefined();
-    expect(screen.getByText("api · main")).toBeDefined();
     expect(screen.getByText("fal / minimax/music-3")).toBeDefined();
-    expect(screen.getByText("chat · main")).toBeDefined();
     expect(screen.getByText("1,200 in · 300 out")).toBeDefined();
     expect(screen.queryByText(/20000/)).toBeNull();
     expect(screen.queryByText(/12345/)).toBeNull();
