@@ -5,7 +5,10 @@ import { describe, expect, it, vi } from "vitest";
 import TaskPage from "@/components/TasksPage/Task/TaskPage";
 
 const push = vi.fn();
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push }),
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 vi.mock("@/hooks/useTask", () => ({
   useTask: () => ({

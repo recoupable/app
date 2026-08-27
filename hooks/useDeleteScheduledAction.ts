@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
 import { deleteTask } from "@/lib/tasks/deleteTask";
+import { getTaskErrorMessage } from "@/lib/tasks/getTaskErrorMessage";
 
 interface DeleteScheduledActionParams {
   actionId: string;
@@ -29,7 +30,9 @@ export const useDeleteScheduledAction = () => {
       return;
     } catch (error) {
       console.error("Failed to delete scheduled action:", error);
-      toast.error("Failed to delete. Please try again.");
+      toast.error(
+        getTaskErrorMessage(error, "Failed to delete. Please try again."),
+      );
       throw error;
     } finally {
       setIsLoading(false);

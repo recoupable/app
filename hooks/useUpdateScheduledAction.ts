@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { Tables } from "@/types/database.types";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
+import { getTaskErrorMessage } from "@/lib/tasks/getTaskErrorMessage";
 import { updateTask, UpdateTaskParams } from "@/lib/tasks/updateTask";
 
 type ScheduledAction = Tables<"scheduled_actions">;
@@ -38,13 +39,15 @@ export const useUpdateScheduledAction = () => {
       return updatedTask;
     } catch (error) {
       console.error("Failed to update scheduled action:", error);
-      toast.error("Failed to update. Please try again.");
+      toast.error(
+        getTaskErrorMessage(error, "Failed to update. Please try again."),
+      );
       throw error;
     } finally {
       setIsLoading(false);
-      queryClient.invalidateQueries({ 
+      queryClient.invalidateQueries({
         queryKey: ["scheduled-actions"],
-        exact: false 
+        exact: false,
       });
     }
   };

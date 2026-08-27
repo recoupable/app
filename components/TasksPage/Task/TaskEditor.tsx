@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { Task } from "@/lib/tasks/getTasks";
 import { useTaskEditState } from "@/hooks/useTaskEditState";
 import TaskDetails from "./TaskDetails";
@@ -9,7 +9,13 @@ import TaskActions from "./TaskActions";
 /** Edit form + actions for a loaded task; a delete returns to the list. */
 export default function TaskEditor({ task }: { task: Task }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const edit = useTaskEditState(task);
+  // An admin working a customer's list arrived via ?account_id=; send them back there.
+  const accountIdOverride = searchParams.get("account_id");
+  const listHref = accountIdOverride
+    ? `/tasks?account_id=${encodeURIComponent(accountIdOverride)}`
+    : "/tasks";
 
   return (
     <>
@@ -34,7 +40,7 @@ export default function TaskEditor({ task }: { task: Task }) {
         editModel={edit.editModel}
         editTimezone={edit.editTimezone}
         isEnabled={!!task.enabled}
-        onDeleteSuccess={() => router.push("/tasks")}
+        onDeleteSuccess={() => router.push(listHref)}
       />
     </>
   );
