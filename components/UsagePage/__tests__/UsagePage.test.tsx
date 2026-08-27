@@ -54,6 +54,15 @@ const loaded = (pages: unknown[], extra: Record<string, unknown> = {}) =>
     ...extra,
   });
 
+// recharts' ResponsiveContainer observes its box; jsdom has no ResizeObserver.
+class ResizeObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+globalThis.ResizeObserver =
+  ResizeObserverStub as unknown as typeof ResizeObserver;
+
 describe("UsagePage", () => {
   beforeEach(() => vi.clearAllMocks());
 
@@ -151,7 +160,7 @@ describe("UsagePage", () => {
       },
     ]);
     const { container } = render(<UsagePage />);
-    expect(container.querySelectorAll("[data-bar]").length).toBeGreaterThan(0);
+    expect(container.querySelector("[data-chart]")).not.toBeNull();
   });
 
   it("renders every loaded page in one list", () => {

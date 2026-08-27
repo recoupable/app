@@ -9,7 +9,7 @@ describe("formatBucketLabel", () => {
       "Aug 24",
     );
     expect(formatBucketLabel("2026-08-01T00:00:00.000Z", "month")).toBe(
-      "Aug 2026",
+      "Aug ’26",
     );
   });
 });

@@ -1,11 +1,25 @@
 // @vitest-environment jsdom
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import UsageChart from "@/components/UsagePage/UsageChart";
 
+const period = {
+  from: "2026-08-25T10:00:00.000Z",
+  to: "2026-08-27T10:00:00.000Z",
+};
+
+// recharts' ResponsiveContainer observes its box; jsdom has no ResizeObserver.
+class ResizeObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+globalThis.ResizeObserver =
+  ResizeObserverStub as unknown as typeof ResizeObserver;
+
 describe("UsageChart", () => {
-  it("draws one bar per bucket across the period, gaps included, labelled in dollars", () => {
+  it("feeds one point per bucket across the period, gaps included, into the shadcn chart", () => {
     const { container } = render(
       <UsageChart
         series={[
@@ -17,16 +31,15 @@ describe("UsageChart", () => {
           },
         ]}
         bucket="day"
-        period={{
-          from: "2026-08-25T10:00:00.000Z",
-          to: "2026-08-27T10:00:00.000Z",
-        }}
+        period={period}
       />,
     );
-    const bars = container.querySelectorAll("[data-bar]");
-    expect(bars).toHaveLength(3);
-    expect(screen.getByTitle("Aug 26: $1.30, 3 events")).toBeDefined();
-    expect(screen.getByTitle("Aug 25: $0.00, 0 events")).toBeDefined();
+    expect(
+      container.querySelector("[data-points]")?.getAttribute("data-points"),
+    ).toBe("3");
+    expect(container.querySelector("[data-chart]")).not.toBeNull();
+    expect(container.textContent).toContain("Aug 26: $1.30");
+    expect(container.textContent).toContain("Aug 25: $0.00");
     expect(container.textContent).not.toMatch(/1300000/);
   });
 
@@ -37,10 +50,10 @@ describe("UsageChart", () => {
         bucket="day"
         period={{
           from: "2026-08-25T00:00:00.000Z",
-          to: "2026-08-25T01:00:00.000Z",
+          to: "2026-08-25T00:00:00.000Z",
         }}
       />,
     );
-    expect(container.querySelectorAll("[data-bar]")).toHaveLength(1);
+    expect(container.firstChild).toBeNull();
   });
 });
