@@ -11,8 +11,8 @@ import {
   MUSIC_DEFAULTS,
   MUSIC_HINTS,
   creditCostForDuration,
-  formatCreditCostUsd,
 } from "@/lib/music/const";
+import { formatCreditsAsUsd } from "@/lib/credits/formatCreditsAsUsd";
 
 const EMPTY_SETTINGS: MusicSettings = {
   duration: MUSIC_DEFAULTS.duration,
@@ -85,7 +85,7 @@ const MusicGenerateForm = () => {
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-xs text-muted-foreground">
-            Up to {formatCreditCostUsd(credits)} for {settings.duration}s ({credits} credits).
+            Up to {formatCreditsAsUsd(credits)} for {settings.duration}s.
             You are charged for the audio actually generated.
           </span>
           <div className="flex gap-2">

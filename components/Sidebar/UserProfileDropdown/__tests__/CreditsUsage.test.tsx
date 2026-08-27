@@ -13,18 +13,18 @@ describe("CreditsUsage", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("shows the balance as currency, not a raw credit count", () => {
-    // A raw count is only readable while a credit is worth a cent. At a
-    // micro-dollar the same balance reads "3,330,000" (chat#2000).
-    mock({ totalCredits: 333, credits: 333, isLoading: false });
+    // The API returns micro-dollars; shown raw the free allotment reads
+    // "3330000", which tells a customer nothing (recoupable/app#2000).
+    mock({ totalCredits: 3_330_000, credits: 3_330_000, isLoading: false });
 
     render(<CreditsUsage />);
 
     expect(screen.getByText("$3.33 / $3.33")).toBeDefined();
-    expect(screen.queryByText(/333 \/ 333/)).toBeNull();
+    expect(screen.queryByText(/3330000/)).toBeNull();
   });
 
   it("shows a partially spent balance", () => {
-    mock({ totalCredits: 333, credits: 120, isLoading: false });
+    mock({ totalCredits: 3_330_000, credits: 1_200_000, isLoading: false });
 
     render(<CreditsUsage />);
 

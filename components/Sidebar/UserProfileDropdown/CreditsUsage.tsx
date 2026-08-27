@@ -1,5 +1,5 @@
 import { usePaymentProvider } from "@/providers/PaymentProvider";
-import { formatCreditsAsUsd } from "@/lib/credits/creditUnit";
+import { formatCreditsAsUsd } from "@/lib/credits/formatCreditsAsUsd";
 
 /**
  * Compact inline balance that lives inside the identity block.

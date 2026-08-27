@@ -43,13 +43,13 @@ describe("MusicGenerateForm", () => {
     );
   });
 
-  it("quotes the price as an upper bound, in dollars with credits secondary", () => {
+  it("quotes the price as an upper bound, in dollars only", () => {
     // "Up to", because the API charges for the audio fal actually produced and
     // the model routinely stops short (recoupable/api#853). A fixed "Costs"
     // would overstate what most generations are billed.
     setup();
 
-    expect(screen.getByText(/Up to \$0\.12 for 60s \(12 credits\)/)).toBeDefined();
+    expect(screen.getByText(/Up to \$0\.12 for 60s\./)).toBeDefined();
     expect(screen.getByText(/charged for the audio actually generated/i)).toBeDefined();
   });
 
@@ -87,7 +87,7 @@ describe("MusicGenerateForm", () => {
 
     fireEvent.change(screen.getByLabelText("Duration"), { target: { value: "120" } });
 
-    expect(screen.getByText(/Up to \$0\.24 for 120s \(24 credits\)/)).toBeDefined();
+    expect(screen.getByText(/Up to \$0\.24 for 120s\./)).toBeDefined();
   });
 
   it("fills the seed from the randomize button", () => {
