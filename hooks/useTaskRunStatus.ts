@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
+import { useAccountOverride } from "@/providers/AccountOverrideProvider";
 import {
   getTaskRunStatus,
   type TaskRunStatus,
@@ -22,12 +23,13 @@ const isTerminal = (data: TaskRunStatus | undefined): boolean =>
  */
 export function useTaskRunStatus(runId: string) {
   const { getAccessToken, authenticated } = usePrivy();
+  const { accountIdOverride } = useAccountOverride();
 
   return useQuery({
-    queryKey: ["taskRunStatus", runId],
+    queryKey: ["taskRunStatus", runId, accountIdOverride],
     queryFn: async () => {
       const accessToken = await getAccessToken();
-      return getTaskRunStatus(runId, accessToken!);
+      return getTaskRunStatus(runId, accessToken, { accountIdOverride: accountIdOverride || undefined });
     },
     enabled: !!runId && authenticated,
     refetchInterval: (query) => (isTerminal(query.state.data) ? false : 3000),

@@ -31,9 +31,10 @@ interface GetTaskRunsOptions {
  * @returns Array of task run items
  */
 export async function getTaskRuns(
-  accessToken: string,
+  accessToken: string | null | undefined,
   options: GetTaskRunsOptions = {},
 ): Promise<TaskRunItem[]> {
+  const token = accessToken ?? "";
   const url = new URL(`${getClientApiBaseUrl()}/api/tasks/runs`);
   url.searchParams.set("limit", "20");
 
@@ -44,7 +45,7 @@ export async function getTaskRuns(
   const response = await fetch(url.toString(), {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${token}`,
     },
   });
 

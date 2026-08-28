@@ -18,6 +18,10 @@ export interface TaskRunStatus {
   durationMs: number | null;
 }
 
+interface GetTaskRunStatusOptions {
+  accountIdOverride?: string;
+}
+
 /**
  * Fetches a Trigger.dev task run from the Recoup API. For a scheduled task
  * this is the ~30s kickoff; the work happens in the workflow run linked in
@@ -25,15 +29,20 @@ export interface TaskRunStatus {
  */
 export async function getTaskRunStatus(
   runId: string,
-  accessToken: string,
+  accessToken: string | null | undefined,
+  options: GetTaskRunStatusOptions = {},
 ): Promise<TaskRunStatus> {
+  const token = accessToken ?? "";
   const url = new URL(`${TASKS_API_URL}/runs`);
   url.searchParams.set("runId", runId);
+  if (options.accountIdOverride) {
+    url.searchParams.set("account_id", options.accountIdOverride);
+  }
 
   const response = await fetch(url.toString(), {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${token}`,
     },
   });
 
