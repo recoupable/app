@@ -31,4 +31,4 @@ const AgentTags: React.FC<AgentTagsProps> = ({
   </div>
 );
 
-export default AgentTags; 
+export default AgentTags;

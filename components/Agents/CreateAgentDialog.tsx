@@ -9,8 +9,7 @@ import {
 import CreateAgentForm from "./CreateAgentForm";
 import { useState } from "react";
 import { type CreateAgentFormData } from "./schemas";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useUserProvider } from "@/providers/UserProvder";
+import { useCreateAgentTemplate } from "@/hooks/useCreateAgentTemplate";
 
 interface CreateAgentDialogProps {
   children: React.ReactNode;
@@ -18,30 +17,20 @@ interface CreateAgentDialogProps {
 
 const CreateAgentDialog = ({ children }: CreateAgentDialogProps) => {
   const [open, setOpen] = useState(false);
-  const { userData } = useUserProvider();
-  const queryClient = useQueryClient();
-
-  const createTemplate = useMutation({
-    mutationFn: async (values: CreateAgentFormData) => {
-      const res = await fetch("/api/agent-templates", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...values,
-          userId: userData?.id ?? null,
-        }),
-      });
-      if (!res.ok) throw new Error("Failed to create template");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["agent-templates"] });
-      setOpen(false);
-    },
-  });
+  const createTemplate = useCreateAgentTemplate();
 
   const onSubmit = (values: CreateAgentFormData) => {
-    createTemplate.mutate(values);
+    createTemplate.mutate(
+      {
+        title: values.title,
+        description: values.description,
+        prompt: values.prompt,
+        tags: values.tags,
+        is_private: values.isPrivate,
+        share_emails: values.shareEmails,
+      },
+      { onSuccess: () => setOpen(false) },
+    );
   };
 
   return (
@@ -56,7 +45,10 @@ const CreateAgentDialog = ({ children }: CreateAgentDialogProps) => {
             Create a new intelligent agent to help manage your roster tasks.
           </DialogDescription>
         </DialogHeader>
-        <CreateAgentForm onSubmit={onSubmit} isSubmitting={createTemplate.isPending} />
+        <CreateAgentForm
+          onSubmit={onSubmit}
+          isSubmitting={createTemplate.isPending}
+        />
       </DialogContent>
     </Dialog>
   );

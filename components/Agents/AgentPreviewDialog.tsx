@@ -22,7 +22,11 @@ interface AgentPreviewDialogProps {
 const AgentPreviewDialog: React.FC<AgentPreviewDialogProps> = ({ agent }) => (
   <Dialog>
     <DialogTrigger asChild>
-      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 bg-transparent rounded-xl">
+      <Button
+        size="sm"
+        variant="ghost"
+        className="h-8 w-8 p-0 bg-transparent rounded-xl"
+      >
         <Info className="h-4 w-4" />
         <span className="sr-only">Preview</span>
       </Button>
@@ -43,25 +47,39 @@ const AgentPreviewDialog: React.FC<AgentPreviewDialogProps> = ({ agent }) => (
       </DialogHeader>
       <div className="space-y-4">
         <div>
-          <div className="text-xs font-medium text-muted-foreground mb-1">Prompt</div>
+          <div className="text-xs font-medium text-muted-foreground mb-1">
+            Prompt
+          </div>
           <pre className="whitespace-pre-wrap break-words text-sm bg-muted/50 p-3 rounded-md max-h-56 overflow-auto">
-{agent.prompt}
+            {agent.prompt}
           </pre>
         </div>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <div className="text-xs font-medium text-muted-foreground">Tags</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              Tags
+            </div>
             <div className="mt-1 flex flex-wrap gap-1.5">
               {(agent.tags || []).map((t) => (
-                <Badge key={t} variant="outline">{t}</Badge>
+                <Badge key={t} variant="outline">
+                  {t}
+                </Badge>
               ))}
             </div>
           </div>
           <div>
-            <div className="text-xs font-medium text-muted-foreground">Updated</div>
-            <div className="mt-1">{agent.updated_at ? format(new Date(agent.updated_at), "PPpp") : "—"}</div>
-            <div className="text-xs font-medium text-muted-foreground mt-3">Creator</div>
-            <div className="mt-1">{agent.creator ?? "Recoup"}</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              Updated
+            </div>
+            <div className="mt-1">
+              {agent.updated_at
+                ? format(new Date(agent.updated_at), "PPpp")
+                : "—"}
+            </div>
+            <div className="text-xs font-medium text-muted-foreground mt-3">
+              Creator
+            </div>
+            <div className="mt-1">{agent.creator?.name ?? "Recoup"}</div>
           </div>
         </div>
       </div>
@@ -70,5 +88,3 @@ const AgentPreviewDialog: React.FC<AgentPreviewDialogProps> = ({ agent }) => (
 );
 
 export default AgentPreviewDialog;
-
-

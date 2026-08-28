@@ -50,9 +50,9 @@ export function useAgentCard({
   const isSharedWithUser = Boolean(
     !!agent.is_private &&
       !!userData?.id &&
-      userData.id !== agent.creator &&
+      userData.id !== agent.creator?.id &&
       !!email &&
-      agent.shared_emails?.includes(email)
+      agent.shared_emails?.includes(email),
   );
 
   const handleCardKeyDown = useCallback(
@@ -73,14 +73,14 @@ export function useAgentCard({
         onClick(agent);
       }
     },
-    [onClick, agent]
+    [onClick, agent],
   );
 
   const handleCardClick = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const target = event.target as HTMLElement;
       const interactiveAncestor = target.closest(
-        "button, [role='button'], input, textarea, select, a"
+        "button, [role='button'], input, textarea, select, a",
       );
 
       // Ignore clicks on interactive elements, but allow the card itself (role=button)
@@ -93,14 +93,14 @@ export function useAgentCard({
 
       onClick(agent);
     },
-    [onClick, agent]
+    [onClick, agent],
   );
 
   const handleToggleFavorite = useCallback(
     (agentId: string, nextFavourite: boolean) => {
       onToggleFavorite?.(agentId, nextFavourite);
     },
-    [onToggleFavorite]
+    [onToggleFavorite],
   );
 
   return {

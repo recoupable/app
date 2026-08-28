@@ -12,7 +12,7 @@ interface AgentHeartProps {
 const AgentHeart: React.FC<AgentHeartProps> = ({
   isFavorited,
   onToggle,
-  className
+  className,
 }) => {
   return (
     <Button
@@ -20,7 +20,7 @@ const AgentHeart: React.FC<AgentHeartProps> = ({
       variant="ghost"
       className={cn(
         "h-8 w-8 p-0 bg-transparent rounded-xl hover:bg-red-50 dark:hover:bg-red-950/20",
-        className
+        className,
       )}
       onClick={(e) => {
         e.stopPropagation(); // Prevent card click when heart is clicked
@@ -33,7 +33,7 @@ const AgentHeart: React.FC<AgentHeartProps> = ({
           "h-4 w-4 transition-colors",
           isFavorited
             ? "fill-red-500 text-red-500"
-            : "text-muted-foreground hover:text-red-400"
+            : "text-muted-foreground hover:text-red-400",
         )}
       />
     </Button>

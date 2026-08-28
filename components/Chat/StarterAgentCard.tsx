@@ -1,12 +1,15 @@
 import type React from "react";
-import { type Agent } from "../Agents/useAgentData";
+import { type Agent } from "@/hooks/useAgentData";
 
 interface StarterAgentCardProps {
   agent: Agent;
   onClick: (agent: Agent) => void;
 }
 
-const StarterAgentCard: React.FC<StarterAgentCardProps> = ({ agent, onClick }) => {
+const StarterAgentCard: React.FC<StarterAgentCardProps> = ({
+  agent,
+  onClick,
+}) => {
   return (
     <button
       type="button"
@@ -23,4 +26,4 @@ const StarterAgentCard: React.FC<StarterAgentCardProps> = ({ agent, onClick }) =
   );
 };
 
-export default StarterAgentCard; 
+export default StarterAgentCard;

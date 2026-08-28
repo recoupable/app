@@ -22,7 +22,7 @@ const SubmitButton = ({ isSubmitting, submitLabel }: SubmitButtonProps) => {
             {submitLabel ? `${submitLabel}...` : "Saving..."}
           </>
         ) : (
-          submitLabel ?? "Save"
+          (submitLabel ?? "Save")
         )}
       </Button>
     </div>
