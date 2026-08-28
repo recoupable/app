@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { usePrivy } from "@privy-io/react-auth";
 import { useState } from "react";
+import trackSignupStarted from "@/lib/analytics/trackSignupStarted";
 
 export function StartButton() {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,6 +12,7 @@ export function StartButton() {
 
   const handleClick = async () => {
     if (!authenticated) {
+      trackSignupStarted("start_button");
       login();
       return;
     }

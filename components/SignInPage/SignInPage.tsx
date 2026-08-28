@@ -4,6 +4,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Loading from "@/components/Loading";
+import trackSignupStarted from "@/lib/analytics/trackSignupStarted";
 
 export default function SignInPage() {
   const { login, authenticated } = usePrivy();
@@ -15,6 +16,7 @@ export default function SignInPage() {
       return;
     }
 
+    trackSignupStarted("signin_page");
     login();
     // eslint-disable-next-line
   }, [authenticated]);

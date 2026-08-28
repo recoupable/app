@@ -6,6 +6,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { isPublicRoute } from "@/lib/routes/isPublicRoute";
 import { useUserProvider } from "@/providers/UserProvder";
 import { useMiniAppContext } from "@/providers/MiniAppProvider";
+import trackSignupStarted from "@/lib/analytics/trackSignupStarted";
 
 /**
  * Prompts anonymous visitors to sign in via Privy. Must run under
@@ -28,6 +29,7 @@ export function useAutoLogin() {
       !isPublicRoute(pathname);
     if (!shouldTryLogin) return;
     hasTriedLogin.current = true;
+    trackSignupStarted("modal_auto");
     login();
   }, [email, login, isMiniApp, isMiniAppLoading, pathname]);
 }

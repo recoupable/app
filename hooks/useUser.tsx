@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
 import { ensureAccount } from "@/lib/accounts/ensureAccount";
 import { updateAccountProfile } from "@/lib/accounts/updateAccountProfile";
+import trackSignupStarted from "@/lib/analytics/trackSignupStarted";
 
 const useUser = () => {
   const { login, user, logout, getAccessToken, ready } = usePrivy();
@@ -90,6 +91,7 @@ const useUser = () => {
 
   const isPrepared = () => {
     if (!address) {
+      trackSignupStarted("menu");
       login();
       return false;
     }

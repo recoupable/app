@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import trackEvent from "@/lib/analytics/trackEvent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CatalogSongsPageContent from "@/components/Catalog/CatalogSongsPageContent";
 import CatalogReportContent from "./CatalogReportContent";
@@ -17,6 +19,10 @@ interface CatalogReportPageProps {
  */
 const CatalogReportPage = ({ catalogId }: CatalogReportPageProps) => {
   const router = useRouter();
+
+  useEffect(() => {
+    trackEvent("valuation_report_viewed", { catalog_id: catalogId });
+  }, [catalogId]);
 
   return (
     <div className="min-h-screen p-4">
