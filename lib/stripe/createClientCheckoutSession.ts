@@ -25,7 +25,7 @@ const createClientCheckoutSession = async (accessToken: string) => {
       return { error: new Error("Checkout URL missing") };
     }
 
-    window.open(data.url, "_blank", "noopener,noreferrer");
+    window.location.href = data.url;
   } catch (error) {
     return { error };
   }
