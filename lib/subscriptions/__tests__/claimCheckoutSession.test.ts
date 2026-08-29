@@ -34,6 +34,11 @@ describe("claimCheckoutSession", () => {
     await expect(claimCheckoutSession("token", "cs_1")).rejects.toThrow("already_claimed");
   });
 
+  it("treats a 2xx that is not a success envelope as a failure", async () => {
+    fetchMock.mockResolvedValue({ ok: true, status: 200, json: async () => ({ status: "error", error: "not_found" }) });
+    await expect(claimCheckoutSession("token", "cs_1")).rejects.toThrow("not_found");
+  });
+
   it("falls back to the status when the body has no code", async () => {
     fetchMock.mockResolvedValue({ ok: false, status: 404, json: async () => ({}) });
     await expect(claimCheckoutSession("token", "cs_1")).rejects.toThrow("HTTP 404");

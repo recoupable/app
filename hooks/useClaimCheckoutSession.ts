@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getCheckoutSessionId } from "@/lib/checkout/getCheckoutSessionId";
 import { getClaimToast } from "@/lib/checkout/getClaimToast";
+import { isTransientClaimFailure } from "@/lib/checkout/isTransientClaimFailure";
 import { stripCheckoutParams } from "@/lib/checkout/stripCheckoutParams";
 import { claimCheckoutSession } from "@/lib/subscriptions/claimCheckoutSession";
 
@@ -15,8 +16,9 @@ const CLAIMED_KEY = "recoup_checkout_claimed";
 /**
  * After a Stripe success redirect, links the bought subscription to the
  * signed-in account once (`POST /api/subscriptions/claim`), then removes the
- * redirect params. Guarded per session id in sessionStorage so a reload or a
- * second mount never claims twice.
+ * redirect params. The session id is retired (sessionStorage) only on a
+ * final answer, so a network blip, a 5xx, or a missing token leaves the URL
+ * intact and the next load retries.
  */
 export function useClaimCheckoutSession(): void {
   const searchParams = useSearchParams();
@@ -32,21 +34,30 @@ export function useClaimCheckoutSession(): void {
     if (!sessionId || !authenticated || inFlight.current) return;
     if (window.sessionStorage.getItem(CLAIMED_KEY) === sessionId) return;
     inFlight.current = true;
-    window.sessionStorage.setItem(CLAIMED_KEY, sessionId);
+
+    const finish = () => {
+      window.sessionStorage.setItem(CLAIMED_KEY, sessionId);
+      // Only touch the URL if the customer is still on the redirect.
+      if (window.location.search.includes(`session_id=${sessionId}`)) {
+        router.replace(stripCheckoutParams(pathname, searchParams));
+      }
+    };
 
     const claim = async () => {
-      const accessToken = await getAccessToken();
-      if (!accessToken) return;
       try {
+        const accessToken = await getAccessToken();
+        if (!accessToken) throw new Error("no_token");
         const result = await claimCheckoutSession(accessToken, sessionId);
         toast.success(getClaimToast({ ok: true, plan: result.plan }).text);
         await queryClient.invalidateQueries({ queryKey: ["credits"], exact: false });
         await queryClient.invalidateQueries({ queryKey: ["proStatus"], exact: false });
+        finish();
       } catch (error) {
         const code = error instanceof Error ? error.message : "unknown";
         toast.error(getClaimToast({ ok: false, code }).text);
+        if (!isTransientClaimFailure(error)) finish();
       } finally {
-        router.replace(stripCheckoutParams(pathname, searchParams));
+        inFlight.current = false;
       }
     };
     void claim();
