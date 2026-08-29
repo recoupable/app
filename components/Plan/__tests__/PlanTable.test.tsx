@@ -18,6 +18,20 @@ describe("PlanTable", () => {
     expect(startCheckout).toHaveBeenCalledWith("pro");
   });
 
+  it("inverts the current plan column, not always Pro", () => {
+    const { rerender } = render(
+      <PlanTable currentPlan="free" starterAvailable={false} onStartCheckout={startCheckout} />,
+    );
+    const freeHeader = screen.getByRole("columnheader", { name: /Free/ });
+    const proHeader = screen.getByRole("columnheader", { name: /Pro/ });
+    expect(freeHeader.className).toContain("bg-foreground");
+    expect(proHeader.className).not.toContain("bg-foreground");
+
+    rerender(<PlanTable currentPlan="pro" starterAvailable={false} onStartCheckout={startCheckout} />);
+    expect(screen.getByRole("columnheader", { name: /Free/ }).className).not.toContain("bg-foreground");
+    expect(screen.getByRole("columnheader", { name: /Pro/ }).className).toContain("bg-foreground");
+  });
+
   it("offers Starter once the api sells it", () => {
     render(<PlanTable currentPlan="free" starterAvailable onStartCheckout={startCheckout} />);
     fireEvent.click(screen.getAllByRole("button", { name: "Start Starter" })[0]);

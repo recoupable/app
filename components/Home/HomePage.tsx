@@ -4,6 +4,7 @@ import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useRouter } from "next/navigation";
 import NewChatBootstrap from "../VercelChat/NewChatBootstrap";
 import OnboardingChecklist from "@/components/Onboarding/OnboardingChecklist";
+import CreditsUpgradePrompt from "@/components/UpgradePrompt/CreditsUpgradePrompt";
 import { useOnboardingGate } from "@/hooks/useOnboardingGate";
 import { useEffect } from "react";
 import { UIMessage } from "ai";
@@ -36,6 +37,11 @@ const HomePage = ({ initialMessages }: { initialMessages?: UIMessage[] }) => {
 
   return (
     <div className="relative flex flex-col size-full items-center">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center px-4 pt-4 sm:px-6">
+        <div className="pointer-events-auto w-full max-w-4xl">
+          <CreditsUpgradePrompt />
+        </div>
+      </div>
       <NewChatBootstrap initialMessages={initialMessages} />
       {onboarding.view === "checklist" && (
         <OnboardingChecklist

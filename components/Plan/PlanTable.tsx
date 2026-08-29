@@ -15,7 +15,7 @@ const PlanTable = (props: PlanActionProps) => (
           <col className="w-[21%]" />
           <col className="w-[25%]" />
         </colgroup>
-        <PlanTableHeader />
+        <PlanTableHeader currentPlan={props.currentPlan} />
         <tbody>
           <PlanTableRows />
           <PlanTableFooter {...props} />
