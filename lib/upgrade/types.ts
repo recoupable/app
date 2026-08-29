@@ -5,10 +5,14 @@ export type UpgradeTrigger =
   | "task_count"
   | "min_cadence";
 
-/** A paid plan the prompt can start checkout for. */
+/** A paid plan checkout can start. */
 export type UpgradePlan = "starter" | "pro";
 
+/** The single-card prompt: a big number, its context, a meter, one sentence. */
 export interface UpgradeCopy {
-  title: string;
+  headline: string;
+  sub: string;
+  /** Meter fill, 0 to 1. */
+  ratio: number;
   body: string;
 }

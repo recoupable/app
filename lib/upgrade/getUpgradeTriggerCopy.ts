@@ -1,21 +1,23 @@
+import { formatCreditsAsUsd } from "@/lib/credits/formatCreditsAsUsd";
 import type { UpgradeCopy, UpgradeTrigger } from "@/lib/upgrade/types";
 
 /**
- * Prompt headline and body for the credit-wall triggers. Names the number the
- * customer just hit, so the prompt reads as a consequence and not as an ad.
+ * Prompt content for the credit-wall triggers: the balance is the headline,
+ * so the number that opened the prompt is the first thing read.
  */
 export function getUpgradeTriggerCopy(
   trigger: Extract<UpgradeTrigger, "credits_low" | "credits_exhausted">,
-  balance: { remainingUsd: string; totalUsd: string },
+  balance: { remaining: number; total: number },
 ): UpgradeCopy {
-  if (trigger === "credits_exhausted") {
-    return {
-      title: "You have used this month's credits",
-      body: `Free includes ${balance.totalUsd} a month. Agents pause until the next refill unless you move to a paid plan.`,
-    };
-  }
+  const remaining = Math.max(0, balance.remaining);
+  const ratio = balance.total > 0 ? Math.min(1, remaining / balance.total) : 0;
   return {
-    title: `You have ${balance.remainingUsd} left this month`,
-    body: `Free includes ${balance.totalUsd} a month, and the next report will use most of what is left. A paid plan keeps agents running.`,
+    headline: `${formatCreditsAsUsd(remaining)} left`,
+    sub: `of ${formatCreditsAsUsd(balance.total)} this month`,
+    ratio,
+    body:
+      trigger === "credits_exhausted"
+        ? "You have used this month's credits. Upgrading keeps every agent running."
+        : "Your next report will use most of what is left. Upgrading keeps every agent running.",
   };
 }

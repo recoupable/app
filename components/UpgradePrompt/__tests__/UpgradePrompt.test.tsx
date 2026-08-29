@@ -7,59 +7,42 @@ import { trackEvent } from "@/lib/analytics/trackEvent";
 
 vi.mock("@/lib/analytics/trackEvent", () => ({ trackEvent: vi.fn() }));
 
-const copy = { title: "You have $0.20 left", body: "Your $3.33 is almost used up." };
+const copy = { headline: "$0.20 left", sub: "of $3.33 this month", ratio: 0.06, body: "Your next report will use most of what is left." };
 
 describe("UpgradePrompt", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("renders the trigger copy and both plans side by side", () => {
-    render(
-      <UpgradePrompt trigger="credits_low" copy={copy} plans={["starter", "pro"]} onChoose={vi.fn()} onDismiss={vi.fn()} />,
-    );
-    expect(screen.getByText("You have $0.20 left")).toBeDefined();
-    expect(screen.getByRole("button", { name: /Start Starter/ })).toBeDefined();
-    expect(screen.getByRole("button", { name: /Start 30-day trial/ })).toBeDefined();
-    expect(screen.getByText(/\$19 today/)).toBeDefined();
-    expect(screen.getByText(/\$0 today/)).toBeDefined();
+  it("renders the big number, its context, the sentence, one Upgrade button and Keep Free", () => {
+    render(<UpgradePrompt trigger="credits_low" copy={copy} onUpgrade={vi.fn()} onDismiss={vi.fn()} />);
+    expect(screen.getByText("$0.20 left")).toBeDefined();
+    expect(screen.getByText("of $3.33 this month")).toBeDefined();
+    expect(screen.getByText(copy.body)).toBeDefined();
+    expect(screen.getAllByRole("button").map((b) => b.textContent)).toEqual(["Upgrade", "Keep Free"]);
+    expect(screen.queryByText(/\$19|\$99|Starter|trial/)).toBeNull();
   });
 
-  it("hides Starter when only Pro is offered", () => {
-    render(<UpgradePrompt trigger="credits_low" copy={copy} plans={["pro"]} onChoose={vi.fn()} onDismiss={vi.fn()} />);
-    expect(screen.queryByText(/\$19/)).toBeNull();
-    expect(screen.getByRole("button", { name: /Start 30-day trial/ })).toBeDefined();
+  it("fills the meter to the ratio", () => {
+    render(<UpgradePrompt trigger="credits_low" copy={copy} onUpgrade={vi.fn()} onDismiss={vi.fn()} />);
+    const meter = screen.getByRole("progressbar");
+    expect(meter.getAttribute("aria-valuenow")).toBe("6");
   });
 
-  it("fires upgrade_prompt_shown again when the trigger changes on a mounted prompt", () => {
-    const { rerender } = render(
-      <UpgradePrompt trigger="credits_low" copy={copy} plans={["pro"]} onChoose={vi.fn()} onDismiss={vi.fn()} />,
-    );
-    rerender(<UpgradePrompt trigger="credits_exhausted" copy={copy} plans={["pro"]} onChoose={vi.fn()} onDismiss={vi.fn()} />);
-    expect(trackEvent).toHaveBeenCalledTimes(2);
-    expect(trackEvent).toHaveBeenLastCalledWith("upgrade_prompt_shown", { trigger: "credits_exhausted", plan_offered: "pro" });
-  });
-
-  it("fires upgrade_prompt_shown once on mount", () => {
-    const { rerender } = render(
-      <UpgradePrompt trigger="credits_exhausted" copy={copy} plans={["pro"]} onChoose={vi.fn()} onDismiss={vi.fn()} />,
-    );
-    rerender(<UpgradePrompt trigger="credits_exhausted" copy={copy} plans={["pro"]} onChoose={vi.fn()} onDismiss={vi.fn()} />);
+  it("fires upgrade_prompt_shown once per trigger, and again when the trigger changes", () => {
+    const { rerender } = render(<UpgradePrompt trigger="credits_low" copy={copy} onUpgrade={vi.fn()} onDismiss={vi.fn()} />);
+    rerender(<UpgradePrompt trigger="credits_low" copy={copy} onUpgrade={vi.fn()} onDismiss={vi.fn()} />);
     expect(trackEvent).toHaveBeenCalledTimes(1);
-    expect(trackEvent).toHaveBeenCalledWith("upgrade_prompt_shown", { trigger: "credits_exhausted", plan_offered: "pro" });
+    expect(trackEvent).toHaveBeenCalledWith("upgrade_prompt_shown", { trigger: "credits_low" });
+    rerender(<UpgradePrompt trigger="credits_exhausted" copy={copy} onUpgrade={vi.fn()} onDismiss={vi.fn()} />);
+    expect(trackEvent).toHaveBeenCalledTimes(2);
   });
 
-  it("choosing a plan tracks the click and hands the plan to the caller", () => {
-    const onChoose = vi.fn();
-    render(<UpgradePrompt trigger="credits_low" copy={copy} plans={["starter", "pro"]} onChoose={onChoose} onDismiss={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: /Start Starter/ }));
-    expect(onChoose).toHaveBeenCalledWith("starter");
-    expect(trackEvent).toHaveBeenCalledWith("upgrade_prompt_clicked", { plan: "starter", trigger: "credits_low" });
-  });
-
-  it("Keep Free dismisses without tracking a click", () => {
+  it("Upgrade hands the trigger to the caller; Keep Free dismisses", () => {
+    const onUpgrade = vi.fn();
     const onDismiss = vi.fn();
-    render(<UpgradePrompt trigger="credits_low" copy={copy} plans={["pro"]} onChoose={vi.fn()} onDismiss={onDismiss} />);
+    render(<UpgradePrompt trigger="credits_low" copy={copy} onUpgrade={onUpgrade} onDismiss={onDismiss} />);
+    fireEvent.click(screen.getByRole("button", { name: "Upgrade" }));
+    expect(onUpgrade).toHaveBeenCalledWith("credits_low");
     fireEvent.click(screen.getByRole("button", { name: "Keep Free" }));
     expect(onDismiss).toHaveBeenCalledTimes(1);
-    expect(trackEvent).not.toHaveBeenCalledWith("upgrade_prompt_clicked", expect.anything());
   });
 });

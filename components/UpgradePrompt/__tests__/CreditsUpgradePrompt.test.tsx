@@ -7,8 +7,8 @@ import useCredits from "@/hooks/useCredits";
 
 vi.mock("@/hooks/useCredits", () => ({ default: vi.fn() }));
 vi.mock("@/lib/analytics/trackEvent", () => ({ trackEvent: vi.fn() }));
-const startCheckout = vi.fn();
-vi.mock("@/hooks/useUpgradeCheckout", () => ({ useUpgradeCheckout: () => ({ startCheckout }) }));
+const upgrade = vi.fn();
+vi.mock("@/hooks/useUpgradeNavigation", () => ({ useUpgradeNavigation: () => ({ upgrade }) }));
 
 const credits = (remaining: number, extra: Record<string, unknown> = {}) => ({
   data: {
@@ -40,42 +40,26 @@ describe("CreditsUpgradePrompt", () => {
     expect(render(<CreditsUpgradePrompt />).container.innerHTML).toBe("");
   });
 
-  it("shows the low-balance card with Pro only against today's api", () => {
+  it("shows the balance as the headline when it is low", () => {
     vi.mocked(useCredits).mockReturnValue(credits(200_000) as never);
     render(<CreditsUpgradePrompt />);
-    expect(screen.getByText(/\$0\.20/)).toBeDefined();
-    expect(screen.queryByText(/\$19/)).toBeNull();
+    expect(screen.getByText("$0.20 left")).toBeDefined();
+    expect(screen.getByText("of $3.33 this month")).toBeDefined();
   });
 
-  it("shows Starter too once the api reports a plan", () => {
-    vi.mocked(useCredits).mockReturnValue(credits(0, { plan: "free" }) as never);
-    render(<CreditsUpgradePrompt />);
-    expect(screen.getByText(/\$19 today/)).toBeDefined();
-    fireEvent.click(screen.getByRole("button", { name: /Start Starter/ }));
-    expect(startCheckout).toHaveBeenCalledWith("starter");
-  });
-
-  it("never offers a Starter account its own plan", () => {
-    vi.mocked(useCredits).mockReturnValue(credits(0, { plan: "starter" }) as never);
-    render(<CreditsUpgradePrompt />);
-    expect(screen.queryByText(/\$19 today/)).toBeNull();
-    expect(screen.getByRole("button", { name: /Start 30-day trial/ })).toBeDefined();
-  });
-
-  it("Keep Free on one instance hides every mounted instance, usage page and account modal alike", () => {
+  it("shows $0.00 left when the balance is gone", () => {
     vi.mocked(useCredits).mockReturnValue(credits(0) as never);
-    const first = render(<CreditsUpgradePrompt />);
-    const second = render(<CreditsUpgradePrompt />);
-    fireEvent.click(screen.getAllByRole("button", { name: "Keep Free" })[1]);
-    expect(first.container.innerHTML).toBe("");
-    expect(second.container.innerHTML).toBe("");
+    render(<CreditsUpgradePrompt />);
+    expect(screen.getByText("$0.00 left")).toBeDefined();
+    expect(screen.getByText(/used this month's credits/)).toBeDefined();
   });
 
-  it("Keep Free hides the card for the rest of the session", () => {
-    vi.mocked(useCredits).mockReturnValue(credits(0) as never);
+  it("Upgrade navigates with the trigger; Keep Free hides the card", () => {
+    vi.mocked(useCredits).mockReturnValue(credits(200_000) as never);
     const { container } = render(<CreditsUpgradePrompt />);
+    fireEvent.click(screen.getByRole("button", { name: "Upgrade" }));
+    expect(upgrade).toHaveBeenCalledWith("credits_low");
     fireEvent.click(screen.getByRole("button", { name: "Keep Free" }));
     expect(container.innerHTML).toBe("");
-    expect(render(<CreditsUpgradePrompt />).container.innerHTML).toBe("");
   });
 });

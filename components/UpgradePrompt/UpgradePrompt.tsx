@@ -1,58 +1,64 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import UpgradePlanCard from "@/components/UpgradePrompt/UpgradePlanCard";
-import { trackUpgradePromptClicked } from "@/lib/upgrade/trackUpgradePromptClicked";
+import UpgradeMeter from "@/components/UpgradePrompt/UpgradeMeter";
 import { trackUpgradePromptShown } from "@/lib/upgrade/trackUpgradePromptShown";
-import type { UpgradeCopy, UpgradePlan, UpgradeTrigger } from "@/lib/upgrade/types";
+import type { UpgradeCopy, UpgradeTrigger } from "@/lib/upgrade/types";
 
 export interface UpgradePromptProps {
   trigger: UpgradeTrigger;
   copy: UpgradeCopy;
-  plans: UpgradePlan[];
-  onChoose: (plan: UpgradePlan) => void;
+  onUpgrade: (trigger: UpgradeTrigger) => void;
   onDismiss: () => void;
+  /** Lets a modal host render the headline as its accessible dialog title. */
+  renderTitle?: (headline: string) => ReactNode;
+  /** Lets a modal host render the sentence as its accessible dialog description. */
+  renderBody?: (body: string) => ReactNode;
 }
 
 /**
- * The one upgrade prompt: trigger copy, the plans side by side, and a way
- * to stay on Free. Tracks `upgrade_prompt_shown` once per mount and
- * `upgrade_prompt_clicked` per plan button; the caller decides where it
- * renders (inline card or modal).
+ * The one upgrade prompt: the number that opened it, a meter, one sentence,
+ * one Upgrade button, and a quiet way to stay on Free. Tracks
+ * `upgrade_prompt_shown` per distinct trigger; the caller decides where it
+ * renders (inline card or modal) and where Upgrade goes.
  */
-const UpgradePrompt = ({ trigger, copy, plans, onChoose, onDismiss }: UpgradePromptProps) => {
-  // One shown event per distinct prompt state: a credits refetch can move a
-  // mounted prompt from credits_low to credits_exhausted, which is a new
-  // impression, while ordinary re-renders are not.
-  const shownKey = `${trigger}|${plans.join(",")}`;
-  const lastShownKey = useRef<string | null>(null);
+const UpgradePrompt = ({ trigger, copy, onUpgrade, onDismiss, renderTitle, renderBody }: UpgradePromptProps) => {
+  const lastShown = useRef<UpgradeTrigger | null>(null);
   useEffect(() => {
-    if (lastShownKey.current === shownKey) return;
-    lastShownKey.current = shownKey;
-    trackUpgradePromptShown({ trigger, plans });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shownKey]);
-
-  const choose = (plan: UpgradePlan) => {
-    trackUpgradePromptClicked({ trigger, plan });
-    onChoose(plan);
-  };
+    if (lastShown.current === trigger) return;
+    lastShown.current = trigger;
+    trackUpgradePromptShown({ trigger });
+  }, [trigger]);
 
   return (
-    <section className="space-y-4">
-      <div>
-        <h2 className="text-base font-semibold">{copy.title}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{copy.body}</p>
+    <section className="flex flex-col gap-5">
+      <div className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between gap-4">
+          {renderTitle ? (
+            renderTitle(copy.headline)
+          ) : (
+            <h2 className="text-[28px] font-semibold leading-8 tracking-[-0.02em] sm:text-[32px] sm:leading-9">
+              {copy.headline}
+            </h2>
+          )}
+          <p className="text-right text-xs text-muted-foreground sm:text-[13px]">{copy.sub}</p>
+        </div>
+        <UpgradeMeter ratio={copy.ratio} label={copy.sub} />
+        {renderBody ? renderBody(copy.body) : <p className="text-sm text-muted-foreground">{copy.body}</p>}
       </div>
-      <div className={`grid gap-3 ${plans.length > 1 ? "sm:grid-cols-2" : ""}`}>
-        {plans.map((plan) => (
-          <UpgradePlanCard key={plan} plan={plan} onChoose={choose} />
-        ))}
+      <div className="flex flex-col items-center gap-2.5">
+        <Button type="button" className="h-11 w-full sm:h-9" onClick={() => onUpgrade(trigger)}>
+          Upgrade
+        </Button>
+        <button
+          type="button"
+          onClick={onDismiss}
+          className="p-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Keep Free
+        </button>
       </div>
-      <Button type="button" variant="ghost" size="sm" onClick={onDismiss}>
-        Keep Free
-      </Button>
     </section>
   );
 };
