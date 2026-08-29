@@ -16,12 +16,14 @@ import { AccountOverrideProvider } from "./AccountOverrideProvider";
 import { UpgradePromptProvider } from "./UpgradePromptProvider";
 import CreditsUpgradePrompt from "@/components/UpgradePrompt/CreditsUpgradePrompt";
 import PlanLimitUpgradeModal from "@/components/UpgradePrompt/PlanLimitUpgradeModal";
+import CheckoutClaimSync from "@/components/Checkout/CheckoutClaimSync";
 
 const queryClient = new QueryClient();
 
 const Providers = ({ children }: { children: React.ReactNode }) => (
   <QueryClientProvider client={queryClient}>
     <ApiOverrideSync />
+    <CheckoutClaimSync />
     <ThemeProvider
       attribute="class"
       defaultTheme="system"
