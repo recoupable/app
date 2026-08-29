@@ -15,10 +15,6 @@ vi.mock("@/components/VercelChat/NewChatBootstrap", () => ({
   default: () => <div data-testid="chat-bootstrap" />,
 }));
 
-vi.mock("@/components/UpgradePrompt/CreditsUpgradePrompt", () => ({
-  default: () => null,
-}));
-
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace, push: vi.fn() }),
 }));

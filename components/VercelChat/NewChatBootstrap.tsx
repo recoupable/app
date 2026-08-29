@@ -4,6 +4,7 @@ import type { UIMessage } from "ai";
 import { useRef } from "react";
 import { useNewChatBootstrap } from "@/hooks/useNewChatBootstrap";
 import { Chat } from "@/components/VercelChat/chat";
+import CreditsUpgradePrompt from "@/components/UpgradePrompt/CreditsUpgradePrompt";
 import type { WorkspaceStatus } from "@/components/VercelChat/WorkspaceStatusIndicator";
 import { generateUUID } from "@/lib/generateUUID";
 
@@ -43,12 +44,19 @@ export default function NewChatBootstrap({
         : "provisioning";
 
   return (
-    <Chat
-      id={placeholderChatId}
-      sessionId={state.status === "ready" ? state.sessionId : undefined}
-      workflowChatId={state.status === "ready" ? state.chatId : undefined}
-      workspaceStatus={workspaceStatus}
-      initialMessages={initialMessages}
-    />
+    <div className="relative flex size-full flex-col items-center">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center px-4 pt-4 sm:px-6">
+        <div className="pointer-events-auto w-full max-w-4xl">
+          <CreditsUpgradePrompt />
+        </div>
+      </div>
+      <Chat
+        id={placeholderChatId}
+        sessionId={state.status === "ready" ? state.sessionId : undefined}
+        workflowChatId={state.status === "ready" ? state.chatId : undefined}
+        workspaceStatus={workspaceStatus}
+        initialMessages={initialMessages}
+      />
+    </div>
   );
 }
