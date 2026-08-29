@@ -11,8 +11,8 @@ import { getLocalTimezone } from "@/lib/timezone/getLocalTimezone";
 import { getTaskHref } from "@/lib/tasks/getTaskHref";
 import { PlanLimitError } from "@/lib/tasks/planLimitError";
 import { usePlanLimitHandler } from "@/hooks/usePlanLimitHandler";
-
-const DEFAULT_SCHEDULE = "0 9 * * *";
+import useCredits from "@/hooks/useCredits";
+import { getDefaultSchedule } from "@/lib/tasks/getDefaultSchedule";
 
 export function useCreateTask() {
   const { getAccessToken } = usePrivy();
@@ -20,6 +20,7 @@ export function useCreateTask() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { handlePlanLimit } = usePlanLimitHandler();
+  const { data: credits } = useCredits();
 
   const { mutate: handleCreateTask, isPending: isCreating } = useMutation({
     mutationFn: async () => {
@@ -34,7 +35,7 @@ export function useCreateTask() {
       return createTask(accessToken, {
         title: "Untitled Task",
         prompt: "New task — replace with your instructions.",
-        schedule: DEFAULT_SCHEDULE,
+        schedule: getDefaultSchedule(credits?.min_cadence_minutes),
         artist_account_id: artistAccountId,
         model: DEFAULT_MODEL,
         timezone: getLocalTimezone(),

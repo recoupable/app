@@ -29,6 +29,8 @@ vi.mock("@/providers/ArtistProvider", () => ({
 vi.mock("@/lib/tasks/createTask", () => ({
   createTask: vi.fn(async () => ({ id: "task-new" })),
 }));
+const credits: { data?: { min_cadence_minutes?: number } } = {};
+vi.mock("@/hooks/useCredits", () => ({ default: () => credits }));
 
 describe("useCreateTask", () => {
   it("the success toast's View action opens the new task's page", async () => {
@@ -72,5 +74,22 @@ describe("useCreateTask on a plan limit", () => {
     act(() => result.current.handleCreateTask());
     await waitFor(() => expect(showPlanLimit).toHaveBeenCalledWith(body));
     expect(toastError).not.toHaveBeenCalled();
+  });
+});
+
+describe("useCreateTask default schedule", () => {
+  it("creates a weekly task when the plan's fastest cadence is weekly", async () => {
+    const { createTask } = await import("@/lib/tasks/createTask");
+    vi.mocked(createTask).mockClear();
+    credits.data = { min_cadence_minutes: 10080 };
+    const client = new QueryClient();
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useCreateTask(), { wrapper });
+    act(() => result.current.handleCreateTask());
+    await waitFor(() => expect(createTask).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(createTask).mock.calls[0][1].schedule).toBe("0 9 * * 1");
+    credits.data = undefined;
   });
 });
