@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
 import { updateTask, UpdateTaskParams } from "@/lib/tasks/updateTask";
 import { PlanLimitError } from "@/lib/tasks/planLimitError";
-import { useUpgradePromptProvider } from "@/providers/UpgradePromptProvider";
+import { usePlanLimitHandler } from "@/hooks/usePlanLimitHandler";
 
 type ScheduledAction = Tables<"scheduled_actions">;
 
@@ -19,7 +19,7 @@ export const useUpdateScheduledAction = () => {
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
   const { getAccessToken } = usePrivy();
-  const { showPlanLimit } = useUpgradePromptProvider();
+  const { handlePlanLimit } = usePlanLimitHandler();
 
   const updateAction = async ({
     updates,
@@ -41,7 +41,7 @@ export const useUpdateScheduledAction = () => {
       return updatedTask;
     } catch (error) {
       if (error instanceof PlanLimitError) {
-        showPlanLimit(error.body);
+        handlePlanLimit(error);
         throw error;
       }
       console.error("Failed to update scheduled action:", error);

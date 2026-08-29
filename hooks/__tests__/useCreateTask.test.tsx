@@ -17,7 +17,7 @@ vi.mock("sonner", () => ({
     error: (...args: unknown[]) => toastError(...args),
   },
 }));
-vi.mock("@/providers/UpgradePromptProvider", () => ({
+vi.mock("@/hooks/useUpgradePromptProvider", () => ({
   useUpgradePromptProvider: () => ({ showPlanLimit }),
 }));
 vi.mock("@privy-io/react-auth", () => ({

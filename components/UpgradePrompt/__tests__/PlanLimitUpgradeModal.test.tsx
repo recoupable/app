@@ -3,11 +3,11 @@ import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import PlanLimitUpgradeModal from "@/components/UpgradePrompt/PlanLimitUpgradeModal";
-import { useUpgradePromptProvider } from "@/providers/UpgradePromptProvider";
+import { useUpgradePromptProvider } from "@/hooks/useUpgradePromptProvider";
 import { trackEvent } from "@/lib/analytics/trackEvent";
 
 vi.mock("@/lib/analytics/trackEvent", () => ({ trackEvent: vi.fn() }));
-vi.mock("@/providers/UpgradePromptProvider", () => ({ useUpgradePromptProvider: vi.fn() }));
+vi.mock("@/hooks/useUpgradePromptProvider", () => ({ useUpgradePromptProvider: vi.fn() }));
 const startCheckout = vi.fn();
 vi.mock("@/hooks/useUpgradeCheckout", () => ({ useUpgradeCheckout: () => ({ startCheckout }) }));
 
@@ -38,6 +38,7 @@ describe("PlanLimitUpgradeModal", () => {
     render(<PlanLimitUpgradeModal />);
     expect(screen.getByRole("dialog")).toBeDefined();
     expect(screen.getByText(/1 task/)).toBeDefined();
+    expect(screen.getByRole("dialog").getAttribute("aria-describedby")).not.toBeNull();
     expect(screen.getByRole("button", { name: /Start Starter/ })).toBeDefined();
     expect(trackEvent).toHaveBeenCalledWith("upgrade_prompt_shown", { trigger: "task_count", plan_offered: "starter,pro" });
   });

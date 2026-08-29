@@ -10,7 +10,7 @@ import { DEFAULT_MODEL } from "@/lib/consts";
 import { getLocalTimezone } from "@/lib/timezone/getLocalTimezone";
 import { getTaskHref } from "@/lib/tasks/getTaskHref";
 import { PlanLimitError } from "@/lib/tasks/planLimitError";
-import { useUpgradePromptProvider } from "@/providers/UpgradePromptProvider";
+import { usePlanLimitHandler } from "@/hooks/usePlanLimitHandler";
 
 const DEFAULT_SCHEDULE = "0 9 * * *";
 
@@ -19,7 +19,7 @@ export function useCreateTask() {
   const { selectedArtist } = useArtistProvider();
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { showPlanLimit } = useUpgradePromptProvider();
+  const { handlePlanLimit } = usePlanLimitHandler();
 
   const { mutate: handleCreateTask, isPending: isCreating } = useMutation({
     mutationFn: async () => {
@@ -58,7 +58,7 @@ export function useCreateTask() {
     },
     onError: (error) => {
       if (error instanceof PlanLimitError) {
-        showPlanLimit(error.body);
+        handlePlanLimit(error);
         return;
       }
       console.error("Failed to create task:", error);

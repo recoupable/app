@@ -1,11 +1,11 @@
 "use client";
 
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import UpgradePrompt from "@/components/UpgradePrompt/UpgradePrompt";
 import { useUpgradeCheckout } from "@/hooks/useUpgradeCheckout";
 import { getOfferedPlansForPlan } from "@/lib/upgrade/getOfferedPlansForPlan";
 import { getPlanLimitCopy } from "@/lib/upgrade/getPlanLimitCopy";
-import { useUpgradePromptProvider } from "@/providers/UpgradePromptProvider";
+import { useUpgradePromptProvider } from "@/hooks/useUpgradePromptProvider";
 
 /**
  * The modal the app opens when a task write comes back 402 `plan_limit`:
@@ -32,6 +32,7 @@ const PlanLimitUpgradeModal = () => {
           renderTitle={(title) => (
             <DialogTitle className="text-base font-semibold">{title}</DialogTitle>
           )}
+          renderBody={(body) => <DialogDescription className="mt-1">{body}</DialogDescription>}
         />
       </DialogContent>
     </Dialog>

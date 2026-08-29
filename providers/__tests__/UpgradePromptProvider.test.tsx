@@ -2,7 +2,8 @@
 import React from "react";
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { UpgradePromptProvider, useUpgradePromptProvider } from "@/providers/UpgradePromptProvider";
+import { UpgradePromptProvider } from "@/providers/UpgradePromptProvider";
+import { useUpgradePromptProvider } from "@/hooks/useUpgradePromptProvider";
 
 const body = {
   status: "error" as const,
