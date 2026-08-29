@@ -1,6 +1,15 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import type { UpgradePlan } from "@/lib/upgrade/types";
 
-const createClientCheckoutSession = async (accessToken: string) => {
+/**
+ * POST /api/subscriptions/sessions and open the Stripe Checkout page.
+ * `plan` is sent only when chosen: the api's body schema is strict, so an
+ * older api still accepts the default (Pro) call.
+ */
+const createClientCheckoutSession = async (
+  accessToken: string,
+  options: { plan?: UpgradePlan } = {},
+) => {
   try {
     const response = await fetch(
       `${getClientApiBaseUrl()}/api/subscriptions/sessions`,
@@ -12,6 +21,7 @@ const createClientCheckoutSession = async (accessToken: string) => {
         },
         body: JSON.stringify({
           successUrl: window.location.href,
+          ...(options.plan ? { plan: options.plan } : {}),
         }),
       },
     );
