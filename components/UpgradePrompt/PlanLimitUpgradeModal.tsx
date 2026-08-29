@@ -2,37 +2,41 @@
 
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import UpgradePrompt from "@/components/UpgradePrompt/UpgradePrompt";
-import { useUpgradeCheckout } from "@/hooks/useUpgradeCheckout";
-import { getOfferedPlansForPlan } from "@/lib/upgrade/getOfferedPlansForPlan";
-import { getPlanLimitCopy } from "@/lib/upgrade/getPlanLimitCopy";
+import { useUpgradeNavigation } from "@/hooks/useUpgradeNavigation";
 import { useUpgradePromptProvider } from "@/hooks/useUpgradePromptProvider";
+import { getPlanLimitCopy } from "@/lib/upgrade/getPlanLimitCopy";
+import type { UpgradeTrigger } from "@/lib/upgrade/types";
 
 /**
- * The modal the app opens when a task write comes back 402 `plan_limit`:
- * the trigger (task cap or cadence) in the copy, the plans above the
- * current one, Keep Free to close.
+ * The modal the app opens when a task write comes back 402 `plan_limit`: the
+ * limit that was hit as the headline, one Upgrade button, Keep Free to close.
+ * A bottom sheet under 640px, a centered dialog above.
  */
 const PlanLimitUpgradeModal = () => {
   const { planLimit, closePlanLimit } = useUpgradePromptProvider();
-  const { startCheckout } = useUpgradeCheckout();
+  const { upgrade } = useUpgradeNavigation();
 
   if (!planLimit) return null;
 
-  const copy = getPlanLimitCopy(planLimit);
+  const onUpgrade = (trigger: UpgradeTrigger) => {
+    closePlanLimit();
+    upgrade(trigger);
+  };
 
   return (
     <Dialog open onOpenChange={(open) => !open && closePlanLimit()}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-lg gap-0 rounded-xl p-5 max-sm:bottom-3 max-sm:top-auto max-sm:w-[calc(100%-1.5rem)] max-sm:translate-y-0 sm:p-6">
         <UpgradePrompt
           trigger={planLimit.limit}
-          copy={copy}
-          plans={getOfferedPlansForPlan(planLimit.plan)}
-          onChoose={(plan) => void startCheckout(plan)}
+          copy={getPlanLimitCopy(planLimit)}
+          onUpgrade={onUpgrade}
           onDismiss={closePlanLimit}
-          renderTitle={(title) => (
-            <DialogTitle className="text-base font-semibold">{title}</DialogTitle>
+          renderTitle={(headline) => (
+            <DialogTitle className="text-[28px] font-semibold leading-8 tracking-[-0.02em] sm:text-[32px] sm:leading-9">
+              {headline}
+            </DialogTitle>
           )}
-          renderBody={(body) => <DialogDescription className="mt-1">{body}</DialogDescription>}
+          renderBody={(body) => <DialogDescription className="text-sm text-muted-foreground">{body}</DialogDescription>}
         />
       </DialogContent>
     </Dialog>

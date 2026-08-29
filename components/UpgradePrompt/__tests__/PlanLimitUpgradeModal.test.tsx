@@ -8,8 +8,8 @@ import { trackEvent } from "@/lib/analytics/trackEvent";
 
 vi.mock("@/lib/analytics/trackEvent", () => ({ trackEvent: vi.fn() }));
 vi.mock("@/hooks/useUpgradePromptProvider", () => ({ useUpgradePromptProvider: vi.fn() }));
-const startCheckout = vi.fn();
-vi.mock("@/hooks/useUpgradeCheckout", () => ({ useUpgradeCheckout: () => ({ startCheckout }) }));
+const upgrade = vi.fn();
+vi.mock("@/hooks/useUpgradeNavigation", () => ({ useUpgradeNavigation: () => ({ upgrade }) }));
 
 const body = {
   status: "error" as const,
@@ -33,21 +33,23 @@ describe("PlanLimitUpgradeModal", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("opens a dialog naming the trigger with both plans, and tracks it", () => {
+  it("opens a dialog led by the number, with one Upgrade button, and tracks it", () => {
     vi.mocked(useUpgradePromptProvider).mockReturnValue({ planLimit: body, closePlanLimit: close } as never);
     render(<PlanLimitUpgradeModal />);
-    expect(screen.getByRole("dialog")).toBeDefined();
-    expect(screen.getByText(/1 task/)).toBeDefined();
-    expect(screen.getByRole("dialog").getAttribute("aria-describedby")).not.toBeNull();
-    expect(screen.getByRole("button", { name: /Start Starter/ })).toBeDefined();
-    expect(trackEvent).toHaveBeenCalledWith("upgrade_prompt_shown", { trigger: "task_count", plan_offered: "starter,pro" });
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.getAttribute("aria-describedby")).not.toBeNull();
+    expect(screen.getByText("1 of 1 tasks")).toBeDefined();
+    expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("100");
+    expect(screen.getAllByRole("button").map((b) => b.textContent)).toEqual(["Upgrade", "Keep Free", "Close"]);
+    expect(trackEvent).toHaveBeenCalledWith("upgrade_prompt_shown", { trigger: "task_count" });
   });
 
-  it("choosing a plan starts checkout for it", () => {
+  it("Upgrade closes the dialog and navigates with the trigger", () => {
     vi.mocked(useUpgradePromptProvider).mockReturnValue({ planLimit: body, closePlanLimit: close } as never);
     render(<PlanLimitUpgradeModal />);
-    fireEvent.click(screen.getByRole("button", { name: /Start 30-day trial/ }));
-    expect(startCheckout).toHaveBeenCalledWith("pro");
+    fireEvent.click(screen.getByRole("button", { name: "Upgrade" }));
+    expect(upgrade).toHaveBeenCalledWith("task_count");
+    expect(close).toHaveBeenCalledTimes(1);
   });
 
   it("Keep Free closes the dialog", () => {
