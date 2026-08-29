@@ -9,6 +9,8 @@ import { useArtistProvider } from "@/providers/ArtistProvider";
 import { DEFAULT_MODEL } from "@/lib/consts";
 import { getLocalTimezone } from "@/lib/timezone/getLocalTimezone";
 import { getTaskHref } from "@/lib/tasks/getTaskHref";
+import { PlanLimitError } from "@/lib/tasks/planLimitError";
+import { useUpgradePromptProvider } from "@/providers/UpgradePromptProvider";
 
 const DEFAULT_SCHEDULE = "0 9 * * *";
 
@@ -17,6 +19,7 @@ export function useCreateTask() {
   const { selectedArtist } = useArtistProvider();
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { showPlanLimit } = useUpgradePromptProvider();
 
   const { mutate: handleCreateTask, isPending: isCreating } = useMutation({
     mutationFn: async () => {
@@ -54,6 +57,10 @@ export function useCreateTask() {
       });
     },
     onError: (error) => {
+      if (error instanceof PlanLimitError) {
+        showPlanLimit(error.body);
+        return;
+      }
       console.error("Failed to create task:", error);
       if (error instanceof Error) {
         if (error.message === "ARTIST_REQUIRED") {

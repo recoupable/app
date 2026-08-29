@@ -13,6 +13,8 @@ import { ThemeProvider } from "./ThemeProvider";
 import { OrganizationProvider } from "./OrganizationProvider";
 import ApiOverrideSync from "./ApiOverrideSync";
 import { AccountOverrideProvider } from "./AccountOverrideProvider";
+import { UpgradePromptProvider } from "./UpgradePromptProvider";
+import PlanLimitUpgradeModal from "@/components/UpgradePrompt/PlanLimitUpgradeModal";
 
 const queryClient = new QueryClient();
 
@@ -34,7 +36,12 @@ const Providers = ({ children }: { children: React.ReactNode }) => (
                 <OrganizationProvider>
                   <ArtistProvider>
                     <ConversationsProvider>
-                      <PaymentProvider>{children}</PaymentProvider>
+                      <PaymentProvider>
+                        <UpgradePromptProvider>
+                          {children}
+                          <PlanLimitUpgradeModal />
+                        </UpgradePromptProvider>
+                      </PaymentProvider>
                     </ConversationsProvider>
                   </ArtistProvider>
                 </OrganizationProvider>

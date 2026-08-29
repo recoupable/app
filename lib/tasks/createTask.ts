@@ -1,4 +1,5 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import { throwIfPlanLimit } from "@/lib/tasks/throwIfPlanLimit";
 import type { Task } from "./getTasks";
 import type { CreateTaskApiResponse } from "./createTaskApiResponse";
 
@@ -56,6 +57,7 @@ export async function createTask(
 
   if (!response.ok) {
     const errorText = await response.text();
+    throwIfPlanLimit(response.status, errorText);
     throw new Error(`HTTP ${response.status}: ${errorText}`);
   }
 
