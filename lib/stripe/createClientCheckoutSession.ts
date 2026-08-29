@@ -3,8 +3,9 @@ import type { UpgradePlan } from "@/lib/upgrade/types";
 
 /**
  * POST /api/subscriptions/sessions and open the Stripe Checkout page.
- * `plan` is sent only when chosen: the api's body schema is strict, so an
- * older api still accepts the default (Pro) call.
+ * Pro is the api's default, so `plan` goes on the wire only for Starter:
+ * the body schema is strict and an api without Starter still accepts the
+ * default call.
  */
 const createClientCheckoutSession = async (
   accessToken: string,
@@ -21,7 +22,7 @@ const createClientCheckoutSession = async (
         },
         body: JSON.stringify({
           successUrl: window.location.href,
-          ...(options.plan ? { plan: options.plan } : {}),
+          ...(options.plan === "starter" ? { plan: options.plan } : {}),
         }),
       },
     );

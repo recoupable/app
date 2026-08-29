@@ -55,6 +55,22 @@ describe("CreditsUpgradePrompt", () => {
     expect(startCheckout).toHaveBeenCalledWith("starter");
   });
 
+  it("never offers a Starter account its own plan", () => {
+    vi.mocked(useCredits).mockReturnValue(credits(0, { plan: "starter" }) as never);
+    render(<CreditsUpgradePrompt />);
+    expect(screen.queryByText(/\$19 today/)).toBeNull();
+    expect(screen.getByRole("button", { name: /Start 30-day trial/ })).toBeDefined();
+  });
+
+  it("Keep Free on one instance hides every mounted instance, usage page and account modal alike", () => {
+    vi.mocked(useCredits).mockReturnValue(credits(0) as never);
+    const first = render(<CreditsUpgradePrompt />);
+    const second = render(<CreditsUpgradePrompt />);
+    fireEvent.click(screen.getAllByRole("button", { name: "Keep Free" })[1]);
+    expect(first.container.innerHTML).toBe("");
+    expect(second.container.innerHTML).toBe("");
+  });
+
   it("Keep Free hides the card for the rest of the session", () => {
     vi.mocked(useCredits).mockReturnValue(credits(0) as never);
     const { container } = render(<CreditsUpgradePrompt />);

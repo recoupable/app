@@ -29,6 +29,15 @@ describe("UpgradePrompt", () => {
     expect(screen.getByRole("button", { name: /Start 30-day trial/ })).toBeDefined();
   });
 
+  it("fires upgrade_prompt_shown again when the trigger changes on a mounted prompt", () => {
+    const { rerender } = render(
+      <UpgradePrompt trigger="credits_low" copy={copy} plans={["pro"]} onChoose={vi.fn()} onDismiss={vi.fn()} />,
+    );
+    rerender(<UpgradePrompt trigger="credits_exhausted" copy={copy} plans={["pro"]} onChoose={vi.fn()} onDismiss={vi.fn()} />);
+    expect(trackEvent).toHaveBeenCalledTimes(2);
+    expect(trackEvent).toHaveBeenLastCalledWith("upgrade_prompt_shown", { trigger: "credits_exhausted", plan_offered: "pro" });
+  });
+
   it("fires upgrade_prompt_shown once on mount", () => {
     const { rerender } = render(
       <UpgradePrompt trigger="credits_exhausted" copy={copy} plans={["pro"]} onChoose={vi.fn()} onDismiss={vi.fn()} />,

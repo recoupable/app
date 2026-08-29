@@ -20,7 +20,12 @@ describe("createClientCheckoutSession", () => {
     expect(sentBody()).toEqual({ successUrl: window.location.href });
   });
 
-  it("sends plan when a plan is chosen", async () => {
+  it("omits plan for Pro too: Pro is the api's default and an older api rejects the field", async () => {
+    await createClientCheckoutSession("token", { plan: "pro" });
+    expect(sentBody()).toEqual({ successUrl: window.location.href });
+  });
+
+  it("sends plan for Starter", async () => {
     await createClientCheckoutSession("token", { plan: "starter" });
     expect(sentBody()).toEqual({ successUrl: window.location.href, plan: "starter" });
   });
@@ -28,5 +33,15 @@ describe("createClientCheckoutSession", () => {
   it("opens the returned checkout URL", async () => {
     await createClientCheckoutSession("token", { plan: "pro" });
     expect(window.open).toHaveBeenCalledWith("https://stripe.test/c", "_blank", "noopener,noreferrer");
+  });
+
+  it("returns the error on a rejected request, a missing url, or a network failure", async () => {
+    fetchMock.mockResolvedValueOnce({ ok: false, status: 400, json: async () => ({}) });
+    expect((await createClientCheckoutSession("token"))?.error).toBeInstanceOf(Error);
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+    expect((await createClientCheckoutSession("token"))?.error).toBeInstanceOf(Error);
+    fetchMock.mockRejectedValueOnce(new TypeError("offline"));
+    expect((await createClientCheckoutSession("token"))?.error).toBeInstanceOf(TypeError);
+    expect(window.open).not.toHaveBeenCalled();
   });
 });

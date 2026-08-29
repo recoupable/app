@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import UpgradePlanCard from "@/components/UpgradePrompt/UpgradePlanCard";
 import { trackUpgradePromptClicked } from "@/lib/upgrade/trackUpgradePromptClicked";
@@ -22,11 +22,17 @@ export interface UpgradePromptProps {
  * renders (inline card or modal).
  */
 const UpgradePrompt = ({ trigger, copy, plans, onChoose, onDismiss }: UpgradePromptProps) => {
+  // One shown event per distinct prompt state: a credits refetch can move a
+  // mounted prompt from credits_low to credits_exhausted, which is a new
+  // impression, while ordinary re-renders are not.
+  const shownKey = `${trigger}|${plans.join(",")}`;
+  const lastShownKey = useRef<string | null>(null);
   useEffect(() => {
+    if (lastShownKey.current === shownKey) return;
+    lastShownKey.current = shownKey;
     trackUpgradePromptShown({ trigger, plans });
-    // Once per mount: the trigger is fixed for the prompt's lifetime.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [shownKey]);
 
   const choose = (plan: UpgradePlan) => {
     trackUpgradePromptClicked({ trigger, plan });
@@ -34,11 +40,9 @@ const UpgradePrompt = ({ trigger, copy, plans, onChoose, onDismiss }: UpgradePro
   };
 
   return (
-    <section aria-labelledby="upgrade-prompt-title" className="space-y-4">
+    <section className="space-y-4">
       <div>
-        <h2 id="upgrade-prompt-title" className="text-base font-semibold">
-          {copy.title}
-        </h2>
+        <h2 className="text-base font-semibold">{copy.title}</h2>
         <p className="mt-1 text-sm text-muted-foreground">{copy.body}</p>
       </div>
       <div className={`grid gap-3 ${plans.length > 1 ? "sm:grid-cols-2" : ""}`}>
