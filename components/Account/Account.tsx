@@ -7,8 +7,6 @@ import { useUserProvider } from "@/providers/UserProvder";
 import ArtistInstructionTextArea from "./ArtistInstructionTextArea";
 import Input from "../Input";
 import AccountIdDisplay from "../ArtistSetting/AccountIdDisplay";
-import CreditsUpgradePrompt from "@/components/UpgradePrompt/CreditsUpgradePrompt";
-
 const Account = () => {
   const {
     setInstruction,
@@ -45,10 +43,6 @@ const Account = () => {
             </div>
           )}
         </div>
-      </div>
-
-      <div className="w-full">
-        <CreditsUpgradePrompt />
       </div>
 
       {/* Form Fields Section */}
