@@ -1,12 +1,14 @@
 "use client";
 
-import UpgradePrompt from "@/components/UpgradePrompt/UpgradePrompt";
+import UpgradePromptDialog from "@/components/UpgradePrompt/UpgradePromptDialog";
 import { useCreditsUpgradePrompt } from "@/hooks/useCreditsUpgradePrompt";
 import { useUpgradeNavigation } from "@/hooks/useUpgradeNavigation";
+import type { UpgradeTrigger } from "@/lib/upgrade/types";
 
 /**
- * The inline credit-wall card for the usage page and the account modal.
- * Renders nothing until the balance is under 10 percent or gone.
+ * Global credit-wall upsell: same centered dialog as the task-cap prompt.
+ * Mount once under Providers; renders nothing until the balance is under
+ * 10 percent or gone (and not dismissed for the session).
  */
 const CreditsUpgradePrompt = () => {
   const prompt = useCreditsUpgradePrompt();
@@ -14,10 +16,21 @@ const CreditsUpgradePrompt = () => {
 
   if (!prompt.trigger) return null;
 
+  const close = () => prompt.dismiss();
+  const onUpgrade = (trigger: UpgradeTrigger) => {
+    close();
+    upgrade(trigger);
+  };
+
   return (
-    <div className="mb-6 rounded-xl bg-background p-5 shadow-[0_0_0_1px_var(--border)] sm:p-6">
-      <UpgradePrompt trigger={prompt.trigger} copy={prompt.copy} onUpgrade={upgrade} onDismiss={prompt.dismiss} />
-    </div>
+    <UpgradePromptDialog
+      open
+      onOpenChange={(open) => !open && close()}
+      trigger={prompt.trigger}
+      copy={prompt.copy}
+      onUpgrade={onUpgrade}
+      onDismiss={close}
+    />
   );
 };
 

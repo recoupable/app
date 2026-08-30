@@ -9,14 +9,18 @@ import { useArtistProvider } from "@/providers/ArtistProvider";
 import { DEFAULT_MODEL } from "@/lib/consts";
 import { getLocalTimezone } from "@/lib/timezone/getLocalTimezone";
 import { getTaskHref } from "@/lib/tasks/getTaskHref";
-
-const DEFAULT_SCHEDULE = "0 9 * * *";
+import { PlanLimitError } from "@/lib/tasks/planLimitError";
+import { usePlanLimitHandler } from "@/hooks/usePlanLimitHandler";
+import useCredits from "@/hooks/useCredits";
+import { getDefaultSchedule } from "@/lib/tasks/getDefaultSchedule";
 
 export function useCreateTask() {
   const { getAccessToken } = usePrivy();
   const { selectedArtist } = useArtistProvider();
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { handlePlanLimit } = usePlanLimitHandler();
+  const { data: credits } = useCredits();
 
   const { mutate: handleCreateTask, isPending: isCreating } = useMutation({
     mutationFn: async () => {
@@ -31,7 +35,7 @@ export function useCreateTask() {
       return createTask(accessToken, {
         title: "Untitled Task",
         prompt: "New task — replace with your instructions.",
-        schedule: DEFAULT_SCHEDULE,
+        schedule: getDefaultSchedule(credits?.min_cadence_minutes),
         artist_account_id: artistAccountId,
         model: DEFAULT_MODEL,
         timezone: getLocalTimezone(),
@@ -54,6 +58,10 @@ export function useCreateTask() {
       });
     },
     onError: (error) => {
+      if (error instanceof PlanLimitError) {
+        handlePlanLimit(error);
+        return;
+      }
       console.error("Failed to create task:", error);
       if (error instanceof Error) {
         if (error.message === "ARTIST_REQUIRED") {

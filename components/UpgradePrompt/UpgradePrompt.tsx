@@ -20,8 +20,8 @@ export interface UpgradePromptProps {
 /**
  * The one upgrade prompt: the number that opened it, a meter, one sentence,
  * one Upgrade button, and a quiet way to stay on Free. Tracks
- * `upgrade_prompt_shown` per distinct trigger; the caller decides where it
- * renders (inline card or modal) and where Upgrade goes.
+ * `upgrade_prompt_shown` per distinct trigger; hosts render it inside
+ * `UpgradePromptDialog` (credits and task-cap share that shell).
  */
 const UpgradePrompt = ({ trigger, copy, onUpgrade, onDismiss, renderTitle, renderBody }: UpgradePromptProps) => {
   const lastShown = useRef<UpgradeTrigger | null>(null);

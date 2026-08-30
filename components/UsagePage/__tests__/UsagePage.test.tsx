@@ -6,8 +6,6 @@ import UsagePage from "@/components/UsagePage/UsagePage";
 import useAccountUsage from "@/hooks/useAccountUsage";
 
 vi.mock("@/hooks/useAccountUsage", () => ({ default: vi.fn() }));
-// The credit-wall card has its own tests and needs the auth providers.
-vi.mock("@/components/UpgradePrompt/CreditsUpgradePrompt", () => ({ default: () => null }));
 
 const EVENT = {
   id: "3AANn3Ij9uF-zZIlW_zlP",

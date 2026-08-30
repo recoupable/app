@@ -15,8 +15,6 @@ import UsageEmptyState from "./UsageEmptyState";
 import UsageNoAccess from "./UsageNoAccess";
 import UsageSkeleton from "./UsageSkeleton";
 import UsageLoadMore from "./UsageLoadMore";
-import CreditsUpgradePrompt from "@/components/UpgradePrompt/CreditsUpgradePrompt";
-
 const UsagePage = () => {
   const [sort, setSort] = useState<UsageSort>(DEFAULT_USAGE_SORT);
   const [range, setRange] = useState<UsageRange>(DEFAULT_USAGE_RANGE);
@@ -34,7 +32,6 @@ const UsagePage = () => {
   return (
     <PageContainer className="max-w-4xl py-8">
       <UsagePageHeader />
-      <CreditsUpgradePrompt />
       <div className="mb-4">
         <UsageRangeSelector value={range} onChange={setRange} />
       </div>

@@ -40,9 +40,10 @@ describe("CreditsUpgradePrompt", () => {
     expect(render(<CreditsUpgradePrompt />).container.innerHTML).toBe("");
   });
 
-  it("shows the balance as the headline when it is low", () => {
+  it("opens a centered dialog with the balance as the headline when it is low", () => {
     vi.mocked(useCredits).mockReturnValue(credits(200_000) as never);
     render(<CreditsUpgradePrompt />);
+    expect(screen.getByRole("dialog")).toBeDefined();
     expect(screen.getByText("$0.20 left")).toBeDefined();
     expect(screen.getByText("of $3.33 this month")).toBeDefined();
   });
@@ -54,12 +55,19 @@ describe("CreditsUpgradePrompt", () => {
     expect(screen.getByText(/used this month's credits/)).toBeDefined();
   });
 
-  it("Upgrade navigates with the trigger; Keep Free hides the card", () => {
+  it("Upgrade navigates with the trigger and closes; Keep Free dismisses for the session", () => {
     vi.mocked(useCredits).mockReturnValue(credits(200_000) as never);
-    const { container } = render(<CreditsUpgradePrompt />);
+    const { rerender } = render(<CreditsUpgradePrompt />);
     fireEvent.click(screen.getByRole("button", { name: "Upgrade" }));
     expect(upgrade).toHaveBeenCalledWith("credits_low");
+    rerender(<CreditsUpgradePrompt />);
+    expect(screen.queryByRole("dialog")).toBeNull();
+
+    window.sessionStorage.clear();
+    vi.mocked(useCredits).mockReturnValue(credits(200_000) as never);
+    const { rerender: rerender2 } = render(<CreditsUpgradePrompt />);
     fireEvent.click(screen.getByRole("button", { name: "Keep Free" }));
-    expect(container.innerHTML).toBe("");
+    rerender2(<CreditsUpgradePrompt />);
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 });
