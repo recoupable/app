@@ -10,7 +10,7 @@ export function getClaimToast(
   if (result.code === "already_claimed") {
     return {
       kind: "error",
-      text: "That subscription is already on another account. Sign in with the email you paid with, or write to agent@recoupable.dev.",
+      text: "That subscription is already on another account. Sign in with the email you paid with, or write to sweetman@recoupable.com.",
     };
   }
   if (result.code === "no_token" || /^HTTP 5/.test(result.code) || result.code === "unknown") {

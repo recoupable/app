@@ -74,6 +74,7 @@ describe("useClaimCheckoutSession", () => {
     renderHook(() => useClaimCheckoutSession(), { wrapper: wrapperFor(new QueryClient()) });
     await waitFor(() => expect(toastError).toHaveBeenCalledTimes(1));
     expect(toastError.mock.calls[0][0]).toMatch(/another account/i);
+    expect(toastError.mock.calls[0][0]).toMatch(/sweetman@recoupable\.com/);
     expect(replace).toHaveBeenCalledWith("/tasks");
   });
 
