@@ -23,7 +23,6 @@ const queryClient = new QueryClient();
 const Providers = ({ children }: { children: React.ReactNode }) => (
   <QueryClientProvider client={queryClient}>
     <ApiOverrideSync />
-    <CheckoutClaimSync />
     <ThemeProvider
       attribute="class"
       defaultTheme="system"
@@ -40,6 +39,7 @@ const Providers = ({ children }: { children: React.ReactNode }) => (
                   <ArtistProvider>
                     <ConversationsProvider>
                       <PaymentProvider>
+                        <CheckoutClaimSync />
                         <UpgradePromptProvider>
                           {children}
                           <CreditsUpgradePrompt />
