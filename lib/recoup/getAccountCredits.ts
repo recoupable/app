@@ -7,6 +7,12 @@ export interface AccountCredits {
   used_credits: number;
   is_pro: boolean;
   timestamp: string;
+  /** Present once the api resolves plans (app#2044 row 3); absent before. */
+  plan?: "free" | "starter" | "pro";
+  /** Enabled tasks the plan allows; null is uncapped. */
+  task_limit?: number | null;
+  /** Shortest gap between two runs the plan allows. */
+  min_cadence_minutes?: number;
 }
 
 /**
