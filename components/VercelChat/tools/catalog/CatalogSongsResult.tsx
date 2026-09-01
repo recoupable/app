@@ -44,9 +44,7 @@ export default function CatalogSongsResult({
       ? (uploadProgress.current / uploadProgress.total) * 100
       : 0;
 
-  // Default OFF so fresh valuation-claimed catalogs (rows with null metadata)
-  // are visible instead of appearing empty (chat#1867)
-  const [hideIncomplete, setHideIncomplete] = useState(false);
+  const [hideIncomplete, setHideIncomplete] = useState(true);
 
   const filteredSongs = useMemo(() => {
     const songs = displayResult.songs || [];
