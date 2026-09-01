@@ -12,7 +12,7 @@ const ProjectProgress = ({
 }) => (
   <div className="flex flex-col gap-2">
     <Progress
-      value={total ? (done / total) * 100 : 0}
+      value={total ? Math.round((done / total) * 100) : 0}
       className="h-1 bg-muted"
       aria-label={`${done} of ${total} tasks done`}
     />
