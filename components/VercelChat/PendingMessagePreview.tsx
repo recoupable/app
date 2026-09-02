@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
 import MessageFrame from "./MessageFrame";
+import Message from "./message";
 import { EnhancedReasoning } from "@/components/reasoning/EnhancedReasoning";
 
 /**
@@ -18,16 +18,13 @@ import { EnhancedReasoning } from "@/components/reasoning/EnhancedReasoning";
  */
 const PendingMessagePreview = ({ text }: { text: string }) => (
   <div className="contents" data-testid="pending-message">
-    <MessageFrame role="user" testId="pending-user">
-      <div
-        className={cn(
-          "flex flex-col gap-4 text-foreground dark:text-white",
-          "bg-muted px-4 py-2.5 rounded-3xl rounded-br-lg border border-border dark:border-gray-600 shadow-sm",
-        )}
-      >
-        {text}
-      </div>
-    </MessageFrame>
+    {/* Rendered through Message, not a look-alike bubble: the real one carries a
+        32px hidden Actions row beneath it, and without that the assistant shell
+        below sat 14px higher than where it lands after the send. */}
+    <Message
+      message={{ id: "pending-user", role: "user", parts: [{ type: "text", text }] }}
+      status="ready"
+    />
 
     {/* Same frame and same component the reasoning stream renders in, so
         when the assistant starts thinking only the header text changes. */}
