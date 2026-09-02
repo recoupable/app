@@ -10,6 +10,7 @@ import {
 } from "@/components/ai-elements/conversation";
 import Message from "./message";
 import PendingMessagePreview from "./PendingMessagePreview";
+import MessageFrame from "./MessageFrame";
 import { EnhancedReasoning } from "@/components/reasoning/EnhancedReasoning";
 import { cleanFileMentions } from "@/lib/chat/cleanFileMentions";
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
@@ -62,9 +63,9 @@ const MessagesComponent = ({ children }: MessagesProps) => {
             // stream, so cold start → send → thinking is one continuous
             // element rather than a placeholder, then a spinner, then a
             // reasoning block (app#2052).
-            <div className="w-full max-w-3xl mx-auto">
+            <MessageFrame role="assistant">
               <EnhancedReasoning isStreaming />
-            </div>
+            </MessageFrame>
           ) : (
             <div className="text-zinc-500 dark:text-zinc-400 w-full max-w-3xl mx-auto flex items-center gap-2">
               <div className="inline-block animate-spin">

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import MessageFrame from "./MessageFrame";
 import { EnhancedReasoning } from "@/components/reasoning/EnhancedReasoning";
 
 /**
@@ -16,8 +17,8 @@ import { EnhancedReasoning } from "@/components/reasoning/EnhancedReasoning";
  * the workspace is ready, and a copy in both places would render twice.
  */
 const PendingMessagePreview = ({ text }: { text: string }) => (
-  <div className="flex w-full flex-col gap-8" data-testid="pending-message">
-    <div className="flex w-full justify-end">
+  <div className="contents" data-testid="pending-message">
+    <MessageFrame role="user" testId="pending-user">
       <div
         className={cn(
           "flex flex-col gap-4 text-foreground dark:text-white",
@@ -26,11 +27,13 @@ const PendingMessagePreview = ({ text }: { text: string }) => (
       >
         {text}
       </div>
-    </div>
+    </MessageFrame>
 
-    {/* The same component the reasoning stream renders in, so when the
-        assistant starts thinking the header simply changes text. */}
-    <EnhancedReasoning isStreaming placeholder="Setting up your workspace" />
+    {/* Same frame and same component the reasoning stream renders in, so
+        when the assistant starts thinking only the header text changes. */}
+    <MessageFrame role="assistant" testId="pending-assistant">
+      <EnhancedReasoning isStreaming placeholder="Setting up your workspace" />
+    </MessageFrame>
   </div>
 );
 
