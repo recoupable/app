@@ -14,7 +14,6 @@ import {
 import ModelSelect from "@/components/ModelSelect";
 import FileMentionsInput from "./FileMentionsInput";
 import WorkspaceStatusIndicator from "./WorkspaceStatusIndicator";
-import { resolveSendAction } from "@/lib/chat/resolveSendAction";
 
 export function ChatInput() {
   const {
@@ -48,20 +47,14 @@ export function ChatInput() {
     }
 
     // Allow sending if there are text attachments even without typed input
-    const action = resolveSendAction({
-      isGeneratingResponse,
-      hasContent: input !== "" || textAttachments.length > 0,
-      hasPendingUploads,
-      isLoadingSignedUrls,
-      workspaceReady,
-    });
+    const hasContent = input !== "" || textAttachments.length > 0;
+    if (!hasContent || isSendDisabled) return;
 
-    if (action === "ignore") return;
-    if (action === "queue") {
-      // The input IS the queue — leave the text where it is and let the
-      // provisioning-gated auto-fire in usePendingMessageAutoSend send it, the
-      // same path the ?q= deep link already uses. An edit made while waiting
-      // therefore sends the edited text (app#2052).
+    // The input IS the queue — leave the text where it is and let the
+    // provisioning-gated auto-fire in usePendingMessageAutoSend send it, the
+    // same path the ?q= deep link already uses. An edit made while waiting
+    // therefore sends the edited text (app#2052).
+    if (!workspaceReady) {
       armSend();
       return;
     }

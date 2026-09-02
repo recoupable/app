@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { UIMessage } from "ai";
 import { usePrivy } from "@privy-io/react-auth";
 import { useUserProvider } from "@/providers/UserProvder";
@@ -18,14 +18,6 @@ interface UsePendingMessageAutoSendParams {
   setInput: (value: string) => void;
   /** The programmatic send path (handleSendQueryMessages). */
   send: (message: UIMessage) => void;
-  /**
-   * The person pressed Send while the workspace was still provisioning. Same
-   * situation as a `?q=` prefill — text waiting on the workspace — so it rides
-   * the same auto-fire rather than a second queue (recoupable/app#2052).
-   */
-  armed?: boolean;
-  /** Called once the armed send has gone, so the caller can disarm. */
-  onArmedSent?: () => void;
 }
 
 /**
@@ -56,9 +48,11 @@ export function usePendingMessageAutoSend({
   input,
   setInput,
   send,
-  armed = false,
-  onArmedSent,
-}: UsePendingMessageAutoSendParams): void {
+}: UsePendingMessageAutoSendParams) {
+  // Set when Send is pressed before the workspace is ready. Owned here rather
+  // than by the caller: it is this hook's business, and the input already
+  // holds the text (recoupable/app#2052).
+  const [armed, setArmed] = useState(false);
   const { authenticated } = usePrivy();
   const { userData } = useUserProvider();
   const userId = userData?.account_id || userData?.id;
@@ -84,21 +78,15 @@ export function usePendingMessageAutoSend({
       sessionId,
     });
     if (!mayAutoSend || didAutoFireRef.current) return;
+    setArmed(false);
     const text = input.trim() ? input : "";
-    if (!text) {
-      // Nothing to send: disarm so a later Send is not swallowed by the
-      // one-shot guard.
-      if (armed) onArmedSent?.();
-      return;
-    }
+    if (!text) return;
     didAutoFireRef.current = true;
     send({ id: generateUUID(), role: "user", parts: [{ type: "text", text }] });
     setInput("");
-    if (armed) onArmedSent?.();
   }, [
     initialMessageText,
     armed,
-    onArmedSent,
     status,
     messagesLength,
     userId,
@@ -108,4 +96,6 @@ export function usePendingMessageAutoSend({
     setInput,
     send,
   ]);
+
+  return { armed, arm: () => setArmed(true) };
 }

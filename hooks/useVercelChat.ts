@@ -71,11 +71,6 @@ export function useVercelChat({
   const { addOptimisticConversation } = useConversationsProvider();
   const { data: availableModels = [] } = useAvailableModels();
   const [input, setInput] = useState("");
-  // Set when Send is pressed before the workspace is ready. The input keeps the
-  // text; this only records that it should leave on its own (app#2052).
-  const [sendArmed, setSendArmed] = useState(false);
-  const armSend = useCallback(() => setSendArmed(true), []);
-  const disarmSend = useCallback(() => setSendArmed(false), []);
   const [model, setModel] = useLocalStorage("RECOUP_MODEL", DEFAULT_MODEL);
   const { refetchCredits } = usePaymentProvider();
   // The api-minted chat id once bootstrap resolves; before then `id` is a
@@ -404,7 +399,7 @@ export function useVercelChat({
   // Everything that waits on the workspace before sending — the ?q= deep link
   // and a Send pressed while provisioning — lives entirely in this hook;
   // extend it there, not here (chat#1847, app#2052).
-  usePendingMessageAutoSend({
+  const { armed: sendArmed, arm: armSend } = usePendingMessageAutoSend({
     initialMessages,
     status,
     messagesLength: messages.length,
@@ -412,8 +407,6 @@ export function useVercelChat({
     input,
     setInput,
     send: handleSendQueryMessages,
-    armed: sendArmed,
-    onArmedSent: disarmSend,
   });
 
   return {

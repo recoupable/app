@@ -39,15 +39,6 @@ describe("shouldSendPendingMessage", () => {
     );
   });
 
-  // app#2052: a Send pressed before the workspace was ready is the same
-  // pending state as a ?q= prefill, and rides the same gate.
-  it("sends an armed manual send once provisioning lands", () => {
-    expect(shouldSendPendingMessage({ ...ready, hasPendingMessage: true })).toBe(true);
-    expect(
-      shouldSendPendingMessage({ ...ready, hasPendingMessage: true, sessionId: undefined }),
-    ).toBe(false);
-  });
-
   it("does not send before login completes", () => {
     expect(shouldSendPendingMessage({ ...ready, userId: undefined })).toBe(
       false,
@@ -55,5 +46,12 @@ describe("shouldSendPendingMessage", () => {
     expect(
       shouldSendPendingMessage({ ...ready, authenticated: false }),
     ).toBe(false);
+  });
+
+  // app#2052: a Send pressed before the workspace was ready is the same
+  // pending state as a ?q= prefill, and waits on the same sessionId.
+  it("holds an armed manual send until provisioning lands", () => {
+    expect(shouldSendPendingMessage({ ...ready, sessionId: undefined })).toBe(false);
+    expect(shouldSendPendingMessage(ready)).toBe(true);
   });
 });

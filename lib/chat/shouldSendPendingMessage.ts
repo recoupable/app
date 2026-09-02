@@ -1,9 +1,8 @@
 interface ShouldSendPendingMessageParams {
   /**
-   * Something is waiting to go: either a `?q=` deep link prefilled the input,
-   * or the person pressed Send while the workspace was still provisioning.
-   * Both are the same situation — text sitting in the input that should leave
-   * the moment the workspace can accept it (recoupable/app#2052).
+   * Text is waiting on the workspace: a `?q=` deep link prefilled the input, or
+   * Send was pressed while provisioning (recoupable/app#2052). Same situation,
+   * same gate.
    */
   hasPendingMessage: boolean;
   /** useChat transport status — only "ready" may send. */
@@ -22,12 +21,11 @@ interface ShouldSendPendingMessageParams {
 }
 
 /**
- * Decides whether a pending message may go now.
- *
- * Serves both entry points: the `?q=` deep link, and a Send pressed before the
- * workspace was ready. Mirrors the manual-send gates (auth + transport ready +
- * nothing sent yet) and additionally requires the provisioned sessionId — the
- * effect re-runs when it lands, so the message waits rather than failing.
+ * Decides whether a pending message may auto-send — the ?q= deep link, or a
+ * Send pressed before the workspace was ready.
+ * Mirrors the manual-send gates (auth + transport ready + nothing sent
+ * yet) and additionally requires the provisioned sessionId — the effect
+ * re-runs when it lands, so the message queues rather than failing.
  */
 export function shouldSendPendingMessage({
   hasPendingMessage,
