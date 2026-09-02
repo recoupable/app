@@ -23,10 +23,8 @@ export type ProvisionChatSessionState =
 
 interface UseProvisionChatSessionInput {
   /**
-   * Gate the mutation behind any caller-supplied condition (auth,
-   * dependent providers still loading, etc.). Stays in
-   * `bootstrapping` while false; first transition to true fires the
-   * provisioning POST.
+   * Caller-supplied gate (auth, dependent providers loading). Stays in
+   * `bootstrapping` while false; the first true fires the provisioning POST.
    */
   enabled: boolean;
   artistId: string | undefined;
