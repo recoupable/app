@@ -14,6 +14,8 @@ import {
 import ModelSelect from "@/components/ModelSelect";
 import FileMentionsInput from "./FileMentionsInput";
 import WorkspaceStatusIndicator from "./WorkspaceStatusIndicator";
+import { resolveSendAction } from "@/lib/chat/resolveSendAction";
+import { useQueuedSend } from "@/hooks/useQueuedSend";
 
 export function ChatInput() {
   const {
@@ -31,13 +33,14 @@ export function ChatInput() {
   } = useVercelChatContext();
   // Allow typing regardless of artist selection
   const isDisabled = false;
-  // Block sending until the workspace (session + sandbox) is ready; the
-  // input stays typeable so users aren't stuck on a spinner meanwhile.
-  const isSendDisabled =
-    isDisabled ||
-    hasPendingUploads ||
-    isLoadingSignedUrls ||
-    workspaceStatus !== "ready";
+  const workspaceReady = workspaceStatus === "ready";
+  // A message submitted before the workspace is ready is held here and fired
+  // on the ready edge, so the composer never refuses a send (app#2052).
+  const { queued, queue } = useQueuedSend(workspaceReady, () =>
+    handleSendMessage({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>),
+  );
+  // Only the blockers that do not clear on their own disable the button.
+  const isSendDisabled = isDisabled || hasPendingUploads || isLoadingSignedUrls;
 
   const handleSend = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -48,10 +51,20 @@ export function ChatInput() {
       return;
     }
 
-    // Only check input requirements for sending new messages
     // Allow sending if there are text attachments even without typed input
-    const hasContent = input !== "" || textAttachments.length > 0;
-    if (!hasContent || isSendDisabled) return;
+    const action = resolveSendAction({
+      isGeneratingResponse,
+      hasContent: input !== "" || textAttachments.length > 0,
+      hasPendingUploads,
+      isLoadingSignedUrls,
+      workspaceReady,
+    });
+
+    if (action === "ignore") return;
+    if (action === "queue") {
+      queue(input);
+      return;
+    }
 
     handleSendMessage(event);
   };
@@ -74,6 +87,17 @@ export function ChatInput() {
         <div className="absolute right-3 top-3 z-20">
           <WorkspaceStatusIndicator status={workspaceStatus} />
         </div>
+        {queued !== null && (
+          <div
+            role="status"
+            className="absolute bottom-[100%] left-0 mb-2 flex w-full items-center gap-2 px-1 text-xs text-muted-foreground"
+          >
+            <span className="inline-block size-1.5 shrink-0 animate-pulse rounded-full bg-muted-foreground" />
+            <span className="truncate">
+              Queued, sending when your workspace is ready: {queued}
+            </span>
+          </div>
+        )}
         <PromptInput
           onSubmit={handleSend}
           className={cn(
