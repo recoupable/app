@@ -1,8 +1,11 @@
 import { cn } from "@/lib/utils";
+import { EnhancedReasoning } from "@/components/reasoning/EnhancedReasoning";
 
 /**
  * The message a person sent while the workspace was still provisioning, shown
- * in the thread as if it had gone — because from their side it has.
+ * in the thread as if it had gone — because from their side it has. Beneath it,
+ * the reasoning shell with a workspace-setup placeholder, so the wait and the
+ * thinking that follows read as one continuous state.
  *
  * The sandbox takes around 17 seconds, and the session and chat exist for all
  * of it. Holding the person on the home page with a hint gave them no reason
@@ -25,13 +28,9 @@ const PendingMessagePreview = ({ text }: { text: string }) => (
       </div>
     </div>
 
-    <div
-      role="status"
-      className="flex w-full items-center gap-2 text-sm text-muted-foreground"
-    >
-      <span className="inline-block size-1.5 shrink-0 animate-pulse rounded-full bg-muted-foreground" />
-      Sending as soon as your workspace is ready
-    </div>
+    {/* The same component the reasoning stream renders in, so when the
+        assistant starts thinking the header simply changes text. */}
+    <EnhancedReasoning isStreaming placeholder="Setting up your workspace" />
   </div>
 );
 
