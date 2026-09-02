@@ -409,14 +409,18 @@ export function useVercelChat({
     send: handleSendQueryMessages,
   });
 
-  // Arming also moves the URL to the real chat. The session and chat exist the
-  // whole time the sandbox is provisioning, so the person lands on their own
-  // chat page with their message showing rather than waiting on the home page
-  // (app#2052).
-  const armSend = useCallback(() => {
-    arm();
+  const armSend = arm;
+
+  // Move to the real chat URL as soon as the ids exist, not when Send was
+  // pressed: `POST /api/sessions` takes about a second and `POST /api/sandbox`
+  // another fourteen (measured 2026-09-02), so a send pressed on a cold start
+  // is armed well before there is anywhere to navigate to. Waiting for the
+  // ids here is what puts the person on their own chat page for the whole
+  // sandbox wait (app#2052).
+  useEffect(() => {
+    if (!sendArmed || !sessionId) return;
     silentlyUpdateUrl();
-  }, [arm, silentlyUpdateUrl]);
+  }, [sendArmed, sessionId, silentlyUpdateUrl]);
 
   return {
     // States

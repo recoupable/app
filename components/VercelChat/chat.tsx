@@ -76,14 +76,19 @@ function ChatContentMemoized({
   id: string;
   sessionId?: string;
 }) {
-  const { messages, status, isLoading, hasError } = useVercelChatContext();
+  const { messages, status, isLoading, hasError, sendArmed } =
+    useVercelChatContext();
   const { chatId: routeChatId } = useParams<{ chatId?: string }>();
   useArtistFromChat({ sessionId });
   const { getRootProps, isDragActive } = useDropzone();
 
+  // The greeting stands down once a send is waiting on the workspace —
+  // otherwise <Messages> never mounts and the pending message has nowhere to
+  // render, which left the person on a greeting for the whole 14s sandbox
+  // wait (app#2052).
   const { isVisible } = useVisibilityDelay({
-    shouldBeVisible: messages.length === 0 && status === "ready",
-    deps: [messages.length, status],
+    shouldBeVisible: messages.length === 0 && status === "ready" && !sendArmed,
+    deps: [messages.length, status, sendArmed],
   });
 
   if (isLoading) {
