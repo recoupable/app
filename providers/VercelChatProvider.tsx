@@ -29,9 +29,6 @@ interface VercelChatContextType {
   handleSendMessage: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
   stop: UseChatHelpers<UIMessage>["stop"];
   setInput: (input: string) => void;
-  /** A Send was pressed before the workspace was ready; it fires on ready. */
-  sendArmed: boolean;
-  armSend: () => void;
   input: string;
   setMessages: UseChatHelpers<UIMessage>["setMessages"];
   reload: () => void;
@@ -74,8 +71,8 @@ interface VercelChatProviderProps {
   chatId: string;
   /**
    * Session id for recoup-api `/api/chat`. Absent only on the
-   * new-chat bootstrap path until provisioning resolves; Send is gated on
-   * `isBootstrapPreparing` until it lands.
+   * new-chat bootstrap path until provisioning resolves; the transport holds
+   * a send until then.
    */
   sessionId?: string;
   /** Api-minted chat id from bootstrap when `chatId` is a placeholder. */
@@ -132,8 +129,6 @@ export function VercelChatProvider({
     handleSendMessage,
     stop,
     setInput,
-    sendArmed,
-    armSend,
     input,
     setMessages,
     reload: originalReload,
@@ -148,7 +143,7 @@ export function VercelChatProvider({
     initialMessages,
     attachments,
     textAttachments,
-    workspaceReady: workspaceStatus === "ready",
+    workspaceStatus,
   });
 
   const reload = useCallback(() => {
@@ -196,8 +191,6 @@ export function VercelChatProvider({
     addTextAttachment,
     removeTextAttachment,
     workspaceStatus,
-    sendArmed,
-    armSend,
   };
 
   // Send chat status and messages to ArtistProvider

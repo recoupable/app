@@ -28,12 +28,12 @@ export function ChatInput() {
     setInput,
     input,
     textAttachments,
-    armSend,
   } = useVercelChatContext();
   // Allow typing regardless of artist selection
   const isDisabled = false;
-  const workspaceReady = workspaceStatus === "ready";
-  // Only the blockers that do not clear on their own disable the button.
+  // A Send during provisioning goes through: the transport holds the request
+  // until the sandbox is ready (app#2052). Only blockers that do not clear on
+  // their own disable the button.
   const isSendDisabled = isDisabled || hasPendingUploads || isLoadingSignedUrls;
 
   const handleSend = (event: React.FormEvent<HTMLFormElement>) => {
@@ -45,18 +45,10 @@ export function ChatInput() {
       return;
     }
 
+    // Only check input requirements for sending new messages
     // Allow sending if there are text attachments even without typed input
     const hasContent = input !== "" || textAttachments.length > 0;
     if (!hasContent || isSendDisabled) return;
-
-    // The input IS the queue — leave the text where it is and let the
-    // provisioning-gated auto-fire in usePendingMessageAutoSend send it, the
-    // same path the ?q= deep link already uses. An edit made while waiting
-    // therefore sends the edited text (app#2052).
-    if (!workspaceReady) {
-      armSend();
-      return;
-    }
 
     handleSendMessage(event);
   };
@@ -84,7 +76,7 @@ export function ChatInput() {
           className={cn(
             "overflow-visible",
             "rounded-2xl border border-border bg-background/70 backdrop-blur",
-            "shadow-sm"
+            "shadow-sm",
           )}
         >
           <FileMentionsInput
@@ -105,7 +97,7 @@ export function ChatInput() {
                 "rounded-full hover:scale-105 active:scale-95 transition-all",
                 {
                   "cursor-not-allowed opacity-50": isSendDisabled,
-                }
+                },
               )}
             />
           </PromptInputToolbar>

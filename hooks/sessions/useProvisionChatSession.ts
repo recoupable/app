@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
 import {
@@ -16,11 +16,7 @@ import {
  */
 export type ProvisionChatSessionState =
   | { status: "idle" | "bootstrapping" }
-  /**
-   * The session and chat exist; the sandbox is still coming. The ids are real
-   * and routable, so the UI can navigate and render — only *sending* has to
-   * wait (recoupable/app#2052).
-   */
+  /** Session + chat exist and are routable; the sandbox is still coming (app#2052). */
   | { status: "session-ready"; sessionId: string; chatId: string }
   | { status: "ready"; sessionId: string; chatId: string }
   | { status: "error"; message: string };
@@ -39,13 +35,9 @@ interface UseProvisionChatSessionInput {
 
 /**
  * Wraps `provisionChatSession` in a react-query mutation that re-fires
- * whenever `(artistId, orgId)` change — so each artist/org switch mints
- * a fresh session against the new context.
- *
- * Idempotency: react-query keeps the most recent `mutate()` args on
- * `mutation.variables` through `isPending`/`isSuccess`. We compare
- * current inputs to those args and bail when they match — incidental
- * re-renders don't re-fire the mutation.
+ * whenever `(artistId, orgId)` change, so each switch mints a fresh session.
+ * Idempotency: react-query keeps the latest `mutate()` args on
+ * `mutation.variables`; matching inputs bail, so re-renders don't re-fire.
  */
 export function useProvisionChatSession({
   enabled,
@@ -54,15 +46,23 @@ export function useProvisionChatSession({
 }: UseProvisionChatSessionInput): ProvisionChatSessionState {
   const { getAccessToken } = usePrivy();
 
-  const [earlyIds, setEarlyIds] = useState<ProvisionChatSessionResult | null>(null);
+  const [earlyIds, setEarlyIds] = useState<ProvisionChatSessionResult | null>(
+    null,
+  );
+  // Ids from an attempt superseded by an artist/org switch must not surface.
+  const attemptRef = useRef(0);
 
   const mutation = useMutation({
     mutationFn: async (input: ProvisionChatSessionInput) => {
+      const attempt = ++attemptRef.current;
+      setEarlyIds(null);
       const accessToken = await getAccessToken();
       if (!accessToken) {
         throw new Error("Please sign in to start a chat");
       }
-      return provisionChatSession(input, accessToken, setEarlyIds);
+      return provisionChatSession(input, accessToken, (ids) => {
+        if (attempt === attemptRef.current) setEarlyIds(ids);
+      });
     },
   });
 

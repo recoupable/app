@@ -24,29 +24,26 @@ import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { getChatPath } from "@/lib/chat/getChatPath";
-import { usePendingMessageAutoSend } from "./usePendingMessageAutoSend";
+import { useInitialMessageAutoSend } from "./useInitialMessageAutoSend";
 import { usePersistSelectedModel } from "./usePersistSelectedModel";
 import shouldResumeStream from "@/lib/chat/shouldResumeStream";
+import type { WorkspaceStatus } from "@/components/VercelChat/WorkspaceStatusIndicator";
 
 interface UseVercelChatProps {
   id: string;
   /**
    * Session id from `/sessions/[sessionId]/chats/[chatId]` (always
    * present) or the new-chat bootstrap (absent until provisioning
-   * resolves). Send is gated upstream while it's absent, so the transport
-   * never fires without it.
+   * resolves; the transport holds the request until it lands).
    */
   sessionId?: string;
-  /**
-   * Sandbox provisioned. The auto-send gate — the ids arrive ~14s before the
-   * sandbox does (app#2052), and sending in between 400s.
-   */
-  workspaceReady?: boolean;
   /**
    * Api-minted chat id from bootstrap when `id` is a client placeholder.
    * Used as the transport / message-load / URL target; falls back to `id`.
    */
   workflowChatId?: string;
+  /** Workspace lifecycle; the transport holds a send until `ready`. */
+  workspaceStatus?: WorkspaceStatus;
   initialMessages?: UIMessage[];
   attachments?: FileUIPart[];
   textAttachments?: TextAttachment[];
@@ -61,10 +58,10 @@ export function useVercelChat({
   id,
   sessionId,
   workflowChatId,
+  workspaceStatus,
   initialMessages,
   attachments = [],
   textAttachments = [],
-  workspaceReady = true,
 }: UseVercelChatProps) {
   const { userData } = useUserProvider();
   const { selectedArtist } = useArtistProvider();
@@ -86,6 +83,7 @@ export function useVercelChat({
   const { transport, getHeaders } = useChatTransport({
     chatId: transportChatId,
     sessionId,
+    workspaceStatus,
   });
   const { authenticated, getAccessToken } = usePrivy();
 
@@ -220,27 +218,34 @@ export function useVercelChat({
     [id, artistId, organizationId, accountIdOverride, model],
   );
 
-  const { messages, status, stop, sendMessage, setMessages, regenerate, resumeStream } =
-    useChat({
-      id,
-      transport,
-      // Re-attach to an in-progress response, so returning to a chat mid-turn
-      // keeps rendering instead of showing a frozen half-message. Gated to an
-      // authenticated visit to an existing chat — resuming unconditionally
-      // 401s/404s on every cold load and surfaces as an error toast
-      // (chat#1949 F4a).
-      resume: shouldResumeStream({ authenticated, routeChatId: chatId }),
-      experimental_throttle: 100,
-      generateId: generateUUID,
-      onError: (e) => {
-        console.error("An error occurred, please try again!", e);
-        toast.error("An error occurred, please try again!");
-      },
-      onFinish: async () => {
-        // Update credits after AI response completes
-        await refetchCredits();
-      },
-    });
+  const {
+    messages,
+    status,
+    stop,
+    sendMessage,
+    setMessages,
+    regenerate,
+    resumeStream,
+  } = useChat({
+    id,
+    transport,
+    // Re-attach to an in-progress response, so returning to a chat mid-turn
+    // keeps rendering instead of showing a frozen half-message. Gated to an
+    // authenticated visit to an existing chat — resuming unconditionally
+    // 401s/404s on every cold load and surfaces as an error toast
+    // (chat#1949 F4a).
+    resume: shouldResumeStream({ authenticated, routeChatId: chatId }),
+    experimental_throttle: 100,
+    generateId: generateUUID,
+    onError: (e) => {
+      console.error("An error occurred, please try again!", e);
+      toast.error("An error occurred, please try again!");
+    },
+    onFinish: async () => {
+      // Update credits after AI response completes
+      await refetchCredits();
+    },
+  });
 
   // Reconnection through a dropped stream is the transport's job now — see
   // `createWorkflowChatTransport`. A long turn's stream ends at the ~120s
@@ -365,6 +370,12 @@ export function useVercelChat({
     );
   }, [transportChatId, sessionId]);
 
+  // On a cold start the ids land about a second after Send (app#2052), so
+  // the URL update in handleSendMessage is a no-op then; this catches up.
+  useEffect(() => {
+    if (!chatId && messages.length > 0) silentlyUpdateUrl();
+  }, [chatId, messages.length, silentlyUpdateUrl]);
+
   const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -402,10 +413,9 @@ export function useVercelChat({
     [silentlyUpdateUrl, sendMessage, chatRequestBody, getHeaders],
   );
 
-  // Everything that waits on the workspace before sending — the ?q= deep link
-  // and a Send pressed while provisioning — lives entirely in this hook;
-  // extend it there, not here (chat#1847, app#2052).
-  const { armed: sendArmed, arm } = usePendingMessageAutoSend({
+  // The ?q= deep-link behavior (prefill + provisioning-gated auto-fire)
+  // lives entirely in this hook — extend it there, not here (chat#1847).
+  useInitialMessageAutoSend({
     initialMessages,
     status,
     messagesLength: messages.length,
@@ -413,29 +423,13 @@ export function useVercelChat({
     input,
     setInput,
     send: handleSendQueryMessages,
-    workspaceReady,
   });
-
-  const armSend = arm;
-
-  // Move to the real chat URL as soon as the ids exist, not when Send was
-  // pressed: `POST /api/sessions` takes about a second and `POST /api/sandbox`
-  // another fourteen (measured 2026-09-02), so a send pressed on a cold start
-  // is armed well before there is anywhere to navigate to. Waiting for the
-  // ids here is what puts the person on their own chat page for the whole
-  // sandbox wait (app#2052).
-  useEffect(() => {
-    if (!sendArmed || !sessionId) return;
-    silentlyUpdateUrl();
-  }, [sendArmed, sessionId, silentlyUpdateUrl]);
 
   return {
     // States
     messages,
     status,
     input,
-    sendArmed,
-    armSend,
     isLoading,
     hasError,
     isGeneratingResponse,
