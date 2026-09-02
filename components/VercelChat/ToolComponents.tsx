@@ -74,6 +74,9 @@ import ComposioAuthResult from "./tools/composio/ComposioAuthResult";
 import { TextContent } from "@modelcontextprotocol/sdk/types.js";
 import { extractToolRenderState } from "@/lib/chat/extractToolRenderState";
 import { BashRenderer, type BashOutput } from "./tools/agent/BashRenderer";
+import { SkillRenderer, type SkillOutput } from "./tools/agent/SkillRenderer";
+import { TodoRenderer } from "./tools/agent/TodoRenderer";
+import type { Todo } from "@/lib/chat/summarizeTodos";
 import PulseToolSkeleton from "./tools/pulse/PulseToolSkeleton";
 import PulseToolResult, {
   PulseToolResultType,
@@ -102,6 +105,29 @@ export function getToolCallComponent(part: ToolUIPart, isStreaming = true) {
       </div>
     );
   }
+
+  if (toolName === "skill") {
+    return (
+      <div key={toolCallId}>
+        <SkillRenderer
+          input={part.input as { skill?: string; args?: string }}
+          state={extractToolRenderState(part, isStreaming)}
+        />
+      </div>
+    );
+  }
+
+  if (toolName === "todo_write") {
+    return (
+      <div key={toolCallId}>
+        <TodoRenderer
+          input={part.input as { todos?: Todo[] }}
+          state={extractToolRenderState(part, isStreaming)}
+        />
+      </div>
+    );
+  }
+
 
   if (toolName === "generate_image" || toolName === "edit_image") {
     return (
@@ -228,6 +254,29 @@ export function getToolResultComponent(
 ) {
   const { toolCallId, output, type } = part;
   const toolNameEarly = getToolOrDynamicToolName(part);
+
+  if (toolNameEarly === "skill") {
+    return (
+      <div key={toolCallId}>
+        <SkillRenderer
+          input={part.input as { skill?: string; args?: string }}
+          output={output as SkillOutput | undefined}
+          state={extractToolRenderState(part, isStreaming)}
+        />
+      </div>
+    );
+  }
+
+  if (toolNameEarly === "todo_write") {
+    return (
+      <div key={toolCallId}>
+        <TodoRenderer
+          input={part.input as { todos?: Todo[] }}
+          state={extractToolRenderState(part, isStreaming)}
+        />
+      </div>
+    );
+  }
 
   if (toolNameEarly === "bash") {
     return (
