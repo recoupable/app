@@ -38,6 +38,11 @@ interface UseVercelChatProps {
    */
   sessionId?: string;
   /**
+   * Sandbox provisioned. The auto-send gate — the ids arrive ~14s before the
+   * sandbox does (app#2052), and sending in between 400s.
+   */
+  workspaceReady?: boolean;
+  /**
    * Api-minted chat id from bootstrap when `id` is a client placeholder.
    * Used as the transport / message-load / URL target; falls back to `id`.
    */
@@ -59,6 +64,7 @@ export function useVercelChat({
   initialMessages,
   attachments = [],
   textAttachments = [],
+  workspaceReady = true,
 }: UseVercelChatProps) {
   const { userData } = useUserProvider();
   const { selectedArtist } = useArtistProvider();
@@ -407,6 +413,7 @@ export function useVercelChat({
     input,
     setInput,
     send: handleSendQueryMessages,
+    workspaceReady,
   });
 
   const armSend = arm;

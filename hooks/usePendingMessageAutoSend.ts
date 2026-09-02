@@ -18,6 +18,8 @@ interface UsePendingMessageAutoSendParams {
   setInput: (value: string) => void;
   /** The programmatic send path (handleSendQueryMessages). */
   send: (message: UIMessage) => void;
+  /** Sandbox provisioned. The send gate; the ids alone are not enough. */
+  workspaceReady: boolean;
 }
 
 /**
@@ -48,6 +50,7 @@ export function usePendingMessageAutoSend({
   input,
   setInput,
   send,
+  workspaceReady,
 }: UsePendingMessageAutoSendParams) {
   // Set when Send is pressed before the workspace is ready. Owned here rather
   // than by the caller: it is this hook's business, and the input already
@@ -76,6 +79,7 @@ export function usePendingMessageAutoSend({
       userId,
       authenticated,
       sessionId,
+      workspaceReady,
     });
     if (!mayAutoSend || didAutoFireRef.current) return;
     setArmed(false);
@@ -92,6 +96,7 @@ export function usePendingMessageAutoSend({
     userId,
     authenticated,
     sessionId,
+    workspaceReady,
     input,
     setInput,
     send,

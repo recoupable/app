@@ -148,6 +148,7 @@ export function VercelChatProvider({
     initialMessages,
     attachments,
     textAttachments,
+    workspaceReady: workspaceStatus === "ready",
   });
 
   const reload = useCallback(() => {

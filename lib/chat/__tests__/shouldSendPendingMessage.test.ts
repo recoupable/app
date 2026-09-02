@@ -8,6 +8,7 @@ const ready = {
   userId: "acct-1",
   authenticated: true,
   sessionId: "sess-1",
+  workspaceReady: true,
 };
 
 describe("shouldSendPendingMessage", () => {
@@ -53,5 +54,12 @@ describe("shouldSendPendingMessage", () => {
   it("holds an armed manual send until provisioning lands", () => {
     expect(shouldSendPendingMessage({ ...ready, sessionId: undefined })).toBe(false);
     expect(shouldSendPendingMessage(ready)).toBe(true);
+  });
+
+  // The ids arrive ~1s into a cold start; the sandbox takes ~14s more, and
+  // POST /api/chat 400s "Sandbox not initialized" in between. Having a
+  // sessionId is not the same as being able to send.
+  it("does not send on ids alone while the sandbox is still provisioning", () => {
+    expect(shouldSendPendingMessage({ ...ready, workspaceReady: false })).toBe(false);
   });
 });

@@ -18,6 +18,13 @@ interface ShouldSendPendingMessageParams {
    * correctly gated on the same condition.
    */
   sessionId?: string;
+  /**
+   * The sandbox has finished provisioning. Distinct from `sessionId`: the ids
+   * are minted in ~1s and the sandbox takes ~14s more (measured 2026-09-02),
+   * and `POST /api/chat` 400s "Sandbox not initialized" in between. The ids
+   * are for routing and rendering; this is the gate on sending.
+   */
+  workspaceReady: boolean;
 }
 
 /**
@@ -34,11 +41,13 @@ export function shouldSendPendingMessage({
   userId,
   authenticated,
   sessionId,
+  workspaceReady,
 }: ShouldSendPendingMessageParams): boolean {
   if (!hasPendingMessage) return false;
   if (status !== "ready") return false;
   if (messagesLength > 1) return false;
   if (!userId || !authenticated) return false;
   if (!sessionId) return false;
+  if (!workspaceReady) return false;
   return true;
 }
