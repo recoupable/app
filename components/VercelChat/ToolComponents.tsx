@@ -74,6 +74,7 @@ import ComposioAuthResult from "./tools/composio/ComposioAuthResult";
 import { TextContent } from "@modelcontextprotocol/sdk/types.js";
 import { extractToolRenderState } from "@/lib/chat/extractToolRenderState";
 import { BashRenderer, type BashOutput } from "./tools/agent/BashRenderer";
+import { ToolLayout } from "./tools/agent/ToolLayout";
 import PulseToolSkeleton from "./tools/pulse/PulseToolSkeleton";
 import PulseToolResult, {
   PulseToolResultType,
@@ -96,7 +97,9 @@ export function getToolCallComponent(part: ToolUIPart, isStreaming = true) {
     return (
       <div key={toolCallId}>
         <BashRenderer
-          input={part.input as { command?: string; cwd?: string; detached?: boolean }}
+          input={
+            part.input as { command?: string; cwd?: string; detached?: boolean }
+          }
           state={extractToolRenderState(part, isStreaming)}
         />
       </div>
@@ -233,8 +236,23 @@ export function getToolResultComponent(
     return (
       <div key={toolCallId}>
         <BashRenderer
-          input={part.input as { command?: string; cwd?: string; detached?: boolean }}
+          input={
+            part.input as { command?: string; cwd?: string; detached?: boolean }
+          }
           output={output as BashOutput | undefined}
+          state={extractToolRenderState(part, isStreaming)}
+        />
+      </div>
+    );
+  }
+
+  // A tool that threw has `errorText` and no `output`; every branch below
+  // reads the output, so route the error to the shared row first.
+  if (part.state === "output-error") {
+    return (
+      <div key={toolCallId}>
+        <ToolLayout
+          name={toolNameEarly}
           state={extractToolRenderState(part, isStreaming)}
         />
       </div>
