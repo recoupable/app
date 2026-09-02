@@ -1,6 +1,6 @@
 import type { UIMessage } from "ai";
 import { WorkflowChatTransport } from "@workflow/ai";
-import { is204NothingToResume } from "@/lib/chat/is204NothingToResume";
+import { createNoContentAwareFetch } from "@/lib/chat/createNoContentAwareFetch";
 
 interface CreateWorkflowChatTransportOptions {
   /** recoup-api origin, e.g. `https://api.recoupable.dev`. */
@@ -45,15 +45,11 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
 
   class RecoupChatTransport extends WorkflowChatTransport<UI_MESSAGE> {
     /**
-     * `204` is our api's "nothing to resume" answer, and it has no body — which
-     * the transport surfaces as an error and counts toward
-     * `maxConsecutiveErrors`. Treat it as the end of the road instead, matching
-     * upstream open-agents' wrapper.
-     *
-     * The match must look anywhere in the message, not just at its head:
-     * `@workflow/ai` retries the 204 inside its own loop and then wraps it in a
-     * `Failed to reconnect after N consecutive errors` summary, which is the
-     * only form that reaches this catch. See `is204NothingToResume`.
+     * `204` is our api's "nothing to resume" answer. Paired with the
+     * body-nulling fetch above, the transport raises it as
+     * `Failed to fetch chat: 204` from before its own retry `try`, so it
+     * arrives here raw. Treat it as the end of the road, matching upstream
+     * open-agents' wrapper.
      */
     override async reconnectToStream(
       options: Parameters<WorkflowChatTransport<UI_MESSAGE>["reconnectToStream"]>[0],
@@ -61,7 +57,7 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
       try {
         return await super.reconnectToStream(options);
       } catch (error) {
-        if (is204NothingToResume(error)) {
+        if (error instanceof Error && error.message.startsWith("Failed to fetch chat: 204")) {
           return null;
         }
         throw error;
@@ -71,6 +67,10 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
 
   return new RecoupChatTransport({
     api: `${baseUrl}/api/chat`,
+    // A 204 is `ok` with a non-null empty body, which the resume loop treats as
+    // a stream to read rather than as "nothing to resume". Null the body so the
+    // library raises the error `reconnectToStream` below already handles.
+    fetch: createNoContentAwareFetch(),
     prepareSendMessagesRequest: async ({ messages, body }) => {
       const { sessionId, chatId } = getIds();
       const recoupAccessToken = await getAccessToken().catch(() => null);
