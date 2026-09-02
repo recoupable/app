@@ -1,5 +1,12 @@
+"use client";
+
 import MessageFrame from "./MessageFrame";
 import Message from "./message";
+import { useCyclingText } from "@/hooks/useCyclingText";
+import {
+  WORKSPACE_SETUP_MESSAGES,
+  WORKSPACE_SETUP_CYCLE_MS,
+} from "@/lib/chat/workspaceSetupMessages";
 import { EnhancedReasoning } from "@/components/reasoning/EnhancedReasoning";
 
 /**
@@ -16,7 +23,12 @@ import { EnhancedReasoning } from "@/components/reasoning/EnhancedReasoning";
  * Deliberately NOT pushed into `messages`: the real send appends it there when
  * the workspace is ready, and a copy in both places would render twice.
  */
-const PendingMessagePreview = ({ text }: { text: string }) => (
+const PendingMessagePreview = ({ text }: { text: string }) => {
+  // A single static line reads as stalled over a ~14s wait; advancing the
+  // text on a fixed cadence gives honest progress without promising a time.
+  const placeholder = useCyclingText(WORKSPACE_SETUP_MESSAGES, WORKSPACE_SETUP_CYCLE_MS);
+
+  return (
   <div className="contents" data-testid="pending-message">
     {/* Rendered through Message, not a look-alike bubble: the real one carries a
         32px hidden Actions row beneath it, and without that the assistant shell
@@ -29,9 +41,10 @@ const PendingMessagePreview = ({ text }: { text: string }) => (
     {/* Same frame and same component the reasoning stream renders in, so
         when the assistant starts thinking only the header text changes. */}
     <MessageFrame role="assistant" testId="pending-assistant">
-      <EnhancedReasoning isStreaming placeholder="Setting up your workspace" />
+      <EnhancedReasoning isStreaming placeholder={placeholder} />
     </MessageFrame>
   </div>
-);
+  );
+};
 
 export default PendingMessagePreview;
