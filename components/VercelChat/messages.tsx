@@ -34,8 +34,15 @@ interface MessagesProps {
 
 const MessagesComponent = ({ children }: MessagesProps) => {
   const { messages, status, sendArmed, input } = useVercelChatContext();
-  // Nothing from the assistant has arrived yet for the in-flight turn.
-  const awaitingFirstAssistantChunk = messages[messages.length - 1]?.role !== "assistant";
+  // Nothing *visible* from the assistant has arrived yet for the in-flight
+  // turn. Checking the role alone was too narrow: the assistant message is
+  // created on its first chunk, which is a `step-start`, and the reasoning
+  // part can follow seconds later — long enough for the placeholder to
+  // unmount into the bare spinner and back (measured ~1.7s, app#2052).
+  const last = messages[messages.length - 1];
+  const awaitingFirstAssistantChunk =
+    last?.role !== "assistant" ||
+    !last.parts.some((p) => p.type === "reasoning" || p.type === "text");
   // Conversation component handles scrolling automatically
   // No need for manual scroll logic
 
