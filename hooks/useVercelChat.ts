@@ -399,7 +399,7 @@ export function useVercelChat({
   // Everything that waits on the workspace before sending — the ?q= deep link
   // and a Send pressed while provisioning — lives entirely in this hook;
   // extend it there, not here (chat#1847, app#2052).
-  const { armed: sendArmed, arm: armSend } = usePendingMessageAutoSend({
+  const { armed: sendArmed, arm } = usePendingMessageAutoSend({
     initialMessages,
     status,
     messagesLength: messages.length,
@@ -408,6 +408,15 @@ export function useVercelChat({
     setInput,
     send: handleSendQueryMessages,
   });
+
+  // Arming also moves the URL to the real chat. The session and chat exist the
+  // whole time the sandbox is provisioning, so the person lands on their own
+  // chat page with their message showing rather than waiting on the home page
+  // (app#2052).
+  const armSend = useCallback(() => {
+    arm();
+    silentlyUpdateUrl();
+  }, [arm, silentlyUpdateUrl]);
 
   return {
     // States

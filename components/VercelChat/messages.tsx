@@ -9,6 +9,7 @@ import {
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
 import Message from "./message";
+import PendingMessagePreview from "./PendingMessagePreview";
 import { cleanFileMentions } from "@/lib/chat/cleanFileMentions";
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
 
@@ -31,7 +32,7 @@ interface MessagesProps {
 }
 
 const MessagesComponent = ({ children }: MessagesProps) => {
-  const { messages, status } = useVercelChatContext();
+  const { messages, status, sendArmed, input } = useVercelChatContext();
   // Conversation component handles scrolling automatically
   // No need for manual scroll logic
 
@@ -42,6 +43,8 @@ const MessagesComponent = ({ children }: MessagesProps) => {
         {messages.map((message) => (
           <Message key={message.id} message={message} />
         ))}
+
+        {sendArmed && input.trim() && <PendingMessagePreview text={input} />}
 
         {(status === "submitted" || status === "streaming") && (
           <div className="text-zinc-500 dark:text-zinc-400 w-full max-w-3xl mx-auto flex items-center gap-2">

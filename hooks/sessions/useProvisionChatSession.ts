@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
 import {
   provisionChatSession,
+  type ProvisionChatSessionResult,
   type ProvisionChatSessionInput,
 } from "@/lib/sessions/provisionChatSession";
 
@@ -15,6 +16,12 @@ import {
  */
 export type ProvisionChatSessionState =
   | { status: "idle" | "bootstrapping" }
+  /**
+   * The session and chat exist; the sandbox is still coming. The ids are real
+   * and routable, so the UI can navigate and render — only *sending* has to
+   * wait (recoupable/app#2052).
+   */
+  | { status: "session-ready"; sessionId: string; chatId: string }
   | { status: "ready"; sessionId: string; chatId: string }
   | { status: "error"; message: string };
 
@@ -47,13 +54,15 @@ export function useProvisionChatSession({
 }: UseProvisionChatSessionInput): ProvisionChatSessionState {
   const { getAccessToken } = usePrivy();
 
+  const [earlyIds, setEarlyIds] = useState<ProvisionChatSessionResult | null>(null);
+
   const mutation = useMutation({
     mutationFn: async (input: ProvisionChatSessionInput) => {
       const accessToken = await getAccessToken();
       if (!accessToken) {
         throw new Error("Please sign in to start a chat");
       }
-      return provisionChatSession(input, accessToken);
+      return provisionChatSession(input, accessToken, setEarlyIds);
     },
   });
 
@@ -71,7 +80,9 @@ export function useProvisionChatSession({
   }, [enabled, artistId, orgId]);
 
   if (!enabled || mutation.isIdle || mutation.isPending) {
-    return { status: "bootstrapping" };
+    return earlyIds
+      ? { status: "session-ready", ...earlyIds }
+      : { status: "bootstrapping" };
   }
   if (mutation.isError) {
     return {

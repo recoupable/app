@@ -14,7 +14,6 @@ import {
 import ModelSelect from "@/components/ModelSelect";
 import FileMentionsInput from "./FileMentionsInput";
 import WorkspaceStatusIndicator from "./WorkspaceStatusIndicator";
-import QueuedSendNotice from "./QueuedSendNotice";
 
 export function ChatInput() {
   const {
@@ -29,7 +28,6 @@ export function ChatInput() {
     setInput,
     input,
     textAttachments,
-    sendArmed,
     armSend,
   } = useVercelChatContext();
   // Allow typing regardless of artist selection
@@ -81,7 +79,6 @@ export function ChatInput() {
         <div className="absolute right-3 top-3 z-20">
           <WorkspaceStatusIndicator status={workspaceStatus} />
         </div>
-        {sendArmed && input && <QueuedSendNotice />}
         <PromptInput
           onSubmit={handleSend}
           className={cn(
