@@ -8,6 +8,12 @@ interface CreateWorkflowChatTransportOptions {
   getIds: () => { sessionId: string | undefined; chatId: string };
   /** Privy access token for both the POST and every reconnect. */
   getAccessToken: () => Promise<string | null>;
+  /**
+   * Resolves once the sandbox can take a request; rejects if provisioning
+   * failed. A Send pressed while provisioning is a real message from the
+   * first frame, and the request itself waits here (app#2052).
+   */
+  waitForWorkspace?: () => Promise<void>;
 }
 
 /**
@@ -33,6 +39,7 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
   baseUrl,
   getIds,
   getAccessToken,
+  waitForWorkspace,
 }: CreateWorkflowChatTransportOptions): WorkflowChatTransport<UI_MESSAGE> {
   const authHeaders = async (): Promise<Record<string, string>> => {
     const token = await getAccessToken().catch(() => null);
@@ -50,12 +57,17 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
      * upstream open-agents' wrapper.
      */
     override async reconnectToStream(
-      options: Parameters<WorkflowChatTransport<UI_MESSAGE>["reconnectToStream"]>[0],
+      options: Parameters<
+        WorkflowChatTransport<UI_MESSAGE>["reconnectToStream"]
+      >[0],
     ) {
       try {
         return await super.reconnectToStream(options);
       } catch (error) {
-        if (error instanceof Error && error.message.startsWith("Failed to fetch chat: 204")) {
+        if (
+          error instanceof Error &&
+          error.message.startsWith("Failed to fetch chat: 204")
+        ) {
           return null;
         }
         throw error;
@@ -66,6 +78,9 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
   return new RecoupChatTransport({
     api: `${baseUrl}/api/chat`,
     prepareSendMessagesRequest: async ({ messages, body }) => {
+      // Stop during the wait aborts the signal useChat hands to fetch, so an
+      // abandoned send never reaches the api.
+      await waitForWorkspace?.();
       const { sessionId, chatId } = getIds();
       const recoupAccessToken = await getAccessToken().catch(() => null);
       return {
