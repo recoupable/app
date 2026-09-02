@@ -72,6 +72,8 @@ import {
 } from "./tools/files/UpdateFileResult";
 import ComposioAuthResult from "./tools/composio/ComposioAuthResult";
 import { TextContent } from "@modelcontextprotocol/sdk/types.js";
+import { extractToolRenderState } from "@/lib/chat/extractToolRenderState";
+import { BashRenderer, type BashOutput } from "./tools/agent/BashRenderer";
 import PulseToolSkeleton from "./tools/pulse/PulseToolSkeleton";
 import PulseToolResult, {
   PulseToolResultType,
@@ -85,10 +87,21 @@ type CallToolResult = {
   content: TextContent[];
 };
 
-export function getToolCallComponent(part: ToolUIPart) {
+export function getToolCallComponent(part: ToolUIPart, isStreaming = true) {
   const { toolCallId } = part as ToolUIPart;
   const toolName = getToolOrDynamicToolName(part);
   const isSearchWebTool = toolName === "search_web";
+
+  if (toolName === "bash") {
+    return (
+      <div key={toolCallId}>
+        <BashRenderer
+          input={part.input as { command?: string; cwd?: string; detached?: boolean }}
+          state={extractToolRenderState(part, isStreaming)}
+        />
+      </div>
+    );
+  }
 
   if (toolName === "generate_image" || toolName === "edit_image") {
     return (
@@ -209,8 +222,25 @@ export function getToolCallComponent(part: ToolUIPart) {
   );
 }
 
-export function getToolResultComponent(part: ToolUIPart | DynamicToolUIPart) {
+export function getToolResultComponent(
+  part: ToolUIPart | DynamicToolUIPart,
+  isStreaming = false,
+) {
   const { toolCallId, output, type } = part;
+  const toolNameEarly = getToolOrDynamicToolName(part);
+
+  if (toolNameEarly === "bash") {
+    return (
+      <div key={toolCallId}>
+        <BashRenderer
+          input={part.input as { command?: string; cwd?: string; detached?: boolean }}
+          output={output as BashOutput | undefined}
+          state={extractToolRenderState(part, isStreaming)}
+        />
+      </div>
+    );
+  }
+
   const isMcp = type === "dynamic-tool";
   const result = isMcp
     ? JSON.parse((output as CallToolResult).content[0].text)

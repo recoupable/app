@@ -130,11 +130,14 @@ export function MessageParts({
 
           if (isToolOrDynamicToolUIPart(part)) {
             const { state } = part as ToolUIPart;
-            if (state !== "output-available") {
-              return getToolCallComponent(part as ToolUIPart);
-            } else {
-              return getToolResultComponent(part as ToolUIPart);
-            }
+            // `output-error` is terminal. Routing it to the call branch — the
+            // loading one — rendered a skeleton that could never resolve
+            // (recoupable/app#2052).
+            const isTerminal =
+              state === "output-available" || state === "output-error";
+            return isTerminal
+              ? getToolResultComponent(part as ToolUIPart, status === "streaming")
+              : getToolCallComponent(part as ToolUIPart, status === "streaming");
           }
         },
       )}
