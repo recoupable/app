@@ -7,7 +7,6 @@ import { useUserProvider } from "@/providers/UserProvder";
 import ArtistInstructionTextArea from "./ArtistInstructionTextArea";
 import Input from "../Input";
 import AccountIdDisplay from "../ArtistSetting/AccountIdDisplay";
-
 const Account = () => {
   const {
     setInstruction,

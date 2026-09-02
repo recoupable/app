@@ -43,12 +43,14 @@ export default function NewChatBootstrap({
         : "provisioning";
 
   return (
-    <Chat
-      id={placeholderChatId}
-      sessionId={state.status === "ready" ? state.sessionId : undefined}
-      workflowChatId={state.status === "ready" ? state.chatId : undefined}
-      workspaceStatus={workspaceStatus}
-      initialMessages={initialMessages}
-    />
+    <div className="relative flex size-full flex-col items-center">
+      <Chat
+        id={placeholderChatId}
+        sessionId={state.status === "ready" ? state.sessionId : undefined}
+        workflowChatId={state.status === "ready" ? state.chatId : undefined}
+        workspaceStatus={workspaceStatus}
+        initialMessages={initialMessages}
+      />
+    </div>
   );
 }

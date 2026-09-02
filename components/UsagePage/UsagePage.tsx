@@ -15,7 +15,6 @@ import UsageEmptyState from "./UsageEmptyState";
 import UsageNoAccess from "./UsageNoAccess";
 import UsageSkeleton from "./UsageSkeleton";
 import UsageLoadMore from "./UsageLoadMore";
-
 const UsagePage = () => {
   const [sort, setSort] = useState<UsageSort>(DEFAULT_USAGE_SORT);
   const [range, setRange] = useState<UsageRange>(DEFAULT_USAGE_RANGE);

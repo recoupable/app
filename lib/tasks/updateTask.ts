@@ -1,5 +1,6 @@
 import { Tables } from "@/types/database.types";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import { throwIfPlanLimit } from "@/lib/tasks/throwIfPlanLimit";
 import { GetTasksResponse } from "./getTasks";
 
 type ScheduledAction = Tables<"scheduled_actions">;
@@ -51,6 +52,7 @@ export async function updateTask(
 
     if (!response.ok) {
       const errorText = await response.text();
+      throwIfPlanLimit(response.status, errorText);
       throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
 
