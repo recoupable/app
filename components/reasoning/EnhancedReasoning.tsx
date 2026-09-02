@@ -32,6 +32,13 @@ export interface EnhancedReasoningProps {
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   className?: string;
+  /**
+   * Header shown while streaming with no content yet. Defaults to the
+   * reasoning placeholder; the pre-send workspace wait reuses this exact
+   * shell with its own text so the two read as one continuous state
+   * (recoupable/app#2052).
+   */
+  placeholder?: string;
 }
 
 export const EnhancedReasoning = memo(({
@@ -39,7 +46,8 @@ export const EnhancedReasoning = memo(({
   isStreaming = false,
   defaultOpen = true,
   onOpenChange,
-  className
+  className,
+  placeholder = 'Thinking...',
 }: EnhancedReasoningProps) => {
   // Extract title and track duration
   const title = extractReasoningTitle(content);
@@ -72,7 +80,7 @@ export const EnhancedReasoning = memo(({
       >
       <ChainOfThoughtHeader>
         <Shimmer as="span" duration={1.2}>
-          Thinking...
+          {placeholder}
         </Shimmer>
       </ChainOfThoughtHeader>
         <ChainOfThoughtContent>

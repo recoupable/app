@@ -71,8 +71,8 @@ interface VercelChatProviderProps {
   chatId: string;
   /**
    * Session id for recoup-api `/api/chat`. Absent only on the
-   * new-chat bootstrap path until provisioning resolves; Send is gated on
-   * `isBootstrapPreparing` until it lands.
+   * new-chat bootstrap path until provisioning resolves; the transport holds
+   * a send until then.
    */
   sessionId?: string;
   /** Api-minted chat id from bootstrap when `chatId` is a placeholder. */
@@ -143,6 +143,7 @@ export function VercelChatProvider({
     initialMessages,
     attachments,
     textAttachments,
+    workspaceStatus,
   });
 
   const reload = useCallback(() => {
