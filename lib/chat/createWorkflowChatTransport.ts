@@ -1,5 +1,6 @@
 import type { UIMessage } from "ai";
 import { WorkflowChatTransport } from "@workflow/ai";
+import { is204NothingToResume } from "@/lib/chat/is204NothingToResume";
 
 interface CreateWorkflowChatTransportOptions {
   /** recoup-api origin, e.g. `https://api.recoupable.dev`. */
@@ -45,9 +46,14 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
   class RecoupChatTransport extends WorkflowChatTransport<UI_MESSAGE> {
     /**
      * `204` is our api's "nothing to resume" answer, and it has no body — which
-     * the transport surfaces as `Failed to fetch chat: 204` and counts toward
+     * the transport surfaces as an error and counts toward
      * `maxConsecutiveErrors`. Treat it as the end of the road instead, matching
      * upstream open-agents' wrapper.
+     *
+     * The match must look anywhere in the message, not just at its head:
+     * `@workflow/ai` retries the 204 inside its own loop and then wraps it in a
+     * `Failed to reconnect after N consecutive errors` summary, which is the
+     * only form that reaches this catch. See `is204NothingToResume`.
      */
     override async reconnectToStream(
       options: Parameters<WorkflowChatTransport<UI_MESSAGE>["reconnectToStream"]>[0],
@@ -55,7 +61,7 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
       try {
         return await super.reconnectToStream(options);
       } catch (error) {
-        if (error instanceof Error && error.message.startsWith("Failed to fetch chat: 204")) {
+        if (is204NothingToResume(error)) {
           return null;
         }
         throw error;
