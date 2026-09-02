@@ -10,6 +10,7 @@ import {
 } from "@/components/ai-elements/conversation";
 import Message from "./message";
 import PendingMessagePreview from "./PendingMessagePreview";
+import { EnhancedReasoning } from "@/components/reasoning/EnhancedReasoning";
 import { cleanFileMentions } from "@/lib/chat/cleanFileMentions";
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
 
@@ -33,6 +34,8 @@ interface MessagesProps {
 
 const MessagesComponent = ({ children }: MessagesProps) => {
   const { messages, status, sendArmed, input } = useVercelChatContext();
+  // Nothing from the assistant has arrived yet for the in-flight turn.
+  const awaitingFirstAssistantChunk = messages[messages.length - 1]?.role !== "assistant";
   // Conversation component handles scrolling automatically
   // No need for manual scroll logic
 
@@ -46,13 +49,22 @@ const MessagesComponent = ({ children }: MessagesProps) => {
 
         {sendArmed && input.trim() && <PendingMessagePreview text={input} />}
 
-        {(status === "submitted" || status === "streaming") && (
-          <div className="text-zinc-500 dark:text-zinc-400 w-full max-w-3xl mx-auto flex items-center gap-2">
-            <div className="inline-block animate-spin">
-              <SpinnerIcon />
+        {(status === "submitted" || status === "streaming") &&
+          (awaitingFirstAssistantChunk ? (
+            // Same shell as the workspace-setup placeholder and the reasoning
+            // stream, so cold start → send → thinking is one continuous
+            // element rather than a placeholder, then a spinner, then a
+            // reasoning block (app#2052).
+            <div className="w-full max-w-3xl mx-auto">
+              <EnhancedReasoning isStreaming />
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="text-zinc-500 dark:text-zinc-400 w-full max-w-3xl mx-auto flex items-center gap-2">
+              <div className="inline-block animate-spin">
+                <SpinnerIcon />
+              </div>
+            </div>
+          ))}
       </ConversationContent>
       <ConversationScrollButton />
     </Conversation>
