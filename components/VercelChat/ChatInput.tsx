@@ -14,6 +14,7 @@ import {
 import ModelSelect from "@/components/ModelSelect";
 import FileMentionsInput from "./FileMentionsInput";
 import WorkspaceStatusIndicator from "./WorkspaceStatusIndicator";
+import QueuedSendNotice from "./QueuedSendNotice";
 
 export function ChatInput() {
   const {
@@ -80,17 +81,7 @@ export function ChatInput() {
         <div className="absolute right-3 top-3 z-20">
           <WorkspaceStatusIndicator status={workspaceStatus} />
         </div>
-        {sendArmed && input && (
-          <div
-            role="status"
-            className="absolute bottom-[100%] left-0 mb-2 flex w-full items-center gap-2 px-1 text-xs text-muted-foreground"
-          >
-            <span className="inline-block size-1.5 shrink-0 animate-pulse rounded-full bg-muted-foreground" />
-            <span className="truncate">
-              Sending as soon as your workspace is ready
-            </span>
-          </div>
-        )}
+        {sendArmed && input && <QueuedSendNotice />}
         <PromptInput
           onSubmit={handleSend}
           className={cn(
