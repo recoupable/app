@@ -15,7 +15,6 @@ import ModelSelect from "@/components/ModelSelect";
 import FileMentionsInput from "./FileMentionsInput";
 import WorkspaceStatusIndicator from "./WorkspaceStatusIndicator";
 import { resolveSendAction } from "@/lib/chat/resolveSendAction";
-import { useQueuedSend } from "@/hooks/useQueuedSend";
 
 export function ChatInput() {
   const {
@@ -30,15 +29,12 @@ export function ChatInput() {
     setInput,
     input,
     textAttachments,
+    sendArmed,
+    armSend,
   } = useVercelChatContext();
   // Allow typing regardless of artist selection
   const isDisabled = false;
   const workspaceReady = workspaceStatus === "ready";
-  // A message submitted before the workspace is ready is held here and fired
-  // on the ready edge, so the composer never refuses a send (app#2052).
-  const { queued, queue } = useQueuedSend(workspaceReady, () =>
-    handleSendMessage({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>),
-  );
   // Only the blockers that do not clear on their own disable the button.
   const isSendDisabled = isDisabled || hasPendingUploads || isLoadingSignedUrls;
 
@@ -62,7 +58,11 @@ export function ChatInput() {
 
     if (action === "ignore") return;
     if (action === "queue") {
-      queue(input);
+      // The input IS the queue — leave the text where it is and let the
+      // provisioning-gated auto-fire in usePendingMessageAutoSend send it, the
+      // same path the ?q= deep link already uses. An edit made while waiting
+      // therefore sends the edited text (app#2052).
+      armSend();
       return;
     }
 
@@ -87,14 +87,14 @@ export function ChatInput() {
         <div className="absolute right-3 top-3 z-20">
           <WorkspaceStatusIndicator status={workspaceStatus} />
         </div>
-        {queued !== null && (
+        {sendArmed && input && (
           <div
             role="status"
             className="absolute bottom-[100%] left-0 mb-2 flex w-full items-center gap-2 px-1 text-xs text-muted-foreground"
           >
             <span className="inline-block size-1.5 shrink-0 animate-pulse rounded-full bg-muted-foreground" />
             <span className="truncate">
-              Queued, sending when your workspace is ready: {queued}
+              Sending as soon as your workspace is ready
             </span>
           </div>
         )}

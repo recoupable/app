@@ -4,9 +4,9 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useUserProvider } from "@/providers/UserProvder";
 import { generateUUID } from "@/lib/generateUUID";
 import { getInitialMessageText } from "@/lib/chat/getInitialMessageText";
-import { shouldAutoSendInitialMessage } from "@/lib/chat/shouldAutoSendInitialMessage";
+import { shouldSendPendingMessage } from "@/lib/chat/shouldSendPendingMessage";
 
-interface UseInitialMessageAutoSendParams {
+interface UsePendingMessageAutoSendParams {
   /** The ?q= deep-link message from /chat?q=… (AGENTS cards). */
   initialMessages?: UIMessage[];
   /** useChat transport status — only "ready" may send. */
@@ -18,14 +18,27 @@ interface UseInitialMessageAutoSendParams {
   setInput: (value: string) => void;
   /** The programmatic send path (handleSendQueryMessages). */
   send: (message: UIMessage) => void;
+  /**
+   * The person pressed Send while the workspace was still provisioning. Same
+   * situation as a `?q=` prefill — text waiting on the workspace — so it rides
+   * the same auto-fire rather than a second queue (recoupable/app#2052).
+   */
+  armed?: boolean;
+  /** Called once the armed send has gone, so the caller can disarm. */
+  onArmedSent?: () => void;
 }
 
 /**
- * The whole ?q= deep-link behavior, self-contained so useVercelChat
+ * Everything that waits on the workspace before sending, self-contained so useVercelChat
  * stays closed against changes here (OCP — this hook is the extension
  * point, like useChatTransport / usePersistSelectedModel). Auth state
  * is sourced from usePrivy/useUserProvider directly; params carry only
  * what is chat-instance-scoped.
+ *
+ * Two entry points, one mechanism: a `?q=` deep link, and a Send pressed
+ * before the workspace was ready. **The input is the queue** — no separate
+ * copy of the text — so an edit made while waiting sends the edited text and a
+ * cleared input sends nothing, exactly like pressing Send.
  *
  * 1. Prefills the input with the prompt immediately — instant feedback
  *    that the AGENTS click landed while the workspace provisions.
@@ -35,7 +48,7 @@ interface UseInitialMessageAutoSendParams {
  *    edited text, a cleared input sends nothing — exactly like
  *    pressing Send. One-shot refs guard re-prefill and double-sends.
  */
-export function useInitialMessageAutoSend({
+export function usePendingMessageAutoSend({
   initialMessages,
   status,
   messagesLength,
@@ -43,7 +56,9 @@ export function useInitialMessageAutoSend({
   input,
   setInput,
   send,
-}: UseInitialMessageAutoSendParams): void {
+  armed = false,
+  onArmedSent,
+}: UsePendingMessageAutoSendParams): void {
   const { authenticated } = usePrivy();
   const { userData } = useUserProvider();
   const userId = userData?.account_id || userData?.id;
@@ -60,8 +75,8 @@ export function useInitialMessageAutoSend({
   }, [initialMessageText, messagesLength, input, setInput]);
 
   useEffect(() => {
-    const mayAutoSend = shouldAutoSendInitialMessage({
-      hasInitialMessages: Boolean(initialMessageText),
+    const mayAutoSend = shouldSendPendingMessage({
+      hasPendingMessage: Boolean(initialMessageText) || armed,
       status,
       messagesLength,
       userId,
@@ -69,13 +84,21 @@ export function useInitialMessageAutoSend({
       sessionId,
     });
     if (!mayAutoSend || didAutoFireRef.current) return;
-    didAutoFireRef.current = true;
     const text = input.trim() ? input : "";
-    if (!text) return;
+    if (!text) {
+      // Nothing to send: disarm so a later Send is not swallowed by the
+      // one-shot guard.
+      if (armed) onArmedSent?.();
+      return;
+    }
+    didAutoFireRef.current = true;
     send({ id: generateUUID(), role: "user", parts: [{ type: "text", text }] });
     setInput("");
+    if (armed) onArmedSent?.();
   }, [
     initialMessageText,
+    armed,
+    onArmedSent,
     status,
     messagesLength,
     userId,

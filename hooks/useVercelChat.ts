@@ -24,7 +24,7 @@ import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
 import { getFileContents } from "@/lib/sandboxes/getFileContents";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
 import { getChatPath } from "@/lib/chat/getChatPath";
-import { useInitialMessageAutoSend } from "./useInitialMessageAutoSend";
+import { usePendingMessageAutoSend } from "./usePendingMessageAutoSend";
 import { usePersistSelectedModel } from "./usePersistSelectedModel";
 import shouldResumeStream from "@/lib/chat/shouldResumeStream";
 
@@ -71,6 +71,11 @@ export function useVercelChat({
   const { addOptimisticConversation } = useConversationsProvider();
   const { data: availableModels = [] } = useAvailableModels();
   const [input, setInput] = useState("");
+  // Set when Send is pressed before the workspace is ready. The input keeps the
+  // text; this only records that it should leave on its own (app#2052).
+  const [sendArmed, setSendArmed] = useState(false);
+  const armSend = useCallback(() => setSendArmed(true), []);
+  const disarmSend = useCallback(() => setSendArmed(false), []);
   const [model, setModel] = useLocalStorage("RECOUP_MODEL", DEFAULT_MODEL);
   const { refetchCredits } = usePaymentProvider();
   // The api-minted chat id once bootstrap resolves; before then `id` is a
@@ -396,9 +401,10 @@ export function useVercelChat({
     [silentlyUpdateUrl, sendMessage, chatRequestBody, getHeaders],
   );
 
-  // The ?q= deep-link behavior (prefill + provisioning-gated auto-fire)
-  // lives entirely in this hook — extend it there, not here (chat#1847).
-  useInitialMessageAutoSend({
+  // Everything that waits on the workspace before sending — the ?q= deep link
+  // and a Send pressed while provisioning — lives entirely in this hook;
+  // extend it there, not here (chat#1847, app#2052).
+  usePendingMessageAutoSend({
     initialMessages,
     status,
     messagesLength: messages.length,
@@ -406,6 +412,8 @@ export function useVercelChat({
     input,
     setInput,
     send: handleSendQueryMessages,
+    armed: sendArmed,
+    onArmedSent: disarmSend,
   });
 
   return {
@@ -413,6 +421,8 @@ export function useVercelChat({
     messages,
     status,
     input,
+    sendArmed,
+    armSend,
     isLoading,
     hasError,
     isGeneratingResponse,
