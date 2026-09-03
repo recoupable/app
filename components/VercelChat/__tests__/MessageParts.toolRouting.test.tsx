@@ -12,7 +12,7 @@ const message = (
   {
     id = "m1",
     tool = "bash",
-    input = { command: "pnpm exec tsc --noEmit" },
+    input = { command: "pnpm exec tsc --noEmit" } as Record<string, unknown>,
   } = {},
 ) =>
   ({
