@@ -114,4 +114,44 @@ describe("MessageParts — sandbox tool routing (app#2052)", () => {
     expect(container.querySelector(".animate-spin")).toBeNull();
     expect(container.querySelector("svg.lucide-octagon-pause")).toBeTruthy();
   });
+
+  it("renders one checklist per message, anchored where the plan started, showing the latest list", () => {
+    const todo = (
+      id: string,
+      todos: Array<{ content: string; status: string }>,
+    ) => ({
+      type: "tool-todo_write",
+      toolCallId: id,
+      state: "output-available",
+      input: { todos },
+    });
+    const m = {
+      id: "plan",
+      role: "assistant",
+      parts: [
+        todo("t1", [
+          { content: "run pwd", status: "in_progress" },
+          { content: "run date", status: "pending" },
+        ]),
+        {
+          type: "tool-bash",
+          toolCallId: "b1",
+          state: "output-available",
+          input: { command: "pwd" },
+          output: { success: true, exitCode: 0, stdout: "/" },
+        },
+        todo("t2", [
+          { content: "run pwd", status: "completed" },
+          { content: "run date", status: "in_progress" },
+        ]),
+      ],
+    } as unknown as UIMessage;
+    const { container } = renderParts(m);
+    const rows = [...container.querySelectorAll('[role="button"]')].map(
+      (r) => r.textContent ?? "",
+    );
+    expect(rows.filter((t) => t.startsWith("Plan"))).toHaveLength(1);
+    expect(rows[0]).toContain("1 of 2 done");
+    expect(rows[1]).toContain("pwd");
+  });
 });
