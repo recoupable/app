@@ -3,6 +3,13 @@
 import { cn } from "@/lib/utils";
 import { type ComponentProps, memo } from "react";
 import { Streamdown } from "streamdown";
+import { code } from "@streamdown/code";
+import { math } from "@streamdown/math";
+import { mermaid } from "@streamdown/mermaid";
+
+// v1 bundled Shiki, KaTeX and Mermaid; v2 ships them as plugins. Without these
+// three, code blocks lose highlighting and math and diagrams render as text.
+const plugins = { code, math, mermaid };
 
 type ResponseProps = ComponentProps<typeof Streamdown>;
 
@@ -25,6 +32,7 @@ export const Response = memo(
         "[&_div[data-streamdown='code-block']]:border-black/10 dark:[&_div[data-streamdown='code-block']]:border-white/40",
         className
       )}
+      plugins={plugins}
       {...props}
     />
   ),
