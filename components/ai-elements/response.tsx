@@ -3,13 +3,15 @@
 import { cn } from "@/lib/utils";
 import { type ComponentProps, memo } from "react";
 import { Streamdown } from "streamdown";
+import { cjk } from "@streamdown/cjk";
 import { code } from "@streamdown/code";
 import { math } from "@streamdown/math";
 import { mermaid } from "@streamdown/mermaid";
 
-// v1 bundled Shiki, KaTeX and Mermaid; v2 ships them as plugins. Without these
-// three, code blocks lose highlighting and math and diagrams render as text.
-const plugins = { code, math, mermaid };
+// v1 bundled Shiki, KaTeX, Mermaid and CJK-friendly parsing; v2 ships them as
+// plugins. Without them code blocks lose highlighting, math and diagrams
+// render as text, and CJK emphasis parses wrong.
+const plugins = { code, math, mermaid, cjk };
 
 type ResponseProps = ComponentProps<typeof Streamdown>;
 
@@ -30,13 +32,13 @@ export const Response = memo(
         "[&_pre_button]:absolute [&_pre_button]:top-2 [&_pre_button]:right-2",
         "[&_div[data-streamdown='code-block']]:bg-white dark:[&_div[data-streamdown='code-block']]:bg-black",
         "[&_div[data-streamdown='code-block']]:border-black/10 dark:[&_div[data-streamdown='code-block']]:border-white/40",
-        className
+        className,
       )}
       plugins={plugins}
       {...props}
     />
   ),
-  (prevProps, nextProps) => prevProps.children === nextProps.children
+  (prevProps, nextProps) => prevProps.children === nextProps.children,
 );
 
 Response.displayName = "Response";
