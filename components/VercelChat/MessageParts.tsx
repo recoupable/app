@@ -39,6 +39,13 @@ export function MessageParts({
   const ctx = useContext(VercelChatContext);
   const status = statusProp ?? ctx?.status;
   const reload = reloadProp ?? ctx?.reload ?? (() => {});
+  // `status` is chat-wide. A tool part left mid-run by a stopped earlier turn
+  // must not spin again when a later turn streams, so only the message that
+  // owns the stream counts as streaming.
+  const messages = ctx?.messages;
+  const isOwnStream =
+    status === "streaming" &&
+    (!messages || messages[messages.length - 1]?.id === message.id);
   return (
     <div className={cn("flex flex-col gap-4 w-full group")}>
       {message.parts?.map(
@@ -136,8 +143,8 @@ export function MessageParts({
             const isTerminal =
               state === "output-available" || state === "output-error";
             return isTerminal
-              ? getToolResultComponent(part as ToolUIPart, status === "streaming")
-              : getToolCallComponent(part as ToolUIPart, status === "streaming");
+              ? getToolResultComponent(part as ToolUIPart, isOwnStream)
+              : getToolCallComponent(part as ToolUIPart, isOwnStream);
           }
         },
       )}

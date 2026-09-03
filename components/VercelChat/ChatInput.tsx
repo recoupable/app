@@ -31,13 +31,10 @@ export function ChatInput() {
   } = useVercelChatContext();
   // Allow typing regardless of artist selection
   const isDisabled = false;
-  // Block sending until the workspace (session + sandbox) is ready; the
-  // input stays typeable so users aren't stuck on a spinner meanwhile.
-  const isSendDisabled =
-    isDisabled ||
-    hasPendingUploads ||
-    isLoadingSignedUrls ||
-    workspaceStatus !== "ready";
+  // A Send during provisioning goes through: the transport holds the request
+  // until the sandbox is ready (app#2052). Only blockers that do not clear on
+  // their own disable the button.
+  const isSendDisabled = isDisabled || hasPendingUploads || isLoadingSignedUrls;
 
   const handleSend = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -79,7 +76,7 @@ export function ChatInput() {
           className={cn(
             "overflow-visible",
             "rounded-2xl border border-border bg-background/70 backdrop-blur",
-            "shadow-sm"
+            "shadow-sm",
           )}
         >
           <FileMentionsInput
@@ -100,7 +97,7 @@ export function ChatInput() {
                 "rounded-full hover:scale-105 active:scale-95 transition-all",
                 {
                   "cursor-not-allowed opacity-50": isSendDisabled,
-                }
+                },
               )}
             />
           </PromptInputToolbar>

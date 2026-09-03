@@ -2,16 +2,20 @@ import { useMemo, useCallback, useRef } from "react";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import { usePrivy } from "@privy-io/react-auth";
 import { createWorkflowChatTransport } from "@/lib/chat/createWorkflowChatTransport";
+import { waitForWorkspace } from "@/lib/chat/waitForWorkspace";
+import type { WorkspaceStatus } from "@/components/VercelChat/WorkspaceStatusIndicator";
 
 interface UseChatTransportOptions {
   /** Chat row id (also the AI SDK `useChat({ id })` instance id). */
   chatId: string;
   /**
    * Session id from bootstrap or canonical route. Absent only while a new
-   * chat is still provisioning; Send is gated until it lands, so the
-   * transport is never invoked without it.
+   * chat is still provisioning; the request waits on `workspaceStatus`
+   * before reading it.
    */
   sessionId?: string;
+  /** Workspace lifecycle; a request holds until `ready` (app#2052). */
+  workspaceStatus?: WorkspaceStatus;
 }
 
 /**
@@ -22,7 +26,11 @@ interface UseChatTransportOptions {
  * `sendMessage`. Reconnection through a dropped stream is the transport's own
  * job — see `createWorkflowChatTransport`.
  */
-export function useChatTransport({ chatId, sessionId }: UseChatTransportOptions) {
+export function useChatTransport({
+  chatId,
+  sessionId,
+  workspaceStatus = "ready",
+}: UseChatTransportOptions) {
   const { getAccessToken } = usePrivy();
   const baseUrl = getClientApiBaseUrl();
 
@@ -34,8 +42,10 @@ export function useChatTransport({ chatId, sessionId }: UseChatTransportOptions)
   // stable while always sending the ids current as of the request.
   const chatIdRef = useRef(chatId);
   const sessionIdRef = useRef(sessionId);
+  const workspaceStatusRef = useRef(workspaceStatus);
   chatIdRef.current = chatId;
   sessionIdRef.current = sessionId;
+  workspaceStatusRef.current = workspaceStatus;
 
   const getHeaders = useCallback(async () => {
     const accessToken = await getAccessToken();
@@ -46,8 +56,13 @@ export function useChatTransport({ chatId, sessionId }: UseChatTransportOptions)
     () =>
       createWorkflowChatTransport({
         baseUrl,
-        getIds: () => ({ sessionId: sessionIdRef.current, chatId: chatIdRef.current }),
+        getIds: () => ({
+          sessionId: sessionIdRef.current,
+          chatId: chatIdRef.current,
+        }),
         getAccessToken,
+        waitForWorkspace: () =>
+          waitForWorkspace(() => workspaceStatusRef.current),
       }),
     [baseUrl, getAccessToken],
   );

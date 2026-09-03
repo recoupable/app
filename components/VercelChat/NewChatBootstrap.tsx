@@ -42,12 +42,21 @@ export default function NewChatBootstrap({
         ? "off"
         : "provisioning";
 
+  // The ids are handed down as soon as the session is minted, not when the
+  // sandbox finishes: they are real and routable for the whole ~17s the
+  // sandbox takes, so the chat can show its own URL and the message the person
+  // sent. Sending stays gated on `workspaceStatus` (app#2052).
+  const ids =
+    state.status === "ready" || state.status === "session-ready"
+      ? { sessionId: state.sessionId, chatId: state.chatId }
+      : undefined;
+
   return (
     <div className="relative flex size-full flex-col items-center">
       <Chat
         id={placeholderChatId}
-        sessionId={state.status === "ready" ? state.sessionId : undefined}
-        workflowChatId={state.status === "ready" ? state.chatId : undefined}
+        sessionId={ids?.sessionId}
+        workflowChatId={ids?.chatId}
         workspaceStatus={workspaceStatus}
         initialMessages={initialMessages}
       />

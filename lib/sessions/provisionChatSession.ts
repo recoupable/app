@@ -34,11 +34,22 @@ export interface ProvisionChatSessionResult {
 export async function provisionChatSession(
   input: ProvisionChatSessionInput,
   accessToken: string,
+  /**
+   * Called with the ids the moment the session is minted, before the sandbox
+   * is provisioned. The sandbox is the slow half — around 17 seconds measured
+   * — and the chat exists for the whole of it, so the UI can navigate to the
+   * real chat URL and show a sent message immediately rather than holding the
+   * person on the home page (recoupable/app#2052).
+   */
+  onSessionCreated?: (ids: ProvisionChatSessionResult) => void,
 ): Promise<ProvisionChatSessionResult> {
   const { session, chat } = await createSession(
     { artistId: input.artistId, organizationId: input.orgId },
     accessToken,
   );
+  const ids = { sessionId: session.id, chatId: chat.id };
+  onSessionCreated?.(ids);
+
   await createSandbox(session.cloneUrl, session.id, accessToken);
-  return { sessionId: session.id, chatId: chat.id };
+  return ids;
 }
