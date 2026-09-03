@@ -28,7 +28,7 @@ export function SkillRenderer({ input, output, state }: SkillRendererProps) {
   // The skill tool reports "not found" as a successful call with success:false,
   // so the row has to read the output to know it failed.
   const outputError =
-    output?.success === false ? (output.error ?? "Skill failed") : undefined;
+    output?.success === false ? output.error || "Skill failed" : undefined;
 
   const mergedState: ToolRenderState = outputError
     ? { ...state, error: state.error ?? outputError }
@@ -40,11 +40,20 @@ export function SkillRenderer({ input, output, state }: SkillRendererProps) {
       icon={<Zap className="h-3.5 w-3.5" />}
       summary={skillName ? `/${skillName}` : "…"}
       state={mergedState}
+      // ToolLayout only draws its own error block when there is no expanded
+      // content, so a failed call with args has to carry the reason itself.
       expandedContent={
         args ? (
-          <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border bg-muted/50 p-3 font-mono text-xs leading-relaxed text-muted-foreground">
-            {args}
-          </pre>
+          <>
+            {mergedState.error && (
+              <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 font-mono text-xs leading-relaxed text-destructive">
+                {mergedState.error}
+              </pre>
+            )}
+            <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border bg-muted/50 p-3 font-mono text-xs leading-relaxed text-muted-foreground">
+              {args}
+            </pre>
+          </>
         ) : undefined
       }
     />

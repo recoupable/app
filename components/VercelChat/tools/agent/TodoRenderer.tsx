@@ -11,28 +11,64 @@ export interface TodoRendererProps {
   state: ToolRenderState;
 }
 
+const STATUS_LABEL: Record<string, string> = {
+  completed: "Completed",
+  in_progress: "In progress",
+};
+
 function StatusIcon({ status }: { status?: string }) {
   if (status === "completed") {
     return (
-      <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5 shrink-0 text-emerald-500" aria-hidden="true">
+      <svg
+        viewBox="0 0 16 16"
+        fill="none"
+        className="h-3.5 w-3.5 shrink-0 text-emerald-500"
+        aria-hidden="true"
+      >
         <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M5 8.5L7 10.5L11 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d="M5 8.5L7 10.5L11 6"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     );
   }
   if (status === "in_progress") {
     return (
       <span className="relative inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-amber-500">
-        <svg viewBox="0 0 16 16" fill="none" className="absolute inset-0 h-3.5 w-3.5" aria-hidden="true">
+        <svg
+          viewBox="0 0 16 16"
+          fill="none"
+          className="absolute inset-0 h-3.5 w-3.5"
+          aria-hidden="true"
+        >
           <circle cx="8" cy="8" r="7.25" fill="currentColor" />
         </svg>
-        <ArrowRight className="relative h-2 w-2 text-background" strokeWidth={3} />
+        <ArrowRight
+          className="relative h-2 w-2 text-background"
+          strokeWidth={3}
+        />
       </span>
     );
   }
   return (
-    <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" aria-hidden="true">
-      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" strokeDasharray="2.5 2.5" />
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50"
+      aria-hidden="true"
+    >
+      <circle
+        cx="8"
+        cy="8"
+        r="7"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeDasharray="2.5 2.5"
+      />
     </svg>
   );
 }
@@ -65,15 +101,24 @@ export function TodoRenderer({ input, state }: TodoRendererProps) {
                 key={`${i}-${todo.content ?? ""}`}
                 className={cn(
                   "flex items-start gap-2 py-0.5 text-[13px] leading-snug",
-                  todo.status === "completed" && "text-muted-foreground line-through",
-                  todo.status === "in_progress" && "font-medium text-foreground",
-                  todo.status !== "completed" && todo.status !== "in_progress" && "text-muted-foreground",
+                  todo.status === "completed" &&
+                    "text-muted-foreground line-through",
+                  todo.status === "in_progress" &&
+                    "font-medium text-foreground",
+                  todo.status !== "completed" &&
+                    todo.status !== "in_progress" &&
+                    "text-muted-foreground",
                 )}
               >
                 <span className="mt-0.5">
                   <StatusIcon status={todo.status} />
                 </span>
-                <span>{todo.content}</span>
+                <span>
+                  {/* The icon, colour and strike-through carry the status for
+                      sighted readers only. */}
+                  <span className="sr-only">{`${STATUS_LABEL[todo.status ?? ""] ?? "Pending"}: `}</span>
+                  {todo.content}
+                </span>
               </li>
             ))}
           </ul>
