@@ -5,9 +5,14 @@
 
 /* Add KaTeX CSS for math rendering */
 @import 'katex/dist/katex.min.css';
+@import 'streamdown/styles.css';
 
 /* Tell Tailwind to scan Streamdown's classes */
-@source '../node_modules/streamdown/dist/index.js';
+@source '../node_modules/streamdown/dist/*.js';
+@source '../node_modules/@streamdown/code/dist/*.js';
+@source '../node_modules/@streamdown/math/dist/*.js';
+@source '../node_modules/@streamdown/mermaid/dist/*.js';
+@source '../node_modules/@streamdown/cjk/dist/*.js';
 
 /* include plugins */
 @plugin "tailwindcss-animate";
