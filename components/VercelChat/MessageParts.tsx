@@ -9,6 +9,7 @@ import {
 } from "ai";
 import { Dispatch, SetStateAction, useContext } from "react";
 import { cn } from "@/lib/utils";
+import { collapseTodoParts } from "@/lib/chat/collapseTodoParts";
 import ViewingMessage from "./ViewingMessage";
 import EditingMessage from "./EditingMessage";
 import { getToolCallComponent, getToolResultComponent } from "./ToolComponents";
@@ -46,108 +47,103 @@ export function MessageParts({
   const isOwnStream =
     status === "streaming" &&
     (!messages || messages[messages.length - 1]?.id === message.id);
+  const parts = collapseTodoParts(message.parts ?? []);
   return (
     <div className={cn("flex flex-col gap-4 w-full group")}>
-      {message.parts?.map(
-        (part: UIMessagePart<UIDataTypes, UITools>, partIndex) => {
-          const { type } = part;
-          const key = `message-${message.id}-part-${partIndex}`;
+      {parts.map((part: UIMessagePart<UIDataTypes, UITools>, partIndex) => {
+        const { type } = part;
+        const key = `message-${message.id}-part-${partIndex}`;
 
-          if (type === "reasoning") {
+        if (type === "reasoning") {
+          return (
+            <EnhancedReasoning
+              key={key}
+              className="w-full"
+              content={part.text}
+              isStreaming={
+                status === "streaming" && partIndex === parts.length - 1
+              }
+              defaultOpen={true}
+            />
+          );
+        }
+
+        if (type === "file") {
+          return <MessageFileViewer key={key} part={part} />;
+        }
+
+        if (type === "text") {
+          const isLastMessage =
+            message.role === "assistant" &&
+            status !== "streaming" &&
+            partIndex === parts.length - 1;
+
+          if (mode === "view") {
             return (
-              <EnhancedReasoning
-                key={key}
-                className="w-full"
-                content={part.text}
-                isStreaming={
-                  status === "streaming" &&
-                  partIndex === message.parts.length - 1
-                }
-                defaultOpen={true}
-              />
+              <div key={key}>
+                <ViewingMessage message={message} partText={part?.text || ""} />
+                <Actions
+                  className={cn(
+                    "mt-0.5 gap-0.5 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity",
+                    {
+                      "justify-start": message.role === "assistant",
+                      "justify-end": message.role === "user",
+                    },
+                  )}
+                >
+                  {message.role === "user" && (
+                    <Action
+                      onClick={() => setMode("edit")}
+                      label="Edit"
+                      tooltip="Edit message"
+                    >
+                      <Pencil className="!w-3 !h-3" />
+                    </Action>
+                  )}
+                  {isLastMessage && (
+                    <Action
+                      onClick={() => reload()}
+                      label="Retry"
+                      tooltip="Regenerate this response"
+                    >
+                      <RefreshCcwIcon className="!w-3 !h-3" />
+                    </Action>
+                  )}
+                  <CopyButton
+                    text={part?.text || ""}
+                    label="response"
+                    tooltip="Copy response to clipboard"
+                    variant="ghost"
+                    silent
+                    iconClassName="!w-3 !h-3"
+                    /* Matches the Action treatment used by Retry and Edit
+                         beside it; see components/actions.tsx. */
+                    className="size-8 p-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                  />
+                </Actions>
+              </div>
             );
           }
 
-          if (type === "file") {
-            return <MessageFileViewer key={key} part={part} />;
+          if (mode === "edit") {
+            return (
+              <EditingMessage key={key} message={message} setMode={setMode} />
+            );
           }
+        }
 
-          if (type === "text") {
-            const isLastMessage =
-              message.role === "assistant" &&
-              status !== "streaming" &&
-              partIndex === message.parts.length - 1;
-
-            if (mode === "view") {
-              return (
-                <div key={key}>
-                  <ViewingMessage
-                    message={message}
-                    partText={part?.text || ""}
-                  />
-                  <Actions
-                    className={cn(
-                      "mt-0.5 gap-0.5 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity",
-                      {
-                        "justify-start": message.role === "assistant",
-                        "justify-end": message.role === "user",
-                      },
-                    )}
-                  >
-                    {message.role === "user" && (
-                      <Action
-                        onClick={() => setMode("edit")}
-                        label="Edit"
-                        tooltip="Edit message"
-                      >
-                        <Pencil className="!w-3 !h-3" />
-                      </Action>
-                    )}
-                    {isLastMessage && (
-                      <Action
-                        onClick={() => reload()}
-                        label="Retry"
-                        tooltip="Regenerate this response"
-                      >
-                        <RefreshCcwIcon className="!w-3 !h-3" />
-                      </Action>
-                    )}
-                    <CopyButton
-                      text={part?.text || ""}
-                      label="response"
-                      tooltip="Copy response to clipboard"
-                      variant="ghost"
-                      silent
-                      iconClassName="!w-3 !h-3"
-                      /* Matches the Action treatment used by Retry and Edit
-                         beside it; see components/actions.tsx. */
-                      className="size-8 p-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors"
-                    />
-                  </Actions>
-                </div>
-              );
-            }
-
-            if (mode === "edit") {
-              return (
-                <EditingMessage key={key} message={message} setMode={setMode} />
-              );
-            }
-          }
-
-          if (isToolOrDynamicToolUIPart(part)) {
-            const { state } = part as ToolUIPart;
-            // `output-error` is terminal. Routing it to the call branch — the
-            // loading one — rendered a skeleton that could never resolve
-            // (recoupable/app#2052).
-            const isTerminal =
-              state === "output-available" || state === "output-error";
-            return isTerminal
-              ? getToolResultComponent(part as ToolUIPart, isOwnStream)
-              : getToolCallComponent(part as ToolUIPart, isOwnStream);
-          }
-        },
-      )}
+        if (isToolOrDynamicToolUIPart(part)) {
+          const { state } = part as ToolUIPart;
+          // `output-error` is terminal. Routing it to the call branch — the
+          // loading one — rendered a skeleton that could never resolve
+          // (recoupable/app#2052).
+          const isTerminal =
+            state === "output-available" || state === "output-error";
+          return isTerminal
+            ? getToolResultComponent(part as ToolUIPart, isOwnStream)
+            : getToolCallComponent(part as ToolUIPart, isOwnStream);
+        }
+      })}
     </div>
   );
 }
