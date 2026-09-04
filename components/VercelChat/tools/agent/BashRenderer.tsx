@@ -3,6 +3,8 @@
 import { Terminal } from "lucide-react";
 import type { ToolRenderState } from "@/lib/chat/extractToolRenderState";
 import { ToolLayout } from "./ToolLayout";
+import { extractMediaFromStdout } from "@/lib/chat/extractMediaFromStdout";
+import { MediaResult } from "./MediaResult";
 
 /** What `bashTool` returns from the sandbox. */
 export interface BashOutput {
@@ -41,6 +43,10 @@ export function BashRenderer({ input, output, state }: BashRendererProps) {
       ? { ...state, error: `Exit code ${exitCode ?? "unknown"}` }
       : state;
 
+  // A finished asset plays under the row that produced it, and stays visible
+  // whether or not the row is expanded.
+  const media = failed ? null : extractMediaFromStdout(stdout);
+
   const expandedContent = output ? (
     <pre
       className={
@@ -55,7 +61,8 @@ export function BashRenderer({ input, output, state }: BashRendererProps) {
   ) : undefined;
 
   return (
-    <ToolLayout
+    <>
+      <ToolLayout
       name="Bash"
       summary={command || "…"}
       icon={<Terminal className="h-3.5 w-3.5" />}
@@ -70,6 +77,12 @@ export function BashRenderer({ input, output, state }: BashRendererProps) {
       }
       state={mergedState}
       expandedContent={expandedContent}
-    />
+      />
+      {media && (
+        <div className="mt-2">
+          <MediaResult media={media} />
+        </div>
+      )}
+    </>
   );
 }
