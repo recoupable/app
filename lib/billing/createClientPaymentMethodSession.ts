@@ -1,42 +1,37 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
 /**
- * Opens the Stripe billing portal for an account via
- * POST /api/accounts/{accountId}/portal. The account may be the caller's own
- * or an organization they belong to.
+ * POST /api/accounts/{id}/payment-method and open the Stripe setup checkout,
+ * which saves a card without charging it.
  */
-const createClientPortalSession = async (
-  accessToken: string,
+const createClientPaymentMethodSession = async (
   accountId: string,
-) => {
+  accessToken: string,
+): Promise<{ error?: unknown }> => {
   try {
     const response = await fetch(
-      `${getClientApiBaseUrl()}/api/accounts/${accountId}/portal`,
+      `${getClientApiBaseUrl()}/api/accounts/${accountId}/payment-method`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({
-          returnUrl: window.location.href,
-        }),
+        body: JSON.stringify({ successUrl: window.location.href }),
       },
     );
-
     if (!response.ok) {
       return { error: new Error(`HTTP ${response.status}`) };
     }
-
     const data: { url?: string } = await response.json();
     if (!data.url) {
-      return { error: new Error("Portal URL missing") };
+      return { error: new Error("Checkout URL missing") };
     }
-
     window.open(data.url, "_blank", "noopener,noreferrer");
+    return {};
   } catch (error) {
     return { error };
   }
 };
 
-export default createClientPortalSession;
+export default createClientPaymentMethodSession;

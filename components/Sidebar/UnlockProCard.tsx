@@ -1,9 +1,14 @@
 import { ArrowRight } from "lucide-react";
 import Icon from "../Icon";
-import useSubscribeClick from "@/hooks/useSubscribeClick";
+import { usePrivy } from "@privy-io/react-auth";
+import createClientCheckoutSession from "@/lib/stripe/createClientCheckoutSession";
 
 const UnlockProCard = () => {
-  const { handleClick } = useSubscribeClick();
+  const { getAccessToken } = usePrivy();
+  const handleClick = async () => {
+    const accessToken = await getAccessToken();
+    if (accessToken) await createClientCheckoutSession(accessToken);
+  };
 
   return (
     <div className="w-full md:w-[250px] shadow-lg flex flex-col rounded-xl overflow-hidden mb-2 mt-0 aspect-[212/175] md:aspect-[212/190] bg-[url('/Background.png')] bg-cover bg-center border border-white p-4 relative mx-auto">
