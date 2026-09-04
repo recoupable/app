@@ -3,9 +3,7 @@ import { ImageResult } from "@/components/VercelChat/tools/image/ImageResult";
 import {
   ImageGenerationResult,
   ScheduledAction,
-  RetrieveVideoContentResult,
 } from "@/components/VercelChat/types";
-import dynamic from "next/dynamic";
 import CreateArtistToolCall from "./tools/CreateArtistToolCall";
 import CreateArtistToolResult from "./tools/CreateArtistToolResult";
 import { CreateArtistResult } from "@/types/createArtistResult";
@@ -53,15 +51,7 @@ import { SpotifyAlbum } from "@/types/spotify";
 import DeleteTaskSuccess from "./tools/tasks/DeleteTaskSuccess";
 import DeleteTaskSkeleton from "./tools/tasks/DeleteTaskSkeleton";
 import UpdateTaskSuccess from "./tools/tasks/UpdateTaskSuccess";
-import { Sora2VideoSkeleton } from "./tools/sora2/Sora2VideoSkeleton";
 
-const Sora2VideoResult = dynamic(
-  () =>
-    import("./tools/sora2/Sora2VideoResult").then(
-      (mod) => mod.Sora2VideoResult,
-    ),
-  { ssr: false, loading: () => <Sora2VideoSkeleton /> },
-);
 import CatalogSongsSkeleton from "./tools/catalog/CatalogSongsSkeleton";
 import CatalogSongsResult, {
   CatalogSongsResult as CatalogSongsResultType,
@@ -207,12 +197,6 @@ export function getToolCallComponent(part: ToolUIPart, isStreaming = true) {
     return (
       <div key={toolCallId}>
         <TasksSkeleton numberOfTasks={1} />
-      </div>
-    );
-  } else if (toolName === "retrieve_sora_2_video_content") {
-    return (
-      <div key={toolCallId}>
-        <Sora2VideoSkeleton />
       </div>
     );
   } else if (
@@ -430,12 +414,6 @@ export function getToolResultComponent(
     return (
       <div key={toolCallId}>
         <UpdateTaskSuccess result={result as ScheduledAction} />
-      </div>
-    );
-  } else if (toolName === "retrieve_sora_2_video_content") {
-    return (
-      <div key={toolCallId}>
-        <Sora2VideoResult result={result as RetrieveVideoContentResult} />
       </div>
     );
   } else if (
