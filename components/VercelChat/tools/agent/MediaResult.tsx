@@ -4,7 +4,8 @@ import type { ExtractedMedia } from "@/lib/chat/extractMediaFromStdout";
 import { AudioResult } from "./media/AudioResult";
 import { VideoResult } from "./media/VideoResult";
 import { ImageResult } from "./media/ImageResult";
-import { MediaDownloadButton } from "./media/MediaDownloadButton";
+import MessageMediaDownloadButton from "@/components/VercelChat/MessageMediaDownloadButton";
+import { useMediaDownloader } from "@/hooks/useMediaDownloader";
 
 const PLAYERS: Record<
   ExtractedMedia["kind"],
@@ -26,11 +27,18 @@ const PLAYERS: Record<
  */
 export function MediaResult({ media }: { media: ExtractedMedia }) {
   const Player = PLAYERS[media.kind];
+  const { isDownloading, handleDownload } = useMediaDownloader({
+    url: media.url,
+  });
 
   return (
     <div className="flex flex-col gap-2">
       <Player url={media.url} />
-      <MediaDownloadButton url={media.url} />
+      <MessageMediaDownloadButton
+        label="Download"
+        onClick={handleDownload}
+        isDownloading={isDownloading}
+      />
     </div>
   );
 }

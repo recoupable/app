@@ -62,6 +62,18 @@ describe("downloadMedia", () => {
     expect(anchors[0]?.click).toHaveBeenCalled();
   });
 
+  it("uses a prefetched blob without re-fetching", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const prefetched = new Blob(["cached"]);
+
+    await downloadMedia("https://cdn.example.com/clip.mp4", "clip.mp4", prefetched);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(URL.createObjectURL).toHaveBeenCalledWith(prefetched);
+    expect(anchors[0]?.click).toHaveBeenCalled();
+  });
+
   it("falls back on a non-ok response rather than saving an error page", async () => {
     vi.stubGlobal(
       "fetch",

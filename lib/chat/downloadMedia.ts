@@ -19,20 +19,26 @@
  *
  * @param url - Absolute media URL.
  * @param filename - Name to save the file as.
+ * @param prefetched - Bytes already in hand, to skip the fetch.
  */
 export async function downloadMedia(
   url: string,
   filename: string,
+  prefetched?: Blob | null,
 ): Promise<void> {
   let objectUrl: string | null = null;
 
-  try {
-    const response = await fetch(url);
-    if (response.ok) {
-      objectUrl = URL.createObjectURL(await response.blob());
+  if (prefetched) {
+    objectUrl = URL.createObjectURL(prefetched);
+  } else {
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        objectUrl = URL.createObjectURL(await response.blob());
+      }
+    } catch {
+      // Fall through to the direct URL below.
     }
-  } catch {
-    // Fall through to the direct URL below.
   }
 
   const anchor = document.createElement("a");

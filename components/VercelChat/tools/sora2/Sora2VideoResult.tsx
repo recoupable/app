@@ -1,7 +1,8 @@
 import { RetrieveVideoContentResult } from "@/components/VercelChat/types";
-import { Download, Video } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Video } from "lucide-react";
 import { useState } from "react";
+import MessageMediaDownloadButton from "@/components/VercelChat/MessageMediaDownloadButton";
+import { useMediaDownloader } from "@/hooks/useMediaDownloader";
 
 interface Sora2VideoResultProps {
   result: RetrieveVideoContentResult;
@@ -9,6 +10,10 @@ interface Sora2VideoResultProps {
 
 export function Sora2VideoResult({ result }: Sora2VideoResultProps) {
   const [videoError, setVideoError] = useState<string | null>(null);
+  const { isDownloading, handleDownload } = useMediaDownloader({
+    url: result.videoUrl ?? null,
+    filename: `sora-video-${result.video_id}.mp4`,
+  });
 
   if (!result.success) {
     return (
@@ -18,27 +23,9 @@ export function Sora2VideoResult({ result }: Sora2VideoResultProps) {
     );
   }
 
-  const handleDownload = () => {
-    if (!result.videoUrl) {
-      console.error("No video URL available for download");
-      return;
-    }
-
-    try {
-      const link = document.createElement("a");
-      link.href = result.videoUrl;
-      link.download = `sora-video-${result.video_id}.mp4`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error("Download failed:", error);
-    }
-  };
-
   const handleVideoError = () => {
     setVideoError(
-      "Failed to load video. Please try refreshing or downloading the file."
+      "Failed to load video. Please try refreshing or downloading the file.",
     );
   };
 
@@ -67,15 +54,11 @@ export function Sora2VideoResult({ result }: Sora2VideoResultProps) {
               Your browser does not support the video tag.
             </video>
           )}
-          <Button
+          <MessageMediaDownloadButton
+            label="Download Video"
             onClick={handleDownload}
-            variant="outline"
-            size="sm"
-            className="w-fit"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Download Video
-          </Button>
+            isDownloading={isDownloading}
+          />
         </>
       ) : (
         <p className="text-sm text-muted-foreground">{result.message}</p>

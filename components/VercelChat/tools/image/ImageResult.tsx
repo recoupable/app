@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { ImageGenerationResult } from "@/components/VercelChat/types";
-import { useImageDownloader } from "@/hooks/useImageDownloader";
+import { useMediaDownloader } from "@/hooks/useMediaDownloader";
+import { recoupImageFilename } from "@/lib/chat/recoupImageFilename";
 import MessageMediaDownloadButton from "@/components/VercelChat/MessageMediaDownloadButton";
 
 interface ImageResultProps {
@@ -10,9 +11,12 @@ interface ImageResultProps {
 export function ImageResult({ result }: ImageResultProps) {
   const { imageUrl } = result;
 
-  const { isDownloading, isReady, handleDownload } = useImageDownloader({
-    imageUrl,
-    enabled: !!imageUrl,
+  const { isDownloading, isReady, handleDownload } = useMediaDownloader({
+    url: imageUrl,
+    filename: recoupImageFilename(),
+    // A still is small, and this button sits on a thumbnail the user is
+    // already looking at — worth having the bytes ready before they click.
+    prefetch: true,
   });
 
   if (!imageUrl) {
