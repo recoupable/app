@@ -65,4 +65,32 @@ describe("PaymentMethodPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Configure billing" }));
     expect(onConfigure).toHaveBeenCalled();
   });
+
+  it("shows Switch to personal billing in the empty state only when an org is selected", () => {
+    const onSwitchToPersonal = vi.fn();
+    const { rerender } = render(
+      <PaymentMethodPanel
+        card={null}
+        onConfigure={vi.fn()}
+        onRemove={vi.fn()}
+        isBusy={false}
+      />,
+    );
+    expect(
+      screen.queryByRole("button", { name: "Switch to personal billing" }),
+    ).toBeNull();
+    rerender(
+      <PaymentMethodPanel
+        card={null}
+        onConfigure={vi.fn()}
+        onRemove={vi.fn()}
+        isBusy={false}
+        onSwitchToPersonal={onSwitchToPersonal}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Switch to personal billing" }),
+    );
+    expect(onSwitchToPersonal).toHaveBeenCalled();
+  });
 });
