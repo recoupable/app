@@ -8,15 +8,24 @@ import useBillingMutations from "@/hooks/useBillingMutations";
 import { formatCreditsAsUsd } from "@/lib/credits/formatCreditsAsUsd";
 import BillingPageHeader from "./BillingPageHeader";
 import BillingSkeleton from "./BillingSkeleton";
+import BillingAccessDenied from "./BillingAccessDenied";
 import PaymentMethodPanel from "./PaymentMethodPanel";
 import PlanPanel from "./PlanPanel";
 import AutoTopUpPanel from "./AutoTopUpPanel";
-import PaymentsTable from "./PaymentsTable";
-import UsageLoadMore from "@/components/UsagePage/UsageLoadMore";
+import PaymentsSection from "./PaymentsSection";
 
-/** Card, plan, auto top-up and payments for the signed-in account or the selected organization. */
-const BillingPage = () => {
-  const { accountId, isOrg, scopeLabel, switchToPersonal } = useBillingScope();
+/**
+ * Card, plan, auto top-up and payments for the signed-in account, the selected
+ * organization, or (via /billing/{accountId}) a specific account the api lets
+ * the caller read.
+ */
+const BillingPage = ({
+  accountId: forcedAccountId,
+}: {
+  accountId?: string;
+}) => {
+  const { accountId, isOrg, scopeLabel, forced, invalid, switchToPersonal } =
+    useBillingScope(forcedAccountId);
   const balance = useAccountBalance(accountId);
 
   const {
@@ -26,17 +35,18 @@ const BillingPage = () => {
     autoTopUpSettings,
     isLoading,
     failed,
+    forbidden,
     ready,
     card,
-    rows,
   } = useBillingReads(accountId);
   const actions = useBillingMutations(accountId);
 
   return (
     <PageContainer className="max-w-4xl py-8">
       <BillingPageHeader scope={scopeLabel} />
-      {isLoading && <BillingSkeleton />}
-      {!isLoading && failed && (
+      {(invalid || forbidden) && <BillingAccessDenied />}
+      {!invalid && isLoading && <BillingSkeleton />}
+      {!isLoading && failed && !forbidden && (
         <p className="text-sm text-muted-foreground">
           Billing could not be loaded. Try again in a moment.
         </p>
@@ -49,7 +59,9 @@ const BillingPage = () => {
               onConfigure={actions.configureCard}
               onRemove={() => actions.removeCard.mutate()}
               isBusy={actions.removeCard.isPending}
-              onSwitchToPersonal={isOrg ? switchToPersonal : undefined}
+              onSwitchToPersonal={
+                isOrg && !forced ? switchToPersonal : undefined
+              }
             />
             <PlanPanel
               subscription={subscription.data}
@@ -73,16 +85,7 @@ const BillingPage = () => {
               }
             />
           </div>
-          <h2 className="mb-3 mt-6 font-heading text-base font-semibold tracking-tight">
-            Payments
-          </h2>
-          <PaymentsTable payments={rows} />
-          {payments.hasNextPage && (
-            <UsageLoadMore
-              onClick={() => payments.fetchNextPage()}
-              isLoading={payments.isFetchingNextPage}
-            />
-          )}
+          <PaymentsSection payments={payments} />
         </>
       )}
     </PageContainer>
