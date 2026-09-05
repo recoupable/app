@@ -1,9 +1,11 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import readApiError from "@/lib/billing/readApiError";
 
 /**
  * Opens the Stripe billing portal for an account via
  * POST /api/accounts/{accountId}/portal. The account may be the caller's own
- * or an organization they belong to.
+ * or an organization they belong to. Navigates this tab (a window opened
+ * after the await is popup-blocked); returnUrl brings the user back.
  */
 const createClientPortalSession = async (
   accessToken: string,
@@ -25,7 +27,7 @@ const createClientPortalSession = async (
     );
 
     if (!response.ok) {
-      return { error: new Error(`HTTP ${response.status}`) };
+      return { error: await readApiError(response) };
     }
 
     const data: { url?: string } = await response.json();
@@ -33,7 +35,7 @@ const createClientPortalSession = async (
       return { error: new Error("Portal URL missing") };
     }
 
-    window.open(data.url, "_blank", "noopener,noreferrer");
+    window.location.assign(data.url);
   } catch (error) {
     return { error };
   }

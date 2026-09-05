@@ -1,6 +1,7 @@
 import { CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BillingPanel from "./BillingPanel";
+import RemoveCardButton from "./RemoveCardButton";
 import type { SavedCard } from "@/lib/recoup/getAccountPaymentMethod";
 
 const brandLabel = (brand: string) =>
@@ -35,18 +36,22 @@ const PaymentMethodPanel = ({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onConfigure} disabled={isBusy}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onConfigure}
+            disabled={isBusy}
+          >
             Replace card
           </Button>
-          <Button variant="ghost" size="sm" onClick={onRemove} disabled={isBusy} className="text-muted-foreground">
-            Remove
-          </Button>
+          <RemoveCardButton onRemove={onRemove} disabled={isBusy} />
         </div>
       </>
     ) : (
       <>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          No payment method on file. Add a card to buy credits and pay for a plan.
+          No payment method on file. Add a card to buy credits and pay for a
+          plan.
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <Button onClick={onConfigure} disabled={isBusy}>

@@ -3,7 +3,15 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import PaymentsTable from "@/components/BillingPage/PaymentsTable";
 
-const payment = { id: "in_1", createdAt: "2026-09-04T14:33:00Z", description: "Pro, monthly", amountCents: 9900, currency: "usd", status: "paid" as const, url: "https://invoice.stripe.com/i/1" };
+const payment = {
+  id: "in_1",
+  createdAt: "2026-09-04T14:33:00Z",
+  description: "Pro, monthly",
+  amountCents: 9900,
+  currency: "usd",
+  status: "paid" as const,
+  url: "https://invoice.stripe.com/i/1",
+};
 
 describe("PaymentsTable", () => {
   it("renders a row per payment with a receipt link", () => {
@@ -12,7 +20,14 @@ describe("PaymentsTable", () => {
     expect(screen.getByText("Pro, monthly")).toBeTruthy();
     expect(screen.getByText("$99.00")).toBeTruthy();
     expect(screen.getAllByText("Paid").length).toBeGreaterThan(0);
-    expect((screen.getByRole("link", { name: /Receipt/ }) as HTMLAnchorElement).href).toBe("https://invoice.stripe.com/i/1");
+    const links = screen.getAllByRole("link", {
+      name: /Receipt/,
+    }) as HTMLAnchorElement[];
+    expect(links).toHaveLength(2);
+    expect(
+      links.every((a) => a.href === "https://invoice.stripe.com/i/1"),
+    ).toBe(true);
+    expect(links.some((a) => a.className.includes("md:hidden"))).toBe(true);
   });
 
   it("renders the empty state", () => {

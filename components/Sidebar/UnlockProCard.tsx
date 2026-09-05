@@ -1,13 +1,19 @@
+import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import Icon from "../Icon";
-import { usePrivy } from "@privy-io/react-auth";
-import createClientCheckoutSession from "@/lib/stripe/createClientCheckoutSession";
+import { useUpgradeCheckout } from "@/hooks/useUpgradeCheckout";
 
 const UnlockProCard = () => {
-  const { getAccessToken } = usePrivy();
+  const { startCheckout } = useUpgradeCheckout();
+  const [isPending, setIsPending] = useState(false);
   const handleClick = async () => {
-    const accessToken = await getAccessToken();
-    if (accessToken) await createClientCheckoutSession(accessToken);
+    if (isPending) return;
+    setIsPending(true);
+    try {
+      await startCheckout("pro");
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (
@@ -61,8 +67,9 @@ const UnlockProCard = () => {
 
         <button
           type="button"
-          className="font-sans font-medium text-xs bg-white/15 backdrop-blur-md text-white rounded-lg px-3 py-1.5 flex items-center gap-2 border border-white/20 hover:bg-white/25 transition-all duration-200 shadow-xl mt-3"
+          className="font-sans font-medium text-xs bg-white/15 backdrop-blur-md text-white rounded-lg px-3 py-1.5 flex items-center gap-2 border border-white/20 hover:bg-white/25 transition-all duration-200 shadow-xl mt-3 disabled:opacity-60"
           onClick={handleClick}
+          disabled={isPending}
         >
           Start Free Trial
           <ArrowRight className="size-3" />

@@ -9,7 +9,10 @@ describe("createClientCheckoutSession", () => {
     fetchMock.mockReset();
     vi.stubGlobal("fetch", fetchMock);
     vi.stubGlobal("open", vi.fn());
-    fetchMock.mockResolvedValue({ ok: true, json: async () => ({ url: "https://stripe.test/c" }) });
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ url: "https://stripe.test/c" }),
+    });
   });
   afterEach(() => vi.unstubAllGlobals());
 
@@ -27,21 +30,38 @@ describe("createClientCheckoutSession", () => {
 
   it("sends plan for Starter", async () => {
     await createClientCheckoutSession("token", { plan: "starter" });
-    expect(sentBody()).toEqual({ successUrl: window.location.href, plan: "starter" });
+    expect(sentBody()).toEqual({
+      successUrl: window.location.href,
+      plan: "starter",
+    });
   });
 
   it("opens the returned checkout URL", async () => {
     await createClientCheckoutSession("token", { plan: "pro" });
-    expect(window.open).toHaveBeenCalledWith("https://stripe.test/c", "_blank", "noopener,noreferrer");
+    expect(window.open).toHaveBeenCalledWith(
+      "https://stripe.test/c",
+      "_blank",
+      "noopener,noreferrer",
+    );
   });
 
   it("returns the error on a rejected request, a missing url, or a network failure", async () => {
-    fetchMock.mockResolvedValueOnce({ ok: false, status: 400, json: async () => ({}) });
-    expect((await createClientCheckoutSession("token"))?.error).toBeInstanceOf(Error);
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      json: async () => ({ error: "plan must be starter or pro" }),
+    });
+    expect(
+      ((await createClientCheckoutSession("token"))?.error as Error).message,
+    ).toBe("plan must be starter or pro");
     fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
-    expect((await createClientCheckoutSession("token"))?.error).toBeInstanceOf(Error);
+    expect((await createClientCheckoutSession("token"))?.error).toBeInstanceOf(
+      Error,
+    );
     fetchMock.mockRejectedValueOnce(new TypeError("offline"));
-    expect((await createClientCheckoutSession("token"))?.error).toBeInstanceOf(TypeError);
+    expect((await createClientCheckoutSession("token"))?.error).toBeInstanceOf(
+      TypeError,
+    );
     expect(window.open).not.toHaveBeenCalled();
   });
 });

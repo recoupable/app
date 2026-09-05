@@ -11,25 +11,38 @@ vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({ authenticated: true, getAccessToken: async () => "tok" }),
 }));
 
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-    {children}
-  </QueryClientProvider>
-);
+const makeWrapper = () => {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={client}>{children}</QueryClientProvider>
+  );
+  return Wrapper;
+};
 
 describe("useAutoTopUp", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("fetches the settings for the given account", async () => {
-    const settings = { account_id: "acct-1", enabled: false, amountCents: null, thresholdCents: null, lastRunAt: null, lastError: null };
+    const settings = {
+      account_id: "acct-1",
+      enabled: false,
+      amountCents: null,
+      thresholdCents: null,
+      lastRunAt: null,
+      lastError: null,
+    };
     vi.mocked(getAccountAutoTopUp).mockResolvedValue(settings);
-    const { result } = renderHook(() => useAutoTopUp("acct-1"), { wrapper });
+    const { result } = renderHook(() => useAutoTopUp("acct-1"), {
+      wrapper: makeWrapper(),
+    });
     await waitFor(() => expect(result.current.data).toEqual(settings));
     expect(getAccountAutoTopUp).toHaveBeenCalledWith("acct-1", "tok");
   });
 
   it("does not fetch without an account id", () => {
-    renderHook(() => useAutoTopUp(undefined), { wrapper });
+    renderHook(() => useAutoTopUp(undefined), { wrapper: makeWrapper() });
     expect(getAccountAutoTopUp).not.toHaveBeenCalled();
   });
 });
