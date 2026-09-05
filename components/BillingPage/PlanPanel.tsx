@@ -15,10 +15,13 @@ const PlanPanel = ({
   subscription,
   onUpgrade,
   onManage,
+  canUpgrade = true,
 }: {
   subscription: AccountSubscription;
   onUpgrade: () => void;
   onManage: () => void;
+  /** False for organizations: their plans are set up with a Recoup contact, not self-serve checkout. */
+  canUpgrade?: boolean;
 }) => {
   if (subscription.status === "none") {
     return (
@@ -32,14 +35,18 @@ const PlanPanel = ({
           </div>
           <span className="text-sm">$0.00 / month</span>
           <span className="text-[13px] text-muted-foreground">
-            Upgrade to Starter or Pro for tasks and monthly credits.
+            {canUpgrade
+              ? "Upgrade to Starter or Pro for tasks and monthly credits."
+              : "Organization plans are set up with your Recoup contact."}
           </span>
         </div>
-        <div>
-          <Button size="sm" onClick={onUpgrade}>
-            Upgrade
-          </Button>
-        </div>
+        {canUpgrade && (
+          <div>
+            <Button size="sm" onClick={onUpgrade}>
+              Upgrade
+            </Button>
+          </div>
+        )}
       </BillingPanel>
     );
   }
