@@ -1,4 +1,5 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import readApiError from "@/lib/billing/readApiError";
 import type { UpgradePlan } from "@/lib/upgrade/types";
 
 /**
@@ -28,7 +29,7 @@ const createClientCheckoutSession = async (
     );
 
     if (!response.ok) {
-      return { error: new Error(`HTTP ${response.status}`) };
+      return { error: await readApiError(response) };
     }
 
     const data: { url?: string } = await response.json();

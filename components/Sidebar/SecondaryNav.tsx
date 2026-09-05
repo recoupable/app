@@ -1,6 +1,7 @@
 import AgentsNavItem from "./AgentsNavItem";
 import TasksNavItem from "./TasksNavItem";
 import FilesNavItem from "./FilesNavItem";
+import BillingNavItem from "./BillingNavItem";
 import CatalogsNavItem from "./CatalogsNavItem";
 import MusicNavItem from "./MusicNavItem";
 import ArtistsNavItem from "./ArtistsNavItem";
@@ -13,6 +14,7 @@ interface SecondaryNavProps {
   isCatalogs: boolean;
   isArtists: boolean;
   isMusic: boolean;
+  isBilling: boolean;
   onNavigate: (path: string) => void;
 }
 
@@ -24,6 +26,7 @@ const SecondaryNav = ({
   isCatalogs,
   isArtists,
   isMusic,
+  isBilling,
   onNavigate,
 }: SecondaryNavProps) => (
   <div className="flex flex-col gap-1 w-full mt-3">
@@ -33,6 +36,7 @@ const SecondaryNav = ({
     <AgentsNavItem isActive={isAgents} isExpanded={isExpanded} onClick={() => onNavigate("agents")} />
     <TasksNavItem isActive={isTasks} isExpanded={isExpanded} onClick={() => onNavigate("tasks")} />
     <FilesNavItem isActive={isFiles} isExpanded={isExpanded} onClick={() => onNavigate("files")} />
+    <BillingNavItem isActive={isBilling} isExpanded={isExpanded} onClick={() => onNavigate("billing")} />
   </div>
 );
 

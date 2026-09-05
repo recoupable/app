@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Check } from "lucide-react";
 import { useTheme } from "next-themes";
-import ManageSubscriptionButton from "./ManageSubscriptionButton";
 import ConnectorsMenuItem from "./ConnectorsMenuItem";
 import ApiKeysMenuItem from "./ApiKeysMenuItem";
 import themeLabel from "@/lib/sidebar/themeLabel";
@@ -19,7 +18,6 @@ const SettingsGroup = () => {
 
   return (
     <DropdownMenuGroup>
-      <ManageSubscriptionButton />
       <ConnectorsMenuItem />
       <ApiKeysMenuItem />
       <DropdownMenuSub>

@@ -19,6 +19,7 @@ const renderNav = (overrides = {}) => {
       isCatalogs={false}
       isArtists={false}
       isMusic={false}
+      isBilling={false}
       onNavigate={onNavigate}
       {...overrides}
     />,
@@ -72,5 +73,10 @@ describe("SecondaryNav", () => {
     fireEvent.click(screen.getByRole("button", { name: /view music/i }));
 
     expect(onNavigate).toHaveBeenCalledWith("music");
+  });
+  it("navigates to billing from the Billing item", () => {
+    const { onNavigate } = renderNav();
+    fireEvent.click(screen.getByRole("button", { name: "View billing" }));
+    expect(onNavigate).toHaveBeenCalledWith("billing");
   });
 });

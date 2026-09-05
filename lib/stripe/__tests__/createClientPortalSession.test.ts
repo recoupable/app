@@ -10,6 +10,11 @@ describe("createClientPortalSession", () => {
     fetchMock.mockReset();
     vi.stubGlobal("fetch", fetchMock);
     vi.stubGlobal("open", vi.fn());
+    Object.defineProperty(window, "location", {
+      value: { href: "https://app.recoupable.dev/billing", assign: vi.fn() },
+      writable: true,
+      configurable: true,
+    });
     fetchMock.mockResolvedValue({
       ok: true,
       json: async () => ({ url: "https://stripe.test/p" }),
@@ -31,24 +36,24 @@ describe("createClientPortalSession", () => {
     });
   });
 
-  it("opens the returned portal URL", async () => {
+  it("navigates this tab to the returned portal URL (a new tab after an await gets popup-blocked)", async () => {
     await createClientPortalSession("token", ACCOUNT_ID);
-    expect(window.open).toHaveBeenCalledWith(
+    expect(window.location.assign).toHaveBeenCalledWith(
       "https://stripe.test/p",
-      "_blank",
-      "noopener,noreferrer",
     );
+    expect(window.open).not.toHaveBeenCalled();
   });
 
   it("returns the error on a rejected request, a missing url, or a network failure", async () => {
     fetchMock.mockResolvedValueOnce({
       ok: false,
-      status: 404,
-      json: async () => ({}),
+      status: 400,
+      json: async () => ({ error: "No active subscription found" }),
     });
     expect(
-      (await createClientPortalSession("token", ACCOUNT_ID))?.error,
-    ).toBeInstanceOf(Error);
+      ((await createClientPortalSession("token", ACCOUNT_ID))?.error as Error)
+        .message,
+    ).toBe("No active subscription found");
     fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
     expect(
       (await createClientPortalSession("token", ACCOUNT_ID))?.error,
@@ -57,6 +62,6 @@ describe("createClientPortalSession", () => {
     expect(
       (await createClientPortalSession("token", ACCOUNT_ID))?.error,
     ).toBeInstanceOf(TypeError);
-    expect(window.open).not.toHaveBeenCalled();
+    expect(window.location.assign).not.toHaveBeenCalled();
   });
 });
