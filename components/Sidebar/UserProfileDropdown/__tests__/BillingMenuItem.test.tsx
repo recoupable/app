@@ -17,9 +17,8 @@ describe("BillingMenuItem", () => {
         </DropdownMenuContent>
       </DropdownMenu>,
     );
-    expect(screen.getByRole("menuitem", { name: "Billing" })).toHaveAttribute(
-      "href",
-      "/billing",
-    );
+    expect(
+      screen.getByRole("menuitem", { name: "Billing" }).getAttribute("href"),
+    ).toBe("/billing");
   });
 });
