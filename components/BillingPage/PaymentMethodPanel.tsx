@@ -13,11 +13,14 @@ const PaymentMethodPanel = ({
   onConfigure,
   onRemove,
   isBusy,
+  onSwitchToPersonal,
 }: {
   card: SavedCard | null;
   onConfigure: () => void;
   onRemove: () => void;
   isBusy: boolean;
+  /** Present when an organization is selected; returns the page to personal billing. */
+  onSwitchToPersonal?: () => void;
 }) => (
   <BillingPanel title="Payment method">
     {card ? (
@@ -57,6 +60,15 @@ const PaymentMethodPanel = ({
           <Button onClick={onConfigure} disabled={isBusy}>
             Configure billing
           </Button>
+          {onSwitchToPersonal && (
+            <button
+              type="button"
+              onClick={onSwitchToPersonal}
+              className="text-xs text-muted-foreground underline underline-offset-[3px] hover:text-foreground"
+            >
+              Switch to personal billing
+            </button>
+          )}
         </div>
       </>
     )}
