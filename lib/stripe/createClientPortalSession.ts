@@ -1,9 +1,17 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
-const createClientPortalSession = async (accessToken: string) => {
+/**
+ * Opens the Stripe billing portal for an account via
+ * POST /api/accounts/{accountId}/portal. The account may be the caller's own
+ * or an organization they belong to.
+ */
+const createClientPortalSession = async (
+  accessToken: string,
+  accountId: string,
+) => {
   try {
     const response = await fetch(
-      `${getClientApiBaseUrl()}/api/subscriptions/portal`,
+      `${getClientApiBaseUrl()}/api/accounts/${accountId}/portal`,
       {
         method: "POST",
         headers: {

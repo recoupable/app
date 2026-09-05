@@ -16,7 +16,7 @@ const useSubscribeClick = () => {
     if (!accessToken) return;
 
     if (isSubscribed) {
-      await createClientPortalSession(accessToken);
+      await createClientPortalSession(accessToken, userData.account_id);
       return;
     }
 
