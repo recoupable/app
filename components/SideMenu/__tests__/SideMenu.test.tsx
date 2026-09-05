@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import SideMenu from "@/components/SideMenu/SideMenu";
 
@@ -34,7 +34,11 @@ vi.mock("@/components/Agents/useAgentData", () => ({
 
 describe("SideMenu", () => {
   it("does not list Billing (it lives in the profile dropdown)", () => {
-    render(<SideMenu isMenuOpen setIsMenuOpen={vi.fn()} />);
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <SideMenu isVisible toggleModal={vi.fn()} />
+      </QueryClientProvider>,
+    );
     expect(screen.queryByRole("button", { name: "View billing" })).toBeNull();
   });
 });
