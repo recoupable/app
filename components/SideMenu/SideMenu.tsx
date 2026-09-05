@@ -18,7 +18,6 @@ import FilesNavItem from "../Sidebar/FilesNavItem";
 import CatalogsNavItem from "../Sidebar/CatalogsNavItem";
 import MusicNavItem from "../Sidebar/MusicNavItem";
 import ArtistsNavItem from "../Sidebar/ArtistsNavItem";
-import BillingNavItem from "../Sidebar/BillingNavItem";
 
 const SideMenu = ({
   isVisible,
@@ -39,7 +38,6 @@ const SideMenu = ({
   const isCatalogs = pathname.includes("/catalogs");
   const isArtists = pathname.includes("/artists");
   const isMusic = pathname.includes("/music");
-  const isBilling = pathname.includes("/billing");
 
   const goToItem = (link?: string) => {
     if (isPrepared()) {
@@ -107,10 +105,6 @@ const SideMenu = ({
           />
           <TasksNavItem isActive={isTasks} onClick={() => goToItem("tasks")} />
           <FilesNavItem isActive={isFiles} onClick={() => goToItem("files")} />
-          <BillingNavItem
-            isActive={isBilling}
-            onClick={() => goToItem("billing")}
-          />
         </div>
       </div>
       {address && <RecentChats toggleModal={toggleModal} />}

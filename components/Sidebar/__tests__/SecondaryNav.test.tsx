@@ -19,7 +19,6 @@ const renderNav = (overrides = {}) => {
       isCatalogs={false}
       isArtists={false}
       isMusic={false}
-      isBilling={false}
       onNavigate={onNavigate}
       {...overrides}
     />,
@@ -74,9 +73,8 @@ describe("SecondaryNav", () => {
 
     expect(onNavigate).toHaveBeenCalledWith("music");
   });
-  it("navigates to billing from the Billing item", () => {
-    const { onNavigate } = renderNav();
-    fireEvent.click(screen.getByRole("button", { name: "View billing" }));
-    expect(onNavigate).toHaveBeenCalledWith("billing");
+  it("does not list Billing (it lives in the profile dropdown)", () => {
+    renderNav();
+    expect(screen.queryByRole("button", { name: "View billing" })).toBeNull();
   });
 });
