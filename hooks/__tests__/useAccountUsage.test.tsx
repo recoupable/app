@@ -8,7 +8,11 @@ import getAccountUsage from "@/lib/recoup/getAccountUsage";
 
 vi.mock("@/lib/recoup/getAccountUsage", () => ({ default: vi.fn() }));
 vi.mock("@privy-io/react-auth", () => ({
-  usePrivy: () => ({ authenticated: true, getAccessToken: async () => "tok" }),
+  usePrivy: () => ({
+    authenticated: true,
+    user: { id: "did:privy:test" },
+    getAccessToken: async () => "tok",
+  }),
 }));
 vi.mock("@/providers/UserProvder", () => ({
   useUserProvider: () => ({ userData: { account_id: "acct-1" } }),

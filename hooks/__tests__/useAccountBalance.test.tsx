@@ -8,7 +8,11 @@ import getAccountCredits from "@/lib/recoup/getAccountCredits";
 
 vi.mock("@/lib/recoup/getAccountCredits", () => ({ default: vi.fn() }));
 vi.mock("@privy-io/react-auth", () => ({
-  usePrivy: () => ({ authenticated: true, getAccessToken: async () => "tok" }),
+  usePrivy: () => ({
+    authenticated: true,
+    user: { id: "did:privy:test" },
+    getAccessToken: async () => "tok",
+  }),
 }));
 
 const client = new QueryClient({
@@ -39,7 +43,9 @@ describe("useAccountBalance", () => {
       wrapper,
     });
     await waitFor(() => expect(result.current.data).toBe(700));
-    expect(client.getQueryData(["credits", "balance", "acct-9"])).toBe(700);
+    expect(
+      client.getQueryData(["credits", "balance", "did:privy:test", "acct-9"]),
+    ).toBe(700);
     expect(client.getQueryData(["credits", "acct-9"])).toEqual({
       remaining_credits: 5,
     });

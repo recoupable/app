@@ -8,7 +8,11 @@ import getAccountAutoTopUp from "@/lib/recoup/getAccountAutoTopUp";
 
 vi.mock("@/lib/recoup/getAccountAutoTopUp", () => ({ default: vi.fn() }));
 vi.mock("@privy-io/react-auth", () => ({
-  usePrivy: () => ({ authenticated: true, getAccessToken: async () => "tok" }),
+  usePrivy: () => ({
+    authenticated: true,
+    user: { id: "did:privy:test" },
+    getAccessToken: async () => "tok",
+  }),
 }));
 
 const makeWrapper = () => {

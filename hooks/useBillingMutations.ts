@@ -24,8 +24,9 @@ const useBillingMutations = (accountId: string | undefined) => {
     if (!token || !accountId) throw new Error("Please sign in");
     return fn(token);
   };
+  // Prefix match: the read keys carry the viewer id before the account id.
   const invalidate = (key: string) =>
-    queryClient.invalidateQueries({ queryKey: [key, accountId] });
+    queryClient.invalidateQueries({ queryKey: [key] });
   const open =
     (
       label: string,

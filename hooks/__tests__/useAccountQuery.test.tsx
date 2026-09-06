@@ -5,8 +5,13 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import useAccountQuery from "@/hooks/useAccountQuery";
 
+let viewer = "did:privy:alice";
 vi.mock("@privy-io/react-auth", () => ({
-  usePrivy: () => ({ authenticated: true, getAccessToken: async () => "tok" }),
+  usePrivy: () => ({
+    authenticated: true,
+    user: { id: viewer },
+    getAccessToken: async () => "tok",
+  }),
 }));
 
 const wrap = (client: QueryClient) =>
@@ -30,7 +35,7 @@ describe("useAccountQuery", () => {
     await waitFor(() => expect(result.current.data).toEqual({ ok: true }));
     const options = client
       .getQueryCache()
-      .find({ queryKey: ["thing", "acct-1"] })?.options as {
+      .find({ queryKey: ["thing", viewer, "acct-1"] })?.options as {
       staleTime?: number;
       gcTime?: number;
       refetchOnWindowFocus?: boolean;
@@ -53,5 +58,33 @@ describe("useAccountQuery", () => {
     );
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
+  // A later sign-in on the same browser must never be served the earlier viewer's reads.
+  it("keys the cache by viewer as well as account", async () => {
+    const client = new QueryClient();
+    const fetcher = vi.fn(async () => ({ who: viewer }));
+    const first = renderHook(
+      () => useAccountQuery("thing", "acct-3", fetcher),
+      {
+        wrapper: wrap(client),
+      },
+    );
+    await waitFor(() =>
+      expect(first.result.current.data).toEqual({ who: "did:privy:alice" }),
+    );
+    first.unmount();
+    viewer = "did:privy:bob";
+    const second = renderHook(
+      () => useAccountQuery("thing", "acct-3", fetcher),
+      {
+        wrapper: wrap(client),
+      },
+    );
+    await waitFor(() =>
+      expect(second.result.current.data).toEqual({ who: "did:privy:bob" }),
+    );
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    viewer = "did:privy:alice";
   });
 });
