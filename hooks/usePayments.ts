@@ -4,11 +4,14 @@ import {
   InfiniteData,
 } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
+import isClientError from "@/lib/api/isClientError";
 import getAccountPayments, {
   AccountPaymentsPage,
 } from "@/lib/recoup/getAccountPayments";
 
 const PAGE_SIZE = 20;
+/** Same stickiness as the other billing reads (see useAccountQuery). */
+const BILLING_READ_TTL = 6 * 60 * 60 * 1000;
 
 /** An account's invoices, newest first, paged by the last id. */
 const usePayments = (
@@ -29,8 +32,10 @@ const usePayments = (
     getNextPageParam: (lastPage) =>
       lastPage.hasMore ? lastPage.payments.at(-1)?.id : undefined,
     enabled: authenticated && !!accountId,
-    staleTime: 60 * 1000,
+    staleTime: BILLING_READ_TTL,
+    gcTime: BILLING_READ_TTL,
     refetchOnWindowFocus: false,
+    retry: (failureCount, error) => !isClientError(error) && failureCount < 2,
   });
 };
 

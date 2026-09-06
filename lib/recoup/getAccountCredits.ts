@@ -33,7 +33,10 @@ async function getAccountCredits(
   );
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch credits: ${response.status}`);
+    throw Object.assign(
+      new Error(`Failed to fetch credits: ${response.status}`),
+      { status: response.status },
+    );
   }
 
   return response.json();

@@ -67,18 +67,6 @@ describe("useBillingReads", () => {
     expect(result.current.balanceUsd).toBe("$12.40");
   });
 
-  it("keeps the page loading while the balance is still loading", () => {
-    reads.balance = {
-      data: undefined,
-      isLoading: true,
-      error: null,
-      isError: false,
-    };
-    const { result } = renderHook(() => useBillingReads("acct-1"));
-    expect(result.current.isLoading).toBe(true);
-    expect(result.current.ready).toBe(false);
-  });
-
   it("reports no balance rather than $0.00 when the read failed", () => {
     reads.balance = {
       data: undefined,
@@ -99,6 +87,19 @@ describe("useBillingReads", () => {
       isError: true,
     };
     const { result } = renderHook(() => useBillingReads("acct-1"));
+    expect(result.current.balanceUsd).toBeNull();
+  });
+
+  it("is ready while the balance is still loading: the balance never gates the page", () => {
+    reads.balance = {
+      data: undefined,
+      isLoading: true,
+      error: null,
+      isError: false,
+    };
+    const { result } = renderHook(() => useBillingReads("acct-1"));
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.ready).toBe(true);
     expect(result.current.balanceUsd).toBeNull();
   });
 });
