@@ -33,14 +33,14 @@ describe("SongsSection", () => {
   it("renders the artist song order returned by the API", () => {
     render(
       <SongsSection
-        songs={[songs[0], songs[10]]}
+        songs={[songs[10], songs[0]]}
         artistId="artist"
         socials={[]}
       />,
     );
     expect(
       screen.getAllByText(/^ISRC/).map((node) => node.textContent),
-    ).toEqual(["ISRC0", "ISRC10"]);
+    ).toEqual(["ISRC10", "ISRC0"]);
     expect(screen.queryByRole("button")).toBeNull();
   });
   it("keeps the existing empty state when the artist has no song rows", () => {
