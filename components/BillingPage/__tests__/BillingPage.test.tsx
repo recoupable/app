@@ -47,7 +47,7 @@ vi.mock("@/hooks/useBillingScope", () => ({ default: () => scope }));
 vi.mock("@/hooks/useBillingReads", () => ({ default: () => reads }));
 vi.mock("@/hooks/useBillingMutations", () => ({
   default: () => ({
-    configureCard: vi.fn(),
+    configureCard: { mutate: vi.fn(), isPending: false },
     upgrade: vi.fn(),
     manageBilling: vi.fn(),
     removeCard: mutation,

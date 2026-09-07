@@ -6,7 +6,7 @@ import BillingPage from "@/components/BillingPage/BillingPage";
 const scope = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 const reads = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 const mutations = vi.hoisted(() => ({
-  configureCard: vi.fn(),
+  configureCard: { mutate: vi.fn(), isPending: false },
   upgrade: vi.fn(),
   manageBilling: vi.fn(),
   removeCard: { mutate: vi.fn(), isPending: false },
