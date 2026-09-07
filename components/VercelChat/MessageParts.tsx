@@ -2,6 +2,7 @@ import {
   ToolUIPart,
   UIMessage,
   isToolOrDynamicToolUIPart,
+  getToolOrDynamicToolName,
   UIMessagePart,
   UIDataTypes,
   UITools,
@@ -12,6 +13,8 @@ import { cn } from "@/lib/utils";
 import ViewingMessage from "./ViewingMessage";
 import EditingMessage from "./EditingMessage";
 import { getToolCallComponent, getToolResultComponent } from "./ToolComponents";
+import { ToolCall } from "./tools/agent/ToolCall";
+import { isAgentToolName } from "./tools/agent/renderTool";
 import MessageFileViewer from "./message-file-viewer";
 import { EnhancedReasoning } from "@/components/reasoning/EnhancedReasoning";
 import { Actions, Action } from "@/components/actions";
@@ -129,11 +132,23 @@ export function MessageParts({
           }
 
           if (isToolOrDynamicToolUIPart(part)) {
-            const { state } = part as ToolUIPart;
-            if (state !== "output-available") {
-              return getToolCallComponent(part as ToolUIPart);
+            const toolPart = part as ToolUIPart;
+            if (isAgentToolName(getToolOrDynamicToolName(toolPart))) {
+              return (
+                <ToolCall
+                  key={key}
+                  part={toolPart}
+                  isStreaming={
+                    status === "streaming" &&
+                    partIndex === message.parts.length - 1
+                  }
+                />
+              );
+            }
+            if (toolPart.state !== "output-available") {
+              return getToolCallComponent(toolPart);
             } else {
-              return getToolResultComponent(part as ToolUIPart);
+              return getToolResultComponent(toolPart);
             }
           }
         },
