@@ -65,4 +65,20 @@ describe("PaymentMethodPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Configure billing" }));
     expect(onConfigure).toHaveBeenCalled();
   });
+
+  it("swaps the Configure billing label for a spinner while the session is created", () => {
+    render(
+      <PaymentMethodPanel
+        card={null}
+        onConfigure={vi.fn()}
+        onRemove={vi.fn()}
+        isBusy={false}
+        isConfiguring={true}
+      />,
+    );
+    const button = screen.getByRole("button", { name: /loading/i });
+    expect(button.getAttribute("disabled")).not.toBeNull();
+    expect(screen.queryByText("Configure billing")).toBeNull();
+    expect(button.querySelector("[role=status]")).not.toBeNull();
+  });
 });

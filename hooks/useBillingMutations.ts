@@ -62,10 +62,22 @@ const useBillingMutations = (accountId: string | undefined) => {
     },
   });
 
+  // A mutation rather than `open` so the panel can show a spinner until the Stripe page loads.
+  const configureCard = useMutation({
+    mutationFn: () =>
+      withToken(async (token) => {
+        const result = await createClientPaymentMethodSession(
+          accountId as string,
+          token,
+        );
+        if (result?.error) throw new Error(describe(result.error));
+      }),
+    onError: (error) =>
+      toast.error(`Could not open checkout: ${describe(error)}`),
+  });
+
   return {
-    configureCard: open("Could not open checkout", (token) =>
-      createClientPaymentMethodSession(accountId as string, token),
-    ),
+    configureCard,
     upgrade: open("Could not open checkout", (token) =>
       createClientCheckoutSession(token),
     ),

@@ -56,9 +56,10 @@ const BillingPage = ({
           <div className="mb-4 flex flex-col gap-4 md:flex-row">
             <PaymentMethodPanel
               card={card}
-              onConfigure={actions.configureCard}
+              onConfigure={() => actions.configureCard.mutate()}
               onRemove={() => actions.removeCard.mutate()}
               isBusy={actions.removeCard.isPending}
+              isConfiguring={actions.configureCard.isPending}
               onSwitchToPersonal={
                 isOrg && !forced ? scope.switchToPersonal : undefined
               }

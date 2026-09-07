@@ -1,5 +1,6 @@
 import { CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import BillingPanel from "./BillingPanel";
 import RemoveCardButton from "./RemoveCardButton";
 import type { SavedCard } from "@/lib/recoup/getAccountPaymentMethod";
@@ -13,12 +14,15 @@ const PaymentMethodPanel = ({
   onConfigure,
   onRemove,
   isBusy,
+  isConfiguring = false,
   onSwitchToPersonal,
 }: {
   card: SavedCard | null;
   onConfigure: () => void;
   onRemove: () => void;
   isBusy: boolean;
+  /** True from the click until the Stripe page loads; the label becomes a spinner. */
+  isConfiguring?: boolean;
   /** Present when an organization is selected; returns the page to personal billing. */
   onSwitchToPersonal?: () => void;
 }) => (
@@ -43,9 +47,9 @@ const PaymentMethodPanel = ({
             variant="outline"
             size="sm"
             onClick={onConfigure}
-            disabled={isBusy}
+            disabled={isBusy || isConfiguring}
           >
-            Replace card
+            {isConfiguring ? <Spinner /> : "Replace card"}
           </Button>
           <RemoveCardButton onRemove={onRemove} disabled={isBusy} />
         </div>
@@ -57,8 +61,8 @@ const PaymentMethodPanel = ({
           plan.
         </p>
         <div className="flex flex-wrap items-center gap-3">
-          <Button onClick={onConfigure} disabled={isBusy}>
-            Configure billing
+          <Button onClick={onConfigure} disabled={isBusy || isConfiguring}>
+            {isConfiguring ? <Spinner /> : "Configure billing"}
           </Button>
         </div>
       </>
