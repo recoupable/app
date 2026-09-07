@@ -2,28 +2,26 @@
 
 import { useState } from "react";
 import SongRow from "./SongRow";
-import { getArtistProfileSongs } from "@/lib/recoup/getArtistProfileSongs";
 import { VALUATION_URL } from "@/lib/consts";
 import EmptySongsState from "./EmptySongsState";
 import type {
-  ArtistProfileCatalog,
+  ArtistProfileSong,
   ArtistProfileSocial,
 } from "@/lib/recoup/getArtistProfile";
 
 const PREVIEW_COUNT = 5;
 
-/** One artist song list across saved catalogs, with each recording shown once. */
+/** Render the unique artist recordings returned by the API. */
 const SongsSection = ({
-  catalogs,
+  songs,
   artistId,
   socials,
 }: {
-  catalogs: ArtistProfileCatalog[];
+  songs: ArtistProfileSong[];
   artistId: string;
   socials: ArtistProfileSocial[];
 }) => {
   const [expanded, setExpanded] = useState(false);
-  const songs = getArtistProfileSongs(catalogs);
   if (songs.length === 0)
     return <EmptySongsState artistId={artistId} socials={socials} />;
   const rows = expanded ? songs : songs.slice(0, PREVIEW_COUNT);
