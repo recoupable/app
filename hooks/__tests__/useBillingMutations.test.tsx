@@ -16,7 +16,7 @@ vi.mock("@/lib/billing/updateClientAutoTopUp", () => ({
   default: vi.fn(async () => ({ enabled: true })),
 }));
 vi.mock("@/lib/billing/createClientPaymentMethodSession", () => ({
-  default: vi.fn(() => new Promise(() => {})),
+  default: vi.fn(async () => ({})),
 }));
 
 describe("useBillingMutations", () => {
@@ -56,8 +56,10 @@ describe("useBillingMutations", () => {
     expect(stale(["autoTopUp", "did:privy:bob", "acct-1"])).toBe(false);
   });
 
-  // Stripe checkout opens in the same tab; the button shows a spinner until then.
-  it("reports configureCard as pending while the checkout session is being created", async () => {
+  // Stripe checkout opens in the same tab: the helper calls location.assign and
+  // resolves at once, so the mutation must stay pending until the page unloads,
+  // or a slow navigation would re-enable the button and allow a second session.
+  it("keeps configureCard pending after the session resolves, until the page unloads", async () => {
     const client = new QueryClient();
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <QueryClientProvider client={client}>{children}</QueryClientProvider>

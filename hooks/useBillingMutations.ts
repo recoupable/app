@@ -71,6 +71,9 @@ const useBillingMutations = (accountId: string | undefined) => {
           token,
         );
         if (result?.error) throw new Error(describe(result.error));
+        // The helper has already called location.assign: this tab is unloading
+        // into Stripe, so stay pending rather than re-enable the button first.
+        await new Promise<never>(() => {});
       }),
     onError: (error) =>
       toast.error(`Could not open checkout: ${describe(error)}`),
