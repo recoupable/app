@@ -22,13 +22,13 @@ const useBillingReads = (accountId: string | undefined) => {
   const autoTopUp = useAutoTopUp(accountId);
   const balance = useAccountBalance(accountId);
 
-  // Auto top-up and the balance are in the gate so the panel never shows Off or $0.00 while they load.
+  // Auto top-up is in the gate so the panel never shows Off while it loads; the
+  // balance is display-only and never holds the page (its hint reads "unavailable" until it lands).
   const isLoading =
     paymentMethod.isLoading ||
     subscription.isLoading ||
     payments.isLoading ||
-    autoTopUp.isLoading ||
-    balance.isLoading;
+    autoTopUp.isLoading;
   const failed = paymentMethod.error || subscription.error || payments.error;
   // The api enforces access: a 403 on any read means the caller may not see this account.
   const forbidden = [

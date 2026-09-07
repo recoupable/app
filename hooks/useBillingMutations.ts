@@ -16,7 +16,7 @@ const describe = (error: unknown) =>
 
 /** The billing page's writes for one account; every failure becomes a toast. */
 const useBillingMutations = (accountId: string | undefined) => {
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken, user } = usePrivy();
   const queryClient = useQueryClient();
 
   const withToken = async <T>(fn: (token: string) => Promise<T>) => {
@@ -24,8 +24,9 @@ const useBillingMutations = (accountId: string | undefined) => {
     if (!token || !accountId) throw new Error("Please sign in");
     return fn(token);
   };
+  // Same shape as the read keys: only this viewer's reads for this account go stale.
   const invalidate = (key: string) =>
-    queryClient.invalidateQueries({ queryKey: [key, accountId] });
+    queryClient.invalidateQueries({ queryKey: [key, user?.id, accountId] });
   const open =
     (
       label: string,

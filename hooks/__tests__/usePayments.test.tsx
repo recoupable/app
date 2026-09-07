@@ -8,7 +8,11 @@ import getAccountPayments from "@/lib/recoup/getAccountPayments";
 
 vi.mock("@/lib/recoup/getAccountPayments", () => ({ default: vi.fn() }));
 vi.mock("@privy-io/react-auth", () => ({
-  usePrivy: () => ({ authenticated: true, getAccessToken: async () => "tok" }),
+  usePrivy: () => ({
+    authenticated: true,
+    user: { id: "did:privy:test" },
+    getAccessToken: async () => "tok",
+  }),
 }));
 
 const makeWrapper = () => {

@@ -4,6 +4,8 @@ import {
   InfiniteData,
 } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
+import isClientError from "@/lib/api/isClientError";
+import BILLING_READ_TTL from "@/lib/billing/billingReadTtl";
 import getAccountPayments, {
   AccountPaymentsPage,
 } from "@/lib/recoup/getAccountPayments";
@@ -14,9 +16,9 @@ const PAGE_SIZE = 20;
 const usePayments = (
   accountId: string | undefined,
 ): UseInfiniteQueryResult<InfiniteData<AccountPaymentsPage>> => {
-  const { getAccessToken, authenticated } = usePrivy();
+  const { getAccessToken, authenticated, user } = usePrivy();
   return useInfiniteQuery({
-    queryKey: ["payments", accountId],
+    queryKey: ["payments", user?.id, accountId],
     initialPageParam: undefined as string | undefined,
     queryFn: async ({ pageParam }) => {
       const accessToken = await getAccessToken();
@@ -28,9 +30,11 @@ const usePayments = (
     },
     getNextPageParam: (lastPage) =>
       lastPage.hasMore ? lastPage.payments.at(-1)?.id : undefined,
-    enabled: authenticated && !!accountId,
-    staleTime: 60 * 1000,
+    enabled: authenticated && !!user?.id && !!accountId,
+    staleTime: BILLING_READ_TTL,
+    gcTime: BILLING_READ_TTL,
     refetchOnWindowFocus: false,
+    retry: (failureCount, error) => !isClientError(error) && failureCount < 2,
   });
 };
 
