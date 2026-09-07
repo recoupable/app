@@ -15,6 +15,9 @@ vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("@/lib/billing/updateClientAutoTopUp", () => ({
   default: vi.fn(async () => ({ enabled: true })),
 }));
+vi.mock("@/lib/billing/createClientPaymentMethodSession", () => ({
+  default: vi.fn(async () => ({})),
+}));
 
 describe("useBillingMutations", () => {
   // Read keys are [key, viewer, account]; a save must not disturb other accounts' caches.
@@ -51,5 +54,23 @@ describe("useBillingMutations", () => {
     expect(stale(["autoTopUp", "did:privy:alice", "acct-1"])).toBe(true);
     expect(stale(["autoTopUp", "did:privy:alice", "acct-2"])).toBe(false);
     expect(stale(["autoTopUp", "did:privy:bob", "acct-1"])).toBe(false);
+  });
+
+  // Stripe checkout opens in the same tab: the helper calls location.assign and
+  // resolves at once, so the mutation must stay pending until the page unloads,
+  // or a slow navigation would re-enable the button and allow a second session.
+  it("keeps configureCard pending after the session resolves, until the page unloads", async () => {
+    const client = new QueryClient();
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useBillingMutations("acct-1"), {
+      wrapper,
+    });
+    expect(result.current.configureCard.isPending).toBe(false);
+    act(() => result.current.configureCard.mutate());
+    await waitFor(() =>
+      expect(result.current.configureCard.isPending).toBe(true),
+    );
   });
 });
