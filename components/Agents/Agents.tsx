@@ -2,9 +2,9 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import AgentTags from "./AgentTags";
 import AgentCard from "./AgentCard";
-import { useAgentData } from "./useAgentData";
-import { useAgentToggleFavorite } from "./useAgentToggleFavorite";
-import type { Agent } from "./useAgentData";
+import { useAgentData } from "@/hooks/useAgentData";
+import { useAgentToggleFavorite } from "@/hooks/useAgentToggleFavorite";
+import type { Agent } from "@/hooks/useAgentData";
 import CreateAgentButton from "./CreateAgentButton";
 import { Switch } from "@/components/ui/switch";
 import AgentsSkeleton from "./AgentsSkeleton";
@@ -39,7 +39,10 @@ const Agents = () => {
             <span className="text-sm text-muted-foreground dark:text-muted-foreground">
               {isPrivate ? "Private" : "Public"}
             </span>
-            <Switch checked={isPrivate} onCheckedChange={() => togglePrivate()} />
+            <Switch
+              checked={isPrivate}
+              onCheckedChange={() => togglePrivate()}
+            />
           </div>
           <CreateAgentButton />
         </div>
@@ -78,7 +81,9 @@ const Agents = () => {
                   <AgentCard
                     agent={agent}
                     onClick={() => handleAgentClick(agent)}
-                    onToggleFavorite={(id, next) => handleToggleFavorite(id, next)}
+                    onToggleFavorite={(id, next) =>
+                      handleToggleFavorite(id, next)
+                    }
                   />
                 </div>
               ))}
