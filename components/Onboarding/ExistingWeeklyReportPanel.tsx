@@ -5,6 +5,7 @@ import { CalendarClock } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Task } from "@/lib/tasks/getTasks";
+import { describeNextRun } from "@/lib/tasks/describeNextRun";
 
 /**
  * Shown at `/setup/tasks` when the account already has an enabled schedule
@@ -14,7 +15,7 @@ import type { Task } from "@/lib/tasks/getTasks";
  */
 const ExistingWeeklyReportPanel = ({ task }: { task: Task }) => {
   const latestRun = task.recent_runs?.[0];
-  const nextRun = task.upcoming?.[0];
+  const nextRun = describeNextRun({ schedule: task.schedule, upcoming: task.upcoming });
 
   return (
     <section className="flex flex-col items-center gap-4 py-8 text-center">
@@ -24,12 +25,14 @@ const ExistingWeeklyReportPanel = ({ task }: { task: Task }) => {
           Your weekly report is already set up
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {nextRun
-            ? `Next run ${new Date(nextRun).toLocaleString()}.`
-            : "It runs on its schedule and emails you the result."}
+          {nextRun.kind === "timestamp"
+            ? `Next run ${nextRun.value}.`
+            : nextRun.kind === "cron"
+              ? `Runs ${nextRun.value.toLowerCase()}, emailed to you.`
+              : "It runs on its schedule and emails you the result."}
           {latestRun?.createdAt
             ? ` Last run ${new Date(latestRun.createdAt).toLocaleString()}.`
-            : " No runs yet."}
+            : " It has not run yet."}
         </p>
       </div>
       <Link
