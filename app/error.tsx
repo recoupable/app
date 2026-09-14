@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import ErrorPageLayout from "@/components/ErrorPageLayout";
@@ -17,27 +18,27 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   const actions = (
     <>
       <div className="flex flex-col sm:flex-row gap-3">
-        <Button 
+        <Button
           onClick={reset}
-          className="px-6 py-2"
+          className="h-12 rounded-full bg-brand-lime px-6 text-brand-on-lime shadow-none hover:bg-brand-lime-hover"
         >
           Try again
         </Button>
-        <Button 
+        <Button
           variant="outline"
-          onClick={() => window.location.href = '/'}
-          className="px-6 py-2"
+          asChild
+          className="h-12 rounded-full px-6"
         >
-          Go home
+          <Link href="/">Back to workspace</Link>
         </Button>
       </div>
-      
-      {process.env.NODE_ENV === 'development' && (
+
+      {process.env.NODE_ENV === "development" && (
         <details className="mt-8 text-left max-w-full">
-          <summary className="cursor-pointer text-sm text-gray-600 mb-2">
+          <summary className="cursor-pointer text-sm text-muted-foreground mb-2">
             Error details (development only)
           </summary>
-          <pre className="text-xs bg-gray-100 p-4 rounded overflow-auto max-w-full whitespace-pre-wrap">
+          <pre className="text-xs bg-muted p-4 rounded overflow-auto max-w-full whitespace-pre-wrap">
             {error.message}
             {error.stack && `\n\n${error.stack}`}
           </pre>
@@ -48,9 +49,10 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
 
   return (
     <ErrorPageLayout
-      title="Oops, something's not working"
-      description="We're having a small hiccup. No worries though - just try again and you should be good to go!"
+      eyebrow="WORKSPACE / SOMETHING WENT WRONG"
+      title="Let’s try that again."
+      description="We couldn’t load this view. Try again, or return to your workspace."
       actions={actions}
     />
   );
-} 
+}
