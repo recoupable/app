@@ -1,0 +1,78 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+  margin: 0 16px;
+  padding: 36px 40px 40px;
+  border-radius: 24px;
+  color: var(--sky-text);
+  background-color: var(--sky-start);
+  background-image: linear-gradient(110deg, var(--sky-start), transparent 160%),
+    url("/brand/hero-sky.webp");
+  background-size: cover;
+  background-position: center 55%;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-ibm-plex-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.heading {
+  margin-top: 28px;
+  max-width: 620px;
+  font-size: clamp(34px, 4.5vw, 54px);
+  font-weight: 450;
+  line-height: 1.07;
+  letter-spacing: -0.055em;
+  overflow-wrap: anywhere;
+}
+
+.description {
+  margin-top: 20px;
+  color: var(--sky-muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.artist {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+}
+
+.avatar {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--sky-muted);
+}
+
+:global(.dark) .hero {
+  background-image: linear-gradient(120deg, var(--sky-start), var(--sky-end));
+}
+
+@media (max-width: 639px) {
+  .hero {
+    margin: 0;
+    padding: 28px 24px;
+    border-radius: 20px;
+  }
+
+  .eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
+
+  .heading {
+    margin-top: 24px;
+  }
+}

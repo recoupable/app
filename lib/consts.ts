@@ -48,10 +48,10 @@ export const FAST_MODEL = "openai/gpt-5-nano";
 export const LIGHTWEIGHT_MODEL = "openai/gpt-4o-mini";
 export const ROUTING_STATUS_DATA_TYPE = "data-agent-routing-status" as const;
 
-export const TITLE = "Recoupable";
+export const TITLE = "Recoup";
 
 export const META_DESCRIPTION =
-  "Recoup helps artists build their own record label.";
+  "Your workspace for the business of music. Research artists, understand your catalog, and get work done with Recoup.";
 
 // Supabase Private Storage Bucket
 export const SUPABASE_STORAGE_BUCKET = "user-files";

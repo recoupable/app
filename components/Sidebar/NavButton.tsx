@@ -35,28 +35,34 @@ const NavButton = ({
       onClick={onClick}
       onMouseEnter={onHover}
       className={cn(
-        "rounded-lg whitespace-nowrap overflow-hidden transition-all duration-200 h-8 relative text-sm font-normal",
-        isExpanded ? "w-full flex justify-start gap-2 px-3" : "w-8 mx-auto gap-0",
+        "rounded-xl whitespace-nowrap overflow-hidden transition-colors duration-200 h-11 md:h-10 relative text-sm font-normal",
+        isExpanded
+          ? "w-full flex justify-start gap-2 px-3"
+          : "w-8 mx-auto gap-0",
         {
-          "bg-muted text-foreground hover:bg-muted": isActive,
-          "text-foreground hover:bg-muted": !isActive,
-        }
+          "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent font-medium":
+            isActive,
+          "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground":
+            !isActive,
+        },
       )}
       aria-label={ariaLabel || label}
     >
       {/* Active page accent bar */}
       {isActive && isExpanded && (
-        <div className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-[#345A5D]" />
+        <div className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full bg-brand" />
       )}
       <MenuItemIcon name={icon} />
-      <span className={cn(
-        "overflow-hidden transition-all duration-200",
-        isExpanded ? "opacity-100 max-w-[150px]" : "opacity-0 max-w-0"
-      )}>
+      <span
+        className={cn(
+          "overflow-hidden transition-all duration-200",
+          isExpanded ? "opacity-100 max-w-[150px]" : "opacity-0 max-w-0",
+        )}
+      >
         {label}
       </span>
     </Button>
   );
 };
 
-export default NavButton; 
+export default NavButton;

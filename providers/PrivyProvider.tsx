@@ -13,11 +13,13 @@ export default function PrivyProvider({
 
   // Validate app ID is present
   if (!appId) {
-    console.error('❌ Missing Privy app ID. Check environment variables:', {
+    console.error("❌ Missing Privy app ID. Check environment variables:", {
       hasAppId: !!process.env.NEXT_PUBLIC_PRIVY_APP_ID,
-      vercelEnv: process.env.NEXT_PUBLIC_VERCEL_ENV
+      vercelEnv: process.env.NEXT_PUBLIC_VERCEL_ENV,
     });
-    throw new Error('Missing required NEXT_PUBLIC_PRIVY_APP_ID environment variable');
+    throw new Error(
+      "Missing required NEXT_PUBLIC_PRIVY_APP_ID environment variable",
+    );
   }
 
   return (
@@ -26,8 +28,8 @@ export default function PrivyProvider({
       config={{
         appearance: {
           theme: "light",
-          accentColor: "#003199",
-          logo: "/Recoup_Icon_Wordmark_Black.svg",
+          accentColor: "#087BAB",
+          logo: "/brand/recoup-wordmark-black.svg",
         },
         loginMethods: ["email"],
         embeddedWallets: {

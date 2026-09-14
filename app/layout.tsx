@@ -11,25 +11,31 @@ import AddArtistDialog from "@/components/Artists/AddArtistDialog";
 import MobileDownloadModal from "@/components/ModalDownloadModal";
 import { ToastContainer } from "react-toastify";
 import { Toaster } from "sonner";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { Analytics } from "@vercel/analytics/next";
 import AccountOverrideBadge from "@/components/AccountOverrideBadge";
 
-const geist = Geist({
-  subsets: ["latin"],
+const dmSans = localFont({
+  src: "./fonts/DMSans-Latin.woff2",
+  weight: "100 900",
   display: "swap",
-  variable: "--font-geist",
+  variable: "--font-dm-sans",
 });
 
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
+const ibmPlexMono = localFont({
+  src: "./fonts/IBMPlexMono-Latin.woff2",
+  weight: "400",
   display: "swap",
-  variable: "--font-geist-mono",
+  variable: "--font-ibm-plex-mono",
 });
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F0F7FA" },
+    { media: "(prefers-color-scheme: dark)", color: "#10221E" },
+  ],
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -56,13 +62,15 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: TITLE,
       description: META_DESCRIPTION,
-      images: "/backgrounds/marketing_screenshot.png",
+      images: [
+        { url: "/brand/icon-512.png", width: 512, height: 512, alt: TITLE },
+      ],
     },
     manifest: "/manifest.json",
-    icons: [{ rel: "icon", url: "/icon-with-background.png" }],
-    viewport:
-      "minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover",
-    themeColor: [{ media: "(prefers-color-scheme: dark)", color: "#fff" }],
+    icons: {
+      icon: "/favicon.ico",
+      apple: "/brand/apple-touch-icon.png",
+    },
   };
 }
 
@@ -75,9 +83,9 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geist.variable} ${geistMono.variable}`}
+      className={`${dmSans.variable} ${ibmPlexMono.variable}`}
     >
-      <body className={`${geist.variable} antialiased`}>
+      <body className="font-sans antialiased">
         <Suspense>
           <Providers>
             <AccountOverrideBadge />
@@ -86,9 +94,9 @@ export default function RootLayout({
               <Header />
               <ArtistSettingModal />
               <AddArtistDialog />
-              <div className="grow flex h-[100dvh] pt-16 md:pt-0 md:h-screen overflow-hidden bg-sidebar">
-                <div className="size-full md:py-4 md:pl-4">
-                  <div className="size-full bg-card overflow-y-auto md:rounded-xl flex flex-col md:shadow-md md:border md:border-border">
+              <div className="min-w-0 grow flex h-[100dvh] pt-16 md:pt-0 md:h-screen overflow-hidden bg-sidebar">
+                <div className="size-full md:p-3 md:pl-0">
+                  <div className="size-full bg-card overflow-y-auto md:rounded-[24px] flex flex-col md:shadow-[0_0_0_1px_var(--border),0_8px_32px_var(--surface-shadow)]">
                     {children}
                   </div>
                 </div>

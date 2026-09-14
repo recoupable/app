@@ -58,7 +58,7 @@ export default function ProjectPage({ projectId }: { projectId: string }) {
             {data.project.name}
           </h1>
           <p className="font-sans text-lg font-light text-muted-foreground">
-            Live status of the work Recoupable is doing for you. Comment on any
+            Live status of the work Recoup is doing for you. Comment on any
             task to reach us.
           </p>
         </div>

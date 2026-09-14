@@ -20,18 +20,18 @@ const Sidebar = () => {
 
   return (
     <motion.div
-      className="bg-sidebar overflow-hidden"
+      className="hidden md:block shrink-0 bg-sidebar overflow-hidden"
       animate={animate}
       initial={initial}
       transition={{ duration: 0.2 }}
-      onMouseEnter={() => { if (!isPinned) setMenuExpanded(!isMobile); }}
-      onMouseLeave={() => { if (!isPinned) setMenuExpanded(false); }}
+      onMouseEnter={() => {
+        if (!isPinned) setMenuExpanded(!isMobile);
+      }}
+      onMouseLeave={() => {
+        if (!isPinned) setMenuExpanded(false);
+      }}
     >
-      <Menu
-        isExpanded={isOpen}
-        isPinned={isPinned}
-        onTogglePin={togglePin}
-      />
+      <Menu isExpanded={isOpen} isPinned={isPinned} onTogglePin={togglePin} />
       <AccountModal />
       <OrgSettingsModal />
       <CreateOrgModal />
