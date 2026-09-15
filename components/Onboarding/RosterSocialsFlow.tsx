@@ -26,11 +26,12 @@ const RosterSocialsFlow = ({
   const [step, setStep] = useState<FlowStep>(initialStep);
 
   return (
-    <div className="w-full max-w-xl mx-auto grow py-8 px-6 flex flex-col gap-6">
-      {step !== "done" && (
+    <div
+      className={`w-full mx-auto grow px-5 sm:px-8 flex flex-col gap-6 ${step === "socials" ? "max-w-3xl py-7 sm:py-8" : "max-w-xl py-8"}`}
+    >
+      {step === "roster" && (
         <p className="text-xs text-muted-foreground">
-          Account setup ·{" "}
-          {step === "roster" ? "Artist roster" : "Artist profiles"}
+          Account setup · Artist roster
         </p>
       )}
       {step === "roster" && (

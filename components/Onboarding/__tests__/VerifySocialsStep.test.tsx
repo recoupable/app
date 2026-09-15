@@ -34,8 +34,8 @@ vi.mock("@/hooks/onboarding/useSocialRemove", () => ({
 vi.mock("../SetupSkipLink", () => ({
   default: () => <button>Skip for now</button>,
 }));
-vi.mock("../ArtistSocialsCard", () => ({
-  default: ({ artist }: { artist: ArtistRecord }) => <h2>{artist.name}</h2>,
+vi.mock("../SocialSearchOrPaste", () => ({
+  default: () => <input aria-label="Search Spotify for an artist" />,
 }));
 const artist = (id: string, linked: boolean) =>
   ({
@@ -56,6 +56,33 @@ beforeEach(() => {
 });
 
 describe("missing artist profiles", () => {
+  it("opens one editor at a time and advances when its artist is connected", () => {
+    state.artists = [artist("First", false), artist("Second", false)];
+    const view = render(<VerifySocialsStep onConfirmed={vi.fn()} />);
+    expect(screen.getAllByRole("textbox")).toHaveLength(1);
+    expect(
+      screen
+        .getByRole("button", { name: "Close First" })
+        .getAttribute("aria-expanded"),
+    ).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: "Connect Second" }));
+    expect(screen.getAllByRole("textbox")).toHaveLength(1);
+    expect(
+      screen
+        .getByRole("button", { name: "Connect First" })
+        .getAttribute("aria-expanded"),
+    ).toBe("false");
+    state.artists = [artist("First", false), artist("Second", true)];
+    view.rerender(<VerifySocialsStep onConfirmed={vi.fn()} />);
+    expect(screen.queryByRole("heading", { name: "Second" })).toBeNull();
+    expect(
+      screen
+        .getByRole("button", { name: "Close First" })
+        .getAttribute("aria-expanded"),
+    ).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: "Close First" }));
+    expect(screen.queryByRole("textbox")).toBeNull();
+  });
   it("shows only artists responsible for the socials gate and explains the action", () => {
     expect(
       getOnboardingStep({ artists: state.artists, catalogs: [], tasks: [] }),
@@ -76,7 +103,7 @@ describe("missing artist profiles", () => {
     const view = render(<VerifySocialsStep onConfirmed={onConfirmed} />);
     fireEvent.click(
       screen.getByRole("button", {
-        name: "Add profiles to continue",
+        name: "Continue setup",
       }),
     );
     expect(onConfirmed).not.toHaveBeenCalled();
