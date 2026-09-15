@@ -76,3 +76,101 @@
     margin-top: 24px;
   }
 }
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 16px 16px 0;
+}
+
+.actions .actionCard {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+  width: 100%;
+  height: auto;
+  min-height: 118px;
+  padding: 22px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 5px 18px -12px var(--foreground);
+  text-align: left;
+  white-space: normal;
+  cursor: pointer;
+  transition:
+    background 160ms,
+    box-shadow 160ms;
+}
+
+.actions .actionCard:hover {
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.actions .actionCard:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+}
+
+.actionIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+  background: var(--brand-lime);
+  color: var(--brand-on-lime);
+}
+
+.actionIcon svg {
+  width: 24px;
+  height: 24px;
+}
+.actionCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.actionTitle {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+.actionDescription {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+.actionCard .actionArrow {
+  width: 20px;
+  height: 20px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+@media (max-width: 639px) {
+  .actions {
+    grid-template-columns: 1fr;
+    margin: 14px 0 0;
+    gap: 12px;
+  }
+  .actions .actionCard {
+    min-height: 96px;
+    padding: 18px;
+    gap: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actions .actionCard {
+    transition: none;
+  }
+}

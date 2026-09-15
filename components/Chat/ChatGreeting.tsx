@@ -1,3 +1,4 @@
+import { ArrowUpRight, Disc3, Mic2 } from "lucide-react";
 import AddCatalogButton from "@/components/Catalog/AddCatalogButton";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import ImageWithFallback from "@/components/ImageWithFallback";
@@ -82,19 +83,39 @@ export function ChatGreeting({ isVisible }: { isVisible: boolean }) {
                   ? `${artists.length} artists. Work across your roster, or choose an artist above to focus.`
                   : "Add an artist or catalog, or start with a question."}
         </p>
-        {!isArtistSelected && !isLoading && !isError && !artists.length && (
-          <div className="mt-4 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={toggleCreation}
-              className="rounded-full bg-brand-lime px-4 py-2 text-sm font-medium text-brand-on-lime hover:opacity-90"
-            >
-              Add artist
-            </button>
-            <AddCatalogButton className="rounded-full bg-background text-foreground" />
-          </div>
-        )}
       </section>
+      {!isArtistSelected && !isLoading && !isError && !artists.length && (
+        <div className={styles.actions} role="group" aria-label="Get started">
+          <button
+            type="button"
+            onClick={toggleCreation}
+            className={styles.actionCard}
+          >
+            <span className={styles.actionIcon}>
+              <Mic2 aria-hidden="true" />
+            </span>
+            <span className={styles.actionCopy}>
+              <span className={styles.actionTitle}>Add artist</span>
+              <span className={styles.actionDescription}>
+                Connect an artist from Spotify.
+              </span>
+            </span>
+            <ArrowUpRight className={styles.actionArrow} aria-hidden="true" />
+          </button>
+          <AddCatalogButton className={styles.actionCard}>
+            <span className={styles.actionIcon}>
+              <Disc3 aria-hidden="true" />
+            </span>
+            <span className={styles.actionCopy}>
+              <span className={styles.actionTitle}>Add catalog</span>
+              <span className={styles.actionDescription}>
+                Upload your songs from a CSV.
+              </span>
+            </span>
+            <ArrowUpRight className={styles.actionArrow} aria-hidden="true" />
+          </AddCatalogButton>
+        </div>
+      )}
       <div className="mt-4 px-4 text-sm">
         <HomeSuggestedPrompts />
       </div>

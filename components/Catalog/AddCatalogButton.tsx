@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
@@ -21,8 +22,10 @@ import {
 
 export default function AddCatalogButton({
   className,
+  children,
 }: {
   className?: string;
+  children?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -76,7 +79,7 @@ export default function AddCatalogButton({
           className={className}
           disabled={!isInitialized}
         >
-          Add catalog
+          {children ?? "Add catalog"}
         </Button>
       </DialogTrigger>
       <DialogContent
