@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import ConfirmRosterStep from "./ConfirmRosterStep";
-import RosterVerifiedPanel from "./RosterVerifiedPanel";
+import SetupEntry from "./SetupEntry";
 import SetupSkipLink from "./SetupSkipLink";
 import VerifySocialsStep from "./VerifySocialsStep";
 
-type FlowStep = "roster" | "socials" | "done";
+type FlowStep = "roster" | "socials" | "continue";
 
 /**
  * Container for the roster + socials steps of the canonical `/setup/*`
@@ -25,6 +25,8 @@ const RosterSocialsFlow = ({
 } = {}) => {
   const [step, setStep] = useState<FlowStep>(initialStep);
 
+  if (step === "continue") return <SetupEntry />;
+
   return (
     <div
       className={`w-full mx-auto grow px-5 sm:px-8 flex flex-col gap-6 ${step === "socials" ? "max-w-3xl py-7 sm:py-8" : "max-w-xl py-8"}`}
@@ -38,9 +40,8 @@ const RosterSocialsFlow = ({
         <ConfirmRosterStep onConfirmed={() => setStep("socials")} />
       )}
       {step === "socials" && (
-        <VerifySocialsStep onConfirmed={() => setStep("done")} />
+        <VerifySocialsStep onConfirmed={() => setStep("continue")} />
       )}
-      {step === "done" && <RosterVerifiedPanel />}
       {step === "roster" && <SetupSkipLink />}
     </div>
   );
