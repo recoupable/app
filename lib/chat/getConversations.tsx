@@ -47,6 +47,7 @@ const apiChatsResponseSchema = z.object({
 const getConversations = async (
   accessToken: string,
   artistAccountId?: string,
+  organizationId?: string | null,
 ): Promise<Conversation[]> => {
   if (!accessToken) {
     return [];
@@ -76,7 +77,23 @@ const getConversations = async (
     }
 
     const parsed = apiChatsResponseSchema.parse(await response.json());
-    return parsed.chats.map(
+    let chats = parsed.chats;
+    if (organizationId !== undefined) {
+      const params = new URLSearchParams();
+      if (organizationId) params.set("organizationId", organizationId);
+      const scopeResponse = await fetch(`/api/chat-scope?${params}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        cache: "no-store",
+      });
+      if (!scopeResponse.ok)
+        throw new Error("Could not load workspace conversations");
+      const scope = z
+        .object({ sessionIds: z.array(z.string()) })
+        .parse(await scopeResponse.json());
+      const sessionIds = new Set(scope.sessionIds);
+      chats = chats.filter((chat) => sessionIds.has(chat.sessionId));
+    }
+    return chats.map(
       (row): Conversation => ({
         id: row.id,
         topic: row.title,

@@ -177,3 +177,34 @@ describe("getConversations", () => {
     });
   });
 });
+
+describe("workspace conversation filtering", () => {
+  it("excludes other workspace sessions, including unscoped artist chats", async () => {
+    mockFetch.mockReset();
+    const row = {
+      id: "chat",
+      title: "Chat",
+      accountId: "account",
+      sessionId: "personal",
+      artistId: null,
+      updatedAt: "2024-01-01",
+    };
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        chats: [row, { ...row, id: "other", sessionId: "org" }],
+      }),
+    });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ sessionIds: ["personal"] }),
+    });
+    expect(
+      (await getConversations("token", undefined, null)).map((chat) => chat.id),
+    ).toEqual(["chat"]);
+    expect(mockFetch).toHaveBeenLastCalledWith(
+      "/api/chat-scope?",
+      expect.objectContaining({ headers: { Authorization: "Bearer token" } }),
+    );
+  });
+});
