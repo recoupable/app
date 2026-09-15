@@ -35,9 +35,11 @@ export function ChatInput({
   // A Send during provisioning goes through: the transport holds the request
   // until the sandbox is ready (app#2052). Only blockers that do not clear on
   // their own disable the button.
+  const hasContent = input.trim() !== "" || textAttachments.length > 0;
   const isSendDisabled =
     !isGeneratingResponse &&
-    (isDisabled ||
+    (!hasContent ||
+      isDisabled ||
       hasPendingUploads ||
       isLoadingSignedUrls ||
       workspaceStatus === "off");
@@ -53,7 +55,6 @@ export function ChatInput({
 
     // Only check input requirements for sending new messages
     // Allow sending if there are text attachments even without typed input
-    const hasContent = input !== "" || textAttachments.length > 0;
     if (!hasContent || isSendDisabled) return;
 
     handleSendMessage(event);
@@ -90,7 +91,7 @@ export function ChatInput({
             onChange={setInput}
             disabled={isDisabled || hasPendingUploads}
           />
-          <PromptInputToolbar>
+          <PromptInputToolbar className="px-3 py-2">
             <PromptInputTools>
               <PureAttachmentsButton />
               {/* YouTube connect button removed from ChatInput UI intentionally; preserved for future reuse */}
@@ -103,7 +104,7 @@ export function ChatInput({
               disabled={isSendDisabled}
               status={status}
               className={cn(
-                "size-11 rounded-full bg-brand-lime text-brand-on-lime hover:bg-brand-lime-hover transition-colors",
+                "size-10 rounded-xl bg-brand-lime text-brand-on-lime hover:bg-brand-lime-hover transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 {
                   "cursor-not-allowed opacity-50": isSendDisabled,
                 },

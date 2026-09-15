@@ -53,6 +53,15 @@ export default function WorkspaceContextBar() {
     ? organizations.find((org) => org.organization_id === selectedOrgId)
         ?.organization_name || "Organization"
     : "Personal";
+  const artistLabel =
+    selectedArtist?.name ||
+    (isLoading
+      ? "Loading artists…"
+      : isError
+        ? "Artists unavailable"
+        : artists.length
+          ? "All artists"
+          : "No artists yet");
   const selectArtist = (artist: ArtistRecord | null) => {
     setOpen(false);
     if ((artist?.account_id ?? null) === (selectedArtist?.account_id ?? null))
@@ -126,11 +135,11 @@ export default function WorkspaceContextBar() {
           setSearch("");
           setOpen(true);
         }}
-        aria-label={`Artist: ${selectedArtist?.name || "All artists"}`}
+        aria-label={`Artist: ${artistLabel}`}
       >
         <Users className="hidden size-4 shrink-0 text-muted-foreground sm:block" />
         <span className="max-w-[150px] truncate sm:max-w-[260px]">
-          {selectedArtist?.name || "All artists"}
+          {artistLabel}
         </span>
         <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
       </button>
@@ -154,17 +163,19 @@ export default function WorkspaceContextBar() {
             />
           </div>
           <div className="max-h-[50dvh] overflow-y-auto px-2 pb-2">
-            <button
-              type="button"
-              onClick={() => selectArtist(null)}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm hover:bg-muted focus-visible:bg-muted"
-            >
-              <Users className="size-5 text-muted-foreground" />
-              All artists
-              {!selectedArtist && <Check className="ml-auto size-4" />}
-            </button>
+            {artists.length > 0 && (
+              <button
+                type="button"
+                onClick={() => selectArtist(null)}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm hover:bg-muted focus-visible:bg-muted"
+              >
+                <Users className="size-5 text-muted-foreground" />
+                All artists
+                {!selectedArtist && <Check className="ml-auto size-4" />}
+              </button>
+            )}
             {isLoading ? (
-              <p className="p-3 text-sm text-muted-foreground">
+              <p className="p-3 text-sm leading-relaxed text-muted-foreground">
                 Loading artists…
               </p>
             ) : isError ? (
@@ -198,7 +209,7 @@ export default function WorkspaceContextBar() {
               !artists.some((artist) =>
                 artist.name?.toLowerCase().includes(search.toLowerCase()),
               ) && (
-                <p className="p-3 text-sm text-muted-foreground">
+                <p className="p-3 text-sm leading-relaxed text-muted-foreground">
                   {artists.length
                     ? "No artists match your search."
                     : "Add your first artist to get started."}

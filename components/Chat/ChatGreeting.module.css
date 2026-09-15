@@ -174,3 +174,7 @@
     transition: none;
   }
 }
+
+.heading:first-child {
+  margin-top: 0;
+}
