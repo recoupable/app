@@ -3,7 +3,6 @@
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import useHomeValuation from "@/hooks/useHomeValuation";
-import useHomeTasksModuleState from "@/hooks/useHomeTasksModuleState";
 import { getHomeSuggestedPrompts } from "@/lib/home/getHomeSuggestedPrompts";
 
 /**
@@ -16,15 +15,28 @@ import { getHomeSuggestedPrompts } from "@/lib/home/getHomeSuggestedPrompts";
  */
 const HomeSuggestedPrompts = () => {
   const { setInput } = useVercelChatContext();
-  const { selectedArtist } = useArtistProvider();
+  const { selectedArtist, artists, isLoading, isError } = useArtistProvider();
   const valuation = useHomeValuation();
-  const tasksState = useHomeTasksModuleState();
 
-  const prompts = getHomeSuggestedPrompts({
-    hasValuation: valuation.show,
-    hasRuns: tasksState.view === "runs",
-    artistName: selectedArtist?.name || "",
-  });
+  const prompts =
+    !selectedArtist && !artists.length && !isLoading && !isError
+      ? [
+          {
+            label: "What can Recoup do?",
+            prompt:
+              "What can Recoup help me do? Show me a few practical ways to get started.",
+          },
+          {
+            label: "Plan a release",
+            prompt:
+              "Help me plan a music release. Ask me about the artist, timeline, and goals first.",
+          },
+        ]
+      : getHomeSuggestedPrompts({
+          hasValuation: valuation.show,
+          hasRuns: false,
+          artistName: selectedArtist?.name || "",
+        });
 
   if (prompts.length === 0) return null;
 

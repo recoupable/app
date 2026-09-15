@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { getProfileSetupArtists } from "@/lib/onboarding/getProfileSetupArtists";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,7 +15,15 @@ import SetupSkipLink from "./SetupSkipLink";
 
 /** The fresh roster and the home gate share the same completion rule. */
 const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
-  const { artists, isLoading, isError, getArtists } = useArtistProvider();
+  const {
+    artists: roster,
+    selectedArtist,
+    isLoading,
+    isError,
+    getArtists,
+  } = useArtistProvider();
+  const artists = getProfileSetupArtists(roster, selectedArtist);
+  const router = useRouter();
   const { fixSocial, fixingArtistId } = useSocialFix();
   const preferences = useArtistProfilePreferences();
   const [editingId, setEditingId] = useState<string | null>();
@@ -39,6 +49,13 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
   const ready =
     !isLoading && !isError && preferences.isSuccess && artists.length > 0;
   const canContinue = ready && !isSaving && missingArtists.length === 0;
+
+  const selectedProfileComplete = !!selectedArtist && canContinue;
+  useEffect(() => {
+    if (selectedProfileComplete) router.replace("/");
+  }, [selectedProfileComplete, router]);
+
+  if (selectedProfileComplete) return null;
 
   return (
     <section className="flex flex-col gap-7 sm:gap-8">

@@ -29,7 +29,7 @@ const useArtists = () => {
     artistSetting.setEditableArtist,
   );
 
-  const orgKey = selectedOrgId || "personal";
+  const orgKey = `${userData?.account_id ?? "signed-out"}:${selectedOrgId || "personal"}`;
 
   const { artists, isLoading, isError, setArtists, refetchArtists } =
     useArtistsRoster({

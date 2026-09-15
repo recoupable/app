@@ -1,6 +1,7 @@
 "use client";
 
 import { useArtistProfilePreferences } from "@/hooks/onboarding/useArtistProfilePreferences";
+import { getProfileSetupArtists } from "@/lib/onboarding/getProfileSetupArtists";
 import { useMemo } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import useCatalogs from "@/hooks/useCatalogs";
@@ -25,6 +26,7 @@ export function useOnboardingState(): OnboardingState {
   const { authenticated } = usePrivy();
   const {
     artists,
+    selectedArtist,
     isLoading: artistsLoading,
     isError: artistsError,
   } = useArtistProvider();
@@ -42,12 +44,14 @@ export function useOnboardingState(): OnboardingState {
     () =>
       deriveOnboardingState({
         authenticated,
-        artists: artists.map((artist) => ({
-          ...artist,
-          profile_unavailable: profilePreferences.artistIds.includes(
-            artist.account_id,
-          ),
-        })),
+        artists: getProfileSetupArtists(artists, selectedArtist).map(
+          (artist) => ({
+            ...artist,
+            profile_unavailable: profilePreferences.artistIds.includes(
+              artist.account_id,
+            ),
+          }),
+        ),
         artistsLoading: artistsLoading || !profilePreferences.isSuccess,
         artistsError: artistsError || profilePreferences.isError,
         catalogs,
@@ -61,6 +65,7 @@ export function useOnboardingState(): OnboardingState {
       profilePreferences.isSuccess,
       profilePreferences.isError,
       artists,
+      selectedArtist,
       artistsLoading,
       artistsError,
       catalogs,

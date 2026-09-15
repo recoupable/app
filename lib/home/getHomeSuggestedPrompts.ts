@@ -56,5 +56,18 @@ export function getHomeSuggestedPrompts({
     });
   }
 
+  if (!artistName) {
+    prompts.push(
+      {
+        label: "Review my roster",
+        prompt: "Review the artists in this workspace. What needs attention?",
+      },
+      {
+        label: "Plan this week",
+        prompt:
+          "Help me plan this week across the artists in this workspace. Ask me about priorities first.",
+      },
+    );
+  }
   return prompts.slice(0, MAX_PROMPTS);
 }

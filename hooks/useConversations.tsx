@@ -1,3 +1,4 @@
+import { useOrganization } from "@/providers/OrganizationProvider";
 import { useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUserProvider } from "@/providers/UserProvder";
@@ -8,6 +9,7 @@ import { usePrivy } from "@privy-io/react-auth";
 
 const useConversations = () => {
   const { userData } = useUserProvider();
+  const { selectedOrgId, isInitialized } = useOrganization();
   const { selectedArtist, isLoading: isArtistsLoading } = useArtistProvider();
   const queryClient = useQueryClient();
   const { getAccessToken, authenticated } = usePrivy();
@@ -18,8 +20,14 @@ const useConversations = () => {
   // fresh fetch with the new `?artist_account_id` filter rather than
   // reusing the previous artist's cached list.
   const queryKey = useMemo(
-    () => ["conversations", artistAccountId ?? null] as const,
-    [artistAccountId],
+    () =>
+      [
+        "conversations",
+        userData?.account_id,
+        selectedOrgId,
+        artistAccountId ?? null,
+      ] as const,
+    [userData?.account_id, selectedOrgId, artistAccountId],
   );
 
   const {
@@ -31,14 +39,22 @@ const useConversations = () => {
     queryKey,
     queryFn: async () => {
       const accessToken = await getAccessToken();
-      return getConversations(accessToken as string, artistAccountId);
+      return getConversations(
+        accessToken as string,
+        artistAccountId,
+        selectedOrgId,
+      );
     },
     // Wait for `useArtists` to resolve `selectedArtist` before firing.
     // Otherwise the first request goes out with no artist filter while
     // the saved selection is still loading, briefly showing the user
     // every chat across artists before the refetch swaps in the
     // correct list.
-    enabled: authenticated && !isArtistsLoading,
+    enabled:
+      authenticated &&
+      isInitialized &&
+      !!userData?.account_id &&
+      !isArtistsLoading,
     initialData: [],
   });
 

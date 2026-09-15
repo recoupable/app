@@ -45,6 +45,10 @@ export function useArtistFromChat({ sessionId }: UseArtistFromChatParams) {
   const artistAccountId = sessionData?.session.artistId ?? undefined;
 
   useEffect(() => {
+    if (sessionData?.session.artistId === null && selectedArtist) {
+      setSelectedArtist(null);
+      return;
+    }
     if (!artistAccountId || selectedArtist?.account_id === artistAccountId) {
       return;
     }
@@ -60,5 +64,12 @@ export function useArtistFromChat({ sessionId }: UseArtistFromChatParams) {
     }
 
     getArtists(artistAccountId);
-  }, [artistAccountId, selectedArtist, artists, setSelectedArtist, getArtists]);
+  }, [
+    sessionData,
+    artistAccountId,
+    selectedArtist,
+    artists,
+    setSelectedArtist,
+    getArtists,
+  ]);
 }

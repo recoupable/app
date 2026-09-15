@@ -8,6 +8,8 @@ import type { ArtistRecord } from "@/types/Artist";
 
 const state = vi.hoisted(() => ({
   artists: [] as ArtistRecord[],
+  selectedArtist: null as ArtistRecord | null,
+  replace: vi.fn(),
   isLoading: false,
   isError: false,
   fixingArtistId: null as string | null,
@@ -16,6 +18,9 @@ const state = vi.hoisted(() => ({
   preferenceError: false,
   preferencePending: false,
   setNoProfile: vi.fn(),
+}));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: state.replace }),
 }));
 vi.mock("@/hooks/onboarding/useArtistProfilePreferences", () => ({
   useArtistProfilePreferences: () => ({
@@ -65,6 +70,8 @@ beforeEach(() => {
     artist("Connected artist", true),
     artist("Missing artist", false),
   ];
+  state.selectedArtist = null;
+  state.replace.mockReset();
   state.dismissed = [];
   state.preferenceError = false;
   state.preferencePending = false;
@@ -75,6 +82,28 @@ beforeEach(() => {
 });
 
 describe("missing artist profiles", () => {
+  it("leaves setup when the selected artist is connected, even with missing roster profiles", () => {
+    state.selectedArtist = artist("Connected artist", false);
+    render(<VerifySocialsStep onConfirmed={vi.fn()} />);
+    expect(state.replace).toHaveBeenCalledWith("/");
+    expect(screen.queryByText("Missing profiles")).toBeNull();
+  });
+  it("shows only the selected missing artist and reacts when selection changes", () => {
+    state.selectedArtist = artist("Missing artist", false);
+    state.artists.push(artist("Other missing artist", false));
+    const view = render(<VerifySocialsStep onConfirmed={vi.fn()} />);
+    expect(screen.getByText("Missing artist")).toBeDefined();
+    expect(screen.queryByText("Other missing artist")).toBeNull();
+    state.selectedArtist = artist("Connected artist", true);
+    view.rerender(<VerifySocialsStep onConfirmed={vi.fn()} />);
+    expect(state.replace).toHaveBeenCalledWith("/");
+  });
+  it("does not redirect while profile data is unresolved", () => {
+    state.selectedArtist = artist("Connected artist", true);
+    state.isLoading = true;
+    render(<VerifySocialsStep onConfirmed={vi.fn()} />);
+    expect(state.replace).not.toHaveBeenCalled();
+  });
   it("waits for server confirmation, remembers no-profile choices, and supports undo", async () => {
     const onConfirmed = vi.fn();
     const view = render(<VerifySocialsStep onConfirmed={onConfirmed} />);

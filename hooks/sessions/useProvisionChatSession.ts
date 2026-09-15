@@ -44,9 +44,9 @@ export function useProvisionChatSession({
 }: UseProvisionChatSessionInput): ProvisionChatSessionState {
   const { getAccessToken } = usePrivy();
 
-  const [earlyIds, setEarlyIds] = useState<ProvisionChatSessionResult | null>(
-    null,
-  );
+  const [earlyIds, setEarlyIds] = useState<
+    (ProvisionChatSessionResult & { artistId?: string; orgId?: string }) | null
+  >(null);
   // Ids from an attempt superseded by an artist/org switch must not surface.
   const attemptRef = useRef(0);
 
@@ -59,7 +59,8 @@ export function useProvisionChatSession({
         throw new Error("Please sign in to start a chat");
       }
       return provisionChatSession(input, accessToken, (ids) => {
-        if (attempt === attemptRef.current) setEarlyIds(ids);
+        if (attempt === attemptRef.current)
+          setEarlyIds({ ...ids, artistId: input.artistId, orgId: input.orgId });
       });
     },
   });
@@ -77,8 +78,19 @@ export function useProvisionChatSession({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, artistId, orgId]);
 
-  if (!enabled || mutation.isIdle || mutation.isPending) {
-    return earlyIds
+  // A previous success is still present during the render before the effect.
+  // Never hand its ids to a composer showing a different scope.
+  if (
+    !enabled ||
+    mutation.variables?.artistId !== artistId ||
+    mutation.variables?.orgId !== orgId
+  ) {
+    return { status: "bootstrapping" };
+  }
+  if (mutation.isIdle || mutation.isPending) {
+    return earlyIds &&
+      earlyIds.artistId === artistId &&
+      earlyIds.orgId === orgId
       ? { status: "session-ready", ...earlyIds }
       : { status: "bootstrapping" };
   }
