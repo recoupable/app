@@ -29,7 +29,8 @@ const RosterSocialsFlow = ({
     <div className="w-full max-w-xl mx-auto grow py-8 px-6 flex flex-col gap-6">
       {step !== "done" && (
         <p className="text-xs text-muted-foreground">
-          Step {step === "roster" ? "1" : "2"} of 2
+          Account setup ·{" "}
+          {step === "roster" ? "Artist roster" : "Artist profiles"}
         </p>
       )}
       {step === "roster" && (
@@ -39,7 +40,7 @@ const RosterSocialsFlow = ({
         <VerifySocialsStep onConfirmed={() => setStep("done")} />
       )}
       {step === "done" && <RosterVerifiedPanel />}
-      {step !== "done" && <SetupSkipLink />}
+      {step === "roster" && <SetupSkipLink />}
     </div>
   );
 };

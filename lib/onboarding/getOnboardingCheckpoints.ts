@@ -2,6 +2,7 @@ import type {
   OnboardingAccountState,
   OnboardingCheckpoint,
 } from "@/lib/onboarding/types";
+import { hasLinkedSocial } from "@/lib/onboarding/hasLinkedSocial";
 
 /**
  * Evaluates every activation checkpoint predicate against account state
@@ -22,11 +23,7 @@ export function getOnboardingCheckpoints(
     { id: "artists", complete: hasArtists },
     {
       id: "socials",
-      complete:
-        hasArtists &&
-        state.artists.every(
-          (artist) => (artist.account_socials?.length ?? 0) > 0,
-        ),
+      complete: hasArtists && state.artists.every(hasLinkedSocial),
     },
     { id: "catalog", complete: state.catalogs.length > 0 },
     {

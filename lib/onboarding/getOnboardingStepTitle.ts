@@ -9,7 +9,7 @@ import type { OnboardingStepId } from "@/lib/onboarding/types";
  */
 const STEP_TITLES: Record<OnboardingStepId, string> = {
   artists: "Confirm your artists",
-  socials: "Verify socials",
+  socials: "Connect artist profiles",
   catalog: "Claim your catalog",
   task: "Schedule your first report",
 };

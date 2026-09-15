@@ -6,6 +6,9 @@ import { buttonVariants } from "@/components/ui/button";
 import ValuationHero from "@/components/Home/ValuationHero";
 import useHomeValuation from "@/hooks/useHomeValuation";
 import { cn } from "@/lib/utils";
+import { useOnboardingState } from "@/hooks/useOnboardingState";
+import { getSetupPathForStep } from "@/lib/onboarding/getSetupPathForStep";
+import { getOnboardingStepTitle } from "@/lib/onboarding/getOnboardingStepTitle";
 
 /**
  * Shown when both roster and socials steps are complete.
@@ -19,6 +22,13 @@ import { cn } from "@/lib/utils";
  */
 const RosterVerifiedPanel = () => {
   const valuation = useHomeValuation();
+  const { isReady, step } = useOnboardingState();
+  const nextPath = isReady ? getSetupPathForStep(step) : "/setup";
+  const nextLabel = !isReady
+    ? "Continue setup"
+    : step === "complete"
+      ? "Open chat"
+      : getOnboardingStepTitle(step);
 
   if (valuation.show) {
     return (
@@ -30,14 +40,12 @@ const RosterVerifiedPanel = () => {
           measuredTrackCount={valuation.measuredTrackCount}
         />
         <p className="text-sm text-muted-foreground text-center">
-          This is your baseline. A weekly report re-measures it and emails you
-          the trend.
+          Your artist profiles are connected. This is your current catalog
+          valuation. Continue to your next unfinished setup step, or open chat
+          if you’re all set.
         </p>
-        <Link
-          href="/setup/tasks"
-          className={cn(buttonVariants(), "min-w-[200px]")}
-        >
-          Set up your weekly report
+        <Link href={nextPath} className={cn(buttonVariants(), "min-w-[200px]")}>
+          {nextLabel}
         </Link>
       </section>
     );
@@ -48,18 +56,16 @@ const RosterVerifiedPanel = () => {
       <CheckCircle2 className="size-10 text-[#22c55e]" />
       <div>
         <h1 className="text-2xl font-semibold text-foreground">
-          Roster verified
+          Artist profiles connected
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Your artists and their socials are confirmed. Claim your catalog to
-          see what it is worth.
+          Every artist has at least one linked profile. Your saved profiles will
+          be used the next time you sign in. Continue with any remaining setup
+          steps below.
         </p>
       </div>
-      <Link
-        href="/setup/catalog"
-        className={cn(buttonVariants(), "min-w-[200px]")}
-      >
-        Claim your catalog
+      <Link href={nextPath} className={cn(buttonVariants(), "min-w-[200px]")}>
+        {nextLabel}
       </Link>
     </section>
   );

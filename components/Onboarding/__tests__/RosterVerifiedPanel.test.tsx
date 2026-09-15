@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import React from "react";
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import RosterVerifiedPanel from "@/components/Onboarding/RosterVerifiedPanel";
 
 const valuation = {
@@ -11,6 +11,12 @@ const valuation = {
   valuation: { low: 900000, mid: 1400000, high: 2100000 },
   measuredTrackCount: 42,
 };
+
+const onboarding = { isReady: true, step: "catalog" };
+vi.mock("@/hooks/useOnboardingState", () => ({
+  useOnboardingState: () => onboarding,
+}));
+afterEach(cleanup);
 
 const homeValuation = { current: valuation as unknown };
 
@@ -31,6 +37,18 @@ vi.mock("next/link", () => ({
 }));
 
 describe("RosterVerifiedPanel", () => {
+  it.each([
+    ["catalog", "/setup/catalog", "Claim your catalog"],
+    ["task", "/setup/tasks", "Schedule your first report"],
+    ["complete", "/", "Open chat"],
+  ])("routes to the first unmet checkpoint: %s", (step, path, label) => {
+    onboarding.step = step;
+    homeValuation.current = valuation;
+    render(<RosterVerifiedPanel />);
+    expect(screen.getByRole("link", { name: label }).getAttribute("href")).toBe(
+      path,
+    );
+  });
   it("ends setup on the catalog valuation, not a generic green check", () => {
     homeValuation.current = valuation;
 
@@ -47,6 +65,6 @@ describe("RosterVerifiedPanel", () => {
 
     render(<RosterVerifiedPanel />);
 
-    expect(screen.getByText(/roster verified/i)).toBeDefined();
+    expect(screen.getByText(/artist profiles connected/i)).toBeDefined();
   });
 });

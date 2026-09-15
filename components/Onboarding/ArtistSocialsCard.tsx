@@ -14,10 +14,7 @@ interface ArtistSocialsCardProps {
 }
 
 /**
- * Per-artist socials, accepted by default: each auto-matched profile is
- * shown with an Edit affordance to fix a wrong match; an artist with no
- * matches gets a soft nudge to add one. No confirm/none step — the step
- * proceeds regardless (see VerifySocialsStep).
+ * Missing profiles open directly into search so the required action is visible.
  */
 const ArtistSocialsCard = ({
   artist,
@@ -26,7 +23,7 @@ const ArtistSocialsCard = ({
   onRemove,
 }: ArtistSocialsCardProps) => {
   const socials = artist.account_socials ?? [];
-  const [adding, setAdding] = useState(false);
+  const [adding, setAdding] = useState(socials.length === 0);
 
   const handleAdd = async (url: string) => {
     const saved = await onFix(url);
@@ -42,8 +39,8 @@ const ArtistSocialsCard = ({
 
       {socials.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No profiles were auto-matched for {artist.name || "this artist"}.
-          Adding one is optional, and you can continue without it.
+          No profile linked yet. Search for this artist on Spotify, or paste
+          their Instagram, TikTok, YouTube, or other supported profile link.
         </p>
       ) : (
         <div className="divide-y divide-border">
