@@ -17,6 +17,7 @@ export type OnboardingStep = OnboardingStepId | "complete";
 
 /** Minimal structural slice of an `account_artist_ids` roster entry. */
 export interface OnboardingArtistState {
+  profile_unavailable?: boolean;
   account_socials?: ReadonlyArray<unknown> | null;
 }
 

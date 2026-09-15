@@ -1,28 +1,24 @@
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ErrorPageLayout from "@/components/ErrorPageLayout";
 
 export default function NotFoundPage() {
-  const actions = (
-    <div className="flex flex-col sm:flex-row gap-3">
-      <Link href="/">
-        <Button className="px-6 py-2">
-          Go home
-        </Button>
-      </Link>
-      <Link href="/chat">
-        <Button variant="outline" className="px-6 py-2">
-          Start new chat
-        </Button>
-      </Link>
-    </div>
-  );
-
   return (
     <ErrorPageLayout
-      title="Page not found"
-      description="Looks like this page doesn't exist. No problem - let's get you back to where you need to be."
-      actions={actions}
+      eyebrow="404 / PAGE NOT FOUND"
+      title="This page isn’t here."
+      description="The link may have changed. Head back to your workspace to keep going."
+      actions={
+        <Button
+          asChild
+          className="h-12 rounded-full bg-brand-lime px-6 text-brand-on-lime shadow-none hover:bg-brand-lime-hover"
+        >
+          <Link href="/">
+            Back to workspace <ArrowUpRight aria-hidden="true" />
+          </Link>
+        </Button>
+      }
     />
   );
-} 
+}

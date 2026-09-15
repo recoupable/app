@@ -63,12 +63,12 @@ const SideMenu = ({
         className="mt-0 shrink-0 hover:opacity-80 transition-opacity duration-200 w-fit"
         aria-label="Home"
       >
-        <Logo />
+        <Logo isExpanded />
       </Link>
       <div className="flex flex-col gap-1 w-full pb-2">
         <Button
           variant="outline"
-          className="mt-2 rounded-xl md:mt-8 cursor-pointer"
+          className="mt-2 min-h-11 rounded-full border-0 bg-brand-lime text-brand-on-lime hover:bg-brand-lime-hover md:mt-8 cursor-pointer"
           onClick={() => goToItem("chat")}
           aria-label={address ? "Start a new chat" : "Sign in to your account"}
         >

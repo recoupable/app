@@ -1,7 +1,17 @@
 "use client";
 
+import "./globals.css";
+import localFont from "next/font/local";
+import ErrorPageLayout from "@/components/ErrorPageLayout";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
+
+const dmSans = localFont({
+  src: "./fonts/DMSans-Latin.woff2",
+  weight: "100 900",
+  display: "swap",
+  variable: "--font-dm-sans",
+});
 
 interface GlobalErrorProps {
   error: Error & { digest?: string };
@@ -18,24 +28,24 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <Button
           onClick={() => window.location.reload()}
-          className="px-6 py-2"
+          className="h-12 rounded-full bg-brand-lime px-6 text-brand-on-lime shadow-none hover:bg-brand-lime-hover"
         >
           Reload page
         </Button>
         <Button
           variant="outline"
           onClick={reset}
-          className="px-6 py-2"
+          className="h-12 rounded-full px-6"
         >
           Try again
         </Button>
       </div>
 
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-muted-foreground">
         Still having trouble?{" "}
         <a
           href="mailto:support@recoupable.dev"
-          className="text-blue-600 hover:text-blue-700 underline"
+          className="text-brand-link underline"
         >
           Get help from our team
         </a>
@@ -43,10 +53,10 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
 
       {process.env.NODE_ENV === "development" && (
         <details className="mt-8 text-left max-w-full">
-          <summary className="cursor-pointer text-sm text-gray-600 mb-2">
+          <summary className="cursor-pointer text-sm text-muted-foreground mb-2">
             Error details (development only)
           </summary>
-          <pre className="text-xs bg-gray-100 p-4 rounded overflow-auto max-w-full whitespace-pre-wrap">
+          <pre className="text-xs bg-muted p-4 rounded overflow-auto max-w-full whitespace-pre-wrap">
             {error.message}
             {error.stack && `\n\n${error.stack}`}
           </pre>
@@ -58,32 +68,16 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
   // Global errors require full HTML structure since the entire app layout may be broken
   return (
     <html lang="en">
-      <body>
-        <div className="flex items-center justify-center min-h-screen text-center px-4">
-          <div className="w-full max-w-lg flex flex-col items-center">
-            <div className="mb-6">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/Recoup_Icon_Wordmark_Black.svg"
-                alt="Recoup Logo"
-                width={160}
-                height={60}
-                className="mx-auto"
-              />
-            </div>
-            
-            <h1 className="text-2xl md:text-3xl font-semibold mb-4 text-gray-800">
-              App needs a refresh
-            </h1>
-            
-            <p className="text-gray-600 max-w-md mx-auto text-base md:text-lg mb-8">
-              The app ran into an issue and needs to restart. Just reload the
-              page and everything should work normally again.
-            </p>
-            
-            {actions}
-          </div>
-        </div>
+      <body
+        className={`${dmSans.variable} font-sans bg-background text-foreground`}
+      >
+        <ErrorPageLayout
+          className="min-h-dvh"
+          eyebrow="RECOUP / CONNECTION INTERRUPTED"
+          title="Let’s get you back."
+          description="Recoup ran into an issue. Reload the page, or try opening your workspace again."
+          actions={actions}
+        />
       </body>
     </html>
   );

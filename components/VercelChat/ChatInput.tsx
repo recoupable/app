@@ -4,7 +4,6 @@ import cn from "classnames";
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
 import AttachmentsPreview from "./AttachmentsPreview";
 import PureAttachmentsButton from "./PureAttachmentsButton";
-import { motion } from "framer-motion";
 import {
   PromptInput,
   PromptInputSubmit,
@@ -62,12 +61,7 @@ export function ChatInput() {
       >
         <AttachmentsPreview />
       </div>
-      <motion.div
-        className="w-full relative"
-        initial={{ opacity: 0, y: -16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-      >
+      <div className="w-full relative">
         <div className="absolute right-3 top-3 z-20">
           <WorkspaceStatusIndicator status={workspaceStatus} />
         </div>
@@ -75,8 +69,8 @@ export function ChatInput() {
           onSubmit={handleSend}
           className={cn(
             "overflow-visible",
-            "rounded-2xl border border-border bg-background/70 backdrop-blur",
-            "shadow-sm",
+            "rounded-[20px] border-0 bg-card",
+            "shadow-[0_0_0_1px_var(--input),0_6px_24px_var(--surface-shadow)] focus-within:ring-2 focus-within:ring-ring",
           )}
         >
           <FileMentionsInput
@@ -91,10 +85,13 @@ export function ChatInput() {
               <ModelSelect />
             </PromptInputTools>
             <PromptInputSubmit
+              aria-label={
+                isGeneratingResponse ? "Stop response" : "Send message"
+              }
               disabled={isSendDisabled}
               status={status}
               className={cn(
-                "rounded-full hover:scale-105 active:scale-95 transition-all",
+                "size-11 rounded-full bg-brand-lime text-brand-on-lime hover:bg-brand-lime-hover transition-colors",
                 {
                   "cursor-not-allowed opacity-50": isSendDisabled,
                 },
@@ -102,7 +99,7 @@ export function ChatInput() {
             />
           </PromptInputToolbar>
         </PromptInput>
-      </motion.div>
+      </div>
     </div>
   );
 }

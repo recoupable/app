@@ -109,10 +109,12 @@ function ChatContentMemoized({
   return (
     <div
       className={cn(
-        "px-4 md:px-0 pb-4 flex flex-col h-full items-center w-full relative",
+        "px-4 md:px-0 py-6 flex flex-col min-h-0 h-full items-center w-full relative",
         {
           "justify-between": messages.length > 0,
-        }
+          "overflow-y-auto": isVisible,
+          "overflow-hidden": !isVisible,
+        },
       )}
       {...getRootProps()}
     >
@@ -121,17 +123,20 @@ function ChatContentMemoized({
       {isVisible ? (
         <>
           {/* Spacer to push content to center */}
-          <div className="flex-1"></div>
+          <div className="flex-1 min-h-4"></div>
 
           {/* Centered greeting and chat input */}
-          <div className="w-full max-w-3xl mx-auto">
+          <div className="w-full max-w-3xl mx-auto shrink-0">
             <div className="mb-2 flex justify-center">
               <ValuationRunStatusChip />
             </div>
             <ChatGreeting isVisible={isVisible} />
-            <div className="mt-1 md:mt-6">
+            <div className="mt-6">
               <ChatInput />
             </div>
+            <p className="mt-4 px-4 text-center text-xs text-muted-foreground">
+              A conversation is all it takes to get started.
+            </p>
           </div>
           {/* Spacer to balance and bottom section */}
           <div className="flex-1" />
@@ -139,7 +144,7 @@ function ChatContentMemoized({
       ) : (
         <>
           <Messages />
-          <div className="w-full max-w-3xl mx-auto">
+          <div className="w-full max-w-3xl mx-auto shrink-0">
             <ChatInput />
           </div>
         </>

@@ -4,6 +4,8 @@ import { MenuIcon, PlusCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import SideMenu from "../SideMenu";
+import Logo from "@/components/Logo";
+import Link from "next/link";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import ImageWithFallback from "../ImageWithFallback";
 import useIsMobile from "@/hooks/useIsMobile";
@@ -40,15 +42,19 @@ const Header = () => {
 
   return (
     <>
-      <div className="z-[50] fixed bg-card  left-0 right-0 top-0 md:hidden flex p-4 items-center justify-between w-auto">
+      <div className="z-[50] fixed bg-card shadow-[0_1px_0_var(--border)] left-0 right-0 top-0 md:hidden flex px-4 py-2 items-center justify-between w-auto">
         <button
           type="button"
-          className="md:hidden flex items-center gap-2 z-[50]"
+          className="md:hidden flex size-11 items-center justify-center gap-2 z-[50] rounded-xl hover:bg-muted"
           onClick={() => setIsOpenMobileMenu(!isOpenMobileMenu)}
           aria-label="Open menu"
         >
           <MenuIcon className="dark:text-white" />
         </button>
+
+        <Link href="/" aria-label="Recoup home">
+          <Logo isExpanded />
+        </Link>
 
         {/* Show Add/Select Artist button when on mobile, logged in, and no artist selected */}
         {isMobile && !isArtistSelected && (
@@ -57,13 +63,13 @@ const Header = () => {
             onClick={
               sorted.length > 0 ? () => push("/artists") : handleAddArtist
             }
-            className="flex items-center gap-2 bg-card text-black font-medium py-2 px-4 rounded-md shadow-md z-[50]"
+            className="flex items-center gap-2 bg-secondary text-secondary-foreground font-medium p-3 rounded-full z-[50]"
             aria-label={
               sorted.length > 0 ? "Select your artist" : "Add a new artist"
             }
           >
             <PlusCircle className="h-5 w-5" />
-            <span>
+            <span className="sr-only">
               {sorted.length > 0 ? "Select Your Artist" : "Add Your Artist"}
             </span>
           </button>

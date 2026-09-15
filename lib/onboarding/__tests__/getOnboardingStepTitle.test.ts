@@ -5,7 +5,7 @@ import { ONBOARDING_STEP_IDS } from "@/lib/onboarding/types";
 describe("getOnboardingStepTitle", () => {
   it("names each checkpoint in the product's flow language", () => {
     expect(getOnboardingStepTitle("artists")).toBe("Confirm your artists");
-    expect(getOnboardingStepTitle("socials")).toBe("Verify socials");
+    expect(getOnboardingStepTitle("socials")).toBe("Connect artist profiles");
     expect(getOnboardingStepTitle("catalog")).toBe("Claim your catalog");
     expect(getOnboardingStepTitle("task")).toBe("Schedule your first report");
   });

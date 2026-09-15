@@ -12,8 +12,10 @@ const NewChatButton = ({ isExpanded, email, onClick }: NewChatButtonProps) => (
     <button
       type="button"
       className={cn(
-        "inline-flex items-center h-10 rounded-lg whitespace-nowrap overflow-hidden transition-all duration-200 text-sm font-normal text-foreground hover:bg-muted cursor-pointer",
-        isExpanded ? "w-full justify-start gap-2 px-3" : "w-10 justify-center mx-auto gap-0"
+        "inline-flex items-center h-11 rounded-full whitespace-nowrap overflow-hidden transition-colors duration-200 text-sm font-medium bg-brand-lime text-brand-on-lime hover:bg-brand-lime-hover cursor-pointer focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2",
+        isExpanded
+          ? "w-full justify-start gap-2 px-3"
+          : "w-10 justify-center mx-auto gap-0",
       )}
       onClick={onClick}
       aria-label={email ? "New Chat" : "Sign In"}
@@ -21,10 +23,12 @@ const NewChatButton = ({ isExpanded, email, onClick }: NewChatButtonProps) => (
       <div className="w-[21px] flex justify-center items-center shrink-0">
         <SquarePen className="size-[18px]" />
       </div>
-      <span className={cn(
-        "overflow-hidden transition-all duration-200",
-        isExpanded ? "opacity-100 max-w-[150px]" : "opacity-0 max-w-0"
-      )}>
+      <span
+        className={cn(
+          "overflow-hidden transition-all duration-200",
+          isExpanded ? "opacity-100 max-w-[150px]" : "opacity-0 max-w-0",
+        )}
+      >
         {email ? "New Chat" : "Sign In"}
       </span>
     </button>
