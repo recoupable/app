@@ -132,18 +132,17 @@ function ChatContentMemoized({
       <div className="absolute w-full h-6 bg-gradient-to-t from-transparent via-background/80 to-background z-10 top-0"></div>
       {isVisible ? (
         <>
-          {/* Greeting and chat input */}
+          {/* Welcome content stays at the top of the workspace. */}
           <div className="w-full max-w-3xl mx-auto shrink-0">
             <div className="mb-2 flex justify-center">
               <ValuationRunStatusChip />
             </div>
             <ChatGreeting isVisible={isVisible} />
-            <div className="mt-6">
-              <ChatInput onRetryWorkspace={onRetryWorkspace} />
-            </div>
           </div>
-          {/* Keep remaining space below the starting actions */}
-          <div className="flex-1" />
+          {/* Flexible space separates the composer without overlapping content on short screens. */}
+          <div className="mt-auto w-full max-w-3xl mx-auto shrink-0 pt-6">
+            <ChatInput onRetryWorkspace={onRetryWorkspace} />
+          </div>
         </>
       ) : (
         <>
