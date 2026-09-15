@@ -65,6 +65,6 @@ describe("RosterVerifiedPanel", () => {
 
     render(<RosterVerifiedPanel />);
 
-    expect(screen.getByText(/artist profiles connected/i)).toBeDefined();
+    expect(screen.getByText(/artist profiles reviewed/i)).toBeDefined();
   });
 });

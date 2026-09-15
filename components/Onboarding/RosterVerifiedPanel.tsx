@@ -40,7 +40,7 @@ const RosterVerifiedPanel = () => {
           measuredTrackCount={valuation.measuredTrackCount}
         />
         <p className="text-sm text-muted-foreground text-center">
-          Your artist profiles are connected. This is your current catalog
+          Your profile choices are saved. This is your current catalog
           valuation. Continue to your next unfinished setup step, or open chat
           if you’re all set.
         </p>
@@ -56,12 +56,11 @@ const RosterVerifiedPanel = () => {
       <CheckCircle2 className="size-10 text-[#22c55e]" />
       <div>
         <h1 className="text-2xl font-semibold text-foreground">
-          Artist profiles connected
+          Artist profiles reviewed
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Every artist has at least one linked profile. Your saved profiles will
-          be used the next time you sign in. Continue with any remaining setup
-          steps below.
+          Your choices are saved to your account. Continue with any remaining
+          setup steps below.
         </p>
       </div>
       <Link href={nextPath} className={cn(buttonVariants(), "min-w-[200px]")}>

@@ -12,6 +12,21 @@ const state = vi.hoisted(() => ({
   isError: false,
   fixingArtistId: null as string | null,
   getArtists: vi.fn(),
+  dismissed: [] as string[],
+  preferenceError: false,
+  preferencePending: false,
+  setNoProfile: vi.fn(),
+}));
+vi.mock("@/hooks/onboarding/useArtistProfilePreferences", () => ({
+  useArtistProfilePreferences: () => ({
+    artistIds: state.dismissed,
+    isSuccess: !state.preferenceError && !state.preferencePending,
+    isError: state.preferenceError,
+    isPending: state.preferencePending,
+    isSaving: false,
+    setNoProfile: state.setNoProfile,
+    refetch: vi.fn(),
+  }),
 }));
 vi.mock("@/providers/ArtistProvider", () => ({
   useArtistProvider: () => ({
@@ -50,12 +65,66 @@ beforeEach(() => {
     artist("Connected artist", true),
     artist("Missing artist", false),
   ];
+  state.dismissed = [];
+  state.preferenceError = false;
+  state.preferencePending = false;
+  state.setNoProfile.mockReset().mockResolvedValue([]);
   state.isLoading = false;
   state.isError = false;
   state.fixingArtistId = null;
 });
 
 describe("missing artist profiles", () => {
+  it("waits for server confirmation, remembers no-profile choices, and supports undo", async () => {
+    const onConfirmed = vi.fn();
+    const view = render(<VerifySocialsStep onConfirmed={onConfirmed} />);
+    fireEvent.click(
+      screen.getByRole("button", { name: "No profile yet for Missing artist" }),
+    );
+    expect(state.setNoProfile).toHaveBeenCalledWith("Missing artist", true);
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Continue setup",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    state.dismissed = ["Missing artist"];
+    view.rerender(<VerifySocialsStep onConfirmed={onConfirmed} />);
+    expect(screen.getByText(/All artists reviewed/)).toBeDefined();
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Continue setup",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false);
+    fireEvent.click(screen.getByText("No profile yet (1)"));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Undo no profile for Missing artist",
+      }),
+    );
+    expect(state.setNoProfile).toHaveBeenCalledWith("Missing artist", false);
+    state.dismissed = [];
+    view.rerender(<VerifySocialsStep onConfirmed={onConfirmed} />);
+    expect(
+      screen.getByRole("heading", { name: "Missing artist" }),
+    ).toBeDefined();
+  });
+  it("does not enable completion if saved choices cannot be loaded", () => {
+    state.artists = [artist("Connected", true)];
+    state.preferenceError = true;
+    render(<VerifySocialsStep onConfirmed={vi.fn()} />);
+    expect(screen.getByRole("alert")).toBeDefined();
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Continue setup",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+  });
   it("opens one editor at a time and advances when its artist is connected", () => {
     state.artists = [artist("First", false), artist("Second", false)];
     const view = render(<VerifySocialsStep onConfirmed={vi.fn()} />);
@@ -112,7 +181,7 @@ describe("missing artist profiles", () => {
     expect(
       screen.queryByRole("heading", { name: "Missing artist" }),
     ).toBeNull();
-    expect(screen.getByText(/All profiles connected/)).toBeDefined();
+    expect(screen.getByText(/All artists reviewed/)).toBeDefined();
     expect(
       getOnboardingStep({ artists: state.artists, catalogs: [], tasks: [] }),
     ).toBe("catalog");

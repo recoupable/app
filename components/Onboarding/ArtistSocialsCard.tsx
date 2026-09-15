@@ -13,6 +13,7 @@ interface ArtistSocialsCardProps {
   expanded: boolean;
   onToggle: () => void;
   onFix: (url: string) => Promise<boolean>;
+  onNoProfile: () => void;
 }
 
 /** A compact roster row; only the active artist exposes its profile editor. */
@@ -22,6 +23,7 @@ const ArtistSocialsCard = ({
   expanded,
   onToggle,
   onFix,
+  onNoProfile,
 }: ArtistSocialsCardProps) => {
   const editorId = useId();
   const name = artist.name || "Untitled artist";
@@ -80,6 +82,15 @@ const ArtistSocialsCard = ({
             isSubmitting={isFixing}
             onSubmit={onFix}
           />
+          <button
+            type="button"
+            disabled={isFixing}
+            onClick={onNoProfile}
+            aria-label={`No profile yet for ${name}`}
+            className="mt-3 min-h-9 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+          >
+            No profile yet
+          </button>
         </div>
       )}
     </div>

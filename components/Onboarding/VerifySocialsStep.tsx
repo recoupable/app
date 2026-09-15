@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useArtistProfilePreferences } from "@/hooks/onboarding/useArtistProfilePreferences";
 import { useSocialFix } from "@/hooks/onboarding/useSocialFix";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { hasLinkedSocial } from "@/lib/onboarding/hasLinkedSocial";
@@ -14,17 +15,29 @@ import SetupSkipLink from "./SetupSkipLink";
 const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
   const { artists, isLoading, isError, getArtists } = useArtistProvider();
   const { fixSocial, fixingArtistId } = useSocialFix();
+  const preferences = useArtistProfilePreferences();
   const [editingId, setEditingId] = useState<string | null>();
-  const missingArtists = artists.filter((artist) => !hasLinkedSocial(artist));
+  const missingArtists = artists.filter(
+    (artist) =>
+      !hasLinkedSocial(artist) &&
+      !preferences.artistIds.includes(artist.account_id),
+  );
+  const noProfileArtists = artists.filter(
+    (artist) =>
+      !hasLinkedSocial(artist) &&
+      preferences.artistIds.includes(artist.account_id),
+  );
   // Start with the first missing artist, and advance when a saved profile clears it.
   const activeId =
     editingId === null
       ? null
       : (missingArtists.find((artist) => artist.account_id === editingId)
           ?.account_id ?? missingArtists[0]?.account_id);
-  const connectedCount = artists.length - missingArtists.length;
-  const isSaving = fixingArtistId !== null;
-  const ready = !isLoading && !isError && artists.length > 0;
+  const reviewedCount = artists.length - missingArtists.length;
+  const connectedCount = artists.filter(hasLinkedSocial).length;
+  const isSaving = fixingArtistId !== null || preferences.isSaving;
+  const ready =
+    !isLoading && !isError && preferences.isSuccess && artists.length > 0;
   const canContinue = ready && !isSaving && missingArtists.length === 0;
 
   return (
@@ -42,7 +55,7 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
             <br className="hidden sm:block" /> artist profiles.
           </h1>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground">
-            A profile for each artist. Better insights for your roster.
+            Connect a profile, or let us know there isn’t one yet.
           </p>
         </div>
         {ready && (
@@ -53,7 +66,7 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
                   className="size-3.5 text-brand-link"
                   aria-hidden="true"
                 />
-                {connectedCount} of {artists.length} connected
+                {reviewedCount} of {artists.length} reviewed
               </span>
               <span className="font-mono text-[11px]">
                 {missingArtists.length} to go
@@ -61,35 +74,47 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
             </div>
             <div
               role="progressbar"
-              aria-label="Artists connected"
+              aria-label="Artist profiles reviewed"
               aria-valuemin={0}
               aria-valuemax={artists.length}
-              aria-valuenow={connectedCount}
+              aria-valuenow={reviewedCount}
               className="h-1.5 overflow-hidden rounded-full bg-secondary"
             >
               <div
                 className="h-full rounded-full bg-brand-link motion-safe:transition-[width] motion-safe:duration-300"
-                style={{ width: `${(connectedCount / artists.length) * 100}%` }}
+                style={{ width: `${(reviewedCount / artists.length) * 100}%` }}
               />
             </div>
+            {noProfileArtists.length > 0 && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                {connectedCount} connected · {noProfileArtists.length} with no
+                profile yet
+              </p>
+            )}
           </div>
         )}
       </header>
 
       <div>
-        {isLoading ? (
+        {isLoading || preferences.isPending ? (
           <p role="status" className="rounded-2xl bg-secondary p-6 text-sm">
             Loading your artist profiles…
           </p>
-        ) : isError ? (
+        ) : isError || preferences.isError ? (
           <div
             role="alert"
             className="flex flex-col gap-3 rounded-2xl bg-secondary p-6 text-sm"
           >
-            <p>We couldn’t load your artists. Please try again.</p>
+            <p>
+              {preferences.error?.message ||
+                "We couldn’t load your setup. Please try again."}
+            </p>
             <Button
               variant="outline"
-              onClick={() => void getArtists().catch(() => undefined)}
+              onClick={() => {
+                void getArtists().catch(() => undefined);
+                void preferences.refetch();
+              }}
             >
               Try again
             </Button>
@@ -110,7 +135,7 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
               <Check className="size-5" aria-hidden="true" />
             </span>
             <p className="text-sm font-medium">
-              All profiles connected. You’re ready to continue.
+              All artists reviewed. You’re ready to continue.
             </p>
           </div>
         ) : (
@@ -133,7 +158,7 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
                 </span>
               </p>
               <span className="text-xs text-muted-foreground">
-                Search Spotify or paste a link
+                Connect or choose “No profile yet”
               </span>
             </div>
             <div className="divide-y divide-border shadow-[0_-1px_0_var(--border)]">
@@ -149,10 +174,51 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
                     )
                   }
                   onFix={(url) => fixSocial(artist, url)}
+                  onNoProfile={() =>
+                    void preferences
+                      .setNoProfile(artist.account_id, true)
+                      .catch(() => undefined)
+                  }
                 />
               ))}
             </div>
           </div>
+        )}
+
+        {ready && noProfileArtists.length > 0 && (
+          <details className="mt-5 text-sm">
+            <summary className="cursor-pointer py-2 text-muted-foreground">
+              No profile yet ({noProfileArtists.length})
+            </summary>
+            <p className="mb-2 text-xs text-muted-foreground">
+              Saved to your account. We won’t ask again for these artists.
+            </p>
+            <div className="divide-y divide-border">
+              {noProfileArtists.map((artist) => (
+                <div
+                  key={artist.account_id}
+                  className="flex items-center justify-between gap-3 py-2"
+                >
+                  <span className="truncate">
+                    {artist.name || "Untitled artist"}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={isSaving}
+                    aria-label={`Undo no profile for ${artist.name || "Untitled artist"}`}
+                    onClick={() =>
+                      void preferences
+                        .setNoProfile(artist.account_id, false)
+                        .catch(() => undefined)
+                    }
+                    className="min-h-9 shrink-0 text-brand-link underline underline-offset-4 disabled:opacity-50"
+                  >
+                    Undo
+                  </button>
+                </div>
+              ))}
+            </div>
+          </details>
         )}
 
         <footer className="mt-6 flex flex-wrap items-start justify-between gap-4">
