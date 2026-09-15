@@ -53,7 +53,7 @@ export default function FileMentionsInput({
         </Card>
       )}
       aria-label="Message Recoup"
-      placeholder="Ask Recoup anything. Type @ to attach files"
+      placeholder="Ask about your workspace…"
       onKeyDown={(
         e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
       ) => {

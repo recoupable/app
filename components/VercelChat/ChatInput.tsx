@@ -10,7 +10,7 @@ import {
   PromptInputToolbar,
   PromptInputTools,
 } from "../ai-elements/prompt-input";
-import ModelSelect from "@/components/ModelSelect";
+import ChatSettings from "./ChatSettings";
 import FileMentionsInput from "./FileMentionsInput";
 import WorkspaceStatusIndicator from "./WorkspaceStatusIndicator";
 
@@ -69,17 +69,19 @@ export function ChatInput({
         <AttachmentsPreview />
       </div>
       <div className="w-full relative">
-        <div className="mb-2 flex justify-end">
-          <WorkspaceStatusIndicator
-            status={workspaceStatus}
-            onRetry={onRetryWorkspace}
-          />
-        </div>
+        {workspaceStatus !== "ready" && (
+          <div className="mb-2 flex justify-end">
+            <WorkspaceStatusIndicator
+              status={workspaceStatus}
+              onRetry={onRetryWorkspace}
+            />
+          </div>
+        )}
         <PromptInput
           onSubmit={handleSend}
           className={cn(
             "overflow-visible",
-            "rounded-[20px] border-0 bg-card",
+            "rounded-2xl border-0 bg-card",
             "shadow-[0_0_0_1px_var(--input),0_6px_24px_var(--surface-shadow)] focus-within:ring-2 focus-within:ring-ring",
           )}
         >
@@ -92,7 +94,7 @@ export function ChatInput({
             <PromptInputTools>
               <PureAttachmentsButton />
               {/* YouTube connect button removed from ChatInput UI intentionally; preserved for future reuse */}
-              <ModelSelect />
+              <ChatSettings />
             </PromptInputTools>
             <PromptInputSubmit
               aria-label={

@@ -3,7 +3,7 @@
   overflow: hidden;
   margin: 0 16px;
   padding: 20px 24px;
-  border-radius: 20px;
+  border-radius: 16px;
   color: var(--sky-text);
   background-color: var(--sky-start);
   background-image: linear-gradient(110deg, var(--sky-start), transparent 160%),
@@ -64,7 +64,7 @@
   .hero {
     margin: 0;
     padding: 22px;
-    border-radius: 20px;
+    border-radius: 16px;
   }
 
   .eyebrow {
@@ -94,7 +94,7 @@
   min-height: 118px;
   padding: 22px;
   border: 0;
-  border-radius: 20px;
+  border-radius: 16px;
   background: var(--card);
   color: var(--foreground);
   box-shadow:

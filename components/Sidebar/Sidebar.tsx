@@ -15,7 +15,7 @@ const Sidebar = () => {
   const isMobile = useIsMobile();
 
   const isOpen = isPinned || menuExpanded;
-  const animate = { width: isOpen ? 240 : 56 };
+  const animate = { width: isOpen ? 216 : 56 };
   const initial = { width: 56 };
 
   return (

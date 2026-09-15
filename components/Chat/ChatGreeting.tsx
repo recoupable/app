@@ -46,10 +46,12 @@ export function ChatGreeting({ isVisible }: { isVisible: boolean }) {
   return (
     <div className={`w-full ${fadeClass}`}>
       <section className={styles.hero} aria-label="Your music workspace">
-        <div className={styles.eyebrow}>
-          <LogoIcon className="h-5 w-auto" />
-          <span>{isArtistSelected ? "Artist workspace" : workspaceName}</span>
-        </div>
+        {(isArtistSelected || artists.length > 0) && (
+          <div className={styles.eyebrow}>
+            <LogoIcon className="h-5 w-auto" />
+            <span>{isArtistSelected ? "Artist workspace" : workspaceName}</span>
+          </div>
+        )}
         <h1 className={styles.heading}>
           {isArtistSelected ? (
             <>
@@ -68,7 +70,7 @@ export function ChatGreeting({ isVisible }: { isVisible: boolean }) {
             <>
               {artists.length
                 ? "What’s next for your roster?"
-                : "What would you like to work on?"}
+                : "Build your workspace."}
             </>
           )}
         </h1>
