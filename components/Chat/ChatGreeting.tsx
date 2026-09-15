@@ -1,3 +1,4 @@
+import AddCatalogButton from "@/components/Catalog/AddCatalogButton";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import ImageWithFallback from "@/components/ImageWithFallback";
 import ValuationHero from "@/components/Home/ValuationHero";
@@ -79,16 +80,19 @@ export function ChatGreeting({ isVisible }: { isVisible: boolean }) {
                 ? "Your roster couldn’t load. Try again in a moment."
                 : artists.length
                   ? `${artists.length} artists. Work across your roster, or choose an artist above to focus.`
-                  : "Add an artist above, or start with a question."}
+                  : "Add an artist or catalog, or start with a question."}
         </p>
         {!isArtistSelected && !isLoading && !isError && !artists.length && (
-          <button
-            type="button"
-            onClick={toggleCreation}
-            className="mt-4 rounded-full bg-brand-lime px-4 py-2 text-sm font-medium text-brand-on-lime hover:opacity-90"
-          >
-            Add your first artist
-          </button>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={toggleCreation}
+              className="rounded-full bg-brand-lime px-4 py-2 text-sm font-medium text-brand-on-lime hover:opacity-90"
+            >
+              Add artist
+            </button>
+            <AddCatalogButton className="rounded-full bg-background text-foreground" />
+          </div>
         )}
       </section>
       <div className="mt-4 px-4 text-sm">

@@ -1,5 +1,7 @@
 "use client";
 
+import { useEmptyOrganization } from "@/hooks/useEmptyOrganization";
+import { useArtistProvider } from "@/providers/ArtistProvider";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
@@ -25,6 +27,8 @@ const RunValuationButton = ({
   /** Run for this artist instead of the resolved roster artist (artist page). */
   spotifyArtistId?: string;
 }) => {
+  const isEmptyOrganization = useEmptyOrganization();
+  const { toggleCreation } = useArtistProvider();
   const { run, isRunning, error, canRun, artistName, rosterPending } =
     useRunValuation(spotifyArtistId);
 
@@ -32,9 +36,24 @@ const RunValuationButton = ({
   // roster would flash the setup route at accounts that can run.
   if (rosterPending && !canRun) return null;
 
+  if (!canRun && isEmptyOrganization) {
+    return (
+      <button
+        type="button"
+        onClick={toggleCreation}
+        className={cn(buttonVariants(), "min-w-[200px]", className)}
+      >
+        Add artist to value a catalog
+      </button>
+    );
+  }
+
   if (!canRun) {
     return (
-      <Link href="/setup/artists" className={cn(buttonVariants(), "min-w-[200px]", className)}>
+      <Link
+        href="/setup/artists"
+        className={cn(buttonVariants(), "min-w-[200px]", className)}
+      >
         Value your catalog
       </Link>
     );
@@ -59,7 +78,10 @@ const RunValuationButton = ({
         )}
       </button>
       {error && (
-        <p role="alert" className="max-w-md text-center text-sm text-destructive">
+        <p
+          role="alert"
+          className="max-w-md text-center text-sm text-destructive"
+        >
           {error.message}
         </p>
       )}

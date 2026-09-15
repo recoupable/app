@@ -1,5 +1,6 @@
 "use client";
 
+import AddCatalogButton from "./AddCatalogButton";
 import CatalogsPageContent from "./CatalogsPageContent";
 import ValuationRunStatusChip from "@/components/Valuation/ValuationRunStatusChip";
 
@@ -9,6 +10,9 @@ const CatalogsPage = () => {
       <div className="flex items-center gap-3 pb-4">
         <h1 className="text-lg md:text-xl font-medium">Catalogs</h1>
         <ValuationRunStatusChip />
+        <div className="ml-auto">
+          <AddCatalogButton />
+        </div>
       </div>
       <CatalogsPageContent />
     </div>

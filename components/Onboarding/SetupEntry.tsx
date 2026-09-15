@@ -1,5 +1,6 @@
 "use client";
 
+import { useEmptyOrganization } from "@/hooks/useEmptyOrganization";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,13 +18,14 @@ import { getSetupPathForStep } from "@/lib/onboarding/getSetupPathForStep";
  * resolved, so a slow read can't flash the wrong step before redirecting.
  */
 const SetupEntry = () => {
+  const isEmptyOrganization = useEmptyOrganization();
   const router = useRouter();
   const { isReady, step } = useOnboardingState();
 
   useEffect(() => {
-    if (!isReady) return;
-    router.replace(getSetupPathForStep(step));
-  }, [isReady, step, router]);
+    if (!isReady && !isEmptyOrganization) return;
+    router.replace(isEmptyOrganization ? "/" : getSetupPathForStep(step));
+  }, [isReady, step, router, isEmptyOrganization]);
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-4 px-6 py-8">

@@ -22,12 +22,14 @@ export interface CatalogSongsResult {
 
 interface CatalogSongsResultProps {
   result: CatalogSongsResult;
+  catalogId?: string;
 }
 
 export default function CatalogSongsResult({
   result,
+  catalogId: explicitCatalogId,
 }: CatalogSongsResultProps) {
-  const catalogId = result.songs?.[0]?.catalog_id;
+  const catalogId = explicitCatalogId ?? result.songs?.[0]?.catalog_id;
   const {
     isUploading,
     uploadResult,

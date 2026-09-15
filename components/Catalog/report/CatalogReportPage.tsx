@@ -8,6 +8,7 @@ import CatalogReportContent from "./CatalogReportContent";
 
 interface CatalogReportPageProps {
   catalogId: string;
+  initialTab?: "report" | "songs";
 }
 
 /**
@@ -15,7 +16,10 @@ interface CatalogReportPageProps {
  * The report is the landing view; the existing songs/ISRC management screen
  * stays reachable as a secondary tab.
  */
-const CatalogReportPage = ({ catalogId }: CatalogReportPageProps) => {
+const CatalogReportPage = ({
+  catalogId,
+  initialTab = "report",
+}: CatalogReportPageProps) => {
   const router = useRouter();
 
   return (
@@ -33,7 +37,7 @@ const CatalogReportPage = ({ catalogId }: CatalogReportPageProps) => {
       <h1 className="font-heading text-lg font-bold md:text-xl pb-4">
         Catalog Report
       </h1>
-      <Tabs defaultValue="report">
+      <Tabs defaultValue={initialTab}>
         <TabsList>
           <TabsTrigger value="report">Report</TabsTrigger>
           <TabsTrigger value="songs">Manage songs</TabsTrigger>

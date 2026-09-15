@@ -22,7 +22,9 @@ const ConfirmRosterStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
     <section className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold text-foreground">
-          Confirm your roster
+          {!isLoading && artists.length === 0
+            ? "Add your first artist"
+            : "Confirm your roster"}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           {getConfirmRosterCopy({
@@ -38,28 +40,31 @@ const ConfirmRosterStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
             <Skeleton className="h-[72px] w-full rounded-xl" />
             <Skeleton className="h-[72px] w-full rounded-xl" />
           </>
-        ) : artists.length === 0 ? (
-          <p className="text-sm text-muted-foreground p-4 rounded-xl border border-border">
-            No artists on your roster yet. Add your first artist below to get
-            your catalog valued.
-          </p>
         ) : (
           artists.map((artist) => (
             <RosterArtistRow key={artist.account_id} artist={artist} />
           ))
         )}
-        <AddArtistForm />
+        <AddArtistForm
+          label={
+            artists.length === 0
+              ? "Add your first artist"
+              : "Add another artist"
+          }
+        />
       </div>
 
-      <Button
-        type="button"
-        className="w-full"
-        disabled={isLoading || artists.length === 0}
-        onClick={onConfirmed}
-      >
-        {artists.length > 1 ? "These are my artists" : "This is my artist"},
-        continue
-      </Button>
+      {artists.length > 0 && (
+        <Button
+          type="button"
+          className="w-full"
+          disabled={isLoading || artists.length === 0}
+          onClick={onConfirmed}
+        >
+          {artists.length > 1 ? "These are my artists" : "This is my artist"},
+          continue
+        </Button>
+      )}
     </section>
   );
 };

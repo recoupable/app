@@ -22,7 +22,11 @@ import type { SpotifyArtistSearchResult } from "@/types/spotify";
  * finished setup with nothing to value, so the reward on the completion panel
  * could only ever render its "Claim your catalog" fallback (chat#1889 row 8).
  */
-const AddArtistForm = () => {
+const AddArtistForm = ({
+  label = "Add another artist",
+}: {
+  label?: string;
+}) => {
   const { add, isAdding } = useAddSpotifyArtist();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -40,7 +44,7 @@ const AddArtistForm = () => {
         onClick={() => setIsOpen(true)}
       >
         <Plus className="size-4 mr-2" />
-        Add another artist
+        {label}
       </Button>
     );
   }
