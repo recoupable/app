@@ -136,9 +136,6 @@ function ChatContentMemoized({
             <div className="mt-6">
               <ChatInput />
             </div>
-            <p className="mt-4 px-4 text-center text-xs text-muted-foreground">
-              A conversation is all it takes to get started.
-            </p>
           </div>
           {/* Spacer to balance and bottom section */}
           <div className="flex-1" />
