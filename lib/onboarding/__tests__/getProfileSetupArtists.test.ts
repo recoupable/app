@@ -10,6 +10,7 @@ describe("profile setup scope", () => {
   it("does not send a connected artist back to socials because another artist is missing", () => {
     const artists = getProfileSetupArtists(roster, {
       account_id: "connected",
+      name: "Connected artist",
       account_socials: [],
     } as ArtistRecord);
     expect(

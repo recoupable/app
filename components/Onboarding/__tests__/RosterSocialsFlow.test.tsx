@@ -6,9 +6,16 @@ import RosterSocialsFlow from "@/components/Onboarding/RosterSocialsFlow";
 
 const { replace, onboarding } = vi.hoisted(() => ({
   replace: vi.fn(),
-  onboarding: { isReady: true, step: "complete" },
+  onboarding: { isReady: true, step: "complete", emptyOrganization: false },
 }));
 
+vi.mock("@/hooks/useEmptyOrganization", () => ({
+  useEmptyOrganization: () => onboarding.emptyOrganization,
+}));
+
+vi.mock("@/providers/OrganizationProvider", () => ({
+  useOrganization: () => ({ isInitialized: true }),
+}));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
 vi.mock("@/hooks/useOnboardingState", () => ({
   useOnboardingState: () => onboarding,
@@ -29,10 +36,21 @@ afterEach(cleanup);
 beforeEach(() => {
   replace.mockClear();
   onboarding.isReady = true;
+  onboarding.emptyOrganization = false;
   onboarding.step = "complete";
 });
 
 describe("RosterSocialsFlow", () => {
+  it.each(["roster", "socials"] as const)(
+    "opens Home for an empty organization on %s",
+    (initialStep) => {
+      onboarding.emptyOrganization = true;
+      render(<RosterSocialsFlow initialStep={initialStep} />);
+      expect(replace).toHaveBeenCalledWith("/");
+      expect(screen.queryByRole("button")).toBeNull();
+    },
+  );
+
   it.each([
     ["catalog", "/setup/catalog"],
     ["task", "/setup/tasks"],

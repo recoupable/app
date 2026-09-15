@@ -4,7 +4,16 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import HomePage from "@/components/Home/HomePage";
 
-const replace = vi.fn();
+const { replace, state } = vi.hoisted(() => ({
+  replace: vi.fn(),
+  state: { emptyOrganization: false, initialized: true },
+}));
+vi.mock("@/providers/OrganizationProvider", () => ({
+  useOrganization: () => ({ isInitialized: state.initialized }),
+}));
+vi.mock("@/hooks/useEmptyOrganization", () => ({
+  useEmptyOrganization: () => state.emptyOrganization,
+}));
 const SKIP_KEY = "recoup-onboarding-skipped:acct-test";
 
 vi.mock("@coinbase/onchainkit/minikit", () => ({
@@ -40,6 +49,22 @@ describe("HomePage onboarding gate — one canonical surface", () => {
   beforeEach(() => {
     window.sessionStorage.clear();
     replace.mockClear();
+    state.emptyOrganization = false;
+    state.initialized = true;
+  });
+
+  it("waits for the saved workspace before deciding to redirect", () => {
+    state.initialized = false;
+    render(<HomePage />);
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("keeps empty organizations on Home without needing a session skip", () => {
+    state.emptyOrganization = true;
+    render(<HomePage />);
+    expect(replace).not.toHaveBeenCalled();
+    expect(screen.getByTestId("chat-bootstrap")).toBeDefined();
+    expect(screen.queryByRole("complementary")).toBeNull();
   });
 
   it("forwards an incomplete account into /setup instead of hosting its own sequence", () => {

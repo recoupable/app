@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { usePrivy } from "@privy-io/react-auth";
 import {
@@ -19,7 +19,7 @@ export type ProvisionChatSessionState =
   /** Session + chat exist and are routable; the sandbox is still coming (app#2052). */
   | { status: "session-ready"; sessionId: string; chatId: string }
   | { status: "ready"; sessionId: string; chatId: string }
-  | { status: "error"; message: string };
+  | { status: "error"; message: string; retry?: () => void };
 
 interface UseProvisionChatSessionInput {
   /**
@@ -65,6 +65,12 @@ export function useProvisionChatSession({
     },
   });
 
+  const { mutate } = mutation;
+  const retry = useCallback(
+    () => mutate({ artistId, orgId }),
+    [mutate, artistId, orgId],
+  );
+
   useEffect(() => {
     if (!enabled) return;
     const last = mutation.variables;
@@ -97,6 +103,7 @@ export function useProvisionChatSession({
   if (mutation.isError) {
     return {
       status: "error",
+      retry,
       message:
         mutation.error instanceof Error
           ? mutation.error.message

@@ -19,7 +19,7 @@ export function getConfirmRosterCopy({
   hasValuation,
 }: ConfirmRosterCopyInput): string {
   if (artistCount === 0) {
-    return "Search Spotify for the artists you manage. Recoup uses them to measure your catalog, so pick the real profile.";
+    return "Search Spotify to add an artist to your workspace.";
   }
 
   const tail =

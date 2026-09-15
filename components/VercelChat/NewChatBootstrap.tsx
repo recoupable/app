@@ -58,6 +58,7 @@ export default function NewChatBootstrap({
         sessionId={ids?.sessionId}
         workflowChatId={ids?.chatId}
         workspaceStatus={workspaceStatus}
+        onRetryWorkspace={state.status === "error" ? state.retry : undefined}
         initialMessages={initialMessages}
       />
     </div>

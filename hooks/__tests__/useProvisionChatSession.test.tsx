@@ -17,6 +17,37 @@ afterEach(() => {
   provision.mockReset();
 });
 describe("session context transitions", () => {
+  it("retries a failed workspace without changing its selected context", async () => {
+    provision
+      .mockRejectedValueOnce(new Error("Connection failed"))
+      .mockResolvedValueOnce({ sessionId: "recovered", chatId: "chat" });
+    const client = new QueryClient({
+      defaultOptions: { mutations: { retry: false } },
+    });
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(
+      () =>
+        useProvisionChatSession({
+          enabled: true,
+          artistId: undefined,
+          orgId: "org",
+        }),
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.status).toBe("error"));
+    act(() => {
+      if (result.current.status === "error") result.current.retry?.();
+    });
+    await waitFor(() => expect(result.current.status).toBe("ready"));
+    expect(provision).toHaveBeenCalledTimes(2);
+    expect(provision.mock.calls[1][0]).toEqual({
+      artistId: undefined,
+      orgId: "org",
+    });
+  });
+
   it("never exposes the old session after an artist or workspace switch", async () => {
     provision.mockImplementation(async (input) => ({
       sessionId: `${input.orgId}-${input.artistId}`,

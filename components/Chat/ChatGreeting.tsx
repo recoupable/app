@@ -1,3 +1,5 @@
+import { ArrowUpRight, Disc3, Mic2 } from "lucide-react";
+import AddCatalogButton from "@/components/Catalog/AddCatalogButton";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import ImageWithFallback from "@/components/ImageWithFallback";
 import ValuationHero from "@/components/Home/ValuationHero";
@@ -44,10 +46,12 @@ export function ChatGreeting({ isVisible }: { isVisible: boolean }) {
   return (
     <div className={`w-full ${fadeClass}`}>
       <section className={styles.hero} aria-label="Your music workspace">
-        <div className={styles.eyebrow}>
-          <LogoIcon className="h-5 w-auto" />
-          <span>{isArtistSelected ? "Artist workspace" : workspaceName}</span>
-        </div>
+        {(isArtistSelected || artists.length > 0) && (
+          <div className={styles.eyebrow}>
+            <LogoIcon className="h-5 w-auto" />
+            <span>{isArtistSelected ? "Artist workspace" : workspaceName}</span>
+          </div>
+        )}
         <h1 className={styles.heading}>
           {isArtistSelected ? (
             <>
@@ -66,7 +70,7 @@ export function ChatGreeting({ isVisible }: { isVisible: boolean }) {
             <>
               {artists.length
                 ? "What’s next for your roster?"
-                : "What would you like to work on?"}
+                : "Build your workspace."}
             </>
           )}
         </h1>
@@ -79,18 +83,41 @@ export function ChatGreeting({ isVisible }: { isVisible: boolean }) {
                 ? "Your roster couldn’t load. Try again in a moment."
                 : artists.length
                   ? `${artists.length} artists. Work across your roster, or choose an artist above to focus.`
-                  : "Add an artist above, or start with a question."}
+                  : "Add an artist or catalog, or start with a question."}
         </p>
-        {!isArtistSelected && !isLoading && !isError && !artists.length && (
+      </section>
+      {!isArtistSelected && !isLoading && !isError && !artists.length && (
+        <div className={styles.actions} role="group" aria-label="Get started">
           <button
             type="button"
             onClick={toggleCreation}
-            className="mt-4 rounded-full bg-brand-lime px-4 py-2 text-sm font-medium text-brand-on-lime hover:opacity-90"
+            className={styles.actionCard}
           >
-            Add your first artist
+            <span className={styles.actionIcon}>
+              <Mic2 aria-hidden="true" />
+            </span>
+            <span className={styles.actionCopy}>
+              <span className={styles.actionTitle}>Add artist</span>
+              <span className={styles.actionDescription}>
+                Connect an artist from Spotify.
+              </span>
+            </span>
+            <ArrowUpRight className={styles.actionArrow} aria-hidden="true" />
           </button>
-        )}
-      </section>
+          <AddCatalogButton className={styles.actionCard}>
+            <span className={styles.actionIcon}>
+              <Disc3 aria-hidden="true" />
+            </span>
+            <span className={styles.actionCopy}>
+              <span className={styles.actionTitle}>Add catalog</span>
+              <span className={styles.actionDescription}>
+                Upload your songs from a CSV.
+              </span>
+            </span>
+            <ArrowUpRight className={styles.actionArrow} aria-hidden="true" />
+          </AddCatalogButton>
+        </div>
+      )}
       <div className="mt-4 px-4 text-sm">
         <HomeSuggestedPrompts />
       </div>

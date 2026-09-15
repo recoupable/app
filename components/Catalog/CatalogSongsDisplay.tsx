@@ -42,6 +42,7 @@ const CatalogSongsDisplay = ({
   if (isSearchMode && searchData) {
     return (
       <CatalogSongsResult
+        catalogId={catalogId}
         result={createSearchResult(searchData, catalogId, activeIsrc)}
       />
     );
@@ -49,13 +50,21 @@ const CatalogSongsDisplay = ({
 
   // Handle errors
   if (currentError || !data || !data.pages || data.pages.length === 0) {
-    return <CatalogSongsResult result={createErrorResult(currentError)} />;
+    return (
+      <CatalogSongsResult
+        catalogId={catalogId}
+        result={createErrorResult(currentError)}
+      />
+    );
   }
 
   // Normal catalog view
   return (
     <>
-      <CatalogSongsResult result={createCatalogResult(data.pages)} />
+      <CatalogSongsResult
+        catalogId={catalogId}
+        result={createCatalogResult(data.pages)}
+      />
       <CatalogSongsInfiniteScrollTrigger
         observerTarget={observerTarget}
         isFetchingNextPage={isFetchingNextPage}

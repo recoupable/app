@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useEmptyOrganization } from "@/hooks/useEmptyOrganization";
 import ConfirmRosterStep from "./ConfirmRosterStep";
 import SetupEntry from "./SetupEntry";
 import SetupSkipLink from "./SetupSkipLink";
@@ -23,8 +25,14 @@ const RosterSocialsFlow = ({
 }: {
   initialStep?: "roster" | "socials";
 } = {}) => {
+  const isEmptyOrganization = useEmptyOrganization();
+  const router = useRouter();
+  useEffect(() => {
+    if (isEmptyOrganization) router.replace("/");
+  }, [isEmptyOrganization, router]);
   const [step, setStep] = useState<FlowStep>(initialStep);
 
+  if (isEmptyOrganization) return null;
   if (step === "continue") return <SetupEntry />;
 
   return (

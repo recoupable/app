@@ -19,6 +19,7 @@ function PureAttachmentsButton() {
       />
       <Button
         aria-label="Attach files"
+        title="Attach files, or type @ to use workspace files"
         data-testid="attachments-button"
         className="rounded-md rounded-bl-lg p-[7px] h-fit border-border hover:bg-accent text-foreground"
         onClick={(event) => {

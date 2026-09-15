@@ -1,5 +1,6 @@
 "use client";
 
+import { useEmptyOrganization } from "@/hooks/useEmptyOrganization";
 import { useOnboardingSessionFlags } from "@/hooks/useOnboardingSessionFlags";
 import { useOnboardingState } from "@/hooks/useOnboardingState";
 import { getOnboardingView } from "@/lib/onboarding/getOnboardingView";
@@ -8,6 +9,7 @@ import type {
   OnboardingCheckpoint,
   OnboardingStep,
 } from "@/lib/onboarding/types";
+import { useOrganization } from "@/providers/OrganizationProvider";
 import { useUserProvider } from "@/providers/UserProvder";
 
 export interface OnboardingGate {
@@ -25,6 +27,8 @@ export interface OnboardingGate {
  * escape hatch, never persisted server-side (recoupable/chat#1867).
  */
 export function useOnboardingGate(): OnboardingGate {
+  const { isInitialized } = useOrganization();
+  const isEmptyOrganization = useEmptyOrganization();
   const { userData } = useUserProvider();
   const { isReady, step, checkpoints } = useOnboardingState();
   const { skipped, skip, resume } = useOnboardingSessionFlags(
@@ -32,7 +36,10 @@ export function useOnboardingGate(): OnboardingGate {
   );
 
   return {
-    view: getOnboardingView({ isReady, step, skipped }),
+    view:
+      !isInitialized || isEmptyOrganization
+        ? "none"
+        : getOnboardingView({ isReady, step, skipped }),
     step,
     checkpoints,
     skip,

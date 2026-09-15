@@ -1,6 +1,6 @@
 export const mentionsStyles = {
   control: {
-    minHeight: 60,
+    minHeight: 44,
     border: "none",
     outline: "none",
     background: "transparent",
@@ -8,7 +8,7 @@ export const mentionsStyles = {
   },
   "&multiLine": {
     highlighter: {
-      padding: "12px 20px",
+      padding: "10px 16px",
       fontSize: 16,
       lineHeight: 1.6,
       maxHeight: 180,
@@ -17,11 +17,11 @@ export const mentionsStyles = {
       whiteSpace: "pre-wrap",
     },
     input: {
-      padding: "12px 20px",
+      padding: "10px 16px",
       outline: "none",
       fontSize: 16,
       lineHeight: 1.6,
-      minHeight: 60,
+      minHeight: 44,
       maxHeight: 180,
       overflowY: "auto",
       resize: "none",
@@ -32,14 +32,14 @@ export const mentionsStyles = {
   },
   "&singleLine": {
     highlighter: {
-      padding: "12px 20px",
+      padding: "10px 16px",
       fontSize: 16,
       lineHeight: 1.6,
       color: "transparent",
       whiteSpace: "pre",
     },
     input: {
-      padding: "12px 20px",
+      padding: "10px 16px",
       outline: "none",
       fontSize: 16,
       lineHeight: 1.6,

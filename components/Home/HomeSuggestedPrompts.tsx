@@ -18,25 +18,13 @@ const HomeSuggestedPrompts = () => {
   const { selectedArtist, artists, isLoading, isError } = useArtistProvider();
   const valuation = useHomeValuation();
 
-  const prompts =
-    !selectedArtist && !artists.length && !isLoading && !isError
-      ? [
-          {
-            label: "What can Recoup do?",
-            prompt:
-              "What can Recoup help me do? Show me a few practical ways to get started.",
-          },
-          {
-            label: "Plan a release",
-            prompt:
-              "Help me plan a music release. Ask me about the artist, timeline, and goals first.",
-          },
-        ]
-      : getHomeSuggestedPrompts({
-          hasValuation: valuation.show,
-          hasRuns: false,
-          artistName: selectedArtist?.name || "",
-        });
+  if (!selectedArtist && (!artists.length || isLoading || isError)) return null;
+
+  const prompts = getHomeSuggestedPrompts({
+    hasValuation: valuation.show,
+    hasRuns: false,
+    artistName: selectedArtist?.name || "",
+  });
 
   if (prompts.length === 0) return null;
 

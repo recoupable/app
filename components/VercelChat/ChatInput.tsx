@@ -10,11 +10,13 @@ import {
   PromptInputToolbar,
   PromptInputTools,
 } from "../ai-elements/prompt-input";
-import ModelSelect from "@/components/ModelSelect";
+import ChatSettings from "./ChatSettings";
 import FileMentionsInput from "./FileMentionsInput";
 import WorkspaceStatusIndicator from "./WorkspaceStatusIndicator";
 
-export function ChatInput() {
+export function ChatInput({
+  onRetryWorkspace,
+}: { onRetryWorkspace?: () => void } = {}) {
   const {
     hasPendingUploads,
     messages,
@@ -33,7 +35,14 @@ export function ChatInput() {
   // A Send during provisioning goes through: the transport holds the request
   // until the sandbox is ready (app#2052). Only blockers that do not clear on
   // their own disable the button.
-  const isSendDisabled = isDisabled || hasPendingUploads || isLoadingSignedUrls;
+  const hasContent = input.trim() !== "" || textAttachments.length > 0;
+  const isSendDisabled =
+    !isGeneratingResponse &&
+    (!hasContent ||
+      isDisabled ||
+      hasPendingUploads ||
+      isLoadingSignedUrls ||
+      workspaceStatus === "off");
 
   const handleSend = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -46,7 +55,6 @@ export function ChatInput() {
 
     // Only check input requirements for sending new messages
     // Allow sending if there are text attachments even without typed input
-    const hasContent = input !== "" || textAttachments.length > 0;
     if (!hasContent || isSendDisabled) return;
 
     handleSendMessage(event);
@@ -62,14 +70,19 @@ export function ChatInput() {
         <AttachmentsPreview />
       </div>
       <div className="w-full relative">
-        <div className="absolute right-3 top-3 z-20">
-          <WorkspaceStatusIndicator status={workspaceStatus} />
-        </div>
+        {workspaceStatus !== "ready" && (
+          <div className="mb-2 flex justify-end">
+            <WorkspaceStatusIndicator
+              status={workspaceStatus}
+              onRetry={onRetryWorkspace}
+            />
+          </div>
+        )}
         <PromptInput
           onSubmit={handleSend}
           className={cn(
             "overflow-visible",
-            "rounded-[20px] border-0 bg-card",
+            "rounded-2xl border-0 bg-card",
             "shadow-[0_0_0_1px_var(--input),0_6px_24px_var(--surface-shadow)] focus-within:ring-2 focus-within:ring-ring",
           )}
         >
@@ -78,11 +91,11 @@ export function ChatInput() {
             onChange={setInput}
             disabled={isDisabled || hasPendingUploads}
           />
-          <PromptInputToolbar>
+          <PromptInputToolbar className="px-3 py-2">
             <PromptInputTools>
               <PureAttachmentsButton />
               {/* YouTube connect button removed from ChatInput UI intentionally; preserved for future reuse */}
-              <ModelSelect />
+              <ChatSettings />
             </PromptInputTools>
             <PromptInputSubmit
               aria-label={
@@ -91,7 +104,7 @@ export function ChatInput() {
               disabled={isSendDisabled}
               status={status}
               className={cn(
-                "size-11 rounded-full bg-brand-lime text-brand-on-lime hover:bg-brand-lime-hover transition-colors",
+                "size-10 rounded-xl bg-brand-lime text-brand-on-lime hover:bg-brand-lime-hover transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 {
                   "cursor-not-allowed opacity-50": isSendDisabled,
                 },
