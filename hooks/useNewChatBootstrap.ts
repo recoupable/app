@@ -22,11 +22,16 @@ export type NewChatBootstrapState = ProvisionChatSessionState;
  */
 export function useNewChatBootstrap(): NewChatBootstrapState {
   const { authenticated } = usePrivy();
-  const { selectedOrgId } = useOrganization();
-  const { selectedArtist, isLoading: isArtistsLoading } = useArtistProvider();
+  const { selectedOrgId, isInitialized } = useOrganization();
+  const {
+    selectedArtist,
+    isLoading: isArtistsLoading,
+    isError: artistsFailed,
+  } = useArtistProvider();
 
   return useProvisionChatSession({
-    enabled: authenticated && !isArtistsLoading,
+    enabled:
+      authenticated && isInitialized && !isArtistsLoading && !artistsFailed,
     artistId: selectedArtist?.account_id,
     orgId: selectedOrgId ?? undefined,
   });

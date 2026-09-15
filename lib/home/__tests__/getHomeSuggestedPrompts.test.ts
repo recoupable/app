@@ -38,7 +38,7 @@ describe("getHomeSuggestedPrompts", () => {
     ]);
   });
 
-  it("omits the artist chip when no artist is selected", () => {
+  it("offers workspace-wide actions when no artist is selected", () => {
     const prompts = getHomeSuggestedPrompts({
       hasValuation: true,
       hasRuns: false,
@@ -47,6 +47,8 @@ describe("getHomeSuggestedPrompts", () => {
 
     expect(prompts.map((p) => p.label)).toEqual([
       "Why did my valuation change?",
+      "Review my roster",
+      "Plan this week",
     ]);
   });
 

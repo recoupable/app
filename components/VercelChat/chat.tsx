@@ -1,5 +1,6 @@
 "use client";
 
+import ChatContextGuard from "./ChatContextGuard";
 import cn from "classnames";
 import { Messages } from "./messages";
 import ChatInput from "./ChatInput";
@@ -64,6 +65,7 @@ export function Chat({
       workspaceStatus={workspaceStatus}
       initialMessages={initialMessages}
     >
+      <ChatContextGuard />
       <ChatContent id={id} sessionId={sessionId} />
     </VercelChatProvider>
   );
@@ -78,7 +80,7 @@ function ChatContentMemoized({
 }) {
   const { messages, status, isLoading, hasError } = useVercelChatContext();
   const { chatId: routeChatId } = useParams<{ chatId?: string }>();
-  useArtistFromChat({ sessionId });
+  useArtistFromChat({ sessionId: routeChatId ? sessionId : undefined });
   const { getRootProps, isDragActive } = useDropzone();
 
   const { isVisible } = useVisibilityDelay({

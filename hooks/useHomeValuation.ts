@@ -1,3 +1,5 @@
+import { useOrganization } from "@/providers/OrganizationProvider";
+import { useUserProvider } from "@/providers/UserProvder";
 import useCatalogs from "@/hooks/useCatalogs";
 import useCatalogMeasurements from "@/hooks/useCatalogMeasurements";
 import { useArtistProvider } from "@/providers/ArtistProvider";
@@ -31,7 +33,15 @@ const useHomeValuation = (): HomeValuationState => {
   const selectedArtistAccountId = selectedArtist?.account_id ?? null;
 
   const { data: catalogsData, isError: catalogsFailed } = useCatalogs();
-  const catalog = catalogsData?.catalogs?.[0];
+  const { selectedOrgId } = useOrganization();
+  const { userData } = useUserProvider();
+  const ownerId = selectedOrgId ?? userData?.account_id;
+  // One catalog is not an aggregate of the workspace. Only display a
+  // measured artist value when its catalog belongs to the chosen workspace.
+  const catalog =
+    selectedArtistAccountId && ownerId
+      ? catalogsData?.catalogs?.find((entry) => entry.owner?.id === ownerId)
+      : undefined;
 
   // limit 1: the hero only needs the whole-scope aggregates
   // (measured_song_count + valuation), not the measurement rows.
