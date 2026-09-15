@@ -42,11 +42,45 @@ const STATUS_CONFIG: Record<
 export default function WorkspaceStatusIndicator({
   status,
   className,
+  onRetry,
 }: {
   status: WorkspaceStatus;
   className?: string;
+  onRetry?: () => void;
 }) {
   const { dotClassName, pulse, tooltip } = STATUS_CONFIG[status];
+
+  if (status === "off")
+    return (
+      <div
+        className={cn(
+          "flex items-center gap-2 text-xs text-destructive",
+          className,
+        )}
+      >
+        <span role="status">Couldn’t connect to chat.</span>
+        {onRetry ? (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="rounded px-1 font-medium underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+          >
+            Retry
+          </button>
+        ) : (
+          <span>Refresh to try again.</span>
+        )}
+      </div>
+    );
+  if (status === "provisioning")
+    return (
+      <span
+        role="status"
+        className={cn("text-xs text-muted-foreground", className)}
+      >
+        Connecting to chat…
+      </span>
+    );
 
   return (
     <Tooltip content={tooltip}>
@@ -56,6 +90,7 @@ export default function WorkspaceStatusIndicator({
         className={cn(
           "inline-flex size-3 items-center justify-center",
           className,
+          onRetry,
         )}
       >
         <span

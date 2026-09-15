@@ -14,7 +14,9 @@ import ModelSelect from "@/components/ModelSelect";
 import FileMentionsInput from "./FileMentionsInput";
 import WorkspaceStatusIndicator from "./WorkspaceStatusIndicator";
 
-export function ChatInput() {
+export function ChatInput({
+  onRetryWorkspace,
+}: { onRetryWorkspace?: () => void } = {}) {
   const {
     hasPendingUploads,
     messages,
@@ -33,7 +35,12 @@ export function ChatInput() {
   // A Send during provisioning goes through: the transport holds the request
   // until the sandbox is ready (app#2052). Only blockers that do not clear on
   // their own disable the button.
-  const isSendDisabled = isDisabled || hasPendingUploads || isLoadingSignedUrls;
+  const isSendDisabled =
+    !isGeneratingResponse &&
+    (isDisabled ||
+      hasPendingUploads ||
+      isLoadingSignedUrls ||
+      workspaceStatus === "off");
 
   const handleSend = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -62,8 +69,11 @@ export function ChatInput() {
         <AttachmentsPreview />
       </div>
       <div className="w-full relative">
-        <div className="absolute right-3 top-3 z-20">
-          <WorkspaceStatusIndicator status={workspaceStatus} />
+        <div className="mb-2 flex justify-end">
+          <WorkspaceStatusIndicator
+            status={workspaceStatus}
+            onRetry={onRetryWorkspace}
+          />
         </div>
         <PromptInput
           onSubmit={handleSend}

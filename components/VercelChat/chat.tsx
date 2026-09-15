@@ -43,6 +43,7 @@ interface ChatProps {
    * the canonical route.
    */
   workspaceStatus?: WorkspaceStatus;
+  onRetryWorkspace?: () => void;
   initialMessages?: UIMessage[];
 }
 
@@ -51,6 +52,7 @@ export function Chat({
   sessionId,
   workflowChatId,
   workspaceStatus,
+  onRetryWorkspace,
   initialMessages,
 }: ChatProps) {
   const { selectedOrgId } = useOrganization();
@@ -66,7 +68,11 @@ export function Chat({
       initialMessages={initialMessages}
     >
       <ChatContextGuard />
-      <ChatContent id={id} sessionId={sessionId} />
+      <ChatContent
+        id={id}
+        sessionId={sessionId}
+        onRetryWorkspace={onRetryWorkspace}
+      />
     </VercelChatProvider>
   );
 }
@@ -74,9 +80,11 @@ export function Chat({
 // Inner component that uses the context
 function ChatContentMemoized({
   sessionId,
+  onRetryWorkspace,
 }: {
   id: string;
   sessionId?: string;
+  onRetryWorkspace?: () => void;
 }) {
   const { messages, status, isLoading, hasError } = useVercelChatContext();
   const { chatId: routeChatId } = useParams<{ chatId?: string }>();
@@ -124,27 +132,24 @@ function ChatContentMemoized({
       <div className="absolute w-full h-6 bg-gradient-to-t from-transparent via-background/80 to-background z-10 top-0"></div>
       {isVisible ? (
         <>
-          {/* Spacer to push content to center */}
-          <div className="flex-1 min-h-4"></div>
-
-          {/* Centered greeting and chat input */}
+          {/* Greeting and chat input */}
           <div className="w-full max-w-3xl mx-auto shrink-0">
             <div className="mb-2 flex justify-center">
               <ValuationRunStatusChip />
             </div>
             <ChatGreeting isVisible={isVisible} />
             <div className="mt-6">
-              <ChatInput />
+              <ChatInput onRetryWorkspace={onRetryWorkspace} />
             </div>
           </div>
-          {/* Spacer to balance and bottom section */}
+          {/* Keep remaining space below the starting actions */}
           <div className="flex-1" />
         </>
       ) : (
         <>
           <Messages />
           <div className="w-full max-w-3xl mx-auto shrink-0">
-            <ChatInput />
+            <ChatInput onRetryWorkspace={onRetryWorkspace} />
           </div>
         </>
       )}
@@ -154,6 +159,8 @@ function ChatContentMemoized({
 
 const ChatContent = memo(ChatContentMemoized, (prevProps, nextProps) => {
   return (
-    prevProps.id === nextProps.id && prevProps.sessionId === nextProps.sessionId
+    prevProps.id === nextProps.id &&
+    prevProps.sessionId === nextProps.sessionId &&
+    prevProps.onRetryWorkspace === nextProps.onRetryWorkspace
   );
 });
