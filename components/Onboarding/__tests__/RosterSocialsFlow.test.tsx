@@ -13,6 +13,9 @@ vi.mock("@/hooks/useEmptyOrganization", () => ({
   useEmptyOrganization: () => onboarding.emptyOrganization,
 }));
 
+vi.mock("@/providers/OrganizationProvider", () => ({
+  useOrganization: () => ({ isInitialized: true }),
+}));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
 vi.mock("@/hooks/useOnboardingState", () => ({
   useOnboardingState: () => onboarding,

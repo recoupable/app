@@ -3,8 +3,12 @@ import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { useEmptyOrganization } from "../useEmptyOrganization";
 const state = vi.hoisted(() => ({
+  memberships: { isSuccess: true, data: [{ organization_id: "org" }] },
   org: { selectedOrgId: "org", isInitialized: true },
   roster: { artists: [] as unknown[], isLoading: false, isError: false },
+}));
+vi.mock("@/hooks/useAccountOrganizations", () => ({
+  default: () => state.memberships,
 }));
 vi.mock("@/providers/OrganizationProvider", () => ({
   useOrganization: () => state.org,
@@ -15,6 +19,7 @@ vi.mock("@/providers/ArtistProvider", () => ({
 describe("useEmptyOrganization", () => {
   it.each([
     ["empty organization", "org", true, false, false, 0, true],
+    ["revoked organization", "revoked", true, false, false, 0, false],
     ["personal", null, true, false, false, 0, false],
     ["restoring workspace", "org", false, false, false, 0, false],
     ["loading roster", "org", true, true, false, 0, false],

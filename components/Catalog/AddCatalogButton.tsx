@@ -7,6 +7,8 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useQueryClient } from "@tanstack/react-query";
 import { useOrganization } from "@/providers/OrganizationProvider";
 import { useUserProvider } from "@/providers/UserProvder";
+import useAccountOrganizations from "@/hooks/useAccountOrganizations";
+import { resolveSelectedOrgId } from "@/lib/catalog/resolveSelectedOrgId";
 import { createCatalog } from "@/lib/catalog/createCatalog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +34,10 @@ export default function AddCatalogButton({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const { selectedOrgId, isInitialized } = useOrganization();
+  const memberships = useAccountOrganizations();
+  const workspaceReady =
+    isInitialized && (!selectedOrgId || memberships.isSuccess);
+  const organizationId = resolveSelectedOrgId(selectedOrgId, memberships.data);
   const { userData } = useUserProvider();
   const { getAccessToken } = usePrivy();
   const queryClient = useQueryClient();
@@ -39,13 +45,13 @@ export default function AddCatalogButton({
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (pending || !name.trim() || !isInitialized) return;
+    if (pending || !name.trim() || !workspaceReady) return;
     setPending(true);
     setError("");
     try {
       const token = await getAccessToken();
       if (!token) throw new Error("Please sign in again to add a catalog.");
-      const id = await createCatalog(name, token, selectedOrgId);
+      const id = await createCatalog(name, token, organizationId);
       void queryClient.invalidateQueries({
         queryKey: ["catalogs", userData?.account_id],
       });
@@ -77,7 +83,7 @@ export default function AddCatalogButton({
         <Button
           variant="outline"
           className={className}
-          disabled={!isInitialized}
+          disabled={!workspaceReady}
         >
           {children ?? "Add catalog"}
         </Button>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEmptyOrganization } from "@/hooks/useEmptyOrganization";
+import { useOrganization } from "@/providers/OrganizationProvider";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,17 +16,19 @@ import { getSetupPathForStep } from "@/lib/onboarding/getSetupPathForStep";
  * assume the beginning.
  *
  * Renders a skeleton (never the first step) until every checkpoint source has
- * resolved, so a slow read can't flash the wrong step before redirecting.
+ * resolved. A confirmed empty organization can go Home without waiting for
+ * catalog or task checkpoints, since artist setup is optional there.
  */
 const SetupEntry = () => {
   const isEmptyOrganization = useEmptyOrganization();
+  const { isInitialized } = useOrganization();
   const router = useRouter();
   const { isReady, step } = useOnboardingState();
 
   useEffect(() => {
-    if (!isReady && !isEmptyOrganization) return;
+    if (!isInitialized || (!isReady && !isEmptyOrganization)) return;
     router.replace(isEmptyOrganization ? "/" : getSetupPathForStep(step));
-  }, [isReady, step, router, isEmptyOrganization]);
+  }, [isReady, step, router, isEmptyOrganization, isInitialized]);
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-4 px-6 py-8">

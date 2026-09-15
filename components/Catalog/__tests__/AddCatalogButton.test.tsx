@@ -10,9 +10,13 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import AddCatalogButton from "../AddCatalogButton";
 const mocks = vi.hoisted(() => ({
+  memberships: [{ organization_id: "org" }],
   create: vi.fn(),
   push: vi.fn(),
   invalidate: vi.fn(),
+}));
+vi.mock("@/hooks/useAccountOrganizations", () => ({
+  default: () => ({ isSuccess: true, data: mocks.memberships }),
 }));
 vi.mock("@/lib/catalog/createCatalog", () => ({ createCatalog: mocks.create }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: mocks.push }) }));
@@ -29,8 +33,29 @@ vi.mock("@/providers/UserProvder", () => ({
   useUserProvider: () => ({ userData: { account_id: "account" } }),
 }));
 afterEach(cleanup);
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  mocks.memberships = [{ organization_id: "org" }];
+});
 describe("AddCatalogButton", () => {
+  it("uses the Personal fallback after organization membership is revoked", async () => {
+    mocks.memberships = [];
+    mocks.create.mockResolvedValue("catalog");
+    render(<AddCatalogButton />);
+    fireEvent.click(screen.getByRole("button", { name: "Add catalog" }));
+    fireEvent.change(screen.getByLabelText("Catalog name"), {
+      target: { value: "Personal catalog" },
+    });
+    fireEvent.submit(screen.getByLabelText("Catalog name").closest("form")!);
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenCalledWith(
+        "Personal catalog",
+        "token",
+        null,
+      ),
+    );
+  });
+
   it("creates in the selected organization and opens song management", async () => {
     mocks.create.mockResolvedValue("catalog");
     render(<AddCatalogButton />);
