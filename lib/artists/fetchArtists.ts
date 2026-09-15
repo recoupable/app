@@ -1,5 +1,6 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import type { ArtistRecord } from "@/types/Artist";
+import { normalizeArtistRoster } from "@/lib/artists/normalizeArtistRoster";
 
 interface FetchArtistsResponse {
   status: "success" | "error";
@@ -28,11 +29,14 @@ export async function fetchArtists(
     params.set("org_id", orgId);
   }
 
-  const response = await fetch(`${getClientApiBaseUrl()}/api/artists?${params.toString()}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
+  const response = await fetch(
+    `${getClientApiBaseUrl()}/api/artists?${params.toString()}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     },
-  });
+  );
 
   const data: FetchArtistsResponse = await response.json();
 
@@ -40,5 +44,5 @@ export async function fetchArtists(
     throw new Error(data.error || "Failed to fetch artists");
   }
 
-  return data.artists || [];
+  return normalizeArtistRoster(data.artists || []);
 }
