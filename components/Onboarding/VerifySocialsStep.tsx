@@ -31,19 +31,18 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
     <section className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold text-foreground">
-          Connect missing artist profiles
+          Connect artist profiles
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Setup checks that each artist has at least one linked profile so
-          Recoup can find their music and social activity for reports.
+          Add one profile per artist so Recoup can track their music and
+          socials.
         </p>
       </div>
 
       <div className="flex flex-col gap-2 rounded-xl bg-muted p-4">
         <SetupSkipLink />
         <p className="text-sm text-muted-foreground">
-          Go to chat for this session. Missing profiles stay on your setup
-          checklist, and you may be asked to finish on your next visit.
+          Use chat now. We may ask again next visit.
         </p>
       </div>
 
@@ -51,9 +50,7 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
         <p role="status">Loading your artist profiles…</p>
       ) : isError ? (
         <div role="alert" className="flex flex-col gap-3">
-          <p>
-            We couldn’t load your artists. Try again to check what’s missing.
-          </p>
+          <p>We couldn’t load your artists. Please try again.</p>
           <Button variant="outline" onClick={() => void getArtists()}>
             Try again
           </Button>
@@ -75,21 +72,18 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
             {missingArtists.length > 0 ? (
               <>
                 <p className="font-medium text-foreground">
-                  You’re here because{" "}
                   {missingArtists.length === 1
                     ? "1 artist is"
                     : `${missingArtists.length} artists are`}{" "}
                   missing a profile.
                 </p>
                 <p className="mt-1">
-                  Only those artists are shown below. Search Spotify or paste
-                  one profile link for each artist. Saved profiles are removed
-                  from this list.
+                  Search Spotify or paste a profile link below.
                 </p>
               </>
             ) : (
               <p className="font-medium text-foreground">
-                Every artist now has a linked profile. This step is complete.
+                All profiles connected. You’re ready to continue.
               </p>
             )}
             <p className="mt-2">
@@ -121,7 +115,7 @@ const VerifySocialsStep = ({ onConfirmed }: { onConfirmed: () => void }) => {
         {isSaving
           ? "Saving profile…"
           : missingArtists.length > 0
-            ? "Connect the missing profiles to continue"
+            ? "Add profiles to continue"
             : "Continue setup"}
       </Button>
     </section>

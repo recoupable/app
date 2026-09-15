@@ -68,9 +68,7 @@ describe("missing artist profiles", () => {
     expect(
       screen.getByRole("heading", { name: "Missing artist" }),
     ).toBeDefined();
-    expect(
-      screen.getByText(/You’re here because 1 artist is missing/),
-    ).toBeDefined();
+    expect(screen.getByText(/1 artist is missing a profile/)).toBeDefined();
     expect(screen.getByRole("button", { name: "Skip for now" })).toBeDefined();
   });
   it("cannot confirm missing data; a refreshed saved profile clears the list and gate", () => {
@@ -78,7 +76,7 @@ describe("missing artist profiles", () => {
     const view = render(<VerifySocialsStep onConfirmed={onConfirmed} />);
     fireEvent.click(
       screen.getByRole("button", {
-        name: "Connect the missing profiles to continue",
+        name: "Add profiles to continue",
       }),
     );
     expect(onConfirmed).not.toHaveBeenCalled();
@@ -87,7 +85,7 @@ describe("missing artist profiles", () => {
     expect(
       screen.queryByRole("heading", { name: "Missing artist" }),
     ).toBeNull();
-    expect(screen.getByText(/This step is complete/)).toBeDefined();
+    expect(screen.getByText(/All profiles connected/)).toBeDefined();
     expect(
       getOnboardingStep({ artists: state.artists, catalogs: [], tasks: [] }),
     ).toBe("catalog");

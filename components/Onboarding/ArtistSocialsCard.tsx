@@ -37,12 +37,7 @@ const ArtistSocialsCard = ({
         {artist.name || "Untitled artist"}
       </h2>
 
-      {socials.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No profile linked yet. Search for this artist on Spotify, or paste
-          their Instagram, TikTok, YouTube, or other supported profile link.
-        </p>
-      ) : (
+      {socials.length > 0 && (
         <div className="divide-y divide-border">
           {socials.map((social) => (
             <SocialRow
