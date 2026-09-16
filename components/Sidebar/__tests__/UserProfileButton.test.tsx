@@ -5,9 +5,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import UserProfileButton from "@/components/Sidebar/UserProfileButton";
 
 const login = vi.hoisted(() => vi.fn());
+const organization = { selectedOrgId: null as string | null };
 const privy = { ready: true, authenticated: false };
 const user: {
-  userData: { name?: string; account_id?: string } | null;
+  userData: { name?: string; account_id?: string; image?: string } | null;
   email?: string;
   address?: string;
   login: () => void;
@@ -20,10 +21,21 @@ vi.mock("@/providers/UserProvder", () => ({
   useUserProvider: () => user,
 }));
 vi.mock("@/providers/OrganizationProvider", () => ({
-  useOrganization: () => ({ selectedOrgId: null }),
+  useOrganization: () => organization,
 }));
 vi.mock("@/hooks/useAccountOrganizations", () => ({
-  default: () => ({ data: [] }),
+  default: () => ({ data: [{
+    organization_id: "org_1",
+    organization_name: "Example Label",
+    organization_image: "/label.png",
+  }] }),
+}));
+vi.mock("@/components/ui/avatar", () => ({
+  Avatar: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  AvatarFallback: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+  AvatarImage: ({ src, alt }: { src?: string; alt: string }) => (
+    <span role="img" aria-label={alt} data-src={src} />
+  ),
 }));
 vi.mock("@/components/Sidebar/UserProfileDropdown", () => ({
   default: () => null,
@@ -31,12 +43,27 @@ vi.mock("@/components/Sidebar/UserProfileDropdown", () => ({
 
 describe("UserProfileButton", () => {
   beforeEach(() => {
+    organization.selectedOrgId = null;
     privy.ready = true;
     privy.authenticated = false;
     user.userData = null;
     user.email = undefined;
     user.address = undefined;
     login.mockClear();
+  });
+
+  it.each([true, false])("keeps the user identity when switching workspaces (expanded: %s)", (isExpanded) => {
+    privy.authenticated = true;
+    user.userData = { name: "Ben Smith", image: "/ben.png", account_id: "acc_1" };
+    const { rerender } = render(<UserProfileButton isExpanded={isExpanded} />);
+
+    organization.selectedOrgId = "org_1";
+    rerender(<UserProfileButton isExpanded={isExpanded} />);
+
+    expect(screen.getByText("Ben Smith")).toBeDefined();
+    expect(screen.getByRole("img", { name: "Ben Smith" }).getAttribute("data-src")).toBe("/ben.png");
+    expect(screen.getByText("BS")).toBeDefined();
+    expect(screen.queryByText("Example Label")).toBeNull();
   });
 
   // chat#1912 row 2 — the defect a referred first-time visitor hit on 2026-07-29:

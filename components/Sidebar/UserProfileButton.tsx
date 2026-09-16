@@ -1,7 +1,5 @@
 import { usePrivy } from "@privy-io/react-auth";
 import { useUserProvider } from "@/providers/UserProvder";
-import { useOrganization } from "@/providers/OrganizationProvider";
-import useAccountOrganizations from "@/hooks/useAccountOrganizations";
 import { getUserProfileState } from "@/lib/auth/getUserProfileState";
 import UserProfileDropdown from "./UserProfileDropdown";
 import UserProfileButtonSkeleton from "./UserProfileButtonSkeleton";
@@ -17,8 +15,6 @@ import { cn } from "@/lib/utils";
 const UserProfileButton = ({ isExpanded = true }: { isExpanded?: boolean }) => {
   const { email, userData, address, login } = useUserProvider();
   const { ready, authenticated } = usePrivy();
-  const { selectedOrgId } = useOrganization();
-  const { data: organizations } = useAccountOrganizations();
 
   const profileState = getUserProfileState({
     isPrivyReady: ready,
@@ -35,31 +31,13 @@ const UserProfileButton = ({ isExpanded = true }: { isExpanded?: boolean }) => {
   const userName = userData?.name || email || userData?.wallet || "";
   const userImage = userData?.image;
 
-  // Find selected org
-  const selectedOrg = organizations?.find(
-    (org) => org.organization_id === selectedOrgId
-  );
-
-  // When org selected: show org info prominently
-  // When personal: show user info prominently
-  const isOrgSelected = !!selectedOrgId && !!selectedOrg;
-
-  const primaryName = isOrgSelected
-    ? selectedOrg.organization_name || "Organization"
-    : userName;
-
-  const avatarImage = isOrgSelected
-    ? selectedOrg.organization_image
-    : userImage;
-
-  const avatarInitials = isOrgSelected
-    ? (selectedOrg.organization_name || "OR").slice(0, 2).toUpperCase()
-    : userName
-        .split(" ")
-        .map((part: string) => part.charAt(0))
-        .join("")
-        .slice(0, 2)
-        .toUpperCase() || "U";
+  const avatarInitials =
+    userName
+      .split(" ")
+      .map((part: string) => part.charAt(0))
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "U";
 
   return (
     <DropdownMenu>
@@ -69,7 +47,7 @@ const UserProfileButton = ({ isExpanded = true }: { isExpanded?: boolean }) => {
           aria-label="Open user menu"
         >
           <Avatar className="h-7 w-7 shrink-0">
-            <AvatarImage src={avatarImage!} alt={primaryName} />
+            <AvatarImage src={userImage ?? undefined} alt={userName} />
             <AvatarFallback className="text-[10px]">{avatarInitials}</AvatarFallback>
           </Avatar>
           <div className={cn(
@@ -77,7 +55,7 @@ const UserProfileButton = ({ isExpanded = true }: { isExpanded?: boolean }) => {
             isExpanded ? "opacity-100 max-w-[150px] flex-1" : "opacity-0 max-w-0"
           )}>
             <p className="text-xs font-medium truncate dark:text-white leading-tight">
-              {primaryName}
+              {userName}
             </p>
           </div>
           <ChevronDown className={cn(
