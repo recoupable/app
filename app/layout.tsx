@@ -96,8 +96,8 @@ export default function RootLayout({
               <ArtistSettingModal />
               <AddArtistDialog />
               <div className="min-w-0 grow flex h-[100dvh] pt-16 md:pt-0 md:h-screen overflow-hidden bg-sidebar">
-                <div className="size-full md:p-3 md:pl-0">
-                  <div className="size-full bg-card overflow-y-auto md:rounded-[24px] flex flex-col md:shadow-[0_0_0_1px_var(--border),0_8px_32px_var(--surface-shadow)]">
+                <div className="size-full">
+                  <div className="size-full bg-card overflow-y-auto flex flex-col">
                     <WorkspaceContextBar />
                     <div className="min-h-0 flex-1 overflow-y-auto">
                       {children}

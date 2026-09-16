@@ -23,7 +23,9 @@ design guide's achromatic/Geist description no longer describes this app.
 - Lime marks primary chat actions. Use `brand-on-lime` for text on lime.
 - Use `brand-link` for inline links and `ring` for focus, not lime on white.
 - Preserve semantic success, warning, and error colors and text labels.
-- Rounded app frame and cards, with subtle shadow outlines.
+- The main panel sits flush beside the sidebar, without an outer inset,
+  rounded frame, or shadow. Individual cards retain rounded corners and subtle
+  shadow outlines.
 - Honor the existing system/light/dark preference. Dark mode uses green
   surfaces with light text and a quieter blue-to-green welcome panel.
 
