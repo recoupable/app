@@ -1,17 +1,19 @@
 import { expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
-import { insertSite } from "@/lib/supabase/sites/insertSite";
-import { updateSite } from "@/lib/supabase/sites/updateSite";
-import { selectSignups } from "@/lib/supabase/sites/selectSignups";
-import { GET } from "@/app/s/[id]/route";
-import { POST } from "@/app/s/[id]/signup/route";
 import type { SiteSnapshot } from "../schema";
 
 // Opt-in integration check. Creates only disposable test data, then removes it.
 it.skipIf(process.env.SITES_DB_TEST !== "1")(
   "persists drafts, publishes, captures consent, and unpublishes",
   async () => {
+    const { insertSite } = await import("@/lib/supabase/sites/insertSite");
+    const { updateSite } = await import("@/lib/supabase/sites/updateSite");
+    const { selectSignups } = await import(
+      "@/lib/supabase/sites/selectSignups"
+    );
+    const { GET } = await import("@/app/s/[id]/route");
+    const { POST } = await import("@/app/s/[id]/signup/route");
     const db = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
