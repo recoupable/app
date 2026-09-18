@@ -1,3 +1,4 @@
+import { Bot } from "lucide-react";
 import { useAgentData } from "../Agents/useAgentData";
 import NavButton from "./NavButton";
 
@@ -14,7 +15,7 @@ const AgentsNavItem = ({
 
   return (
     <NavButton
-      icon="robot"
+      icon={Bot}
       label="Agents"
       isActive={isActive}
       isExpanded={isExpanded}
@@ -25,4 +26,4 @@ const AgentsNavItem = ({
   );
 };
 
-export default AgentsNavItem; 
+export default AgentsNavItem;

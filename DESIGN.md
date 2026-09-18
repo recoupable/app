@@ -18,14 +18,23 @@ design guide's achromatic/Geist description no longer describes this app.
 
 `app/globals.css` is the source of truth for both light and `.dark` tokens.
 
-- White working surfaces, pale blue navigation, dark green text/actions.
+- White working surfaces and navigation, dark green text/actions.
 - Blue introduces the empty workspace; keep message reading surfaces clean.
 - Lime marks primary chat actions. Use `brand-on-lime` for text on lime.
 - Use `brand-link` for inline links and `ring` for focus, not lime on white.
 - Preserve semantic success, warning, and error colors and text labels.
-- Rounded app frame and cards, with subtle shadow outlines.
+- The main panel sits flush beside the sidebar, without an outer inset,
+  rounded frame, or shadow. Individual cards retain rounded corners and subtle
+  shadow outlines.
 - Honor the existing system/light/dark preference. Dark mode uses green
   surfaces with light text and a quieter blue-to-green welcome panel.
+
+- Desktop navigation uses a full-width top bar: small Recoup symbol, workspace,
+  then artist. A 56px icon rail sits below it and expands over the content on
+  hover or keyboard focus. Mobile keeps its tap-operated navigation.
+
+- Navigation uses Lucide icons at 18px with 1.5px strokes, muted by default.
+  Selected destinations use a subtle neutral surface; lime remains for primary actions.
 
 ## Behavior
 

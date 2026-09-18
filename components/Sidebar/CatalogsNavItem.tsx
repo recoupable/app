@@ -1,3 +1,4 @@
+import { Disc3 } from "lucide-react";
 import NavButton from "./NavButton";
 
 export interface CatalogsNavItemProps {
@@ -13,7 +14,7 @@ const CatalogsNavItem = ({
 }: CatalogsNavItemProps) => {
   return (
     <NavButton
-      icon="disc"
+      icon={Disc3}
       label="Catalogs"
       isActive={isActive}
       isExpanded={isExpanded}

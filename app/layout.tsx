@@ -6,6 +6,8 @@ import { META_DESCRIPTION, TITLE } from "@/lib/consts";
 import Sidebar from "@/components/Sidebar";
 import WorkspaceContextBar from "@/components/Chat/WorkspaceContextBar";
 import Header from "@/components/Header";
+import Link from "next/link";
+import LogoIcon from "@/components/Logo/LogoIcon";
 import { Suspense } from "react";
 import ArtistSettingModal from "@/components/ArtistSettingModal";
 import AddArtistDialog from "@/components/Artists/AddArtistDialog";
@@ -90,21 +92,32 @@ export default function RootLayout({
         <Suspense>
           <Providers>
             <AccountOverrideBadge />
-            <div className="flex flex-col md:flex-row">
-              <Sidebar />
+            <div className="flex h-dvh flex-col overflow-hidden bg-card">
               <Header />
+              <header className="relative z-30 mt-16 flex min-w-0 shrink-0 items-center bg-card shadow-[0_1px_0_var(--border)] md:mt-0 md:h-14">
+                <Link
+                  href="/"
+                  aria-label="Recoup home"
+                  className="hidden h-14 w-14 shrink-0 items-center justify-center text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:flex"
+                >
+                  <LogoIcon className="h-6 w-6" />
+                </Link>
+                <span
+                  aria-hidden="true"
+                  className="hidden text-border md:block"
+                >
+                  /
+                </span>
+                <WorkspaceContextBar />
+              </header>
+              <div className="flex min-h-0 flex-1">
+                <Sidebar />
+                <main className="min-w-0 flex-1 overflow-y-auto bg-card">
+                  {children}
+                </main>
+              </div>
               <ArtistSettingModal />
               <AddArtistDialog />
-              <div className="min-w-0 grow flex h-[100dvh] pt-16 md:pt-0 md:h-screen overflow-hidden bg-sidebar">
-                <div className="size-full md:p-3 md:pl-0">
-                  <div className="size-full bg-card overflow-y-auto md:rounded-[24px] flex flex-col md:shadow-[0_0_0_1px_var(--border),0_8px_32px_var(--surface-shadow)]">
-                    <WorkspaceContextBar />
-                    <div className="min-h-0 flex-1 overflow-y-auto">
-                      {children}
-                    </div>
-                  </div>
-                </div>
-              </div>
               <MobileDownloadModal />
             </div>
             <ToastContainer />
