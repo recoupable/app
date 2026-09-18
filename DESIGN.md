@@ -18,7 +18,7 @@ design guide's achromatic/Geist description no longer describes this app.
 
 `app/globals.css` is the source of truth for both light and `.dark` tokens.
 
-- White working surfaces, pale blue navigation, dark green text/actions.
+- White working surfaces and navigation, dark green text/actions.
 - Blue introduces the empty workspace; keep message reading surfaces clean.
 - Lime marks primary chat actions. Use `brand-on-lime` for text on lime.
 - Use `brand-link` for inline links and `ring` for focus, not lime on white.

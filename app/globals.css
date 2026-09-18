@@ -53,7 +53,7 @@
   --chart-3: hsl(197 37% 24%);
   --chart-4: hsl(43 74% 66%);
   --chart-5: hsl(27 87% 67%);
-  --sidebar-background: #f0f7fa;
+  --sidebar-background: #ffffff;
   --sidebar-foreground: #152e37;
   --sidebar-primary: #132b26;
   --sidebar-primary-foreground: #ffffff;
@@ -64,7 +64,7 @@
 
   /* border radius unit */
   --radius: 0.75rem;
-  --sidebar: #f0f7fa;
+  --sidebar: #ffffff;
   --brand: #007ebd;
   --brand-link: #087bab;
   --brand-lime: #d6ff62;
