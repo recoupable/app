@@ -33,6 +33,9 @@ design guide's achromatic/Geist description no longer describes this app.
   then artist. A 56px icon rail sits below it and expands over the content on
   hover or keyboard focus. Mobile keeps its tap-operated navigation.
 
+- Navigation uses Lucide icons at 18px with 1.5px strokes, muted by default.
+  Selected destinations use a subtle neutral surface; lime remains for primary actions.
+
 ## Behavior
 
 This visual refresh retains the existing authentication, onboarding,

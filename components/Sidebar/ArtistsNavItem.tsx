@@ -1,3 +1,4 @@
+import { Users } from "lucide-react";
 import NavButton from "./NavButton";
 
 export interface ArtistsNavItemProps {
@@ -13,7 +14,7 @@ const ArtistsNavItem = ({
 }: ArtistsNavItemProps) => {
   return (
     <NavButton
-      icon="micval"
+      icon={Users}
       label="Artists"
       isActive={isActive}
       isExpanded={isExpanded}

@@ -86,16 +86,23 @@ export default function WorkspaceContextBar() {
           className={trigger}
           aria-label={`Workspace: ${workspace}`}
         >
-          <Building2 className="size-4 shrink-0 text-muted-foreground" />
+          <Building2
+            strokeWidth={1.5}
+            className="size-[18px] shrink-0 text-muted-foreground"
+          />
           <span className="max-w-[130px] truncate sm:max-w-[220px]">
             {workspace}
           </span>
-          <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
+          <ChevronDown
+            strokeWidth={1.5}
+            className="size-3.5 shrink-0 text-muted-foreground"
+          />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-64 p-2">
           <p className="px-2 py-2 text-xs text-muted-foreground">Workspace</p>
           <DropdownMenuItem onSelect={() => setSelectedOrgId(null)}>
-            Personal{!selectedOrgId && <Check className="ml-auto" />}
+            Personal
+            {!selectedOrgId && <Check strokeWidth={1.5} className="ml-auto" />}
           </DropdownMenuItem>
           {organizations.map((org) => (
             <DropdownMenuItem
@@ -104,7 +111,7 @@ export default function WorkspaceContextBar() {
             >
               {org.organization_name || "Organization"}
               {org.organization_id === selectedOrgId && (
-                <Check className="ml-auto" />
+                <Check strokeWidth={1.5} className="ml-auto" />
               )}
             </DropdownMenuItem>
           ))}
@@ -120,7 +127,7 @@ export default function WorkspaceContextBar() {
           )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={openCreateOrg}>
-            <Plus />
+            <Plus strokeWidth={1.5} />
             Create organization
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -137,11 +144,17 @@ export default function WorkspaceContextBar() {
         }}
         aria-label={`Artist: ${artistLabel}`}
       >
-        <Users className="hidden size-4 shrink-0 text-muted-foreground sm:block" />
+        <Users
+          strokeWidth={1.5}
+          className="hidden size-[18px] shrink-0 text-muted-foreground sm:block"
+        />
         <span className="max-w-[150px] truncate sm:max-w-[260px]">
           {artistLabel}
         </span>
-        <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
+        <ChevronDown
+          strokeWidth={1.5}
+          className="size-3.5 shrink-0 text-muted-foreground"
+        />
       </button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
@@ -152,7 +165,10 @@ export default function WorkspaceContextBar() {
             <DialogTitle>Artists in {workspace}</DialogTitle>
           </DialogHeader>
           <div className="mx-5 mb-3 flex items-center gap-2 rounded-xl bg-muted px-3">
-            <Search className="size-4 text-muted-foreground" />
+            <Search
+              strokeWidth={1.5}
+              className="size-4 text-muted-foreground"
+            />
             <input
               autoFocus
               aria-label="Search artists"
@@ -169,9 +185,14 @@ export default function WorkspaceContextBar() {
                 onClick={() => selectArtist(null)}
                 className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm hover:bg-muted focus-visible:bg-muted"
               >
-                <Users className="size-5 text-muted-foreground" />
+                <Users
+                  strokeWidth={1.5}
+                  className="size-5 text-muted-foreground"
+                />
                 All artists
-                {!selectedArtist && <Check className="ml-auto size-4" />}
+                {!selectedArtist && (
+                  <Check strokeWidth={1.5} className="ml-auto size-4" />
+                )}
               </button>
             )}
             {isLoading ? (
@@ -199,7 +220,10 @@ export default function WorkspaceContextBar() {
                     </span>
                     <span className="truncate">{artist.name}</span>
                     {artist.account_id === selectedArtist?.account_id && (
-                      <Check className="ml-auto size-4 shrink-0" />
+                      <Check
+                        strokeWidth={1.5}
+                        className="ml-auto size-4 shrink-0"
+                      />
                     )}
                   </button>
                 ))
@@ -224,7 +248,7 @@ export default function WorkspaceContextBar() {
             }}
             className="flex items-center gap-2 px-5 py-4 text-sm font-medium shadow-[0_-1px_0_var(--border)] hover:bg-muted"
           >
-            <Plus className="size-4" />
+            <Plus strokeWidth={1.5} className="size-4" />
             Add artist
           </button>
         </DialogContent>

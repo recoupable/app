@@ -1,3 +1,4 @@
+import { Folder } from "lucide-react";
 import NavButton from "./NavButton";
 
 const FilesNavItem = ({
@@ -11,7 +12,7 @@ const FilesNavItem = ({
 }) => {
   return (
     <NavButton
-      icon="files"
+      icon={Folder}
       label="Files"
       isActive={isActive}
       isExpanded={isExpanded}
@@ -22,5 +23,3 @@ const FilesNavItem = ({
 };
 
 export default FilesNavItem;
-
-

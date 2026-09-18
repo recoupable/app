@@ -1,3 +1,4 @@
+import { Clock3 } from "lucide-react";
 import NavButton from "./NavButton";
 
 const TasksNavItem = ({
@@ -11,7 +12,7 @@ const TasksNavItem = ({
 }) => {
   return (
     <NavButton
-      icon="clock"
+      icon={Clock3}
       label="Tasks"
       isActive={isActive}
       isExpanded={isExpanded}

@@ -21,7 +21,11 @@ const NewChatButton = ({ isExpanded, email, onClick }: NewChatButtonProps) => (
       aria-label={email ? "New Chat" : "Sign In"}
     >
       <div className="w-[21px] flex justify-center items-center shrink-0">
-        <SquarePen className="size-[18px]" />
+        <SquarePen
+          className="size-[18px]"
+          strokeWidth={1.5}
+          aria-hidden="true"
+        />
       </div>
       <span
         className={cn(

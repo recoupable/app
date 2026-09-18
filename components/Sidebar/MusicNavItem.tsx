@@ -1,3 +1,4 @@
+import { Music2 } from "lucide-react";
 import NavButton from "./NavButton";
 
 export interface MusicNavItemProps {
@@ -9,7 +10,7 @@ export interface MusicNavItemProps {
 const MusicNavItem = ({ isActive, isExpanded, onClick }: MusicNavItemProps) => {
   return (
     <NavButton
-      icon="audio"
+      icon={Music2}
       label="Music"
       isActive={isActive}
       isExpanded={isExpanded}

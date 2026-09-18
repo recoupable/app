@@ -1,10 +1,9 @@
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
-import MenuItemIcon from "../MenuItemIcon";
-import { IconsType } from "../Icon";
+import type { LucideIcon } from "lucide-react";
 
 interface NavButtonProps {
-  icon: IconsType;
+  icon: LucideIcon;
   label: string;
   isActive: boolean;
   isExpanded?: boolean;
@@ -15,7 +14,7 @@ interface NavButtonProps {
 }
 
 const NavButton = ({
-  icon,
+  icon: Icon,
   label,
   isActive,
   isExpanded = true,
@@ -35,24 +34,24 @@ const NavButton = ({
       onClick={onClick}
       onMouseEnter={onHover}
       className={cn(
-        "rounded-xl whitespace-nowrap overflow-hidden transition-colors duration-200 h-11 md:h-9 relative text-sm font-normal",
+        "rounded-lg whitespace-nowrap overflow-hidden transition-colors duration-200 h-11 md:h-9 relative text-sm font-normal",
         isExpanded
           ? "w-full flex justify-start gap-2 px-3"
           : "w-8 mx-auto gap-0",
         {
-          "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent font-medium":
-            isActive,
-          "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground":
+          "bg-muted text-foreground hover:bg-muted font-medium": isActive,
+          "text-muted-foreground hover:bg-muted hover:text-foreground":
             !isActive,
         },
       )}
       aria-label={ariaLabel || label}
     >
-      {/* Active page accent bar */}
-      {isActive && isExpanded && (
-        <div className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full bg-brand" />
-      )}
-      <MenuItemIcon name={icon} />
+      <Icon
+        size={18}
+        strokeWidth={1.5}
+        aria-hidden="true"
+        className="shrink-0"
+      />
       <span
         className={cn(
           "overflow-hidden transition-all duration-200",
