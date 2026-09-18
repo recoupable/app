@@ -1,7 +1,6 @@
 import { UIMessage, ChatStatus } from "ai";
 import { useState } from "react";
 import { MessageParts } from "./MessageParts";
-import { ModelRoutingStatus } from "./ModelRoutingStatus";
 import MessageFrame from "./MessageFrame";
 
 const Message = ({
@@ -22,9 +21,6 @@ const Message = ({
       fullWidth={mode === "edit"}
     >
       <div className="min-w-0 flex-1">
-        {message.role === "assistant" && (
-          <ModelRoutingStatus metadata={message.metadata} />
-        )}
         <MessageParts
           message={message}
           mode={mode}

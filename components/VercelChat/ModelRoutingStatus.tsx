@@ -27,31 +27,45 @@ export function ModelRoutingStatus({ metadata }: { metadata: unknown }) {
     return (
       <div
         role="status"
-        className="mb-3 text-xs text-muted-foreground motion-safe:animate-pulse"
+        className="px-2 py-1 text-xs text-muted-foreground motion-safe:animate-pulse"
       >
         Jev is choosing a model…
       </div>
     );
   }
   const name =
-    getFeaturedModelConfig(routing.modelId)?.displayName ?? routing.modelId;
+    getFeaturedModelConfig(routing.modelId)?.displayName ??
+    (routing.modelId === "openai/gpt-6-astra" ? "Astra" : routing.modelId);
   return (
-    <details className="mb-3 rounded-lg px-3 py-2 text-xs text-muted-foreground shadow-[0_0_0_1px_var(--border)]">
-      <summary className="cursor-pointer rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
-        <span className="font-medium text-foreground">{name}</span>
+    <details className="group/routing relative min-w-0 text-xs text-muted-foreground">
+      <summary className="flex cursor-pointer list-none items-center gap-1 rounded-md px-2 py-1.5 transition-colors hover:bg-muted/50 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
+        <span className="font-medium">{name}</span>
         {routing.reasoningEffort && ` · ${routing.reasoningEffort} reasoning`}
-        {" · "}
-        {routing.source === "jev" ? "Chosen by Jev" : "Auto fallback"}
+        <span
+          aria-hidden="true"
+          className="ml-1 text-[10px] transition-transform group-open/routing:rotate-180"
+        >
+          ⌄
+        </span>
+        <span className="sr-only"> · Routing details</span>
       </summary>
-      <p className="mt-2 leading-relaxed">{routing.reason}</p>
-      {routing.reasoningConfidence !== undefined && (
-        <p className="mt-1">Reasoning confidence: {Math.round(routing.reasoningConfidence * 100)}%</p>
-      )}
-      {routing.confidence !== undefined && (
-        <p className="mt-1">
-          Routing confidence: {Math.round(routing.confidence * 100)}%
+      <div className="absolute bottom-full left-0 z-20 mb-2 w-72 max-w-[calc(100vw-3rem)] rounded-xl bg-popover p-3 text-popover-foreground shadow-md ring-1 ring-border">
+        <p className="font-medium">
+          {routing.source === "jev" ? "Chosen by Jev" : "Auto fallback"}
         </p>
-      )}
+        <p className="mt-2 leading-relaxed">{routing.reason}</p>
+        {routing.reasoningConfidence !== undefined && (
+          <p className="mt-1">
+            Reasoning confidence:{" "}
+            {Math.round(routing.reasoningConfidence * 100)}%
+          </p>
+        )}
+        {routing.confidence !== undefined && (
+          <p className="mt-1">
+            Routing confidence: {Math.round(routing.confidence * 100)}%
+          </p>
+        )}
+      </div>
     </details>
   );
 }
