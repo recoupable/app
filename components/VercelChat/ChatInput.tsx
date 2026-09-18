@@ -10,7 +10,6 @@ import {
   PromptInputToolbar,
   PromptInputTools,
 } from "../ai-elements/prompt-input";
-import ChatSettings from "./ChatSettings";
 import FileMentionsInput from "./FileMentionsInput";
 import WorkspaceStatusIndicator from "./WorkspaceStatusIndicator";
 
@@ -95,7 +94,6 @@ export function ChatInput({
             <PromptInputTools>
               <PureAttachmentsButton />
               {/* YouTube connect button removed from ChatInput UI intentionally; preserved for future reuse */}
-              <ChatSettings />
             </PromptInputTools>
             <PromptInputSubmit
               aria-label={
