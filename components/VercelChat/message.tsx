@@ -1,6 +1,7 @@
 import { UIMessage, ChatStatus } from "ai";
 import { useState } from "react";
 import { MessageParts } from "./MessageParts";
+import { ModelRoutingStatus } from "./ModelRoutingStatus";
 import MessageFrame from "./MessageFrame";
 
 const Message = ({
@@ -16,7 +17,13 @@ const Message = ({
   const [mode, setMode] = useState<"view" | "edit">("view");
 
   return (
-    <MessageFrame role={message.role as "user" | "assistant"} fullWidth={mode === "edit"}>
+    <MessageFrame
+      role={message.role as "user" | "assistant"}
+      fullWidth={mode === "edit"}
+    >
+      {message.role === "assistant" && (
+        <ModelRoutingStatus metadata={message.metadata} />
+      )}
       <MessageParts
         message={message}
         mode={mode}
