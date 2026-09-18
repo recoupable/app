@@ -1,3 +1,4 @@
+import { createChatSubmissionGuard } from "@/lib/chat/createChatSubmissionGuard";
 import { useChat } from "@ai-sdk/react";
 import { useMessageLoader } from "./useMessageLoader";
 import { useUserProvider } from "@/providers/UserProvder";
@@ -63,6 +64,7 @@ export function useVercelChat({
   attachments = [],
   textAttachments = [],
 }: UseVercelChatProps) {
+  const submitOnce = useMemo(() => createChatSubmissionGuard(), []);
   const { userData } = useUserProvider();
   const { selectedArtist } = useArtistProvider();
   const { selectedOrgId: organizationId } = useOrganization();
@@ -320,8 +322,9 @@ export function useVercelChat({
     // Land the selected model in chats.model_id before the send fires.
     await persistSelectedModel();
 
-    sendMessage(payload, { body: chatRequestBody, headers });
+    const response = sendMessage(payload, { body: chatRequestBody, headers });
     setInput("");
+    await response;
   };
 
   const append = async (message: UIMessage) => {
@@ -378,30 +381,30 @@ export function useVercelChat({
 
   const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isGeneratingResponse) return;
 
-    if (earliestFailedUserMessageId) {
-      await deleteTrailingMessages({
-        chatId: id,
-        fromMessageId: earliestFailedUserMessageId,
-      });
-    }
+    await submitOnce(async () => {
+      if (earliestFailedUserMessageId) {
+        await deleteTrailingMessages({
+          chatId: id,
+          fromMessageId: earliestFailedUserMessageId,
+        });
+      }
 
-    // Capture the input value before it's cleared by handleSubmit
-    const messageContent = input;
+      const messageContent = input;
+      const submission = handleSubmit(event);
 
-    // Submit the message
-    handleSubmit(event);
-
-    if (!chatId) {
-      // New chat from `/` or `/chat` — sidebar + URL update on first send.
-      addOptimisticConversation(
-        "New Chat",
-        transportChatId,
-        sessionId,
-        messageContent,
-      );
-      silentlyUpdateUrl();
-    }
+      if (!chatId) {
+        addOptimisticConversation(
+          "New Chat",
+          transportChatId,
+          sessionId,
+          messageContent,
+        );
+        silentlyUpdateUrl();
+      }
+      await submission;
+    });
   };
 
   const handleSendQueryMessages = useCallback(
