@@ -17,6 +17,7 @@ import MessageFileViewer from "./message-file-viewer";
 import { EnhancedReasoning } from "@/components/reasoning/EnhancedReasoning";
 import { Actions, Action } from "@/components/actions";
 import { RefreshCcwIcon, Pencil } from "lucide-react";
+import { ModelRoutingStatus } from "./ModelRoutingStatus";
 import CopyButton from "@/components/CopyButton";
 import { VercelChatContext } from "@/providers/VercelChatProvider";
 
@@ -48,6 +49,7 @@ export function MessageParts({
     status === "streaming" &&
     (!messages || messages[messages.length - 1]?.id === message.id);
   const parts = collapseTodoParts(message.parts ?? []);
+  const lastTextIndex = parts.findLastIndex((part) => part.type === "text");
   return (
     <div className={cn("flex flex-col gap-4 w-full group")}>
       {parts.map((part: UIMessagePart<UIDataTypes, UITools>, partIndex) => {
@@ -84,7 +86,7 @@ export function MessageParts({
                 <ViewingMessage message={message} partText={part?.text || ""} />
                 <Actions
                   className={cn(
-                    "mt-0.5 gap-0.5 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity",
+                    "mt-0.5 items-start gap-0.5 has-[details[open]]:opacity-100 has-[details[open]]:pointer-events-auto opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto transition-opacity",
                     {
                       "justify-start": message.role === "assistant",
                       "justify-end": message.role === "user",
@@ -120,6 +122,10 @@ export function MessageParts({
                          beside it; see components/actions.tsx. */
                     className="size-8 p-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors"
                   />
+                  {message.role === "assistant" &&
+                    partIndex === lastTextIndex && (
+                      <ModelRoutingStatus metadata={message.metadata} />
+                    )}
                 </Actions>
               </div>
             );
@@ -144,6 +150,9 @@ export function MessageParts({
             : getToolCallComponent(part as ToolUIPart, isOwnStream);
         }
       })}
+      {message.role === "assistant" && lastTextIndex === -1 && (
+        <ModelRoutingStatus metadata={message.metadata} />
+      )}
     </div>
   );
 }
