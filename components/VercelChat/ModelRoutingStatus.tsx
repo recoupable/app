@@ -49,7 +49,7 @@ export function ModelRoutingStatus({ metadata }: { metadata: unknown }) {
         </span>
         <span className="sr-only"> · Routing details</span>
       </summary>
-      <div className="absolute bottom-full left-0 z-20 mb-2 w-72 max-w-[calc(100vw-3rem)] rounded-xl bg-popover p-3 text-popover-foreground shadow-md ring-1 ring-border">
+      <div className="mt-2 w-72 max-w-[calc(100vw-3rem)] rounded-xl bg-popover p-3 text-popover-foreground shadow-md ring-1 ring-border">
         <p className="font-medium">
           {routing.source === "jev" ? "Chosen by Jev" : "Auto fallback"}
         </p>

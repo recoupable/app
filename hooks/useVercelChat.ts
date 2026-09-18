@@ -411,9 +411,16 @@ export function useVercelChat({
     async (initialMessage: UIMessage) => {
       silentlyUpdateUrl();
       const headers = await getHeaders();
-      sendMessage(initialMessage, { body: chatRequestBody, headers });
+      await persistSelectedModel();
+      await sendMessage(initialMessage, { body: chatRequestBody, headers });
     },
-    [silentlyUpdateUrl, sendMessage, chatRequestBody, getHeaders],
+    [
+      silentlyUpdateUrl,
+      sendMessage,
+      chatRequestBody,
+      getHeaders,
+      persistSelectedModel,
+    ],
   );
 
   // The ?q= deep-link behavior (prefill + provisioning-gated auto-fire)

@@ -86,7 +86,7 @@ export function MessageParts({
                 <ViewingMessage message={message} partText={part?.text || ""} />
                 <Actions
                   className={cn(
-                    "mt-0.5 gap-0.5 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto transition-opacity",
+                    "mt-0.5 items-start gap-0.5 has-[details[open]]:opacity-100 has-[details[open]]:pointer-events-auto opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto transition-opacity",
                     {
                       "justify-start": message.role === "assistant",
                       "justify-end": message.role === "user",
