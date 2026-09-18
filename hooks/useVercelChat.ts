@@ -13,7 +13,6 @@ import { useConversationsProvider } from "@/providers/ConversationsProvider";
 import { UIMessage, FileUIPart } from "ai";
 import useAvailableModels from "./useAvailableModels";
 import { useLocalStorage } from "usehooks-ts";
-import { DEFAULT_MODEL } from "@/lib/consts";
 import { useAccountOverride } from "@/providers/AccountOverrideProvider";
 import { usePaymentProvider } from "@/providers/PaymentProvider";
 import useArtistFilesForMentions from "@/hooks/useArtistFilesForMentions";
@@ -76,7 +75,9 @@ export function useVercelChat({
   const { addOptimisticConversation } = useConversationsProvider();
   const { data: availableModels = [] } = useAvailableModels();
   const [input, setInput] = useState("");
-  const [model, setModel] = useLocalStorage("RECOUP_MODEL", DEFAULT_MODEL);
+  // Start existing browsers on Auto too; the legacy key stores a fixed model
+  // from the removed composer picker and would otherwise bypass routing.
+  const [model, setModel] = useLocalStorage("RECOUP_CHAT_MODEL_V2", "auto");
   const { refetchCredits } = usePaymentProvider();
   // The api-minted chat id once bootstrap resolves; before then `id` is a
   // client placeholder. Drives the transport, message load, and URL so
