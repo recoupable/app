@@ -78,7 +78,7 @@ export default function WorkspaceContextBar() {
   return (
     <nav
       aria-label="Workspace and artist"
-      className="z-20 flex shrink-0 items-center gap-1 bg-card px-3 py-3 shadow-[0_1px_0_var(--border)] md:px-6"
+      className="flex min-w-0 flex-1 items-center gap-1 bg-card px-2 py-2"
     >
       <DropdownMenu>
         <DropdownMenuTrigger

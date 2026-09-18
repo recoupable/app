@@ -1,41 +1,44 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import Menu from "./Menu";
 import AccountModal from "../AccountModal";
 import OrgSettingsModal from "../Organization/OrgSettingsModal";
 import CreateOrgModal from "../Organization/CreateOrgModal";
-import useIsMobile from "@/hooks/useIsMobile";
-import useSidebarPin from "@/hooks/useSidebarPin";
+import { cn } from "@/lib/utils";
 
 const Sidebar = () => {
-  const [menuExpanded, setMenuExpanded] = useState(false);
-  const { isPinned, togglePin } = useSidebarPin();
-  const isMobile = useIsMobile();
-
-  const isOpen = isPinned || menuExpanded;
-  const animate = { width: isOpen ? 216 : 56 };
-  const initial = { width: 56 };
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const isOpen = hovered || focused;
 
   return (
-    <motion.div
-      className="hidden md:block shrink-0 bg-sidebar overflow-hidden"
-      animate={animate}
-      initial={initial}
-      transition={{ duration: 0.2 }}
-      onMouseEnter={() => {
-        if (!isPinned) setMenuExpanded(!isMobile);
-      }}
-      onMouseLeave={() => {
-        if (!isPinned) setMenuExpanded(false);
-      }}
-    >
-      <Menu isExpanded={isOpen} isPinned={isPinned} onTogglePin={togglePin} />
+    <div className="relative hidden h-full w-14 shrink-0 md:block">
+      <aside
+        aria-label="Main navigation"
+        className={cn(
+          "absolute inset-y-0 left-0 z-40 overflow-hidden bg-sidebar shadow-[1px_0_0_var(--border)]",
+          isOpen
+            ? "w-[216px] shadow-[1px_0_0_var(--border),8px_0_24px_var(--surface-shadow)]"
+            : "w-14",
+        )}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onFocusCapture={() => setFocused(true)}
+        onBlurCapture={(event) => {
+          if (
+            !event.currentTarget.contains(event.relatedTarget as Node | null)
+          ) {
+            setFocused(false);
+          }
+        }}
+      >
+        <Menu isExpanded={isOpen} />
+      </aside>
       <AccountModal />
       <OrgSettingsModal />
       <CreateOrgModal />
-    </motion.div>
+    </div>
   );
 };
 

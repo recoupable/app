@@ -7,18 +7,15 @@ import { v4 as uuidV4 } from "uuid";
 import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { RecentChatsSectionSkeleton } from "./RecentChatsSectionSkeleton";
-import LogoRow from "./LogoRow";
 import NewChatButton from "./NewChatButton";
 import SecondaryNav from "./SecondaryNav";
 import Divider from "./Divider";
 
 interface MenuProps {
   isExpanded: boolean;
-  isPinned?: boolean;
-  onTogglePin?: () => void;
 }
 
-const Menu = ({ isExpanded, isPinned = false, onTogglePin }: MenuProps) => {
+const Menu = ({ isExpanded }: MenuProps) => {
   const { push, prefetch } = useRouter();
   const pathname = usePathname();
   const { email, isPrepared } = useUserProvider();
@@ -41,13 +38,7 @@ const Menu = ({ isExpanded, isPinned = false, onTogglePin }: MenuProps) => {
   }, [prefetch]);
 
   return (
-    <div className="w-full h-screen pt-5 pb-2 px-2 hidden md:flex flex-col">
-      <LogoRow
-        isExpanded={isExpanded}
-        isPinned={isPinned}
-        onTogglePin={onTogglePin}
-      />
-
+    <div className="w-full h-full pb-2 px-2 hidden md:flex flex-col">
       <NewChatButton
         isExpanded={isExpanded}
         email={email}

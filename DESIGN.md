@@ -29,6 +29,10 @@ design guide's achromatic/Geist description no longer describes this app.
 - Honor the existing system/light/dark preference. Dark mode uses green
   surfaces with light text and a quieter blue-to-green welcome panel.
 
+- Desktop navigation uses a full-width top bar: small Recoup symbol, workspace,
+  then artist. A 56px icon rail sits below it and expands over the content on
+  hover or keyboard focus. Mobile keeps its tap-operated navigation.
+
 ## Behavior
 
 This visual refresh retains the existing authentication, onboarding,
