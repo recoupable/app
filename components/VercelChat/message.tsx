@@ -21,16 +21,18 @@ const Message = ({
       role={message.role as "user" | "assistant"}
       fullWidth={mode === "edit"}
     >
-      {message.role === "assistant" && (
-        <ModelRoutingStatus metadata={message.metadata} />
-      )}
-      <MessageParts
-        message={message}
-        mode={mode}
-        setMode={setMode}
-        status={status}
-        reload={reload}
-      />
+      <div className="min-w-0 flex-1">
+        {message.role === "assistant" && (
+          <ModelRoutingStatus metadata={message.metadata} />
+        )}
+        <MessageParts
+          message={message}
+          mode={mode}
+          setMode={setMode}
+          status={status}
+          reload={reload}
+        />
+      </div>
     </MessageFrame>
   );
 };
