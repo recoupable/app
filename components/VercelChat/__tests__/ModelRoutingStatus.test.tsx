@@ -34,3 +34,12 @@ describe("ModelRoutingStatus", () => {
     expect(html).toContain("30%");
   });
 });
+
+it("shows persisted reasoning effort and its separate confidence", () => {
+  const html = renderToStaticMarkup(<ModelRoutingStatus metadata={{ routing: {
+    status: "selected", source: "jev", tier: "frontier", modelId: "openai/gpt-6-astra",
+    reason: "Complex request", reasoningEffort: "high", reasoningConfidence: 0.87,
+  } }} />);
+  expect(html).toContain("high reasoning");
+  expect(html).toContain("Reasoning confidence: 87%");
+});
