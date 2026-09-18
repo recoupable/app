@@ -53,6 +53,7 @@ const Menu = ({ isExpanded }: MenuProps) => {
         isCatalogs={isCatalogs}
         isArtists={isArtists}
         isMusic={isMusic}
+        isSites={pathname.startsWith("/sites")}
         onNavigate={goToItem}
       />
 
