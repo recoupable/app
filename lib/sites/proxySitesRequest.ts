@@ -15,7 +15,6 @@ export async function proxySitesRequest(request: Request, path: string) {
       body: ["GET", "HEAD"].includes(request.method)
         ? undefined
         : await request.arrayBuffer(),
-      signal: AbortSignal.timeout(260000),
     });
     return new Response(upstream.body, {
       status: upstream.status,
