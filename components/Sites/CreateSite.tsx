@@ -88,14 +88,23 @@ function CreateForm({
         }),
       });
       try {
-        await request(`/api/sites/${site.id}`, {
+        const started = await request<{
+          generation: { token: string; status: string };
+        }>(`/api/sites/${site.id}`, {
           method: "PATCH",
           body: JSON.stringify({
             action: "generate",
             revision: site.revision,
             instruction: brief || site.brief,
+            background: true,
           }),
         });
+        if (!started.generation?.token)
+          throw new Error("Generation did not start");
+        sessionStorage.setItem(
+          `site-production:${site.id}`,
+          started.generation.token,
+        );
       } catch {
         router.push(`/sites/${site.id}?generationFailed=1`);
         return;

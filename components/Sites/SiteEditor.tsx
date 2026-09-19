@@ -1,4 +1,5 @@
 "use client";
+import { waitForSiteProduction } from "@/lib/sites/waitForSiteProduction";
 import Link from "next/link";
 import Image from "next/image";
 import { usePrivy } from "@privy-io/react-auth";
@@ -77,22 +78,84 @@ export default function SiteEditor({ id }: { id: string }) {
   );
   const [mobile, setMobile] = useState(false);
   const [notice, setNotice] = useState("");
+  useEffect(() => {
+    if (!query.data?.site.id) return;
+    const token = sessionStorage.getItem(`site-production:${id}`);
+    if (!token) return;
+    const controller = new AbortController();
+    let active = true;
+    queueMicrotask(() => {
+      if (active) {
+        setBusy("generate");
+        setError("");
+      }
+    });
+    void waitForSiteProduction(
+      request,
+      id,
+      { generation: { token, status: "running" } },
+      (message) => {
+        if (active) setNotice(message);
+      },
+      controller.signal,
+    )
+      .then((result) => {
+        if (active) {
+          cache.setQueryData(
+            ["site", id, userData?.account_id, selectedOrgId],
+            (current: Record<string, unknown> | undefined) => ({
+              ...current,
+              site: result.site,
+            }),
+          );
+          setNotice("Draft saved. Review it before publishing.");
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          setError((error as Error).message);
+          setNotice("");
+        }
+      })
+      .finally(() => {
+        if (active) setBusy("");
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [
+    id,
+    query.data?.site.id,
+    request,
+    cache,
+    userData?.account_id,
+    selectedOrgId,
+  ]);
   async function act(action: "generate" | "publish" | "unpublish") {
     if (!query.data) return;
     setBusy(action);
     setError("");
     setNotice("");
     try {
-      const result = await request<{ site: Site }>(`/api/sites/${id}`, {
+      let result = await request<{
+        site: Site;
+        generation?: { token: string; status: string };
+      }>(`/api/sites/${id}`, {
         method: "PATCH",
         body: JSON.stringify({
           action,
           revision: query.data.site.revision,
           ...(action === "generate"
-            ? { instruction: instruction || query.data.site.brief }
+            ? {
+                instruction: instruction || query.data.site.brief,
+                background: true,
+              }
             : {}),
         }),
       });
+      if (action === "generate")
+        result = await waitForSiteProduction(request, id, result, setNotice);
       cache.setQueryData(key, { ...query.data, site: result.site });
       void cache.invalidateQueries({ queryKey: ["sites"] });
       setInstruction("");
@@ -104,7 +167,9 @@ export default function SiteEditor({ id }: { id: string }) {
             : "Site unpublished. Your draft is saved.",
       );
     } catch (e) {
+      setNotice("");
       setError((e as Error).message);
+      void cache.invalidateQueries({ queryKey: key });
     } finally {
       setBusy("");
     }
@@ -283,6 +348,12 @@ export default function SiteEditor({ id }: { id: string }) {
               {notice}
             </p>
           )}
+          {site.draft?.production?.status === "needs-review" && (
+            <p role="status" className="text-sm text-muted-foreground">
+              This draft needs another review.{" "}
+              {site.draft.production.reviews.at(-1)?.summary}
+            </p>
+          )}
           <div className="mt-auto space-y-3 pt-8">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-medium">Fan signups</h2>
@@ -359,10 +430,15 @@ export default function SiteEditor({ id }: { id: string }) {
                 strokeWidth={1}
                 className="mb-5 text-muted-foreground"
               />
-              <h2 className="text-xl font-medium">Your site starts here.</h2>
+              <h2 className="text-xl font-medium">
+                {busy === "generate"
+                  ? "Creating your experience"
+                  : "Your site starts here."}
+              </h2>
               <p className="mt-2 max-w-xs text-sm text-muted-foreground">
-                Generate a preview from your brief, then refine it before
-                publishing.
+                {busy === "generate"
+                  ? "Researching the release, creating the artwork, and testing your site. You can leave this page while it runs."
+                  : "Generate a preview from your brief, then refine it before publishing."}
               </p>
             </div>
           )}

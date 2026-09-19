@@ -64,6 +64,10 @@ export const actionSchema = z.discriminatedUnion("action", [
 export type SiteDesign = z.infer<typeof designSchema>;
 export type SiteAsset = z.infer<typeof assetSchema>;
 export type SiteSnapshot = {
+  production?: {
+    status: "reviewed" | "needs-review";
+    reviews: { summary: string }[];
+  };
   name: string;
   releaseUrl: string;
   assets: SiteAsset[];
