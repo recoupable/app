@@ -9,13 +9,7 @@ import { useOrganization } from "@/providers/OrganizationProvider";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { useSitesRequest } from "@/hooks/useSitesRequest";
 import { Button } from "@/components/ui/button";
-import {
-  PromptInput,
-  PromptInputTextarea,
-  PromptInputToolbar,
-  PromptInputTools,
-  PromptInputSubmit,
-} from "@/components/ai-elements/prompt-input";
+import ChatComposer from "@/components/VercelChat/ChatComposer";
 import { parseSitePrompt } from "@/lib/sites/parseSitePrompt";
 import type { Site, SiteAsset } from "@/lib/sites/schema";
 export default function CreateSite() {
@@ -124,70 +118,58 @@ function CreateForm({
         <h1 className="mb-8 text-center text-3xl font-medium tracking-tight">
           What would you like to make?
         </h1>
-        <PromptInput
+        <ChatComposer
+          value={message}
+          onChange={setMessage}
           onSubmit={submit}
-          aria-busy={busy}
-          className="rounded-2xl border-0 bg-card shadow-[0_0_0_1px_var(--input),0_6px_24px_var(--surface-shadow)] focus-within:ring-1 focus-within:ring-foreground/30"
-        >
-          {assets.length > 0 && (
-            <div className="flex flex-wrap gap-2 px-4 pt-4">
-              {assets.map((asset, i) => (
-                <div
-                  key={asset.url}
-                  className="flex max-w-full items-center gap-2 rounded-lg bg-muted px-3 py-2 text-xs"
-                >
-                  {asset.type === "image" && (
-                    <Image
-                      unoptimized
-                      width={28}
-                      height={28}
-                      src={asset.url}
-                      alt=""
-                      className="h-7 w-7 rounded object-cover"
-                    />
-                  )}
-                  <span className="max-w-48 truncate">{asset.name}</span>
-                  <button
-                    type="button"
-                    disabled={busy}
-                    aria-label={`Remove ${asset.name}`}
-                    onClick={() =>
-                      setAssets((a) => a.filter((_, index) => index !== i))
-                    }
+          disabled={busy || uploading}
+          sendDisabled={busy || uploading || !message.trim()}
+          status={busy ? "submitted" : "ready"}
+          submitLabel="Create site"
+          ariaLabel="Describe your site and paste a Spotify link"
+          placeholder="Paste a Spotify link and tell us what you have in mind…"
+          mentionsEnabled={false}
+          attachments={
+            assets.length > 0 && (
+              <div className="flex flex-wrap gap-2 px-4 pt-4">
+                {assets.map((asset, i) => (
+                  <div
+                    key={asset.url}
+                    className="flex max-w-full items-center gap-2 rounded-lg bg-muted px-3 py-2 text-xs"
                   >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          <PromptInputTextarea
-            className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
-            aria-label="Describe your site and paste a Spotify link"
-            placeholder="Paste a Spotify link and tell us what you have in mind…"
-            value={message}
-            maxLength={7000}
-            minHeight={100}
-            maxHeight={240}
-            disabled={busy}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={(e) => {
-              if (
-                e.key === "Enter" &&
-                !e.shiftKey &&
-                !e.nativeEvent.isComposing
-              ) {
-                e.preventDefault();
-                e.currentTarget.form?.requestSubmit();
-              }
-            }}
-          />
-          <PromptInputToolbar className="px-3 py-2">
-            <PromptInputTools>
+                    {asset.type === "image" && (
+                      <Image
+                        unoptimized
+                        width={28}
+                        height={28}
+                        src={asset.url}
+                        alt=""
+                        className="h-7 w-7 rounded object-cover"
+                      />
+                    )}
+                    <span className="max-w-48 truncate">{asset.name}</span>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      aria-label={`Remove ${asset.name}`}
+                      onClick={() =>
+                        setAssets((a) => a.filter((_, index) => index !== i))
+                      }
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )
+          }
+          tools={
+            <>
+              {" "}
               <Button
                 type="button"
                 variant="ghost"
-                size="icon"
+                className="rounded-md rounded-bl-lg p-[7px] h-fit border-border hover:bg-accent text-foreground"
                 aria-label="Attach artwork or audio"
                 title="Attach artwork or audio"
                 disabled={busy || uploading || assets.length >= 8}
@@ -196,7 +178,7 @@ function CreateForm({
                 {uploading ? (
                   <Loader2 size={18} className="animate-spin" />
                 ) : (
-                  <Paperclip size={18} />
+                  <Paperclip size={14} />
                 )}
               </Button>
               <input
@@ -210,15 +192,9 @@ function CreateForm({
                   e.target.value = "";
                 }}
               />
-            </PromptInputTools>
-            <PromptInputSubmit
-              aria-label="Create site"
-              disabled={busy || uploading || !message.trim()}
-              status={busy ? "submitted" : "ready"}
-              className="size-10 rounded-xl bg-brand-lime text-brand-on-lime hover:bg-brand-lime-hover disabled:opacity-50"
-            />
-          </PromptInputToolbar>
-        </PromptInput>
+            </>
+          }
+        />
         {busy && (
           <p
             role="status"

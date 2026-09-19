@@ -18,12 +18,18 @@ interface FileMentionsInputProps {
   value: string;
   onChange: (newValue: string) => void;
   disabled: boolean;
+  placeholder?: string;
+  ariaLabel?: string;
+  mentionsEnabled?: boolean;
 }
 
 export default function FileMentionsInput({
   value,
   onChange,
   disabled,
+  placeholder = "Ask about your workspace…",
+  ariaLabel = "Message Recoup",
+  mentionsEnabled = true,
 }: FileMentionsInputProps) {
   const [portalHost, setPortalHost] = useState<Element | undefined>(undefined);
   useEffect(() => {
@@ -52,12 +58,12 @@ export default function FileMentionsInput({
           {children}
         </Card>
       )}
-      aria-label="Message Recoup"
-      placeholder="Ask about your workspace…"
+      aria-label={ariaLabel}
+      placeholder={placeholder}
       onKeyDown={(
         e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
       ) => {
-        if (e.key === "Enter" && !e.shiftKey) {
+        if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
           e.preventDefault();
           const form = (e.target as HTMLTextAreaElement)?.form;
           if (form) form.requestSubmit();
@@ -71,7 +77,9 @@ export default function FileMentionsInput({
         data={(
           query: string,
           callback: (results: SuggestionDataItem[]) => void,
-        ) => provideSuggestions(query, callback)}
+        ) =>
+          mentionsEnabled ? provideSuggestions(query, callback) : callback([])
+        }
         displayTransform={(_id: string, display: string) => display}
         appendSpaceOnAdd
         style={{
