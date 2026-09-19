@@ -9,6 +9,11 @@ export const assetSchema = z.object({
   name: z.string().max(200),
   type: z.enum(["image", "audio"]),
 });
+export const experienceSchema = z.object({
+  html: z.string().min(1).max(60000),
+  css: z.string().max(40000),
+  javascript: z.string().max(80000),
+});
 export const designSchema = z.object({
   headline: z.string().min(1).max(160),
   eyebrow: z.string().max(100),
@@ -20,6 +25,7 @@ export const designSchema = z.object({
   accent: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   layout: z.enum(["editorial", "poster", "split"]),
   font: z.enum(["serif", "sans"]),
+  experience: experienceSchema.optional(),
 });
 export const siteInputSchema = z
   .object({

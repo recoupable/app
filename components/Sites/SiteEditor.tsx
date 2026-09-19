@@ -229,7 +229,7 @@ export default function SiteEditor({ id }: { id: string }) {
               onChange={(e) => setInstruction(e.target.value)}
               placeholder={
                 site.draft
-                  ? "Try a warmer background and bigger headline…"
+                  ? "Add a new level, change the artwork, or refine the controls…"
                   : "Generate a design from your brief."
               }
             />
@@ -244,14 +244,14 @@ export default function SiteEditor({ id }: { id: string }) {
                 <Send size={14} />
               )}{" "}
               {busy === "generate"
-                ? "Designing…"
+                ? "Building…"
                 : site.draft
                   ? "Update draft"
                   : "Generate preview"}
             </Button>
             <p className="text-xs leading-5 text-muted-foreground">
-              Generated copy, colors, and layout. Your live site changes only
-              when you publish.
+              Working experiences, games, and websites. Your live site changes
+              only when you publish.
             </p>
           </form>
           {error && (
@@ -323,7 +323,7 @@ export default function SiteEditor({ id }: { id: string }) {
           {site.draft ? (
             <iframe
               title={`${site.name} draft preview`}
-              sandbox="allow-popups allow-popups-to-escape-sandbox"
+              sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
               srcDoc={renderSite(site.draft)}
               className={`mx-auto h-[72vh] min-h-[520px] rounded-lg bg-white shadow-sm ${mobile ? "w-full max-w-[390px]" : "w-full"}`}
             />

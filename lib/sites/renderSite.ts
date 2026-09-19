@@ -1,7 +1,9 @@
+import { renderExperience } from "./renderExperience";
 import type { SiteSnapshot } from "./schema";
 
-/** Generated content stays data: the shared renderer owns markup and fan forms. */
+/** Keep legacy snapshots readable; executable experiences use an isolated renderer. */
 export function renderSite(site: SiteSnapshot, signupAction?: string): string {
+  if (site.design.experience) return renderExperience(site, signupAction);
   const esc = (value: string) =>
     value.replace(
       /[&<>"']/g,

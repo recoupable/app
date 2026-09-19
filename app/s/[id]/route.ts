@@ -19,7 +19,7 @@ export async function GET(
         "Content-Type": "text/html; charset=utf-8",
         "Cache-Control": "no-store",
         "Content-Security-Policy":
-          "default-src 'none'; style-src 'unsafe-inline'; img-src https:; media-src https:; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+          "default-src 'none'; script-src 'self' 'unsafe-inline' https://sdk.scdn.co; connect-src 'self' https://api.spotify.com https://accounts.spotify.com https://*.spotify.com https://*.scdn.co wss://*.spotify.com; frame-src 'self' https://sdk.scdn.co; style-src 'unsafe-inline'; img-src https:; media-src https:; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
         "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "no-referrer",
       },
