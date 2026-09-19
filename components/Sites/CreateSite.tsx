@@ -127,7 +127,7 @@ function CreateForm({
         <PromptInput
           onSubmit={submit}
           aria-busy={busy}
-          className="rounded-2xl border-0 bg-card shadow-[0_0_0_1px_var(--input),0_6px_24px_var(--surface-shadow)] focus-within:ring-2 focus-within:ring-ring"
+          className="rounded-2xl border-0 bg-card shadow-[0_0_0_1px_var(--input),0_6px_24px_var(--surface-shadow)] focus-within:ring-1 focus-within:ring-foreground/30"
         >
           {assets.length > 0 && (
             <div className="flex flex-wrap gap-2 px-4 pt-4">
@@ -162,6 +162,7 @@ function CreateForm({
             </div>
           )}
           <PromptInputTextarea
+            className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
             aria-label="Describe your site and paste a Spotify link"
             placeholder="Paste a Spotify link and tell us what you have in mind…"
             value={message}
