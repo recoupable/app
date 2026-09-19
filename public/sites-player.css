@@ -313,3 +313,19 @@ body[data-player-visible] #audio-fallback {
     padding: 8px 4px;
   }
 }
+
+/* Keep account and playback actions out of the entrance card. */
+body:not([data-player-visible]) .player-link {
+  display: none;
+}
+body:not([data-player-visible]) footer {
+  justify-content: center;
+  padding-bottom: 20px;
+}
+body:not([data-player-visible]) footer button {
+  text-decoration: none;
+}
+.terms {
+  margin-top: 16px;
+  color: #777;
+}

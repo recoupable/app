@@ -2,8 +2,11 @@
 (async () => {
   "use strict";
   const status = document.getElementById("spotify-status");
-  const say = (text) => {
-    if (status) status.textContent = text;
+  const say = (text, quiet = false) => {
+    if (status) {
+      status.textContent = text;
+      status.hidden = quiet;
+    }
   };
   const sessionKey = "recoup-sites-spotify";
   const pendingKey = "recoup-sites-spotify-pending";
@@ -389,7 +392,7 @@
       }
       return session.access_token;
     }
-    say("Connected. Preparing your music player…");
+    say("Preparing music…", true);
     window.onSpotifyWebPlaybackSDKReady = () => {
       player = new window.Spotify.Player({
         name: "Recoup Sites",
@@ -427,6 +430,7 @@
           parentOrigin
             ? "Spotify connected. Continue to start listening."
             : "Spotify connected. Press Play music.",
+          true,
         );
       });
       player.addListener("not_ready", () => {
@@ -465,7 +469,7 @@
           );
           if (state.paused) delete play.dataset.playing;
           else play.dataset.playing = "true";
-          say(state.paused ? "Paused." : "Playing on Spotify.");
+          say(state.paused ? "Paused." : "Playing on Spotify.", true);
           const track = state.track_window.current_track;
           const label = document.getElementById("spotify-track-link");
           const cover = document.getElementById("spotify-cover");
@@ -536,7 +540,7 @@
               : "Spotify could not start this release. Try Open music.",
           );
         started = true;
-        say("Playing on Spotify.");
+        say("Playing on Spotify.", true);
       } catch (e) {
         say(e.message);
       }
