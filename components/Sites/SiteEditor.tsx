@@ -46,7 +46,13 @@ export default function SiteEditor({ id }: { id: string }) {
   const key = ["site", id, userData?.account_id, selectedOrgId];
   const query = useQuery({
     queryKey: key,
-    queryFn: () => request<Result>(`/api/sites/${id}`),
+    queryFn: async () => {
+      const [siteResult, signupResult] = await Promise.all([
+        request<{ site: Site }>(`/api/sites/${id}`),
+        request<{ signups: Result["signups"] }>(`/api/sites/${id}/signups`),
+      ]);
+      return { ...siteResult, ...signupResult };
+    },
     enabled: ready && authenticated && !!userData?.account_id && isInitialized,
   });
   const spotifyConfig = useQuery({

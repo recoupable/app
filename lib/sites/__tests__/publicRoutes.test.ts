@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({ select: vi.fn(), insert: vi.fn() }));
-vi.mock("@/lib/supabase/sites/selectSite", () => ({
-  selectSite: mocks.select,
+vi.mock("@/lib/sites/getPublishedSite", () => ({
+  getPublishedSite: mocks.select,
 }));
-vi.mock("@/lib/supabase/sites/insertSignup", () => ({
-  insertSignup: mocks.insert,
+vi.mock("@/lib/sites/submitSiteSignup", () => ({
+  submitSiteSignup: mocks.insert,
 }));
 import { GET } from "@/app/s/[id]/route";
 import { POST } from "@/app/s/[id]/signup/route";
@@ -61,7 +61,7 @@ describe("public sites", () => {
     ).toBe(404);
     expect(mocks.insert).not.toHaveBeenCalled();
   });
-  it("stores consent against the published name, not the draft", async () => {
+  it("forwards explicit signup to the API", async () => {
     mocks.select.mockResolvedValue({
       name: "Draft name",
       published: { name: "Published artist" },
@@ -77,7 +77,6 @@ describe("public sites", () => {
     expect(mocks.insert).toHaveBeenCalledWith(
       expect.any(String),
       "fan@example.com",
-      "I agree to receive email updates from Published artist.",
     );
   });
 });

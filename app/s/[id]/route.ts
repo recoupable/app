@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { selectSite } from "@/lib/supabase/sites/selectSite";
+import { getPublishedSite } from "@/lib/sites/getPublishedSite";
 import { renderSite } from "@/lib/sites/renderSite";
 export const dynamic = "force-dynamic";
 /** Public HTML is rendered from a published snapshot only, without the app shell. */
@@ -11,7 +11,7 @@ export async function GET(
   if (!z.string().uuid().safeParse(id).success)
     return new Response("Site not found", { status: 404 });
   try {
-    const site = await selectSite(id);
+    const site = await getPublishedSite(id);
     if (!site?.published)
       return new Response("This site is not published.", { status: 404 });
     return new Response(
