@@ -41,9 +41,12 @@
       sessionStorage.removeItem(pendingKey);
       const query = new URLSearchParams(location.search);
       const code = query.get("code");
+      const returnUrl = new URL(pending?.returnPath || "/", location.origin);
       const safeReturn =
-        pending && /^\/s\/[0-9a-f-]{36}$/.test(pending.returnPath)
-          ? pending.returnPath
+        returnUrl.origin === location.origin &&
+        (/^\/s\/[0-9a-f-]{36}$/.test(returnUrl.pathname) ||
+          returnUrl.pathname === "/s/spotify/connect")
+          ? returnUrl.pathname + returnUrl.search
           : "/";
       const link = document.getElementById("return-link");
       link.href = safeReturn;
@@ -80,8 +83,34 @@
     const connect = document.getElementById("spotify-connect");
     const play = document.getElementById("spotify-play");
     const disconnect = document.getElementById("spotify-disconnect");
+    const openPlayer = (url) => {
+      window.open(
+        url,
+        "_blank",
+        "popup,width=460,height=640,noopener,noreferrer",
+      );
+      say(
+        "Keep the Spotify window open for music. If it did not open, use this link: ",
+      );
+      const fallback = document.createElement("a");
+      fallback.href = url;
+      fallback.target = "_blank";
+      fallback.rel = "noopener noreferrer";
+      fallback.textContent = "Open Spotify player";
+      if (status) status.appendChild(fallback);
+    };
     if (document.body.dataset.preview === "true") {
-      connect.disabled = true;
+      const url = document.body.dataset.connectUrl;
+      connect.disabled = !url;
+      if (url) connect.onclick = () => openPlayer(url);
+      return;
+    }
+    if (document.body.dataset.spotifyPlayer !== "true") {
+      connect.onclick = () =>
+        openPlayer(
+          "/s/spotify/connect?release=" +
+            encodeURIComponent(document.body.dataset.release || ""),
+        );
       return;
     }
     const configResponse = await fetch("/api/sites/spotify/config");
@@ -118,7 +147,7 @@
           created: Date.now(),
           clientId: config.clientId,
           redirectUri: config.redirectUri,
-          returnPath: location.pathname,
+          returnPath: location.pathname + location.search,
         });
         const params = new URLSearchParams({
           client_id: config.clientId,

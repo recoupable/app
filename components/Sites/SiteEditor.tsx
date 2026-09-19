@@ -49,6 +49,19 @@ export default function SiteEditor({ id }: { id: string }) {
     queryFn: () => request<Result>(`/api/sites/${id}`),
     enabled: ready && authenticated && !!userData?.account_id && isInitialized,
   });
+  const spotifyConfig = useQuery({
+    queryKey: ["sites-spotify-config"],
+    queryFn: async () => {
+      const response = await fetch("/api/sites/spotify/config");
+      if (!response.ok) throw new Error("Could not load Spotify configuration");
+      return response.json() as Promise<{
+        configured: boolean;
+        redirectUri: string | null;
+      }>;
+    },
+  });
+  const callback = spotifyConfig.data?.redirectUri;
+  const spotifyOrigin = callback ? new URL(callback).origin : null;
   const [instruction, setInstruction] = useState("");
   const [busy, setBusy] = useState("");
   const [error, setError] = useState(
@@ -324,7 +337,13 @@ export default function SiteEditor({ id }: { id: string }) {
             <iframe
               title={`${site.name} draft preview`}
               sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
-              srcDoc={renderSite(site.draft)}
+              srcDoc={renderSite(
+                site.draft,
+                undefined,
+                spotifyConfig.data?.configured && spotifyOrigin
+                  ? `${spotifyOrigin}/s/spotify/connect?release=${encodeURIComponent(site.release_url)}`
+                  : undefined,
+              )}
               className={`mx-auto h-[72vh] min-h-[520px] rounded-lg bg-white shadow-sm ${mobile ? "w-full max-w-[390px]" : "w-full"}`}
             />
           ) : (

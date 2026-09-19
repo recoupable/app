@@ -47,3 +47,9 @@ References: https://developer.spotify.com/documentation/web-api/tutorials/code-p
 ### Spotify release blocker
 
 As checked on September 18, 2026, Spotify Developer Policy section III.2 prohibits creating a game with its platform. Do not treat this OAuth/player implementation as approval to launch a Spotify-integrated game. The game can use artist-supplied audio independently; Spotify application configuration and the permitted product integration remain unresolved. The player displays Spotify track metadata and artwork when playback state is available.
+
+## Testing Spotify without publishing
+
+Interactive draft previews can open a separate trusted Spotify player window using the configured callback origin. The game stays in its isolated frame, and OAuth credentials remain in the player window. A direct link is offered when the browser blocks popups. The player returns to `/s/spotify/connect` after OAuth; connecting does not publish a draft or submit a fan signup. The fan clicks Play music explicitly after authorization. Keep the player window open during listening.
+
+Local SyncStream callback registration is `http://127.0.0.1:3002/s/spotify/callback`. Production `.dev` and `.com` callback registrations have also been saved in Spotify; Vercel environment configuration and production deployment are still separate steps.

@@ -2,8 +2,13 @@ import { renderExperience } from "./renderExperience";
 import type { SiteSnapshot } from "./schema";
 
 /** Keep legacy snapshots readable; executable experiences use an isolated renderer. */
-export function renderSite(site: SiteSnapshot, signupAction?: string): string {
-  if (site.design.experience) return renderExperience(site, signupAction);
+export function renderSite(
+  site: SiteSnapshot,
+  signupAction?: string,
+  connectUrl?: string,
+): string {
+  if (site.design.experience)
+    return renderExperience(site, signupAction, connectUrl);
   const esc = (value: string) =>
     value.replace(
       /[&<>"']/g,

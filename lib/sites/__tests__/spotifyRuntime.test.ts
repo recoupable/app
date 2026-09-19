@@ -7,6 +7,7 @@ function harness(callback: boolean, pending: unknown = null, search = "") {
   const nodes: Record<
     string,
     {
+      appendChild?: ReturnType<typeof vi.fn>;
       textContent?: string;
       href?: string;
       disabled?: boolean;
@@ -29,15 +30,23 @@ function harness(callback: boolean, pending: unknown = null, search = "") {
       body: {
         hasAttribute: (a: string) =>
           a === (callback ? "data-spotify-callback" : "data-sites-runtime"),
-        dataset: { preview: "false" },
+        dataset: {
+          preview: "false",
+          spotifyPlayer: "true",
+          connectUrl: "",
+          release: "",
+        },
       },
-      getElementById: (id: string) => nodes[id] ?? (nodes[id] = {}),
+      getElementById: (id: string) =>
+        nodes[id] ?? (nodes[id] = { appendChild: vi.fn() }),
+      createElement: () => ({}),
     },
     sessionStorage: {
       getItem: (k: string) => storage.get(k),
       setItem: (k: string, v: string) => storage.set(k, v),
       removeItem: (k: string) => storage.delete(k),
     },
+    window: { open: vi.fn() },
     history: { replaceState: vi.fn() },
     location,
     fetch,
@@ -127,4 +136,41 @@ describe("Spotify fan auth", () => {
     expect(url.searchParams.get("response_type")).toBe("code");
     expect(url.searchParams.has("client_secret")).toBe(false);
   });
+});
+
+it("opens configured preview login outside the isolated frame without fetching tokens", async () => {
+  const h = harness(false);
+  h.ctx.document.body.dataset.preview = "true";
+  h.ctx.document.body.dataset.connectUrl =
+    "http://127.0.0.1:3002/s/spotify/connect?release=test";
+  await h.run();
+  await h.nodes["spotify-connect"].onclick!();
+  expect(h.ctx.window.open).toHaveBeenCalledWith(
+    h.ctx.document.body.dataset.connectUrl,
+    "_blank",
+    expect.stringContaining("noopener"),
+  );
+  expect(h.fetch).not.toHaveBeenCalled();
+});
+it("returns popup auth to the player without redirecting the game", async () => {
+  const h = harness(
+    true,
+    {
+      state: "ok",
+      created: Date.now(),
+      returnPath: "/s/spotify/connect?release=track",
+      clientId: "id",
+      verifier: "v",
+      redirectUri: "https://example.test/s/spotify/callback",
+    },
+    "?code=c&state=ok",
+  );
+  h.fetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({ access_token: "token", expires_in: 3600 }),
+  });
+  await h.run();
+  expect(h.ctx.location.replace).toHaveBeenCalledWith(
+    "/s/spotify/connect?release=track",
+  );
 });
