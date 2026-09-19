@@ -363,6 +363,8 @@
     if (!parentOrigin) showPlayer();
 
     document.body.dataset.connected = "true";
+    const intro = document.getElementById("spotify-intro");
+    if (intro) intro.textContent = "Spotify connected. You’re ready to go.";
     connect.hidden = true;
     play.hidden = false;
     play.disabled = true;

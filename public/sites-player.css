@@ -62,8 +62,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
-  border-bottom: 1px solid #dbdce0;
+  padding: 20px 24px 0;
   gap: 8px;
 }
 .sign-header span {
@@ -76,12 +75,12 @@ main {
   display: flex;
 }
 .sign-body {
-  padding: 24px 20px 20px;
+  padding: 22px 24px 18px;
 }
 .sign-button {
-  height: 40px;
-  background: #3475e0;
-  border-radius: 20px;
+  height: 44px;
+  background: #18332d;
+  border-radius: 10px;
   color: white;
   font-size: 15px;
   width: 100%;
@@ -320,7 +319,7 @@ body:not([data-player-visible]) .player-link {
 }
 body:not([data-player-visible]) footer {
   justify-content: center;
-  padding-bottom: 20px;
+  padding-bottom: 22px;
 }
 body:not([data-player-visible]) footer button {
   text-decoration: none;
@@ -328,4 +327,56 @@ body:not([data-player-visible]) footer button {
 .terms {
   margin-top: 16px;
   color: #777;
+}
+
+.sign-body h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.7px;
+  line-height: 1.2;
+}
+.sign-description {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #666;
+  margin-bottom: 24px;
+}
+.sign-header span {
+  font-size: 12px;
+  gap: 8px;
+}
+.close {
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #777;
+}
+.close:hover {
+  background: #f3f3f3;
+  color: #111;
+}
+.sign-button:hover {
+  background: #244b40;
+}
+.terms {
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.consent-copy {
+  display: block;
+  margin-bottom: 4px;
+}
+body[data-connected] .consent-copy {
+  display: none;
+}
+body:not([data-player-visible]) #spotify-skip {
+  font-size: 12px;
+  color: #666;
+}
+body:not([data-player-visible]) #spotify-skip:hover {
+  color: #111;
 }
