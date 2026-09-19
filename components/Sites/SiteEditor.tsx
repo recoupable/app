@@ -349,10 +349,18 @@ export default function SiteEditor({ id }: { id: string }) {
             </p>
           )}
           {site.draft?.production?.status === "needs-review" && (
-            <p role="status" className="text-sm text-muted-foreground">
-              This draft needs another review.{" "}
-              {site.draft.production.reviews.at(-1)?.summary}
-            </p>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p role="status">
+                This draft needs another design pass. Review it before
+                publishing.
+              </p>
+              <details>
+                <summary className="cursor-pointer">Review notes</summary>
+                <p className="mt-2">
+                  {site.draft.production.reviews.at(-1)?.summary}
+                </p>
+              </details>
+            </div>
           )}
           <div className="mt-auto space-y-3 pt-8">
             <div className="flex items-center justify-between">
