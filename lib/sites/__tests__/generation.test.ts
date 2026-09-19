@@ -35,10 +35,37 @@ it("passes actual assets and generates behavior, not just art direction", async 
   });
   const result = await generateSite(site, "Build it");
   expect(result.design.experience?.html).toBe("<canvas></canvas>");
-  expect(ai.generateObject.mock.calls[0][0].prompt).toContain(
+  expect(JSON.stringify(ai.generateObject.mock.calls[0][0].messages)).toContain(
     site.assets[0].url,
   );
   expect(ai.generateObject.mock.calls[0][0].system).toContain(
     "playable mechanics",
+  );
+});
+
+it("sends release artwork as visual input to the generator", async () => {
+  ai.generateObject.mockResolvedValue({
+    object: {
+      experience: { javascript: "", html: "<main>Game</main>", css: "" },
+    },
+  });
+  await generateSite(
+    {
+      ...site,
+      assets: [
+        {
+          type: "image",
+          name: "Artwork",
+          url: "https://image-cdn-fa.spotifycdn.com/image/abc",
+        },
+      ],
+    },
+    "Choose the concept",
+  );
+  expect(ai.generateObject.mock.calls[0][0].messages[0].content).toContainEqual(
+    {
+      type: "image",
+      image: new URL("https://image-cdn-fa.spotifycdn.com/image/abc"),
+    },
   );
 });

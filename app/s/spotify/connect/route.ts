@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { playerThemeSchema } from "@/lib/sites/schema";
 import { renderSpotifyPlayer } from "@/lib/sites/renderSpotifyPlayer";
 
 /** Spotify runs here, never in the generated experience's frame. */
@@ -48,13 +49,37 @@ export async function GET(request: Request) {
       "A Spotify track, album, or playlist link is required.",
       { status: 400 },
     );
+  const theme = requestUrl.searchParams.has("background")
+    ? playerThemeSchema.safeParse(
+        Object.fromEntries(
+          [
+            "background",
+            "foreground",
+            "accent",
+            "font",
+            "title",
+            "artwork",
+          ].map((key) => [key, requestUrl.searchParams.get(key)]),
+        ),
+      )
+    : null;
+  if (theme && !theme.success)
+    return new Response("Invalid player theme", { status: 400 });
   const value = release.data.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
-  return new Response(renderSpotifyPlayer(value, parent || "", audioUrl), {
-    headers: {
-      "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "no-store",
-      "Referrer-Policy": "no-referrer",
-      "Content-Security-Policy": `default-src 'none'; script-src 'self' https://sdk.scdn.co; style-src 'self'; font-src 'self'; connect-src 'self' https://accounts.spotify.com https://api.spotify.com https://*.spotify.com https://*.scdn.co wss://*.spotify.com; img-src 'self' https:; media-src https:; frame-src https://sdk.scdn.co; base-uri 'none'; frame-ancestors ${parent ? allowedParents.join(" ") : "'none'"}`,
+  return new Response(
+    renderSpotifyPlayer(
+      value,
+      parent || "",
+      audioUrl,
+      theme?.success ? theme.data : undefined,
+    ),
+    {
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store",
+        "Referrer-Policy": "no-referrer",
+        "Content-Security-Policy": `default-src 'none'; script-src 'self' https://sdk.scdn.co; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' https://accounts.spotify.com https://api.spotify.com https://*.spotify.com https://*.scdn.co wss://*.spotify.com; img-src 'self' https:; media-src https:; frame-src https://sdk.scdn.co; base-uri 'none'; frame-ancestors ${parent ? allowedParents.join(" ") : "'none'"}`,
+      },
     },
-  });
+  );
 }

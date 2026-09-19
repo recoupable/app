@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   signups: vi.fn(),
   insert: vi.fn(),
   list: vi.fn(),
+  release: vi.fn(),
 }));
 vi.mock("@/lib/sites/authorizeSites", () => ({ authorizeSites: mocks.auth }));
 vi.mock("@/lib/supabase/sites/selectSite", () => ({
@@ -26,6 +27,9 @@ vi.mock("@/lib/supabase/sites/selectSites", () => ({
   selectSites: mocks.list,
 }));
 vi.mock("@/lib/sites/generateSite", () => ({ generateSite: mocks.generate }));
+vi.mock("@/lib/sites/resolveSpotifyRelease", () => ({
+  resolveSpotifyRelease: mocks.release,
+}));
 import { GET, PATCH } from "@/app/api/sites/[id]/route";
 import { POST } from "@/app/api/sites/route";
 const id = "11111111-1111-4111-8111-111111111111",
@@ -148,4 +152,48 @@ describe("site actions", () => {
     expect(response.status).toBe(400);
     expect(mocks.insert).not.toHaveBeenCalled();
   });
+});
+
+it("creates a named, artwork-backed site from only a Spotify link", async () => {
+  mocks.release.mockResolvedValue({
+    title: "Real release",
+    url: "https://open.spotify.com/track/abc",
+    artwork: "https://i.scdn.co/image/abc",
+  });
+  mocks.insert.mockResolvedValue({ id });
+  const response = await POST(
+    new Request("http://localhost/api/sites", {
+      method: "POST",
+      body: JSON.stringify({
+        releaseUrl: "https://open.spotify.com/track/abc",
+      }),
+    }),
+  );
+  expect(response.status).toBe(201);
+  expect(mocks.insert).toHaveBeenCalledWith(
+    expect.objectContaining({
+      name: "Real release",
+      brief: expect.stringContaining("playable fan game"),
+      assets: [
+        {
+          name: "Real release artwork",
+          type: "image",
+          url: "https://i.scdn.co/image/abc",
+        },
+      ],
+    }),
+  );
+});
+it("does not create an empty site when Spotify lookup fails", async () => {
+  mocks.release.mockRejectedValue(new Error("Unavailable"));
+  const response = await POST(
+    new Request("http://localhost/api/sites", {
+      method: "POST",
+      body: JSON.stringify({
+        releaseUrl: "https://open.spotify.com/track/abc",
+      }),
+    }),
+  );
+  expect(response.status).toBe(422);
+  expect(mocks.insert).not.toHaveBeenCalled();
 });

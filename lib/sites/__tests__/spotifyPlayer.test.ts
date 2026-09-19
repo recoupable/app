@@ -57,3 +57,26 @@ it("rejects unsafe audio fallbacks", async () => {
   );
   expect(response.status).toBe(400);
 });
+it("uses validated release colors and escapes release titles", async () => {
+  const url = new URL("https://example.test/s/spotify/connect");
+  const theme = {
+    release: "https://open.spotify.com/track/abc",
+    background: "#101010",
+    foreground: "#ffffff",
+    accent: "#ffdd00",
+    font: "serif",
+    title: "<img src=x onerror=alert(1)>",
+    artwork: "https://i.scdn.co/image/abc",
+  };
+  Object.entries(theme).forEach(([key, value]) =>
+    url.searchParams.set(key, value),
+  );
+  const response = await GET(new Request(url));
+  expect(response.status).toBe(200);
+  const html = await response.text();
+  expect(html).toContain("--release-accent:#ffdd00");
+  expect(html).toContain("&lt;img src=x onerror=alert(1)&gt;");
+  expect(html).not.toContain("<img src=x");
+  url.searchParams.set("accent", "red;}body{display:none");
+  expect((await GET(new Request(url))).status).toBe(400);
+});

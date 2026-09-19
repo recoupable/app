@@ -129,6 +129,18 @@
         document.body.dataset.release || "",
       );
       playerUrl.searchParams.set("parent", location.origin);
+      for (const key of [
+        "background",
+        "foreground",
+        "accent",
+        "font",
+        "title",
+        "artwork",
+      ]) {
+        const value =
+          document.body.dataset["theme" + key[0].toUpperCase() + key.slice(1)];
+        if (value !== undefined) playerUrl.searchParams.set(key, value);
+      }
       if (document.body.dataset.audioUrl)
         playerUrl.searchParams.set("audio", document.body.dataset.audioUrl);
       frame.src = playerUrl.href;

@@ -380,3 +380,56 @@ body:not([data-player-visible]) #spotify-skip {
 body:not([data-player-visible]) #spotify-skip:hover {
   color: #111;
 }
+
+/* One release palette across the experience and trusted music controls. */
+body[data-themed] {
+  background: var(--release-background);
+  color: var(--release-foreground);
+  font-family: var(--release-font);
+}
+body[data-themed] .sign-description,
+body[data-themed] .terms,
+body[data-themed] #spotify-status,
+body[data-themed] footer,
+body[data-themed] #spotify-skip,
+body[data-themed] .close {
+  color: var(--release-foreground);
+}
+body[data-themed] .sign-description,
+body[data-themed] .terms,
+body[data-themed] footer {
+  opacity: 0.75;
+}
+body[data-themed] .sign-button {
+  background: var(--release-accent);
+  color: var(--release-accent-text);
+}
+body[data-themed] .sign-button:hover {
+  filter: brightness(1.1);
+}
+body[data-themed] .sign-body h1 {
+  font-family: var(--release-font);
+}
+body[data-themed] .sign-header img {
+  background: white;
+  border-radius: 50%;
+}
+body[data-themed] .playback,
+body[data-themed] .track-row,
+body[data-themed][data-player-visible] footer {
+  background: var(--release-background);
+  color: var(--release-foreground);
+}
+body[data-themed] .transport button {
+  color: var(--release-foreground);
+}
+body[data-themed] input[type="range"] {
+  accent-color: var(--release-accent);
+}
+.release-cover {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}

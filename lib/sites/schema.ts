@@ -31,12 +31,15 @@ export const siteInputSchema = z
   .object({
     organizationId: z.string().uuid().nullable().default(null),
     artistId: z.string().uuid().nullable().default(null),
-    name: z.string().trim().min(1).max(120),
-    brief: z.string().trim().min(1).max(6000),
+    name: z.string().trim().max(120).default(""),
+    brief: z.string().trim().max(6000).default(""),
     releaseUrl: z.union([httpsUrl, z.literal("")]).default(""),
     assets: z.array(assetSchema).max(8).default([]),
   })
-  .strict();
+  .strict()
+  .refine((input) => Boolean(input.releaseUrl || (input.name && input.brief)), {
+    message: "Add a Spotify link, or a name and brief.",
+  });
 export const actionSchema = z.discriminatedUnion("action", [
   z
     .object({
@@ -82,3 +85,13 @@ export type Site = {
   created_at: string;
   updated_at: string;
 };
+
+export const playerThemeSchema = z.object({
+  background: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  foreground: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  accent: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  font: z.enum(["serif", "sans"]),
+  title: z.string().max(120),
+  artwork: z.union([httpsUrl, z.literal("")]),
+});
+export type PlayerTheme = z.infer<typeof playerThemeSchema>;
