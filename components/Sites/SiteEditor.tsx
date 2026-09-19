@@ -421,7 +421,8 @@ export default function SiteEditor({ id }: { id: string }) {
           {site.draft ? (
             <iframe
               title={`${site.name} draft preview`}
-              sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+              sandbox="allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox"
+              allow="web-share *"
               srcDoc={renderSite(
                 site.draft,
                 undefined,

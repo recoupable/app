@@ -27,7 +27,8 @@ const site: SiteSnapshot = {
 describe("interactive experience isolation", () => {
   it("runs game code only inside an opaque sandbox", () => {
     const html = renderSite(site, "/s/111/signup");
-    expect(html).toContain('sandbox="allow-scripts"');
+    expect(html).toContain('sandbox="allow-scripts allow-downloads"');
+    expect(html).toContain('allow="web-share *"');
     expect(html).not.toContain("allow-same-origin");
     expect(html).toContain("connect-src &#39;none&#39;");
     expect(html).toContain("form-action &#39;none&#39;");
