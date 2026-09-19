@@ -20,6 +20,8 @@ function harness(callback: boolean, pending: unknown = null, search = "") {
   const fetch = vi.fn();
   const location = {
     search,
+    href: "https://example.test/s/spotify/connect?parent=https://example.test",
+    reload: vi.fn(),
     pathname: "/s/spotify/callback",
     origin: "https://example.test",
     replace: vi.fn(),
@@ -35,6 +37,7 @@ function harness(callback: boolean, pending: unknown = null, search = "") {
           spotifyPlayer: "true",
           connectUrl: "",
           release: "",
+          playerParent: "",
         },
       },
       getElementById: (id: string) =>
@@ -46,7 +49,12 @@ function harness(callback: boolean, pending: unknown = null, search = "") {
       setItem: (k: string, v: string) => storage.set(k, v),
       removeItem: (k: string) => storage.delete(k),
     },
-    window: { open: vi.fn() },
+    window: {
+      open: vi.fn(),
+      addEventListener: vi.fn(),
+      opener: null as null | { postMessage: ReturnType<typeof vi.fn> },
+      close: vi.fn(),
+    },
     history: { replaceState: vi.fn() },
     location,
     fetch,
@@ -173,4 +181,76 @@ it("returns popup auth to the player without redirecting the game", async () => 
   expect(h.ctx.location.replace).toHaveBeenCalledWith(
     "/s/spotify/connect?release=track",
   );
+});
+it("returns popup tokens only to the same-origin trusted opener after state validation", async () => {
+  const h = harness(
+    true,
+    {
+      state: "ok",
+      created: Date.now(),
+      popup: true,
+      clientId: "id",
+      verifier: "v",
+      redirectUri: "https://example.test/s/spotify/callback",
+    },
+    "?code=c&state=ok",
+  );
+  h.ctx.window.opener = { postMessage: vi.fn() };
+  h.fetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({ access_token: "token", expires_in: 3600 }),
+  });
+  await h.run();
+  expect(h.ctx.window.opener.postMessage).toHaveBeenCalledWith(
+    expect.objectContaining({ type: "recoup-spotify-session" }),
+    "https://example.test",
+  );
+  expect(h.ctx.window.close).toHaveBeenCalled();
+  expect(h.ctx.location.replace).not.toHaveBeenCalled();
+});
+it("ignores unsolicited token messages in the embedded player", async () => {
+  const h = harness(false);
+  h.ctx.document.body.dataset.playerParent = "https://example.test";
+  h.fetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({ configured: false }),
+  });
+  await h.run();
+  const handler = h.ctx.window.addEventListener.mock.calls
+    .filter(([name]) => name === "message")
+    .at(-1)![1];
+  handler({
+    origin: "https://evil.test",
+    source: {},
+    data: {
+      type: "recoup-spotify-session",
+      session: { access_token: "injected" },
+    },
+  });
+  expect(h.storage.has("recoup-sites-spotify")).toBe(false);
+});
+it("accepts a connection only from the opened auth window on the player's origin", async () => {
+  const h = harness(false);
+  h.ctx.document.body.dataset.playerParent = "https://example.test";
+  h.fetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({ configured: true }),
+  });
+  const popup = {};
+  h.ctx.window.open.mockReturnValue(popup);
+  await h.run();
+  await h.nodes["spotify-connect"].onclick!();
+  const handler = h.ctx.window.addEventListener.mock.calls
+    .filter(([name]) => name === "message")
+    .at(-1)![1];
+  const data = {
+    type: "recoup-spotify-session",
+    session: { access_token: "token" },
+  };
+  handler({ origin: "https://evil.test", source: popup, data });
+  handler({ origin: "https://example.test", source: {}, data });
+  expect(h.storage.has("recoup-sites-spotify")).toBe(false);
+  handler({ origin: "https://example.test", source: popup, data });
+  expect(h.storage.has("recoup-sites-spotify")).toBe(true);
+  expect(h.ctx.location.reload).toHaveBeenCalledOnce();
 });

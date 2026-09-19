@@ -76,6 +76,15 @@
         clientId: pending.clientId,
         expiresAt: Date.now() + token.expires_in * 1000,
       });
+      if (pending.popup && window.opener) {
+        window.opener.postMessage(
+          { type: "recoup-spotify-session", session: read(sessionKey) },
+          location.origin,
+        );
+        say("Connected. Return to your experience.");
+        window.close();
+        return;
+      }
       location.replace(safeReturn);
       return;
     }
@@ -106,13 +115,92 @@
       return;
     }
     if (document.body.dataset.spotifyPlayer !== "true") {
-      connect.onclick = () =>
-        openPlayer(
-          "/s/spotify/connect?release=" +
-            encodeURIComponent(document.body.dataset.release || ""),
+      const frame = document.getElementById("music-frame");
+      if (!frame) return;
+      const playerUrl = new URL(
+        document.body.dataset.connectUrl || "/s/spotify/connect",
+        location.origin,
+      );
+      playerUrl.searchParams.set(
+        "release",
+        document.body.dataset.release || "",
+      );
+      playerUrl.searchParams.set("parent", location.origin);
+      if (document.body.dataset.audioUrl)
+        playerUrl.searchParams.set("audio", document.body.dataset.audioUrl);
+      frame.src = playerUrl.href;
+      const game = document.getElementById("experience");
+      const entrance = document.getElementById("music-entrance");
+      const toggle = document.getElementById("music-toggle");
+      const panel = document.getElementById("music-panel");
+      game.inert = true;
+      const enter = () => {
+        document.body.dataset.entered = "true";
+        frame.contentWindow.postMessage(
+          { type: "recoup-music-entered" },
+          playerUrl.origin,
         );
+        game.inert = false;
+        entrance.hidden = true;
+        toggle.hidden = false;
+        panel.classList.add("collapsed");
+        toggle.textContent = "♫ Music";
+        toggle.setAttribute("aria-expanded", "false");
+        game.focus();
+      };
+      document.getElementById("experience-continue").onclick = enter;
+      toggle.onclick = () => {
+        const collapsed = panel.classList.toggle("collapsed");
+        toggle.textContent = collapsed ? "♫ Music" : "Minimize player";
+        toggle.setAttribute("aria-expanded", String(!collapsed));
+      };
+      window.addEventListener("message", (event) => {
+        if (
+          event.source !== frame.contentWindow ||
+          event.origin !== playerUrl.origin
+        )
+          return;
+        if (event.data?.type === "recoup-music-continue") enter();
+      });
       return;
     }
+    const parentOrigin = document.body.dataset.playerParent;
+    const continueButton = document.getElementById("spotify-continue");
+    if (parentOrigin && continueButton)
+      continueButton.onclick = () => {
+        window.parent.postMessage(
+          { type: "recoup-music-continue" },
+          parentOrigin,
+        );
+      };
+    if (parentOrigin)
+      window.addEventListener("message", (event) => {
+        if (
+          event.source === window.parent &&
+          event.origin === parentOrigin &&
+          event.data?.type === "recoup-music-entered"
+        ) {
+          if (continueButton) continueButton.hidden = true;
+        }
+      });
+    let authPopup;
+    if (parentOrigin)
+      window.addEventListener("message", (event) => {
+        if (
+          !authPopup ||
+          event.source !== authPopup ||
+          event.origin !== location.origin
+        )
+          return;
+        if (
+          event.data?.type !== "recoup-spotify-session" ||
+          typeof event.data.session?.access_token !== "string"
+        )
+          return;
+        write(sessionKey, event.data.session);
+        authPopup = null;
+        location.reload();
+      });
     const configResponse = await fetch("/api/sites/spotify/config");
     if (!configResponse.ok)
       throw new Error("Spotify connection is temporarily unavailable.");
@@ -126,6 +214,22 @@
     }
     connect.onclick = async () => {
       try {
+        if (parentOrigin) {
+          const authUrl = new URL(location.href);
+          authUrl.searchParams.delete("parent");
+          authUrl.searchParams.set("authorize", "1");
+          authPopup = window.open(
+            authUrl.href,
+            "recoup-spotify-auth",
+            "popup,width=460,height=640",
+          );
+          say(
+            authPopup
+              ? "Finish connecting in the Spotify window."
+              : "Allow popups to connect Spotify, then try again.",
+          );
+          return;
+        }
         const verifier = random();
         const state = random();
         const digest = await crypto.subtle.digest(
@@ -143,6 +247,7 @@
           );
         write(pendingKey, {
           verifier,
+          popup: new URLSearchParams(location.search).get("authorize") === "1",
           state,
           created: Date.now(),
           clientId: config.clientId,
@@ -164,11 +269,40 @@
         say(e.message);
       }
     };
+    if (new URLSearchParams(location.search).get("authorize") === "1") {
+      await connect.onclick();
+      return;
+    }
     let session = read(sessionKey);
     if (!session) return;
     let player;
     let deviceId;
     let started = false;
+    let duration = 0;
+    let latestState = null;
+    let updatedAt = Date.now();
+    const seek = document.getElementById("spotify-seek");
+    const time = document.getElementById("spotify-time");
+    const controls = document.getElementById("spotify-controls");
+    const format = (ms) => {
+      const seconds = Math.floor(ms / 1000);
+      return (
+        Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2, "0")
+      );
+    };
+    const updateProgress = () => {
+      if (!latestState || !seek || !time) return;
+      const position = Math.min(
+        duration,
+        latestState.position +
+          (latestState.paused ? 0 : Date.now() - updatedAt),
+      );
+      seek.value = duration ? (position / duration) * 100 : 0;
+      time.textContent = format(position) + " / " + format(duration);
+    };
+    if (continueButton && parentOrigin) continueButton.hidden = false;
+
+    document.body.dataset.connected = "true";
     connect.hidden = true;
     play.hidden = false;
     play.disabled = true;
@@ -208,6 +342,27 @@
             .then(cb)
             .catch((e) => say(e.message)),
       });
+      const act = (fn) => async () => {
+        try {
+          await fn();
+        } catch (e) {
+          say(e.message || "Playback control unavailable.");
+        }
+      };
+      if (seek)
+        seek.onchange = act(() =>
+          player.seek((Number(seek.value) / 100) * duration),
+        );
+      const volume = document.getElementById("spotify-volume");
+      if (volume)
+        volume.oninput = act(() =>
+          player.setVolume(Number(volume.value) / 100),
+        );
+      const previous = document.getElementById("spotify-previous");
+      const next = document.getElementById("spotify-next");
+      if (previous) previous.onclick = act(() => player.previousTrack());
+      if (next) next.onclick = act(() => player.nextTrack());
+      setInterval(updateProgress, 1000);
       player.addListener("ready", ({ device_id }) => {
         deviceId = device_id;
         play.disabled = false;
@@ -224,10 +379,27 @@
         "account_error",
         "playback_error",
       ])
-        player.addListener(event, ({ message }) => say(message));
+        player.addListener(event, ({ message }) => {
+          if (event === "account_error") {
+            const audioFallback = document.getElementById("audio-fallback");
+            if (audioFallback) audioFallback.hidden = false;
+            play.hidden = true;
+            if (controls) controls.hidden = true;
+            say(
+              "Connected. Spotify Premium is needed to listen here. Open Spotify or continue without music.",
+            );
+          } else say(message);
+        });
       player.addListener("player_state_changed", (state) => {
         if (state) {
+          latestState = state;
+          updatedAt = Date.now();
+          duration = state.duration;
+          started = true;
+          if (controls) controls.hidden = false;
+          updateProgress();
           play.textContent = state.paused ? "Play music" : "Pause music";
+          say(state.paused ? "Paused." : "Playing on Spotify.");
           const track = state.track_window.current_track;
           const label = document.getElementById("spotify-track-link");
           const cover = document.getElementById("spotify-cover");
