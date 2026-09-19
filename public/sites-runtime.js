@@ -144,14 +144,17 @@
         entrance.hidden = true;
         toggle.hidden = false;
         panel.classList.add("collapsed");
-        toggle.textContent = "♫ Music";
+        toggle.setAttribute("aria-label", "Open music player");
         toggle.setAttribute("aria-expanded", "false");
         game.focus();
       };
-      document.getElementById("experience-continue").onclick = enter;
+
       toggle.onclick = () => {
         const collapsed = panel.classList.toggle("collapsed");
-        toggle.textContent = collapsed ? "♫ Music" : "Minimize player";
+        toggle.setAttribute(
+          "aria-label",
+          collapsed ? "Open music player" : "Minimize player",
+        );
         toggle.setAttribute("aria-expanded", String(!collapsed));
       };
       window.addEventListener("message", (event) => {
@@ -161,13 +164,60 @@
         )
           return;
         if (event.data?.type === "recoup-music-continue") enter();
+        if (event.data?.type === "recoup-music-minimize") {
+          panel.classList.add("collapsed");
+          toggle.hidden = false;
+          toggle.setAttribute("aria-expanded", "false");
+        }
+        if (
+          event.data?.type === "recoup-music-resize" &&
+          Number.isFinite(event.data.height)
+        ) {
+          frame.style.height =
+            Math.min(560, Math.max(160, event.data.height)) + "px";
+        }
       });
       return;
     }
     const parentOrigin = document.body.dataset.playerParent;
     const continueButton = document.getElementById("spotify-continue");
+    const notifyParent = (type) => {
+      if (parentOrigin) window.parent.postMessage({ type }, parentOrigin);
+    };
+    for (const id of ["spotify-minimize", "spotify-player-minimize"]) {
+      const button = document.getElementById(id);
+      if (button) button.onclick = () => notifyParent("recoup-music-minimize");
+    }
+    const skip = document.getElementById("spotify-skip");
+    if (skip) {
+      skip.hidden = !parentOrigin;
+      skip.onclick = () => notifyParent("recoup-music-continue");
+    }
+    if (parentOrigin && typeof ResizeObserver !== "undefined") {
+      const observer = new ResizeObserver(() =>
+        window.parent.postMessage(
+          {
+            type: "recoup-music-resize",
+            height: Math.ceil(
+              document
+                .getElementById("syncstream-player")
+                .getBoundingClientRect().height,
+            ),
+          },
+          parentOrigin,
+        ),
+      );
+      observer.observe(document.getElementById("syncstream-player"));
+    }
+    const showPlayer = () => {
+      document.body.dataset.playerVisible = "true";
+      const display = document.getElementById("player-display");
+      if (display) display.hidden = false;
+    };
     if (parentOrigin && continueButton)
-      continueButton.onclick = () => {
+      continueButton.onclick = async () => {
+        showPlayer();
+        if (!play.disabled && play.onclick) await play.onclick();
         window.parent.postMessage(
           { type: "recoup-music-continue" },
           parentOrigin,
@@ -181,6 +231,8 @@
           event.data?.type === "recoup-music-entered"
         ) {
           if (continueButton) continueButton.hidden = true;
+          if (skip) skip.hidden = true;
+          if (document.body.dataset.connected === "true") showPlayer();
         }
       });
     let authPopup;
@@ -298,9 +350,14 @@
           (latestState.paused ? 0 : Date.now() - updatedAt),
       );
       seek.value = duration ? (position / duration) * 100 : 0;
-      time.textContent = format(position) + " / " + format(duration);
+      const positionLabel = document.getElementById("spotify-position");
+      if (positionLabel) positionLabel.textContent = format(position);
+      time.textContent = format(duration);
+      const durationLabel = document.getElementById("spotify-duration");
+      if (durationLabel) durationLabel.textContent = format(duration);
     };
     if (continueButton && parentOrigin) continueButton.hidden = false;
+    if (!parentOrigin) showPlayer();
 
     document.body.dataset.connected = "true";
     connect.hidden = true;
@@ -366,7 +423,11 @@
       player.addListener("ready", ({ device_id }) => {
         deviceId = device_id;
         play.disabled = false;
-        say("Spotify connected. Press Play music.");
+        say(
+          parentOrigin
+            ? "Spotify connected. Continue to start listening."
+            : "Spotify connected. Press Play music.",
+        );
       });
       player.addListener("not_ready", () => {
         deviceId = null;
@@ -398,20 +459,28 @@
           started = true;
           if (controls) controls.hidden = false;
           updateProgress();
-          play.textContent = state.paused ? "Play music" : "Pause music";
+          play.setAttribute(
+            "aria-label",
+            state.paused ? "Play music" : "Pause music",
+          );
+          if (state.paused) delete play.dataset.playing;
+          else play.dataset.playing = "true";
           say(state.paused ? "Paused." : "Playing on Spotify.");
           const track = state.track_window.current_track;
           const label = document.getElementById("spotify-track-link");
           const cover = document.getElementById("spotify-cover");
-          label.textContent =
-            track.name +
-            " · " +
-            track.artists.map((a) => a.name).join(", ") +
-            " · Spotify";
+          label.textContent = track.name;
           label.href =
             "https://open.spotify.com/track/" + encodeURIComponent(track.id);
           cover.src = track.album.images[0]?.url || "";
           cover.alt = track.album.name;
+          const artistName = document.getElementById("spotify-artist-name");
+          const artistImage = document.getElementById("spotify-artist-image");
+          if (artistName)
+            artistName.textContent = track.artists
+              .map((a) => a.name)
+              .join(", ");
+          if (artistImage) artistImage.src = track.album.images[0]?.url || "";
           document.getElementById("spotify-track").hidden = false;
         }
       });
