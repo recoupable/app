@@ -13,7 +13,7 @@ import { useMiniAppContext } from "@/providers/MiniAppProvider";
  * open a login modal over its content.
  */
 export function useAutoLogin() {
-  const { login } = usePrivy();
+  const { login, ready, authenticated } = usePrivy();
   const { email } = useUserProvider();
   const { isMiniApp, isLoading: isMiniAppLoading } = useMiniAppContext();
   const pathname = usePathname();
@@ -21,6 +21,8 @@ export function useAutoLogin() {
 
   useEffect(() => {
     const shouldTryLogin =
+      ready &&
+      !authenticated &&
       !email &&
       !hasTriedLogin.current &&
       !isMiniApp &&
@@ -29,7 +31,15 @@ export function useAutoLogin() {
     if (!shouldTryLogin) return;
     hasTriedLogin.current = true;
     login();
-  }, [email, login, isMiniApp, isMiniAppLoading, pathname]);
+  }, [
+    ready,
+    authenticated,
+    email,
+    login,
+    isMiniApp,
+    isMiniAppLoading,
+    pathname,
+  ]);
 }
 
 export default useAutoLogin;

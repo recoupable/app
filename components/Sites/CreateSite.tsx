@@ -15,16 +15,14 @@ import type { Site, SiteAsset } from "@/lib/sites/schema";
 export default function CreateSite() {
   const { selectedOrgId, isInitialized } = useOrganization();
   const { selectedArtist } = useArtistProvider();
-  const { ready, authenticated, login } = usePrivy();
-  if (ready && !authenticated)
+  const { ready, authenticated } = usePrivy();
+  if (!ready || !authenticated || !isInitialized)
     return (
-      <div className="p-10">
-        <Button onClick={login}>Sign in to create a site</Button>
-      </div>
-    );
-  if (!isInitialized)
-    return (
-      <p className="p-10 text-muted-foreground">Loading your workspace…</p>
+      <p role="status" className="p-10 text-muted-foreground">
+        {ready && !authenticated
+          ? "Sign in to Recoup to continue."
+          : "Loading your workspace…"}
+      </p>
     );
   return (
     <CreateForm

@@ -29,7 +29,7 @@ export default function SiteEditor({ id }: { id: string }) {
   const router = useRouter();
   const { selectedOrgId, isInitialized } = useOrganization();
   const { userData } = useUserProvider();
-  const { ready, authenticated, login } = usePrivy();
+  const { ready, authenticated } = usePrivy();
   const search = useSearchParams();
   const workspace = useRef<string | null | undefined>(undefined);
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function SiteEditor({ id }: { id: string }) {
   const query = useQuery({
     queryKey: key,
     queryFn: () => request<Result>(`/api/sites/${id}`),
-    enabled: !!userData?.account_id && isInitialized,
+    enabled: ready && authenticated && !!userData?.account_id && isInitialized,
   });
   const [instruction, setInstruction] = useState("");
   const [busy, setBusy] = useState("");
@@ -113,11 +113,13 @@ export default function SiteEditor({ id }: { id: string }) {
     a.click();
     URL.revokeObjectURL(url);
   }
-  if (ready && !authenticated)
+  if (!ready || !authenticated || !isInitialized)
     return (
-      <div className="p-10">
-        <Button onClick={login}>Sign in to edit this site</Button>
-      </div>
+      <p role="status" className="p-10 text-muted-foreground">
+        {ready && !authenticated
+          ? "Sign in to Recoup to continue."
+          : "Loading your workspace…"}
+      </p>
     );
   if (query.isPending)
     return (

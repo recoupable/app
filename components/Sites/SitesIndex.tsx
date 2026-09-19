@@ -14,7 +14,7 @@ export default function SitesIndex() {
   const { selectedOrgId, isInitialized } = useOrganization();
   const { selectedArtist } = useArtistProvider();
   const { userData } = useUserProvider();
-  const { authenticated, login } = usePrivy();
+  const { ready, authenticated } = usePrivy();
   const request = useSitesRequest();
   const params = new URLSearchParams();
   if (selectedOrgId) params.set("organizationId", selectedOrgId);
@@ -27,7 +27,7 @@ export default function SitesIndex() {
       selectedArtist?.account_id,
     ],
     queryFn: () => request<{ sites: Site[] }>(`/api/sites?${params}`),
-    enabled: authenticated && isInitialized,
+    enabled: ready && authenticated && isInitialized,
   });
   return (
     <div className="mx-auto max-w-6xl px-6 py-10 md:px-10 md:py-12">
@@ -52,14 +52,14 @@ export default function SitesIndex() {
           </Button>
         )}
       </div>
-      {!authenticated ? (
-        <div className="rounded-2xl bg-muted/40 p-10">
-          <h2 className="text-xl">Your next release starts here.</h2>
-          <p className="my-4 text-muted-foreground">
-            Sign in to create and manage your sites.
-          </p>
-          <Button onClick={login}>Sign in</Button>
-        </div>
+      {!ready || !authenticated || !isInitialized ? (
+        <p role="status" className="py-16 text-muted-foreground">
+          {!ready
+            ? "Loading your workspace…"
+            : !authenticated
+              ? "Sign in to Recoup to continue."
+              : "Loading your workspace…"}
+        </p>
       ) : query.isError ? (
         <div role="alert" className="rounded-xl bg-muted p-6">
           <p>{query.error.message}</p>
