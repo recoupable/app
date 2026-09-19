@@ -7,7 +7,7 @@
 
 ## Deployment
 
-Requires database migration `20260918010000_sites.sql` (database PR #71), `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and the existing AI Gateway credentials. `SITES_MODEL` optionally overrides the app's default model.
+Requires database migration `20260918010000_sites.sql` (database PR #71), `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and the existing AI Gateway credentials. Sites uses `openai/gpt-6-astra` by default; `SITES_MODEL` optionally overrides it without changing chat. Generation has a four-minute timeout inside a five-minute route budget.
 
 Legacy designs use three responsive layouts. New generations support interactive experiences and a trusted Spotify connection/player as described below. Pre-save scheduling, custom domains, Apple Music authorization, and separate Vercel deployments are not implemented.
 

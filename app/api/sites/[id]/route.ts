@@ -6,7 +6,7 @@ import { selectSite } from "@/lib/supabase/sites/selectSite";
 import { updateSite } from "@/lib/supabase/sites/updateSite";
 import { selectSignups } from "@/lib/supabase/sites/selectSignups";
 import { generateSite } from "@/lib/sites/generateSite";
-export const maxDuration = 120;
+export const maxDuration = 300;
 export const dynamic = "force-dynamic";
 type Context = { params: Promise<{ id: string }> };
 async function load(request: Request, context: Context) {

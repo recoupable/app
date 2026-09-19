@@ -27,7 +27,7 @@ export function useSitesRequest() {
       const response = await fetch(path, {
         ...init,
         headers,
-        signal: init.signal ?? AbortSignal.timeout(150000),
+        signal: init.signal ?? AbortSignal.timeout(270000),
       });
       const result = await response.json();
       if (!response.ok)
