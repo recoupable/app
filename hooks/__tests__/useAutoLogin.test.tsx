@@ -46,3 +46,10 @@ it("preserves public artist pages", () => {
   renderHook(() => useAutoLogin());
   expect(state.login).not.toHaveBeenCalled();
 });
+
+it("lets guests start context before signing in", () => {
+  state.ready = true;
+  state.pathname = "/context";
+  renderHook(() => useAutoLogin());
+  expect(state.login).not.toHaveBeenCalled();
+});
