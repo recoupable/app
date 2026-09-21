@@ -80,19 +80,17 @@ it("signed-in starts use authenticated ingestion", async () => {
 it("retries a claimed job through its claim receipt, not a new ingest", async () => {
   sessionStorage.setItem("context:request:account", "request");
   sessionStorage.setItem("context:claimed:account:request", "1");
-  const fetcher = vi
-    .fn()
-    .mockImplementation(async (path) =>
-      path.endsWith("/claim")
-        ? Response.json({ requestId: "request" })
-        : Response.json({
-            request: {
-              id: "request",
-              status: "failed",
-              input: { url: "https://open.spotify.com/track/test" },
-            },
-          }),
-    );
+  const fetcher = vi.fn().mockImplementation(async (path) =>
+    path.endsWith("/claim")
+      ? Response.json({ requestId: "request" })
+      : Response.json({
+          request: {
+            id: "request",
+            status: "failed",
+            input: { url: "https://open.spotify.com/track/test" },
+          },
+        }),
+  );
   vi.stubGlobal("fetch", fetcher);
   const { result } = renderHook(() =>
     useContextFunnel({ accountId: "account", getAccessToken: token, login }),
@@ -107,4 +105,26 @@ it("retries a claimed job through its claim receipt, not a new ingest", async ()
       ([, i]) => i?.body && JSON.parse(i.body).action === "ingest",
     ),
   ).toBe(false);
+});
+
+it("keeps the guest preview when sign-in has no usable token", async () => {
+  const missingToken = vi.fn().mockResolvedValue(null);
+  const fetcher = vi.fn().mockImplementation(async () => Response.json(guest));
+  vi.stubGlobal("fetch", fetcher);
+  const { result, rerender } = renderHook(
+    ({ accountId }) =>
+      useContextFunnel({ accountId, getAccessToken: missingToken, login }),
+    { initialProps: { accountId: null as string | null } },
+  );
+  await act(() => result.current.start(guest.input.url));
+  act(() => result.current.save());
+  rerender({ accountId: "account" });
+  await waitFor(() =>
+    expect(result.current.error).toBe("Please sign in again."),
+  );
+  expect(result.current.snapshot?.context?.title).toBe("Song");
+  expect(sessionStorage.getItem("context:claim")).toBe("1");
+  expect(fetcher.mock.calls.some(([path]) => path.endsWith("/claim"))).toBe(
+    false,
+  );
 });

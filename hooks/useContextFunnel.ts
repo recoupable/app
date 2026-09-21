@@ -57,7 +57,11 @@ export function useContextFunnel({
   // Reset private state on account changes; only restore a request belonging to this account.
   useEffect(() => {
     generation.current++;
-    setSnapshot(null);
+    setSnapshot((current) =>
+      current?.status === "ready" && sessionStorage.getItem("context:guest")
+        ? current
+        : null,
+    );
     setError("");
     setBusy(false);
     setRequestId(
@@ -69,8 +73,7 @@ export function useContextFunnel({
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout>;
     if (!requestId && !sessionStorage.getItem("context:guest")) return;
-    if (sessionStorage.getItem("context:claim") && accountId && !requestId)
-      return;
+
     async function poll() {
       try {
         const data = requestId
@@ -83,7 +86,7 @@ export function useContextFunnel({
         if (cancelled) return;
         const value = requestId ? data.request : data;
         setSnapshot(value);
-        setError("");
+        if (!sessionStorage.getItem("context:claim")) setError("");
         if (["queued", "running"].includes(value.status))
           timer = setTimeout(poll, 2000);
       } catch (e) {
