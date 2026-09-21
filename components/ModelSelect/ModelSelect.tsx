@@ -1,5 +1,6 @@
 import {
   PromptInputModelSelect,
+  PromptInputModelSelectItem,
   PromptInputModelSelectTrigger,
   PromptInputModelSelectValue,
 } from "../ai-elements/prompt-input";
@@ -24,7 +25,11 @@ const ModelSelect = () => {
 
   const selectedModel = availableModels.find((m) => m.id === model);
   const displayName =
-    getFeaturedModelConfig(model)?.displayName || selectedModel?.name || model;
+    model === "auto"
+      ? "Auto · Jev"
+      : getFeaturedModelConfig(model)?.displayName ||
+        selectedModel?.name ||
+        model;
 
   const hasModels = availableModels.length > 0;
 
@@ -33,7 +38,7 @@ const ModelSelect = () => {
     const isModelFree = selectedModel ? isFreeModel(selectedModel) : false;
     if (!isModelFree && !isSubscribed) {
       toast.error(
-        "This model is not free. Please upgrade to a paid plan or select a free model."
+        "This model is not free. Please upgrade to a paid plan or select a free model.",
       );
       return;
     }
@@ -41,16 +46,21 @@ const ModelSelect = () => {
   };
 
   return (
-    <PromptInputModelSelect
-      onValueChange={hasModels ? handleModelChange : undefined}
-      value={model}
-    >
+    <PromptInputModelSelect onValueChange={handleModelChange} value={model}>
       <PromptInputModelSelectTrigger>
         <PromptInputModelSelectValue placeholder="Select a model">
           {displayName}
         </PromptInputModelSelectValue>
       </PromptInputModelSelectTrigger>
       <PromptInputModelSelectContent>
+        <PromptInputModelSelectItem value="auto" className="py-3">
+          <div>
+            <div className="text-sm font-semibold">Auto · Jev</div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              Chooses a model for each request · Paid plan
+            </div>
+          </div>
+        </PromptInputModelSelectItem>
         {hasModels ? (
           <ModelSelectList
             featuredModels={organizedModels.featuredModels}

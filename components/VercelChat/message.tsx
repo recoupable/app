@@ -16,14 +16,19 @@ const Message = ({
   const [mode, setMode] = useState<"view" | "edit">("view");
 
   return (
-    <MessageFrame role={message.role as "user" | "assistant"} fullWidth={mode === "edit"}>
-      <MessageParts
-        message={message}
-        mode={mode}
-        setMode={setMode}
-        status={status}
-        reload={reload}
-      />
+    <MessageFrame
+      role={message.role as "user" | "assistant"}
+      fullWidth={mode === "edit"}
+    >
+      <div className="min-w-0 flex-1">
+        <MessageParts
+          message={message}
+          mode={mode}
+          setMode={setMode}
+          status={status}
+          reload={reload}
+        />
+      </div>
     </MessageFrame>
   );
 };

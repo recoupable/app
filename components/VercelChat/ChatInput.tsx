@@ -5,7 +5,6 @@ import { useVercelChatContext } from "@/providers/VercelChatProvider";
 import AttachmentsPreview from "./AttachmentsPreview";
 import PureAttachmentsButton from "./PureAttachmentsButton";
 import ChatComposer from "./ChatComposer";
-import ChatSettings from "./ChatSettings";
 import WorkspaceStatusIndicator from "./WorkspaceStatusIndicator";
 
 export function ChatInput({
@@ -83,7 +82,6 @@ export function ChatInput({
           tools={
             <>
               <PureAttachmentsButton />
-              <ChatSettings />
             </>
           }
         />

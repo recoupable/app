@@ -1,3 +1,4 @@
+import { createChatSubmissionGuard } from "@/lib/chat/createChatSubmissionGuard";
 import { useChat } from "@ai-sdk/react";
 import { useMessageLoader } from "./useMessageLoader";
 import { useUserProvider } from "@/providers/UserProvder";
@@ -12,7 +13,6 @@ import { useConversationsProvider } from "@/providers/ConversationsProvider";
 import { UIMessage, FileUIPart } from "ai";
 import useAvailableModels from "./useAvailableModels";
 import { useLocalStorage } from "usehooks-ts";
-import { DEFAULT_MODEL } from "@/lib/consts";
 import { useAccountOverride } from "@/providers/AccountOverrideProvider";
 import { usePaymentProvider } from "@/providers/PaymentProvider";
 import useArtistFilesForMentions from "@/hooks/useArtistFilesForMentions";
@@ -63,6 +63,7 @@ export function useVercelChat({
   attachments = [],
   textAttachments = [],
 }: UseVercelChatProps) {
+  const submitOnce = useMemo(() => createChatSubmissionGuard(), []);
   const { userData } = useUserProvider();
   const { selectedArtist } = useArtistProvider();
   const { selectedOrgId: organizationId } = useOrganization();
@@ -74,7 +75,9 @@ export function useVercelChat({
   const { addOptimisticConversation } = useConversationsProvider();
   const { data: availableModels = [] } = useAvailableModels();
   const [input, setInput] = useState("");
-  const [model, setModel] = useLocalStorage("RECOUP_MODEL", DEFAULT_MODEL);
+  // Start existing browsers on Auto too; the legacy key stores a fixed model
+  // from the removed composer picker and would otherwise bypass routing.
+  const [model, setModel] = useLocalStorage("RECOUP_CHAT_MODEL_V2", "auto");
   const { refetchCredits } = usePaymentProvider();
   // The api-minted chat id once bootstrap resolves; before then `id` is a
   // client placeholder. Drives the transport, message load, and URL so
@@ -320,8 +323,9 @@ export function useVercelChat({
     // Land the selected model in chats.model_id before the send fires.
     await persistSelectedModel();
 
-    sendMessage(payload, { body: chatRequestBody, headers });
+    const response = sendMessage(payload, { body: chatRequestBody, headers });
     setInput("");
+    await response;
   };
 
   const append = async (message: UIMessage) => {
@@ -378,39 +382,46 @@ export function useVercelChat({
 
   const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isGeneratingResponse) return;
 
-    if (earliestFailedUserMessageId) {
-      await deleteTrailingMessages({
-        chatId: id,
-        fromMessageId: earliestFailedUserMessageId,
-      });
-    }
+    await submitOnce(async () => {
+      if (earliestFailedUserMessageId) {
+        await deleteTrailingMessages({
+          chatId: id,
+          fromMessageId: earliestFailedUserMessageId,
+        });
+      }
 
-    // Capture the input value before it's cleared by handleSubmit
-    const messageContent = input;
+      const messageContent = input;
+      const submission = handleSubmit(event);
 
-    // Submit the message
-    handleSubmit(event);
-
-    if (!chatId) {
-      // New chat from `/` or `/chat` — sidebar + URL update on first send.
-      addOptimisticConversation(
-        "New Chat",
-        transportChatId,
-        sessionId,
-        messageContent,
-      );
-      silentlyUpdateUrl();
-    }
+      if (!chatId) {
+        addOptimisticConversation(
+          "New Chat",
+          transportChatId,
+          sessionId,
+          messageContent,
+        );
+        silentlyUpdateUrl();
+      }
+      await submission;
+    });
   };
 
   const handleSendQueryMessages = useCallback(
     async (initialMessage: UIMessage) => {
       silentlyUpdateUrl();
       const headers = await getHeaders();
-      sendMessage(initialMessage, { body: chatRequestBody, headers });
+      await persistSelectedModel();
+      await sendMessage(initialMessage, { body: chatRequestBody, headers });
     },
-    [silentlyUpdateUrl, sendMessage, chatRequestBody, getHeaders],
+    [
+      silentlyUpdateUrl,
+      sendMessage,
+      chatRequestBody,
+      getHeaders,
+      persistSelectedModel,
+    ],
   );
 
   // The ?q= deep-link behavior (prefill + provisioning-gated auto-fire)
