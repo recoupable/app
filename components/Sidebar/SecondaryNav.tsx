@@ -5,6 +5,9 @@ import CatalogsNavItem from "./CatalogsNavItem";
 import MusicNavItem from "./MusicNavItem";
 import ArtistsNavItem from "./ArtistsNavItem";
 
+import { Globe } from "lucide-react";
+import NavButton from "./NavButton";
+
 interface SecondaryNavProps {
   isExpanded: boolean;
   isAgents: boolean;
@@ -13,6 +16,7 @@ interface SecondaryNavProps {
   isCatalogs: boolean;
   isArtists: boolean;
   isMusic: boolean;
+  isSites?: boolean;
   onNavigate: (path: string) => void;
 }
 
@@ -24,6 +28,7 @@ const SecondaryNav = ({
   isCatalogs,
   isArtists,
   isMusic,
+  isSites = false,
   onNavigate,
 }: SecondaryNavProps) => (
   <div className="flex flex-col gap-1 w-full mt-3">
@@ -51,6 +56,14 @@ const SecondaryNav = ({
       isActive={isTasks}
       isExpanded={isExpanded}
       onClick={() => onNavigate("tasks")}
+    />
+    <NavButton
+      icon={Globe}
+      label="Sites"
+      aria-label="View sites"
+      isActive={isSites}
+      isExpanded={isExpanded}
+      onClick={() => onNavigate("sites")}
     />
     <FilesNavItem
       isActive={isFiles}

@@ -25,6 +25,7 @@ export default function PrivyProvider({
   return (
     <Privy
       appId={appId}
+      clientId={process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID}
       config={{
         appearance: {
           theme: "light",

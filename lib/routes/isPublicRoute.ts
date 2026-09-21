@@ -7,5 +7,7 @@ const PUBLIC_ROUTES =
  * Currently just the public artist profile.
  */
 export function isPublicRoute(pathname: string | null): boolean {
-  return !!pathname && PUBLIC_ROUTES.test(pathname);
+  return (
+    !!pathname && (pathname === "/context" || PUBLIC_ROUTES.test(pathname))
+  );
 }

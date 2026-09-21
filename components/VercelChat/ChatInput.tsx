@@ -4,13 +4,7 @@ import cn from "classnames";
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
 import AttachmentsPreview from "./AttachmentsPreview";
 import PureAttachmentsButton from "./PureAttachmentsButton";
-import {
-  PromptInput,
-  PromptInputSubmit,
-  PromptInputToolbar,
-  PromptInputTools,
-} from "../ai-elements/prompt-input";
-import FileMentionsInput from "./FileMentionsInput";
+import ChatComposer from "./ChatComposer";
 import WorkspaceStatusIndicator from "./WorkspaceStatusIndicator";
 
 export function ChatInput({
@@ -77,39 +71,20 @@ export function ChatInput({
             />
           </div>
         )}
-        <PromptInput
+        <ChatComposer
+          value={typeof input === "string" ? input : ""}
+          onChange={setInput}
           onSubmit={handleSend}
-          className={cn(
-            "overflow-visible",
-            "rounded-2xl border-0 bg-card",
-            "shadow-[0_0_0_1px_var(--input),0_6px_24px_var(--surface-shadow)] focus-within:ring-2 focus-within:ring-ring",
-          )}
-        >
-          <FileMentionsInput
-            value={typeof input === "string" ? input : ""}
-            onChange={setInput}
-            disabled={isDisabled || hasPendingUploads}
-          />
-          <PromptInputToolbar className="px-3 py-2">
-            <PromptInputTools>
+          disabled={isDisabled || hasPendingUploads}
+          sendDisabled={isSendDisabled}
+          status={status}
+          submitLabel={isGeneratingResponse ? "Stop response" : "Send message"}
+          tools={
+            <>
               <PureAttachmentsButton />
-              {/* YouTube connect button removed from ChatInput UI intentionally; preserved for future reuse */}
-            </PromptInputTools>
-            <PromptInputSubmit
-              aria-label={
-                isGeneratingResponse ? "Stop response" : "Send message"
-              }
-              disabled={isSendDisabled}
-              status={status}
-              className={cn(
-                "size-10 rounded-xl bg-brand-lime text-brand-on-lime hover:bg-brand-lime-hover transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                {
-                  "cursor-not-allowed opacity-50": isSendDisabled,
-                },
-              )}
-            />
-          </PromptInputToolbar>
-        </PromptInput>
+            </>
+          }
+        />
       </div>
     </div>
   );

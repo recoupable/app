@@ -1,3 +1,5 @@
+import NavButton from "../Sidebar/NavButton";
+import { Globe } from "lucide-react";
 import SideModal from "../SideModal";
 import { isTasksSection } from "@/lib/navigation/isTasksSection";
 import { useRouter } from "next/navigation";
@@ -104,6 +106,13 @@ const SideMenu = ({
             onClick={() => goToItem("agents")}
           />
           <TasksNavItem isActive={isTasks} onClick={() => goToItem("tasks")} />
+          <NavButton
+            icon={Globe}
+            label="Sites"
+            aria-label="View sites"
+            isActive={pathname.startsWith("/sites")}
+            onClick={() => goToItem("sites")}
+          />
           <FilesNavItem isActive={isFiles} onClick={() => goToItem("files")} />
         </div>
       </div>
