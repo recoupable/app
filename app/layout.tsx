@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
+import ContextPageLayout from "@/components/Context/ContextPageLayout";
 import Providers from "@/providers/Providers";
 import { META_DESCRIPTION, TITLE } from "@/lib/consts";
 import Sidebar from "@/components/Sidebar";
@@ -92,34 +93,40 @@ export default function RootLayout({
         <Suspense>
           <Providers>
             <AccountOverrideBadge />
-            <div className="flex h-dvh flex-col overflow-hidden bg-card">
-              <Header />
-              <header className="relative z-30 mt-16 flex min-w-0 shrink-0 items-center bg-card shadow-[0_1px_0_var(--border)] md:mt-0 md:h-14">
-                <Link
-                  href="/"
-                  aria-label="Recoup home"
-                  className="hidden h-14 w-14 shrink-0 items-center justify-center text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:flex"
-                >
-                  <LogoIcon className="h-6 w-6" />
-                </Link>
-                <span
-                  aria-hidden="true"
-                  className="hidden text-border md:block"
-                >
-                  /
-                </span>
-                <WorkspaceContextBar />
-              </header>
-              <div className="flex min-h-0 flex-1">
-                <Sidebar />
-                <main className="min-w-0 flex-1 overflow-y-auto bg-card">
-                  {children}
-                </main>
-              </div>
-              <ArtistSettingModal />
-              <AddArtistDialog />
-              <MobileDownloadModal />
-            </div>
+            <ContextPageLayout
+              workspace={
+                <div className="flex h-dvh flex-col overflow-hidden bg-card">
+                  <Header />
+                  <header className="relative z-30 mt-16 flex min-w-0 shrink-0 items-center bg-card shadow-[0_1px_0_var(--border)] md:mt-0 md:h-14">
+                    <Link
+                      href="/"
+                      aria-label="Recoup home"
+                      className="hidden h-14 w-14 shrink-0 items-center justify-center text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:flex"
+                    >
+                      <LogoIcon className="h-6 w-6" />
+                    </Link>
+                    <span
+                      aria-hidden="true"
+                      className="hidden text-border md:block"
+                    >
+                      /
+                    </span>
+                    <WorkspaceContextBar />
+                  </header>
+                  <div className="flex min-h-0 flex-1">
+                    <Sidebar />
+                    <main className="min-w-0 flex-1 overflow-y-auto bg-card">
+                      {children}
+                    </main>
+                  </div>
+                  <ArtistSettingModal />
+                  <AddArtistDialog />
+                  <MobileDownloadModal />
+                </div>
+              }
+            >
+              {children}
+            </ContextPageLayout>
             <ToastContainer />
             <Toaster />
           </Providers>

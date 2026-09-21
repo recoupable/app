@@ -1,5 +1,6 @@
 import { usePrivy } from "@privy-io/react-auth";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { isPublicRoute } from "@/lib/routes/isPublicRoute";
 import { useEffect, useRef, useState } from "react";
 import { Address } from "viem";
 import { uploadFile } from "@/lib/arweave/uploadFile";
@@ -27,6 +28,7 @@ const useUser = () => {
   const imageRef = useRef<HTMLInputElement>(null);
   const [updating, setUpdating] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
@@ -108,7 +110,7 @@ const useUser = () => {
     setRoleType("");
     setCompanyName("");
     await logout();
-    router.push("/signin");
+    if (!isPublicRoute(pathname)) router.push("/signin");
   };
 
   useEffect(() => {

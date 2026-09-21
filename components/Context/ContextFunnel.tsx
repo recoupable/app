@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useUserProvider } from "@/providers/UserProvder";
@@ -45,13 +46,25 @@ export default function ContextFunnel() {
         >
           <p className="font-medium">
             {funnel.busy
-              ? "Saving your work…"
+              ? "Gathering song details…"
               : ["queued", "running"].includes(funnel.snapshot?.status ?? "")
                 ? "Gathering song details…"
                 : funnel.snapshot?.status === "failed"
                   ? "Extraction needs another try."
-                  : "Song details saved."}
+                  : funnel.requestId
+                    ? "Song details saved."
+                    : "Is this your song?"}
           </p>
+          {funnel.snapshot?.context?.release?.artwork?.[0]?.url && (
+            <Image
+              src={funnel.snapshot.context.release.artwork[0].url}
+              alt="Release artwork"
+              width={160}
+              height={160}
+              unoptimized
+              className="mt-4 rounded-lg"
+            />
+          )}
           {funnel.snapshot?.context?.title && (
             <p className="mt-3">{funnel.snapshot.context.title}</p>
           )}
@@ -60,23 +73,29 @@ export default function ContextFunnel() {
               {funnel.snapshot.context.artists.map((a) => a.name).join(", ")}
             </p>
           )}
-          {!funnel.requestId && (
-            <>
-              <p className="my-4 text-sm text-muted-foreground">
-                Sign in to keep this work in your personal Recoup account. Your
-                work stays here while you sign in.
+          {!funnel.requestId &&
+            !funnel.busy &&
+            funnel.snapshot?.status === "ready" && (
+              <>
+                <p className="my-4 text-sm text-muted-foreground">
+                  {authenticated
+                    ? "Keep these song details in your personal Recoup account."
+                    : "Sign in to keep this work in your personal Recoup account. Your work stays here while you sign in."}
+                </p>
+                <Button disabled={loading || funnel.busy} onClick={funnel.save}>
+                  {authenticated ? "Save to my account" : "Sign in and save"}
+                </Button>
+              </>
+            )}
+          {funnel.requestId &&
+            ["completed", "partial"].includes(
+              funnel.snapshot?.status ?? "",
+            ) && (
+              <p className="mt-3 text-sm text-muted-foreground">
+                Saved to your personal account. Artist, recording, and release
+                context remain available for future work.
               </p>
-              <Button disabled={loading || funnel.busy} onClick={funnel.save}>
-                {authenticated ? "Save to my account" : "Sign in and save"}
-              </Button>
-            </>
-          )}
-          {funnel.requestId && (
-            <p className="mt-3 text-sm text-muted-foreground">
-              Saved to your personal account. Artist, recording, and release
-              context remain available for future work.
-            </p>
-          )}
+            )}
           {funnel.snapshot?.status === "failed" && (
             <Button
               className="mt-3"

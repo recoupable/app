@@ -3,7 +3,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 type Snapshot = {
   id?: string;
   status: string;
-  context?: { title?: string; artists?: { name: string }[] };
+  context?: {
+    title?: string;
+    artists?: { name: string }[];
+    release?: { artwork?: { url: string }[] };
+  };
   input?: { url: string };
   output?: unknown;
 };
