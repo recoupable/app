@@ -2,7 +2,9 @@ import { readFileSync } from "node:fs";
 import { runInNewContext } from "node:vm";
 import { expect, it, vi } from "vitest";
 it("tracks real frame messages once and ignores messages from other windows", () => {
-  const fetch = vi.fn(async () => ({ ok: true }));
+  const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(
+    new Response(null, { status: 200 }),
+  );
   let receive: (event: unknown) => void = () => {};
   const frame = { contentWindow: {} };
   const form = {
@@ -38,7 +40,7 @@ it("tracks real frame messages once and ignores messages from other windows", ()
     data: { type: "recoup:activity", event: "complete" },
   });
   expect(fetch).toHaveBeenCalledTimes(2);
-  expect(JSON.parse(fetch.mock.calls[1][1].body)).toEqual({
+  expect(JSON.parse(String(fetch.mock.calls[1][1]?.body))).toEqual({
     id: "event-uuid",
     visitId: "event-uuid",
     event: "complete",
