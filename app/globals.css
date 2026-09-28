@@ -22,7 +22,8 @@
    FONT FACES
    ============================================================================ */
 
-/* DM Sans and IBM Plex Mono are self-hosted via next/font/local. */
+/* DM Sans and IBM Plex Mono are self-hosted via next/font/local.
+   Light tokens follow the shared Recoup Sky system (marketing/DESIGN.md). */
 
 /* ============================================================================
    DESIGN TOKENS (light mode)
@@ -39,7 +40,7 @@
   --primary-foreground: #ffffff;
   --secondary: #f0f7fa;
   --secondary-foreground: #152e37;
-  --muted: #f1f5f5;
+  --muted: #f1f3f3;
   --muted-foreground: #586f78;
   --accent: #e8f3f7;
   --accent-foreground: #152e37;
@@ -59,7 +60,7 @@
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #e1edf0;
   --sidebar-accent-foreground: #152e37;
-  --sidebar-border: #dce7e9;
+  --sidebar-border: #e2e9eb;
   --sidebar-ring: #087bab;
 
   /* border radius unit */
