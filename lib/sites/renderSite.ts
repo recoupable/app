@@ -6,9 +6,10 @@ export function renderSite(
   site: SiteSnapshot,
   signupAction?: string,
   connectUrl?: string,
+  fan?: { connectUrl?: string | null; activityUrl?: string },
 ): string {
   if (site.design.experience)
-    return renderExperience(site, signupAction, connectUrl);
+    return renderExperience(site, signupAction, connectUrl, fan);
   const esc = (value: string) =>
     value.replace(
       /[&<>"']/g,

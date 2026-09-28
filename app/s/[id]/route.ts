@@ -24,6 +24,7 @@ export async function GET(
               process.env.SITES_SPOTIFY_REDIRECT_URI,
             ).href
           : undefined,
+        { connectUrl: site.fanConnectUrl, activityUrl: `/s/${id}/activity` },
       ),
       {
         headers: {

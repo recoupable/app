@@ -1,6 +1,7 @@
 "use client";
 import { waitForSiteProduction } from "@/lib/sites/waitForSiteProduction";
 import Link from "next/link";
+import { SiteAudience } from "./SiteAudience";
 import Image from "next/image";
 import { usePrivy } from "@privy-io/react-auth";
 import { useEffect, useRef, useState } from "react";
@@ -379,6 +380,7 @@ export default function SiteEditor({ id }: { id: string }) {
               <Download size={14} />
               Export emails
             </Button>
+            <SiteAudience id={id} name={site.name} />
             {site.published && (
               <Button
                 size="sm"
