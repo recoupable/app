@@ -2,11 +2,14 @@ import { readFileSync } from "node:fs";
 import { runInNewContext } from "node:vm";
 import { expect, it, vi } from "vitest";
 it("tracks real frame messages once and ignores messages from other windows", () => {
-  const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(
-    new Response(null, { status: 200 }),
-  );
+  const fetch = vi
+    .fn<typeof globalThis.fetch>()
+    .mockResolvedValue(new Response(null, { status: 200 }));
   let receive: (event: unknown) => void = () => {};
-  const frame = { contentWindow: {} };
+  const frame = {
+    contentWindow: { postMessage: vi.fn() },
+    style: { height: "" },
+  };
   const form = {
     scrollIntoView: vi.fn(),
     querySelector: () => ({ focus: vi.fn() }),
@@ -47,4 +50,16 @@ it("tracks real frame messages once and ignores messages from other windows", ()
   });
   receive({ source: frame.contentWindow, data: { type: "recoup:join" } });
   expect(form.scrollIntoView).toHaveBeenCalledOnce();
+  receive({ source: {}, data: { type: "recoup:resize", height: 900 } });
+  expect(frame.style.height).toBe("");
+  receive({
+    source: frame.contentWindow,
+    data: { type: "recoup:resize", height: 900 },
+  });
+  expect(frame.style.height).toBe("900px");
+  receive({
+    source: frame.contentWindow,
+    data: { type: "recoup:resize", height: 1000000 },
+  });
+  expect(frame.style.height).toBe("12000px");
 });

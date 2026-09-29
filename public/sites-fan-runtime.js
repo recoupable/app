@@ -1,6 +1,6 @@
 (() => {
   const body = document.body;
-  if (body.dataset.preview === "true") return;
+  const preview = body.dataset.preview === "true";
   const frame = document.getElementById("experience");
   const endpoint = body.dataset.activityUrl;
   let visit;
@@ -14,6 +14,7 @@
   const counts = new Map();
   function track(event) {
     if (
+      preview ||
       !endpoint ||
       !["visit", "start", "complete", "replay", "share"].includes(event)
     )
@@ -32,6 +33,13 @@
   track("visit");
   window.addEventListener("message", (event) => {
     if (!frame || event.source !== frame.contentWindow) return;
+    if (
+      event.data?.type === "recoup:resize" &&
+      Number.isFinite(event.data.height)
+    ) {
+      frame.style.height =
+        Math.min(12000, Math.max(480, Math.ceil(event.data.height))) + "px";
+    }
     if (event.data?.type === "recoup:activity") track(event.data.event);
     if (event.data?.type === "recoup:join") {
       const form = document.getElementById("fan-signup");
@@ -39,4 +47,5 @@
       form?.querySelector("input[type=email]")?.focus({ preventScroll: true });
     }
   });
+  frame?.contentWindow?.postMessage({ type: "recoup:measure" }, "*");
 })();
