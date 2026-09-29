@@ -2,6 +2,7 @@
 import { waitForSiteProduction } from "@/lib/sites/waitForSiteProduction";
 import Link from "next/link";
 import { SiteAudience } from "./SiteAudience";
+import { SiteCreationExperience } from "./SiteCreationExperience";
 import Image from "next/image";
 import { usePrivy } from "@privy-io/react-auth";
 import { useEffect, useRef, useState } from "react";
@@ -358,26 +359,21 @@ export default function SiteEditor({ id }: { id: string }) {
           )}
           <SiteAudience id={id} />
         </main>
+      ) : !site.draft && building ? (
+        <main className="flex flex-1 items-center justify-center">
+          <SiteCreationExperience artwork={artwork?.url} />
+        </main>
       ) : !site.draft ? (
         <main
           className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-24 text-center"
           aria-busy={building}
         >
-          {building && (
-            <Loader2 size={28} className="animate-spin text-muted-foreground" />
-          )}
-          <h2 className="text-2xl font-medium">
-            {building
-              ? "Creating your experience"
-              : "Let’s finish your preview"}
-          </h2>
+          <h2 className="text-2xl font-medium">Let’s finish your preview</h2>
           <p
             role="status"
             className="max-w-sm text-sm leading-6 text-muted-foreground"
           >
-            {building
-              ? "You can leave this page—we’ll keep building. Your preview will appear here when it’s ready."
-              : "Your release is saved. Try building your preview again."}
+            Your release is saved. Try building your preview again.
           </p>
           {!building && (
             <Button disabled={!!busy} onClick={() => act("generate")}>
