@@ -357,6 +357,37 @@ function playbackHarness(product: string, available = true, profileOk = true) {
   });
   return { ...h, audio, play, seek, volume, listeners, head };
 }
+
+it("plays saved audio without a Spotify configuration or account", async () => {
+  const h = playbackHarness("free");
+  h.storage.delete("recoup-sites-spotify");
+  h.fetch
+    .mockReset()
+    .mockResolvedValue({ ok: true, json: async () => ({ configured: false }) });
+  await h.run();
+  expect(h.ctx.document.body.dataset).toMatchObject({
+    playbackSource: "audio",
+    playerVisible: "true",
+  });
+  expect(h.ctx.document.body.dataset).not.toHaveProperty("connected", "true");
+  await h.nodes["spotify-play"].onclick!();
+  expect(h.audio.play).toHaveBeenCalledOnce();
+  expect(h.head.appendChild).not.toHaveBeenCalled();
+});
+
+it("uses saved audio when Spotify is configured but the visitor has no session", async () => {
+  const h = playbackHarness("free");
+  h.storage.delete("recoup-sites-spotify");
+  await h.run();
+  expect(h.ctx.document.body.dataset).toMatchObject({
+    playbackSource: "audio",
+    playerVisible: "true",
+  });
+  expect(h.fetch).not.toHaveBeenCalledWith(
+    "https://api.spotify.com/v1/me",
+    expect.anything(),
+  );
+});
 it("uses the saved recording and the same controls for Spotify Free", async () => {
   const h = playbackHarness("free");
   await h.run();
