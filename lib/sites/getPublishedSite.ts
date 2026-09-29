@@ -7,6 +7,14 @@ export async function getPublishedSite(id: string) {
   );
   if (response.status === 404) return null;
   if (!response.ok) throw new Error("Site service unavailable");
-  const result = (await response.json()) as { snapshot: SiteSnapshot };
-  return { published: result.snapshot };
+  const result = (await response.json()) as {
+    snapshot: SiteSnapshot;
+    fanConnectUrl?: string | null;
+    playbackAudioUrl?: string | null;
+  };
+  return {
+    published: result.snapshot,
+    playbackAudioUrl: result.playbackAudioUrl,
+    fanConnectUrl: result.fanConnectUrl,
+  };
 }
