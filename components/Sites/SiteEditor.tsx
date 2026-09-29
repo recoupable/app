@@ -15,7 +15,6 @@ import {
   Send,
   Loader2,
   Download,
-  Globe,
 } from "lucide-react";
 import { useSitesRequest } from "@/hooks/useSitesRequest";
 import { useOrganization } from "@/providers/OrganizationProvider";
@@ -49,10 +48,12 @@ export default function SiteEditor({ id }: { id: string }) {
   const query = useQuery({
     queryKey: key,
     queryFn: async () => {
-      const [siteResult, signupResult] = await Promise.all([
-        request<{ site: Site }>(`/api/sites/${id}`),
-        request<{ signups: Result["signups"] }>(`/api/sites/${id}/signups`),
-      ]);
+      const siteResult = await request<{ site: Site }>(`/api/sites/${id}`);
+      const signupResult = siteResult.site.published
+        ? await request<{ signups: Result["signups"] }>(
+            `/api/sites/${id}/signups`,
+          )
+        : { signups: [] };
       return { ...siteResult, ...signupResult };
     },
     enabled: ready && authenticated && !!userData?.account_id && isInitialized,
@@ -77,6 +78,7 @@ export default function SiteEditor({ id }: { id: string }) {
       ? "Your brief is saved, but generation failed. Try generating the preview again."
       : "",
   );
+  const [view, setView] = useState<"site" | "audience">("site");
   const [mobile, setMobile] = useState(false);
   const [notice, setNotice] = useState("");
   useEffect(() => {
@@ -142,11 +144,15 @@ export default function SiteEditor({ id }: { id: string }) {
       let result = await request<{
         site: Site;
         generation?: { token: string; status: string };
+        fanConnection?: string;
       }>(`/api/sites/${id}`, {
         method: "PATCH",
         body: JSON.stringify({
           action,
           revision: query.data.site.revision,
+          ...(action === "publish"
+            ? { returnUrl: `${location.origin}/s/${id}` }
+            : {}),
           ...(action === "generate"
             ? {
                 instruction: instruction || query.data.site.brief,
@@ -159,12 +165,16 @@ export default function SiteEditor({ id }: { id: string }) {
         result = await waitForSiteProduction(request, id, result, setNotice);
       cache.setQueryData(key, { ...query.data, site: result.site });
       void cache.invalidateQueries({ queryKey: ["sites"] });
+      if (action !== "generate")
+        void cache.invalidateQueries({ queryKey: key });
       setInstruction("");
       setNotice(
         action === "generate"
           ? "Draft saved. Publish to share these changes."
           : action === "publish"
-            ? "Published. Your site is ready to share."
+            ? result.fanConnection === "subscription-required"
+              ? "Published. Email signup is ready. Spotify fan connection is included with a paid subscription."
+              : "Published. Your site is ready to share."
             : "Site unpublished. Your draft is saved.",
       );
     } catch (e) {
@@ -228,178 +238,162 @@ export default function SiteEditor({ id }: { id: string }) {
   const { site, signups } = query.data;
   const hasChanges =
     JSON.stringify(site.draft) !== JSON.stringify(site.published);
+  const building = busy === "generate";
+  const artwork = site.assets.find((asset) => asset.type === "image");
   return (
     <div className="flex min-h-full flex-col">
-      <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 shadow-[0_1px_0_var(--border)]">
-        <div className="flex items-center gap-4">
+      <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 shadow-[0_1px_0_var(--border)]">
+        <div className="flex min-w-0 items-center gap-3">
           <Link href="/sites" aria-label="Back to sites">
             <ArrowLeft size={18} />
           </Link>
-          <div>
-            <h1 className="text-sm font-medium">{site.name}</h1>
+          {artwork && (
+            <Image
+              unoptimized
+              src={artwork.url}
+              alt=""
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-md object-cover"
+            />
+          )}
+          <div className="min-w-0">
+            <h1 className="max-w-xl text-sm font-medium">{site.name}</h1>
             <p className="mt-1 text-xs text-muted-foreground">
               {site.published
                 ? hasChanges
                   ? "Published · Unpublished changes"
                   : "Published"
-                : "Draft"}
+                : building
+                  ? "Building"
+                  : "Draft"}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {site.published && (
-            <Button variant="ghost" size="sm" asChild>
-              <a href={`/s/${id}`} target="_blank" rel="noreferrer">
-                Open site
-                <ArrowUpRight size={14} />
-              </a>
-            </Button>
-          )}
-          <Button
-            size="sm"
-            disabled={!!busy || !site.draft || !hasChanges}
-            onClick={() => act("publish")}
-          >
-            {busy === "publish" ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <Globe size={14} />
-            )}
-            Publish
-          </Button>
-        </div>
-      </div>
-      <div className="grid flex-1 lg:grid-cols-[320px_1fr]">
-        <aside className="flex flex-col gap-6 p-5 shadow-[1px_0_0_var(--border)]">
-          <div>
-            <h2 className="text-sm font-medium">The brief</h2>
-            <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
-              {site.brief}
-            </p>
-          </div>
-          {site.assets.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {site.assets
-                .filter((a) => a.type === "image")
-                .map((a) => (
-                  <Image
-                    unoptimized
-                    width={64}
-                    height={64}
-                    key={a.url}
-                    src={a.url}
-                    alt={a.name}
-                    className="h-16 w-16 rounded-lg object-cover"
-                  />
-                ))}
-            </div>
-          )}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void act("generate");
-            }}
-            className="space-y-3"
-          >
-            <label htmlFor="site-edit" className="block text-sm font-medium">
-              {site.draft
-                ? "What would you like to change?"
-                : "Make your first preview"}
-            </label>
-            <Textarea
-              id="site-edit"
-              rows={4}
-              maxLength={6000}
-              value={instruction}
-              onChange={(e) => setInstruction(e.target.value)}
-              placeholder={
-                site.draft
-                  ? "Add a new level, change the artwork, or refine the controls…"
-                  : "Generate a design from your brief."
-              }
-            />
-            <Button
-              className="w-full"
-              disabled={!!busy || (!!site.draft && !instruction.trim())}
-              type="submit"
-            >
-              {busy === "generate" ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <Send size={14} />
-              )}{" "}
-              {busy === "generate"
-                ? "Building…"
-                : site.draft
-                  ? "Update draft"
-                  : "Generate preview"}
-            </Button>
-            <p className="text-xs leading-5 text-muted-foreground">
-              Working experiences, games, and websites. Your live site changes
-              only when you publish.
-            </p>
-          </form>
-          {error && (
-            <p role="alert" className="text-sm text-destructive">
-              {error}
-            </p>
-          )}
-          {notice && (
-            <p role="status" className="text-sm text-muted-foreground">
-              {notice}
-            </p>
-          )}
-          {site.draft?.production?.status === "needs-review" && (
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p role="status">
-                This draft needs another design pass. Review it before
-                publishing.
-              </p>
-              <details>
-                <summary className="cursor-pointer">Review notes</summary>
-                <p className="mt-2">
-                  {site.draft.production.reviews.at(-1)?.summary}
-                </p>
-              </details>
-            </div>
-          )}
-          <div className="mt-auto space-y-3 pt-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-medium">Fan signups</h2>
-              <span className="text-sm text-muted-foreground">
-                {signups.length}
-              </span>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              disabled={!signups.length}
-              onClick={exportFans}
-            >
-              <Download size={14} />
-              Export emails
-            </Button>
-            <SiteAudience id={id} name={site.name} />
-            {site.published && (
+            <>
               <Button
-                size="sm"
                 variant="ghost"
-                className="w-full text-muted-foreground"
-                disabled={!!busy}
-                onClick={() => act("unpublish")}
+                size="sm"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(
+                      `${location.origin}/s/${id}`,
+                    );
+                    setNotice("Link copied.");
+                  } catch {
+                    setError(
+                      "Could not copy the link. Open your site to copy its address.",
+                    );
+                  }
+                }}
               >
-                Unpublish site
+                Copy link
+              </Button>
+              <Button variant="ghost" size="sm" asChild>
+                <a href={`/s/${id}`} target="_blank" rel="noreferrer">
+                  Open site
+                  <ArrowUpRight size={14} />
+                </a>
+              </Button>
+            </>
+          )}
+          {site.draft && (!site.published || hasChanges) && (
+            <Button size="sm" disabled={!!busy} onClick={() => act("publish")}>
+              {busy === "publish" && (
+                <Loader2 size={14} className="animate-spin" />
+              )}
+              {site.published ? "Publish changes" : "Publish"}
+            </Button>
+          )}
+        </div>
+      </header>
+      {error && (
+        <p role="alert" className="px-5 pt-4 text-sm text-destructive">
+          {error}
+        </p>
+      )}
+      {notice && !building && (
+        <p role="status" className="px-5 pt-4 text-sm text-muted-foreground">
+          {notice}
+        </p>
+      )}
+      {site.published && (
+        <nav aria-label="Site views" className="flex gap-2 px-5 pt-4">
+          <Button
+            variant={view === "site" ? "secondary" : "ghost"}
+            aria-pressed={view === "site"}
+            onClick={() => setView("site")}
+          >
+            Site
+          </Button>
+          <Button
+            variant={view === "audience" ? "secondary" : "ghost"}
+            aria-pressed={view === "audience"}
+            onClick={() => setView("audience")}
+          >
+            Audience
+          </Button>
+        </nav>
+      )}
+      {site.published && view === "audience" ? (
+        <main className="mx-auto w-full max-w-4xl space-y-6 p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-medium">
+              Email signups · {signups.length}
+            </h2>
+            {signups.length > 0 && (
+              <Button variant="outline" size="sm" onClick={exportFans}>
+                <Download size={14} />
+                Export emails
               </Button>
             )}
           </div>
-        </aside>
-        <section className="min-w-0 bg-muted/35 p-4 md:p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-              Draft preview
+          {!signups.length && (
+            <p className="text-sm text-muted-foreground">
+              Share your site to start growing your audience. New signups will
+              appear here.
             </p>
-            <div className="flex gap-1 rounded-lg bg-background p-1 shadow-[0_0_0_1px_var(--border)]">
+          )}
+          <SiteAudience id={id} />
+        </main>
+      ) : !site.draft ? (
+        <main
+          className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-24 text-center"
+          aria-busy={building}
+        >
+          {building && (
+            <Loader2 size={28} className="animate-spin text-muted-foreground" />
+          )}
+          <h2 className="text-2xl font-medium">
+            {building
+              ? "Creating your experience"
+              : "Let’s finish your preview"}
+          </h2>
+          <p
+            role="status"
+            className="max-w-sm text-sm leading-6 text-muted-foreground"
+          >
+            {building
+              ? "You can leave this page—we’ll keep building. Your preview will appear here when it’s ready."
+              : "Your release is saved. Try building your preview again."}
+          </p>
+          {!building && (
+            <Button disabled={!!busy} onClick={() => act("generate")}>
+              Build preview
+            </Button>
+          )}
+        </main>
+      ) : (
+        <main className="min-w-0 flex-1 p-4 md:p-6">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <p role="status" className="text-sm text-muted-foreground">
+              {building
+                ? "Updating your site. You can keep playing this version."
+                : "Play your site, then publish or ask for a change."}
+            </p>
+            <div className="flex shrink-0 gap-1 rounded-lg bg-background p-1 shadow-[0_0_0_1px_var(--border)]">
               <Button
                 size="icon"
                 variant={mobile ? "ghost" : "secondary"}
@@ -420,41 +414,79 @@ export default function SiteEditor({ id }: { id: string }) {
               </Button>
             </div>
           </div>
-          {site.draft ? (
-            <iframe
-              title={`${site.name} draft preview`}
-              sandbox="allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox"
-              allow="web-share *"
-              srcDoc={renderSite(
-                site.draft,
-                undefined,
-                spotifyConfig.data?.configured && spotifyOrigin
-                  ? `${spotifyOrigin}/s/spotify/connect?release=${encodeURIComponent(site.release_url)}`
-                  : undefined,
-              )}
-              className={`mx-auto h-[72vh] min-h-[520px] rounded-lg bg-white shadow-sm ${mobile ? "w-full max-w-[390px]" : "w-full"}`}
-            />
-          ) : (
-            <div className="flex min-h-[520px] flex-col items-center justify-center rounded-xl bg-background p-8 text-center shadow-[0_0_0_1px_var(--border)]">
-              <Globe
-                size={36}
-                strokeWidth={1}
-                className="mb-5 text-muted-foreground"
+          <iframe
+            title={`${site.name} draft preview`}
+            sandbox="allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox"
+            allow="web-share *"
+            srcDoc={renderSite(
+              site.draft,
+              undefined,
+              spotifyConfig.data?.configured && spotifyOrigin
+                ? `${spotifyOrigin}/s/spotify/connect?release=${encodeURIComponent(site.release_url)}`
+                : undefined,
+            )}
+            className={`mx-auto h-[72vh] min-h-[520px] rounded-lg bg-white shadow-sm ${mobile ? "w-full max-w-[390px]" : "w-full"}`}
+          />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!busy && instruction.trim()) void act("generate");
+            }}
+            className="mx-auto mt-5 max-w-3xl space-y-3"
+          >
+            <label htmlFor="site-edit" className="text-sm font-medium">
+              What would you like to change?
+            </label>
+            <div className="flex items-end gap-2">
+              <Textarea
+                id="site-edit"
+                rows={2}
+                maxLength={6000}
+                value={instruction}
+                disabled={!!busy}
+                onChange={(e) => setInstruction(e.target.value)}
+                placeholder="Change the artwork, add a level, refine the controls…"
               />
-              <h2 className="text-xl font-medium">
-                {busy === "generate"
-                  ? "Creating your experience"
-                  : "Your site starts here."}
-              </h2>
-              <p className="mt-2 max-w-xs text-sm text-muted-foreground">
-                {busy === "generate"
-                  ? "Researching the release, creating the artwork, and testing your site. You can leave this page while it runs."
-                  : "Generate a preview from your brief, then refine it before publishing."}
-              </p>
+              <Button
+                type="submit"
+                disabled={!!busy || !instruction.trim()}
+                aria-label="Update draft"
+              >
+                {building ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Send size={16} />
+                )}
+              </Button>
             </div>
+          </form>
+          {site.draft.production?.status === "needs-review" && (
+            <details className="mx-auto mt-4 max-w-3xl text-sm text-muted-foreground">
+              <summary className="cursor-pointer">
+                This draft needs another design pass
+              </summary>
+              <p className="mt-2">
+                {site.draft.production.reviews.at(-1)?.summary}
+              </p>
+            </details>
           )}
-        </section>
-      </div>
+          <details className="mx-auto mt-5 max-w-3xl text-sm text-muted-foreground">
+            <summary className="cursor-pointer">Project details</summary>
+            <p className="mt-3 whitespace-pre-wrap">{site.brief}</p>
+            {site.published && (
+              <Button
+                className="mt-3"
+                size="sm"
+                variant="ghost"
+                disabled={!!busy}
+                onClick={() => act("unpublish")}
+              >
+                Unpublish site
+              </Button>
+            )}
+          </details>
+        </main>
+      )}
     </div>
   );
 }
