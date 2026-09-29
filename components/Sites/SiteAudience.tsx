@@ -68,9 +68,13 @@ export function SiteAudience({ id }: { id: string }) {
           <p className="text-xs text-muted-foreground">
             Last 30 days · browser-reported activity
           </p>
-          {Object.values(query.data.activity).some(
-            (value) => typeof value === "number" && value > 0,
-          ) ? (
+          {[
+            query.data.activity.visits,
+            query.data.activity.starts,
+            query.data.activity.completions,
+            query.data.activity.replays,
+            query.data.activity.shares,
+          ].some((value) => value > 0) ? (
             <dl className="grid grid-cols-2 gap-3 text-sm">
               {Object.entries(query.data.activity)
                 .filter(([k]) =>
