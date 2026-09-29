@@ -7,7 +7,7 @@ export const httpsUrl = z
 export const assetSchema = z.object({
   url: httpsUrl,
   name: z.string().max(200),
-  type: z.enum(["image", "audio"]),
+  type: z.enum(["image", "audio", "video"]),
 });
 export const experienceSchema = z.object({
   html: z.string().min(1).max(60000),
