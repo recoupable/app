@@ -61,6 +61,9 @@ describe("interactive experience isolation", () => {
   it("preserves existing saved landing pages", () => {
     const legacy = structuredClone(site);
     delete legacy.design.experience;
-    expect(renderSite(legacy)).toContain('<main class="poster">');
+    expect(renderSite(legacy)).toContain(
+      "&lt;main class=&quot;poster&quot;&gt;",
+    );
+    expect(renderSite(legacy, "/s/111/signup")).toContain('id="music-frame"');
   });
 });

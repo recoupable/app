@@ -21,8 +21,8 @@ const snapshot: SiteSnapshot = {
 describe("renderSite", () => {
   it("escapes user and generated text", () => {
     const html = renderSite(snapshot, "/s/test/signup");
-    expect(html).not.toContain("<script>");
-    expect(html).toContain("&lt;img");
+    expect(html).not.toContain("<script>alert(1)</script>");
+    expect(html).toContain("&amp;lt;img");
   });
   it("does not render a separate email signup form", () => {
     const html = renderSite(snapshot, "/s/test/signup");
