@@ -275,12 +275,143 @@
         authPopup = null;
         location.reload();
       });
+    let player;
+    let deviceId;
+    let started = false;
+    let duration = 0;
+    let latestState = null;
+    let updatedAt = Date.now();
+    const seek = document.getElementById("spotify-seek");
+    const time = document.getElementById("spotify-time");
+    const controls = document.getElementById("spotify-controls");
+    const format = (ms) => {
+      const seconds = Math.floor(ms / 1000);
+      return (
+        Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2, "0")
+      );
+    };
+    const updateProgress = () => {
+      if (!latestState || !seek || !time) return;
+      const position = Math.min(
+        duration,
+        latestState.position +
+          (latestState.paused ? 0 : Date.now() - updatedAt),
+      );
+      seek.value = duration ? (position / duration) * 100 : 0;
+      const positionLabel = document.getElementById("spotify-position");
+      if (positionLabel) positionLabel.textContent = format(position);
+      time.textContent = format(duration);
+      const durationLabel = document.getElementById("spotify-duration");
+      if (durationLabel) durationLabel.textContent = format(duration);
+    };
+    const intro = document.getElementById("spotify-intro");
+    const audio = document.getElementById("site-audio");
+    let audioActive = false;
+    function activateSavedAudio() {
+      if (!audio || !audio.src) return false;
+      if (audioActive) return true;
+      audioActive = true;
+      if (player) player.disconnect();
+      document.body.dataset.playbackSource = "audio";
+      play.hidden = false;
+      play.disabled = false;
+      if (controls) controls.hidden = false;
+      if (intro) intro.textContent = "Your music is ready.";
+      const sync = () => {
+        duration = Number.isFinite(audio.duration) ? audio.duration * 1000 : 0;
+        latestState = {
+          position: audio.currentTime * 1000,
+          paused: audio.paused,
+        };
+        updatedAt = Date.now();
+        updateProgress();
+        play.setAttribute(
+          "aria-label",
+          audio.paused ? "Play music" : "Pause music",
+        );
+        if (audio.paused) delete play.dataset.playing;
+        else play.dataset.playing = "true";
+      };
+      for (const event of [
+        "loadedmetadata",
+        "timeupdate",
+        "play",
+        "pause",
+        "ended",
+        "seeked",
+      ])
+        audio.addEventListener(event, sync);
+      audio.addEventListener("error", () =>
+        say("Music could not load. Reload this page to try again."),
+      );
+      audio.volume = 0.7;
+      play.onclick = async () => {
+        try {
+          if (audio.paused) {
+            await audio.play();
+            say("Playing artist audio.", true);
+          } else {
+            audio.pause();
+            say("Paused.", true);
+          }
+          sync();
+        } catch {
+          say("Tap Play music to start listening.");
+        }
+      };
+      if (seek)
+        seek.onchange = () => {
+          if (Number.isFinite(audio.duration))
+            audio.currentTime = (Number(seek.value) / 100) * audio.duration;
+          sync();
+        };
+      const volume = document.getElementById("spotify-volume");
+      if (volume)
+        volume.oninput = () => {
+          audio.volume = Number(volume.value) / 100;
+        };
+      const previous = document.getElementById("spotify-previous");
+      if (previous) {
+        previous.setAttribute("aria-label", "Restart track");
+        previous.onclick = () => {
+          audio.currentTime = 0;
+          sync();
+        };
+      }
+      const next = document.getElementById("spotify-next");
+      if (next) next.hidden = true;
+      const link = document.getElementById("spotify-track-link");
+      if (link) link.href = document.body.dataset.release;
+      document.getElementById("spotify-track").hidden = false;
+      document.getElementById("spotify-artist-name").textContent =
+        "Artist audio";
+      const cover = document.getElementById("spotify-cover");
+      const banner = document.getElementById("spotify-artist-image");
+      if (banner && cover) banner.src = cover.src;
+      disconnect.onclick = () => {
+        audio.pause();
+        sessionStorage.removeItem(sessionKey);
+        location.reload();
+      };
+      sync();
+      say("Music ready. Press Play music.", true);
+      return true;
+    }
+    function showSavedAudio() {
+      if (!activateSavedAudio()) return false;
+      showPlayer();
+      if (skip) skip.hidden = true;
+      return true;
+    }
     const configResponse = await fetch("/api/sites/spotify/config");
-    if (!configResponse.ok)
+    if (!configResponse.ok) {
+      if (showSavedAudio()) return;
       throw new Error("Spotify connection is temporarily unavailable.");
+    }
     const config = await configResponse.json();
     if (!config.configured) {
       connect.disabled = true;
+      if (showSavedAudio()) return;
       say(
         "Spotify connection is not configured for this site yet. You can still play.",
       );
@@ -363,41 +494,14 @@
       return;
     }
     let session = read(sessionKey);
-    if (!session) return;
-    let player;
-    let deviceId;
-    let started = false;
-    let duration = 0;
-    let latestState = null;
-    let updatedAt = Date.now();
-    const seek = document.getElementById("spotify-seek");
-    const time = document.getElementById("spotify-time");
-    const controls = document.getElementById("spotify-controls");
-    const format = (ms) => {
-      const seconds = Math.floor(ms / 1000);
-      return (
-        Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2, "0")
-      );
-    };
-    const updateProgress = () => {
-      if (!latestState || !seek || !time) return;
-      const position = Math.min(
-        duration,
-        latestState.position +
-          (latestState.paused ? 0 : Date.now() - updatedAt),
-      );
-      seek.value = duration ? (position / duration) * 100 : 0;
-      const positionLabel = document.getElementById("spotify-position");
-      if (positionLabel) positionLabel.textContent = format(position);
-      time.textContent = format(duration);
-      const durationLabel = document.getElementById("spotify-duration");
-      if (durationLabel) durationLabel.textContent = format(duration);
-    };
+    if (!session) {
+      showSavedAudio();
+      return;
+    }
     if (continueButton && parentOrigin) continueButton.hidden = false;
     if (!parentOrigin) showPlayer();
 
     document.body.dataset.connected = "true";
-    const intro = document.getElementById("spotify-intro");
     if (intro) intro.textContent = "Spotify connected. You’re ready to go.";
     connect.hidden = true;
     play.hidden = false;
@@ -428,98 +532,6 @@
       }
       return session.access_token;
     }
-    const audio = document.getElementById("site-audio");
-    let audioActive = false;
-    function useSavedAudio() {
-      if (!audio || !audio.src) return false;
-      if (audioActive) return true;
-      audioActive = true;
-      if (player) player.disconnect();
-      document.body.dataset.playbackSource = "audio";
-      play.hidden = false;
-      play.disabled = false;
-      if (controls) controls.hidden = false;
-      if (intro) intro.textContent = "Connected. Your music is ready.";
-      const sync = () => {
-        duration = Number.isFinite(audio.duration) ? audio.duration * 1000 : 0;
-        latestState = {
-          position: audio.currentTime * 1000,
-          paused: audio.paused,
-        };
-        updatedAt = Date.now();
-        updateProgress();
-        play.setAttribute(
-          "aria-label",
-          audio.paused ? "Play music" : "Pause music",
-        );
-        if (audio.paused) delete play.dataset.playing;
-        else play.dataset.playing = "true";
-      };
-      for (const event of [
-        "loadedmetadata",
-        "timeupdate",
-        "play",
-        "pause",
-        "ended",
-        "seeked",
-      ])
-        audio.addEventListener(event, sync);
-      audio.addEventListener("error", () =>
-        say("Music could not load. Reload this page to try again."),
-      );
-      audio.volume = 0.7;
-      play.onclick = async () => {
-        try {
-          if (audio.paused) {
-            await audio.play();
-            say("Playing artist audio.", true);
-          } else {
-            audio.pause();
-            say("Paused.", true);
-          }
-          sync();
-        } catch {
-          say("Tap Play music to start listening.");
-        }
-      };
-      if (seek)
-        seek.onchange = () => {
-          if (Number.isFinite(audio.duration))
-            audio.currentTime = (Number(seek.value) / 100) * audio.duration;
-          sync();
-        };
-      const volume = document.getElementById("spotify-volume");
-      if (volume)
-        volume.oninput = () => {
-          audio.volume = Number(volume.value) / 100;
-        };
-      const previous = document.getElementById("spotify-previous");
-      if (previous) {
-        previous.setAttribute("aria-label", "Restart track");
-        previous.onclick = () => {
-          audio.currentTime = 0;
-          sync();
-        };
-      }
-      const next = document.getElementById("spotify-next");
-      if (next) next.hidden = true;
-      const link = document.getElementById("spotify-track-link");
-      if (link) link.href = document.body.dataset.release;
-      document.getElementById("spotify-track").hidden = false;
-      document.getElementById("spotify-artist-name").textContent =
-        "Artist audio";
-      const cover = document.getElementById("spotify-cover");
-      const banner = document.getElementById("spotify-artist-image");
-      if (banner && cover) banner.src = cover.src;
-      disconnect.onclick = () => {
-        audio.pause();
-        sessionStorage.removeItem(sessionKey);
-        location.reload();
-      };
-      sync();
-      say("Music ready. Press Play music.", true);
-      return true;
-    }
     let product = "unknown";
     try {
       const profileResponse = await fetch("https://api.spotify.com/v1/me", {
@@ -547,7 +559,7 @@
     session.product = product;
     write(sessionKey, session);
     if (product === "free" || product === "open") {
-      if (!useSavedAudio()) {
+      if (!activateSavedAudio()) {
         play.hidden = true;
         say(
           "Spotify Free connected. This site has no audio file yet. You can still play the game.",
@@ -555,7 +567,7 @@
       }
       return;
     }
-    if (product === "unknown" && useSavedAudio()) return;
+    if (product === "unknown" && activateSavedAudio()) return;
     document.body.dataset.playbackSource = "spotify";
     say("Preparing music…", true);
     window.onSpotifyWebPlaybackSDKReady = () => {
@@ -613,7 +625,7 @@
       ])
         player.addListener(event, ({ message }) => {
           if (event === "account_error") {
-            if (!useSavedAudio()) {
+            if (!activateSavedAudio()) {
               play.hidden = true;
               if (controls) controls.hidden = true;
               say(
