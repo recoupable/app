@@ -1,0 +1,172 @@
+.experience {
+  width: 100%;
+  max-width: 800px;
+  margin: auto;
+  padding: 32px 20px 24px;
+  text-align: center;
+  color: var(--foreground);
+}
+.scene {
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: clamp(300px, 39vw, 400px);
+  perspective: 1000px;
+  isolation: isolate;
+}
+.halo {
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  background: var(--artwork) center / cover;
+  filter: blur(60px);
+  opacity: 0.22;
+  transform: scale(1.3);
+  z-index: -1;
+}
+.frame {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 32px;
+  box-shadow: 0 0 0 1px var(--border);
+  transform: rotate(-12deg);
+  opacity: 0.5;
+}
+.sculpture {
+  position: relative;
+  width: clamp(180px, 28vw, 220px);
+  aspect-ratio: 1;
+  transform-style: preserve-3d;
+  transform: rotateX(calc(-10deg + var(--tilt-x)))
+    rotateY(calc(-14deg + var(--tilt-y))) rotateZ(-6deg);
+  transition: transform 300ms ease-out;
+}
+.piece {
+  position: absolute;
+  left: calc(var(--x) * 20%);
+  top: calc(var(--y) * 20%);
+  width: 20.1%;
+  height: 20.1%;
+  background-color: var(--secondary);
+  background-image: var(--artwork),
+    linear-gradient(135deg, var(--muted-foreground), var(--secondary));
+  background-size: 500% 500%;
+  border-radius: 3px;
+  box-shadow: 0 1px 1px var(--border);
+  animation: assemble 9s cubic-bezier(0.65, 0, 0.25, 1) infinite;
+  animation-delay: var(--delay);
+}
+.caption {
+  position: absolute;
+  bottom: 8px;
+  color: var(--muted-foreground);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  font-family: monospace;
+}
+.copy {
+  margin-top: 28px;
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 10px monospace;
+  letter-spacing: 0.15em;
+  color: var(--muted-foreground);
+}
+.eyebrow span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.copy h2 {
+  margin: 16px 0;
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+}
+.copy p[role="status"] {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.footer {
+  margin-top: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 20px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+.pause {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.pause:hover {
+  color: var(--foreground);
+  background: var(--secondary);
+}
+.pause:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.scene[data-paused="true"] .piece {
+  animation-play-state: paused;
+}
+.scene[data-paused="true"] .sculpture {
+  transform: rotateX(-10deg) rotateY(-14deg) rotateZ(-6deg);
+}
+@keyframes assemble {
+  0%,
+  18%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  48%,
+  65% {
+    transform: translate3d(var(--drift-x), var(--drift-y), var(--depth))
+      rotate(var(--twist));
+  }
+}
+@media (max-width: 480px) {
+  .experience {
+    padding-top: 8px;
+  }
+  .frame {
+    width: 220px;
+    height: 220px;
+  }
+  .copy {
+    margin-top: 16px;
+  }
+  .footer {
+    margin-top: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .piece {
+    animation: none;
+  }
+  .sculpture,
+  .scene[data-paused="true"] .sculpture {
+    transform: rotateZ(-6deg);
+    transition: none;
+  }
+  .pause {
+    display: none;
+  }
+}
