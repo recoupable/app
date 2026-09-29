@@ -10,13 +10,10 @@ it("tracks real frame messages once and ignores messages from other windows", ()
     contentWindow: { postMessage: vi.fn() },
     style: { height: "" },
   };
-  const form = {
-    scrollIntoView: vi.fn(),
-    querySelector: () => ({ focus: vi.fn() }),
-  };
+  const toggle = { getAttribute: () => "false", click: vi.fn() };
   const document = {
     body: { dataset: { activityUrl: "/s/site/activity", preview: "false" } },
-    getElementById: (id: string) => (id === "experience" ? frame : form),
+    getElementById: (id: string) => (id === "experience" ? frame : toggle),
   };
   runInNewContext(readFileSync("public/sites-fan-runtime.js", "utf8"), {
     document,
@@ -49,7 +46,7 @@ it("tracks real frame messages once and ignores messages from other windows", ()
     event: "complete",
   });
   receive({ source: frame.contentWindow, data: { type: "recoup:join" } });
-  expect(form.scrollIntoView).toHaveBeenCalledOnce();
+  expect(toggle.click).toHaveBeenCalledOnce();
   receive({ source: {}, data: { type: "recoup:resize", height: 900 } });
   expect(frame.style.height).toBe("");
   receive({

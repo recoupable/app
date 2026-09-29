@@ -24,11 +24,10 @@ describe("renderSite", () => {
     expect(html).not.toContain("<script>");
     expect(html).toContain("&lt;img");
   });
-  it("uses an explicit opt-in and controlled signup endpoint", () => {
+  it("does not render a separate email signup form", () => {
     const html = renderSite(snapshot, "/s/test/signup");
-    expect(html).toContain('action="/s/test/signup"');
-    expect(html).toContain('name="consent"');
-    expect(html).toContain('type="checkbox" required');
+    expect(html).not.toContain("<form");
+    expect(html).not.toContain('type="email"');
   });
   it("does not allow signup in previews", () => {
     expect(renderSite(snapshot)).not.toContain("<form");

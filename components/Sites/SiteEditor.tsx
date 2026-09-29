@@ -173,7 +173,7 @@ export default function SiteEditor({ id }: { id: string }) {
           ? "Draft saved. Publish to share these changes."
           : action === "publish"
             ? result.fanConnection === "subscription-required"
-              ? "Published. Email signup is ready. Spotify fan connection is included with a paid subscription."
+              ? "Published. Spotify fan connection is included with a paid subscription."
               : "Published. Your site is ready to share."
             : "Site unpublished. Your draft is saved.",
       );

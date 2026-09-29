@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getPublishedSite } from "@/lib/sites/getPublishedSite";
 import { playerThemeSchema } from "@/lib/sites/schema";
 import { renderSpotifyPlayer } from "@/lib/sites/renderSpotifyPlayer";
 
@@ -66,6 +67,11 @@ export async function GET(request: Request) {
     : null;
   if (theme && !theme.success)
     return new Response("Invalid player theme", { status: 400 });
+  const siteId = requestUrl.searchParams.get("site");
+  if (siteId && !z.string().uuid().safeParse(siteId).success)
+    return new Response("Invalid site", { status: 400 });
+  const site = siteId ? await getPublishedSite(siteId) : null;
+  const fanConnectUrl = siteId ? site?.fanConnectUrl || null : undefined;
   const value = release.data.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
   return new Response(
     renderSpotifyPlayer(
@@ -73,6 +79,7 @@ export async function GET(request: Request) {
       parent || "",
       audioUrl,
       theme?.success ? theme.data : undefined,
+      fanConnectUrl,
     ),
     {
       headers: {

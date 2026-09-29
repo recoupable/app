@@ -42,9 +42,8 @@
     }
     if (event.data?.type === "recoup:activity") track(event.data.event);
     if (event.data?.type === "recoup:join") {
-      const form = document.getElementById("fan-signup");
-      form?.scrollIntoView({ behavior: "smooth", block: "start" });
-      form?.querySelector("input[type=email]")?.focus({ preventScroll: true });
+      const toggle = document.getElementById("music-toggle");
+      if (toggle?.getAttribute("aria-expanded") !== "true") toggle?.click();
     }
   });
   frame?.contentWindow?.postMessage({ type: "recoup:measure" }, "*");
