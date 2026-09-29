@@ -254,3 +254,25 @@ it("accepts a connection only from the opened auth window on the player's origin
   expect(h.storage.has("recoup-sites-spotify")).toBe(true);
   expect(h.ctx.location.reload).toHaveBeenCalledOnce();
 });
+
+it("lets visitors play immediately with optional music collapsed", async () => {
+  const h = harness(false);
+  h.ctx.document.body.dataset.spotifyPlayer = "false";
+  const game = { inert: false, focus: vi.fn() };
+  const entrance = { hidden: false };
+  const toggle = { hidden: true, setAttribute: vi.fn() };
+  const panel = { classList: { add: vi.fn(), toggle: vi.fn() } };
+  const frame = { contentWindow: { postMessage: vi.fn() } };
+  Object.assign(h.nodes, {
+    experience: game,
+    "music-entrance": entrance,
+    "music-toggle": toggle,
+    "music-panel": panel,
+    "music-frame": frame,
+  });
+  await h.run();
+  expect(game.inert).toBe(false);
+  expect(entrance.hidden).toBe(true);
+  expect(toggle.hidden).toBe(false);
+  expect(panel.classList.add).toHaveBeenCalledWith("collapsed");
+});

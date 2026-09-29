@@ -148,7 +148,13 @@
       const entrance = document.getElementById("music-entrance");
       const toggle = document.getElementById("music-toggle");
       const panel = document.getElementById("music-panel");
-      game.inert = true;
+      // Music is optional; never gate the generated experience on OAuth setup.
+      document.body.dataset.entered = "true";
+      game.inert = false;
+      entrance.hidden = true;
+      toggle.hidden = false;
+      panel.classList.add("collapsed");
+      toggle.setAttribute("aria-expanded", "false");
       const enter = () => {
         document.body.dataset.entered = "true";
         frame.contentWindow.postMessage(
