@@ -10,6 +10,11 @@ export async function getPublishedSite(id: string) {
   const result = (await response.json()) as {
     snapshot: SiteSnapshot;
     fanConnectUrl?: string | null;
+    playbackAudioUrl?: string | null;
   };
-  return { published: result.snapshot, fanConnectUrl: result.fanConnectUrl };
+  return {
+    published: result.snapshot,
+    playbackAudioUrl: result.playbackAudioUrl,
+    fanConnectUrl: result.fanConnectUrl,
+  };
 }

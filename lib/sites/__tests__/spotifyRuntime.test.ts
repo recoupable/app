@@ -304,3 +304,108 @@ it("uses same-tab authorization and preserves only a local site return path", as
     expect.stringContaining("https://accounts.spotify.com/authorize?"),
   );
 });
+
+function playbackHarness(product: string, available = true, profileOk = true) {
+  const h = harness(false);
+  h.storage.set(
+    "recoup-sites-spotify",
+    JSON.stringify({ access_token: "token", expiresAt: Date.now() + 3600000 }),
+  );
+  h.ctx.document.body.dataset.release =
+    "https://open.spotify.com/track/4bbDlzPasNSFI1l69mx2zx";
+  const listeners: Record<string, () => void> = {};
+  const audio = {
+    src: available ? "https://storage.test/song.wav" : "",
+    duration: 180,
+    currentTime: 0,
+    paused: true,
+    volume: 0,
+    addEventListener: (event: string, fn: () => void) => {
+      listeners[event] = fn;
+    },
+    play: vi.fn(async () => {
+      audio.paused = false;
+    }),
+    pause: vi.fn(() => {
+      audio.paused = true;
+    }),
+  };
+  const play = {
+    dataset: {},
+    setAttribute: vi.fn(),
+    onclick: async () => {},
+    disabled: true,
+  };
+  const seek = { value: "0", onchange: () => {} };
+  const volume = { value: "70", oninput: () => {} };
+  const head = { appendChild: vi.fn() };
+  Object.assign(h.ctx.document, { head });
+  Object.assign(h.nodes, {
+    "site-audio": audio,
+    "spotify-play": play,
+    "spotify-seek": seek,
+    "spotify-volume": volume,
+    "spotify-previous": { setAttribute: vi.fn() },
+  });
+  h.fetch.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({ configured: true }),
+  });
+  h.fetch.mockResolvedValueOnce({
+    ok: profileOk,
+    json: async () => ({ product }),
+  });
+  return { ...h, audio, play, seek, volume, listeners, head };
+}
+it("uses the saved recording and the same controls for Spotify Free", async () => {
+  const h = playbackHarness("free");
+  await h.run();
+  expect(h.ctx.document.body.dataset).toMatchObject({
+    spotifyProduct: "free",
+    playbackSource: "audio",
+  });
+  expect(h.head.appendChild).not.toHaveBeenCalled();
+  expect(h.play.disabled).toBe(false);
+  await h.play.onclick();
+  expect(h.audio.paused).toBe(false);
+  await h.play.onclick();
+  expect(h.audio.paused).toBe(true);
+  h.seek.value = "50";
+  h.seek.onchange();
+  expect(h.audio.currentTime).toBe(90);
+  h.volume.value = "25";
+  h.volume.oninput();
+  expect(h.audio.volume).toBe(0.25);
+  expect(h.nodes["spotify-time"].textContent).toBe("3:00");
+  h.listeners.ended();
+  expect(h.play.setAttribute).toHaveBeenLastCalledWith(
+    "aria-label",
+    "Play music",
+  );
+});
+it("loads Spotify for Premium without starting file playback", async () => {
+  const h = playbackHarness("premium");
+  await h.run();
+  expect(h.ctx.document.body.dataset).toMatchObject({
+    spotifyProduct: "premium",
+    playbackSource: "spotify",
+  });
+  expect(h.head.appendChild).toHaveBeenCalledWith(
+    expect.objectContaining({ src: "https://sdk.scdn.co/spotify-player.js" }),
+  );
+  expect(h.audio.play).not.toHaveBeenCalled();
+});
+it("keeps failed profile lookups unknown while still offering saved audio", async () => {
+  const h = playbackHarness("free", true, false);
+  await h.run();
+  expect(h.ctx.document.body.dataset).toMatchObject({
+    spotifyProduct: "unknown",
+    playbackSource: "audio",
+  });
+});
+it("explains missing audio without loading an unusable SDK for Free accounts", async () => {
+  const h = playbackHarness("open", false);
+  await h.run();
+  expect(h.nodes["spotify-status"].textContent).toContain("no audio file");
+  expect(h.head.appendChild).not.toHaveBeenCalled();
+});

@@ -428,6 +428,135 @@
       }
       return session.access_token;
     }
+    const audio = document.getElementById("site-audio");
+    let audioActive = false;
+    function useSavedAudio() {
+      if (!audio || !audio.src) return false;
+      if (audioActive) return true;
+      audioActive = true;
+      if (player) player.disconnect();
+      document.body.dataset.playbackSource = "audio";
+      play.hidden = false;
+      play.disabled = false;
+      if (controls) controls.hidden = false;
+      if (intro) intro.textContent = "Connected. Your music is ready.";
+      const sync = () => {
+        duration = Number.isFinite(audio.duration) ? audio.duration * 1000 : 0;
+        latestState = {
+          position: audio.currentTime * 1000,
+          paused: audio.paused,
+        };
+        updatedAt = Date.now();
+        updateProgress();
+        play.setAttribute(
+          "aria-label",
+          audio.paused ? "Play music" : "Pause music",
+        );
+        if (audio.paused) delete play.dataset.playing;
+        else play.dataset.playing = "true";
+      };
+      for (const event of [
+        "loadedmetadata",
+        "timeupdate",
+        "play",
+        "pause",
+        "ended",
+        "seeked",
+      ])
+        audio.addEventListener(event, sync);
+      audio.addEventListener("error", () =>
+        say("Music could not load. Reload this page to try again."),
+      );
+      audio.volume = 0.7;
+      play.onclick = async () => {
+        try {
+          if (audio.paused) {
+            await audio.play();
+            say("Playing artist audio.", true);
+          } else {
+            audio.pause();
+            say("Paused.", true);
+          }
+          sync();
+        } catch {
+          say("Tap Play music to start listening.");
+        }
+      };
+      if (seek)
+        seek.onchange = () => {
+          if (Number.isFinite(audio.duration))
+            audio.currentTime = (Number(seek.value) / 100) * audio.duration;
+          sync();
+        };
+      const volume = document.getElementById("spotify-volume");
+      if (volume)
+        volume.oninput = () => {
+          audio.volume = Number(volume.value) / 100;
+        };
+      const previous = document.getElementById("spotify-previous");
+      if (previous) {
+        previous.setAttribute("aria-label", "Restart track");
+        previous.onclick = () => {
+          audio.currentTime = 0;
+          sync();
+        };
+      }
+      const next = document.getElementById("spotify-next");
+      if (next) next.hidden = true;
+      const link = document.getElementById("spotify-track-link");
+      if (link) link.href = document.body.dataset.release;
+      document.getElementById("spotify-track").hidden = false;
+      document.getElementById("spotify-artist-name").textContent =
+        "Artist audio";
+      const cover = document.getElementById("spotify-cover");
+      const banner = document.getElementById("spotify-artist-image");
+      if (banner && cover) banner.src = cover.src;
+      disconnect.onclick = () => {
+        audio.pause();
+        sessionStorage.removeItem(sessionKey);
+        location.reload();
+      };
+      sync();
+      say("Music ready. Press Play music.", true);
+      return true;
+    }
+    let product = "unknown";
+    try {
+      const profileResponse = await fetch("https://api.spotify.com/v1/me", {
+        headers: { Authorization: "Bearer " + (await getToken()) },
+      });
+      if (profileResponse.ok) {
+        const profile = await profileResponse.json();
+        if (["premium", "free", "open"].includes(profile.product))
+          product = profile.product;
+      }
+    } catch {
+      /* An unavailable profile is unknown, never evidence of a free account. */
+    }
+    document.body.dataset.spotifyProduct = product;
+    const accountLabel = document.getElementById("spotify-account");
+    if (accountLabel) {
+      accountLabel.hidden = false;
+      accountLabel.textContent =
+        product === "premium"
+          ? "Spotify Premium connected"
+          : product === "unknown"
+            ? "Spotify connected · subscription unavailable"
+            : "Spotify Free connected";
+    }
+    session.product = product;
+    write(sessionKey, session);
+    if (product === "free" || product === "open") {
+      if (!useSavedAudio()) {
+        play.hidden = true;
+        say(
+          "Spotify Free connected. This site has no audio file yet. You can still play the game.",
+        );
+      }
+      return;
+    }
+    if (product === "unknown" && useSavedAudio()) return;
+    document.body.dataset.playbackSource = "spotify";
     say("Preparing music…", true);
     window.onSpotifyWebPlaybackSDKReady = () => {
       player = new window.Spotify.Player({
@@ -460,6 +589,7 @@
       if (next) next.onclick = act(() => player.nextTrack());
       setInterval(updateProgress, 1000);
       player.addListener("ready", ({ device_id }) => {
+        if (audioActive) return;
         deviceId = device_id;
         play.disabled = false;
         say(
@@ -470,6 +600,7 @@
         );
       });
       player.addListener("not_ready", () => {
+        if (audioActive) return;
         deviceId = null;
         play.disabled = true;
         say("Player disconnected. Reconnect Spotify.");
@@ -482,17 +613,17 @@
       ])
         player.addListener(event, ({ message }) => {
           if (event === "account_error") {
-            const audioFallback = document.getElementById("audio-fallback");
-            if (audioFallback) audioFallback.hidden = false;
-            play.hidden = true;
-            if (controls) controls.hidden = true;
-            say(
-              "Connected. Spotify Premium is needed to listen here. Open Spotify or continue without music.",
-            );
+            if (!useSavedAudio()) {
+              play.hidden = true;
+              if (controls) controls.hidden = true;
+              say(
+                "Spotify playback is unavailable for this account and this site has no audio file yet.",
+              );
+            }
           } else say(message);
         });
       player.addListener("player_state_changed", (state) => {
-        if (state) {
+        if (state && !audioActive) {
           latestState = state;
           updatedAt = Date.now();
           duration = state.duration;
