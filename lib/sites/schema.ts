@@ -64,6 +64,7 @@ export const actionSchema = z.discriminatedUnion("action", [
 export type SiteDesign = z.infer<typeof designSchema>;
 export type SiteAsset = z.infer<typeof assetSchema>;
 export type SiteSnapshot = {
+  artistName?: string;
   production?: {
     status: "reviewed" | "needs-review";
     reviews: { summary: string }[];
@@ -96,6 +97,7 @@ export const playerThemeSchema = z.object({
   accent: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   font: z.enum(["serif", "sans"]),
   title: z.string().max(120),
+  artist: z.string().max(1000).nullish(),
   artwork: z.union([httpsUrl, z.literal("")]),
 });
 export type PlayerTheme = z.infer<typeof playerThemeSchema>;
