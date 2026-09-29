@@ -453,3 +453,30 @@ it("explains missing audio without loading an unusable SDK for Free accounts", a
   expect(h.nodes["spotify-status"].textContent).toContain("no audio file");
   expect(h.head.appendChild).not.toHaveBeenCalled();
 });
+it("uses the same embedded player for owner previews and passes only the scoped preview grant", async () => {
+  const h = harness(false);
+  Object.assign(h.ctx.document.body.dataset, {
+    preview: "true",
+    playerEnabled: "true",
+    spotifyPlayer: "false",
+    previewSite: "11111111-1111-4111-8111-111111111111",
+    previewToken: "grant.signature",
+    connectUrl: "https://example.test/s/spotify/connect",
+  });
+  const frame = { src: "", contentWindow: { postMessage: vi.fn() } };
+  Object.assign(h.nodes, {
+    experience: { inert: false, focus: vi.fn() },
+    "music-entrance": { hidden: false },
+    "music-toggle": { hidden: true, setAttribute: vi.fn() },
+    "music-panel": { classList: { add: vi.fn(), toggle: vi.fn() } },
+    "music-frame": frame,
+  });
+  await h.run();
+  expect(new URL(frame.src).searchParams.get("preview")).toBe(
+    "grant.signature",
+  );
+  expect(new URL(frame.src).searchParams.get("site")).toBe(
+    "11111111-1111-4111-8111-111111111111",
+  );
+  expect(h.fetch).not.toHaveBeenCalled();
+});

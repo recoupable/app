@@ -7,6 +7,9 @@ export function renderSite(
   signupAction?: string,
   connectUrl?: string,
   fan?: {
+    preview?: boolean;
+    previewToken?: string;
+    siteId?: string;
     connectUrl?: string | null;
     activityUrl?: string;
     playbackAudioUrl?: string | null;
