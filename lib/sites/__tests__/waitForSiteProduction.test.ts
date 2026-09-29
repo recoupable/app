@@ -35,12 +35,10 @@ it("polls the existing job without starting new paid generation", async () => {
   expect(values.size).toBe(0);
 });
 it("removes failed jobs and surfaces the server's error", async () => {
-  const request = vi
-    .fn()
-    .mockResolvedValue({
-      generation: { status: "failed" },
-      error: "Build stopped",
-    });
+  const request = vi.fn().mockResolvedValue({
+    generation: { status: "failed" },
+    error: "Build stopped",
+  });
   await expect(
     waitForSiteProduction(request, "site", {
       generation: { token: "job", status: "running" },
@@ -56,4 +54,29 @@ it("keeps the token after a network failure so a refresh can resume", async () =
     }),
   ).rejects.toThrow("offline");
   expect(values.get("site-production:site")).toBe("job");
+});
+it("forwards real progress while recovering an existing job", async () => {
+  vi.useFakeTimers();
+  values.set("site-production:site", "existing-job");
+  const progress = {
+    phase: "review",
+    detail: "Refining the experience after review",
+    reviewPass: 2,
+  };
+  const request = vi
+    .fn()
+    .mockResolvedValueOnce({ generation: { status: "running", progress } })
+    .mockResolvedValueOnce({
+      generation: { status: "completed" },
+      site: { id: "site" },
+    });
+  const onStatus = vi.fn();
+  const result = waitForSiteProduction(request, "site", {}, onStatus);
+  await vi.advanceTimersByTimeAsync(4000);
+  await result;
+  expect(onStatus).toHaveBeenCalledWith(progress.detail, progress);
+  expect(JSON.parse(request.mock.calls[0][1].body)).toEqual({
+    action: "generation",
+    token: "existing-job",
+  });
 });
