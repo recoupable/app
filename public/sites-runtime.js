@@ -403,8 +403,10 @@
       if (skip) skip.hidden = true;
       return true;
     }
-    const configResponse = await fetch("/api/sites/spotify/config");
-    if (!configResponse.ok) {
+    const configResponse = await fetch("/api/sites/spotify/config").catch(
+      () => null,
+    );
+    if (!configResponse?.ok) {
       if (showSavedAudio()) return;
       throw new Error("Spotify connection is temporarily unavailable.");
     }

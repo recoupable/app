@@ -375,6 +375,19 @@ it("plays saved audio without a Spotify configuration or account", async () => {
   expect(h.head.appendChild).not.toHaveBeenCalled();
 });
 
+it("keeps saved audio available when the Spotify configuration request fails", async () => {
+  const h = playbackHarness("free");
+  h.storage.delete("recoup-sites-spotify");
+  h.fetch.mockReset().mockRejectedValue(new TypeError("Failed to fetch"));
+  await h.run();
+  expect(h.ctx.document.body.dataset).toMatchObject({
+    playbackSource: "audio",
+    playerVisible: "true",
+  });
+  await h.nodes["spotify-play"].onclick!();
+  expect(h.audio.play).toHaveBeenCalledOnce();
+});
+
 it("uses saved audio when Spotify is configured but the visitor has no session", async () => {
   const h = playbackHarness("free");
   h.storage.delete("recoup-sites-spotify");
