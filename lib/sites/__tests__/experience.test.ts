@@ -65,5 +65,6 @@ describe("interactive experience isolation", () => {
       "&lt;main class=&quot;poster&quot;&gt;",
     );
     expect(renderSite(legacy, "/s/111/signup")).toContain('id="music-frame"');
+    expect(renderSite(legacy)).toContain("window.recoup?.join()");
   });
 });
