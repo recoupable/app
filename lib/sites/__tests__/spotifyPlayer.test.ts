@@ -102,3 +102,17 @@ it("uses validated release colors and escapes release titles", async () => {
   url.searchParams.set("accent", "red;}body{display:none");
   expect((await GET(new Request(url))).status).toBe(400);
 });
+it("allows owner preview authorization without looking up a public snapshot", async () => {
+  vi.mocked(getPublishedSite).mockClear();
+  const response = await GET(
+    new Request(
+      "https://example.test/s/spotify/connect?site=11111111-1111-4111-8111-111111111111&preview=grant.signature&release=https://open.spotify.com/track/abc",
+    ),
+  );
+  const html = await response.text();
+  expect(response.status).toBe(200);
+  expect(getPublishedSite).not.toHaveBeenCalled();
+  expect(html).toContain('data-preview-player="true"');
+  expect(html).toContain("/spotify?preview=grant.signature");
+  expect(html).toContain("Private preview");
+});

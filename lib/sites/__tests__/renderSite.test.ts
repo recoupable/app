@@ -33,3 +33,21 @@ describe("renderSite", () => {
     expect(renderSite(snapshot)).not.toContain("<form");
   });
 });
+it("renders the full trusted player in a private draft while isolating generated code", () => {
+  const html = renderSite(
+    snapshot,
+    undefined,
+    "https://example.test/s/spotify/connect",
+    {
+      preview: true,
+      siteId: "site",
+      previewToken: "grant.signature",
+      playbackAudioUrl: "https://audio.test/track.wav",
+    },
+  );
+  expect(html).toContain('data-preview="true"');
+  expect(html).toContain('data-player-enabled="true"');
+  expect(html).toContain('id="music-frame"');
+  expect(html).toContain('sandbox="allow-scripts allow-downloads"');
+  expect(html).not.toContain('data-activity-url="/s/');
+});

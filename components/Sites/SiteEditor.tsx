@@ -59,19 +59,22 @@ export default function SiteEditor({ id }: { id: string }) {
     },
     enabled: ready && authenticated && !!userData?.account_id && isInitialized,
   });
-  const spotifyConfig = useQuery({
-    queryKey: ["sites-spotify-config"],
-    queryFn: async () => {
-      const response = await fetch("/api/sites/spotify/config");
-      if (!response.ok) throw new Error("Could not load Spotify configuration");
-      return response.json() as Promise<{
-        configured: boolean;
-        redirectUri: string | null;
-      }>;
-    },
+  const preview = useQuery({
+    queryKey: [
+      "site-preview",
+      id,
+      userData?.account_id,
+      selectedOrgId,
+      query.data?.site.revision,
+    ],
+    queryFn: () =>
+      request<{ previewToken: string; playbackAudioUrl: string | null }>(
+        `/api/sites/${id}/preview`,
+      ),
+    enabled: !!query.data?.site.draft && authenticated,
+    staleTime: 20 * 60000,
+    refetchOnWindowFocus: false,
   });
-  const callback = spotifyConfig.data?.redirectUri;
-  const spotifyOrigin = callback ? new URL(callback).origin : null;
   const [instruction, setInstruction] = useState("");
   const [busy, setBusy] = useState("");
   const [error, setError] = useState(
@@ -81,7 +84,13 @@ export default function SiteEditor({ id }: { id: string }) {
   );
   const [view, setView] = useState<"site" | "audience">("site");
   const [mobile, setMobile] = useState(false);
-  const [notice, setNotice] = useState("");
+  const [notice, setNotice] = useState(
+    search.get("preview_connection") === "1"
+      ? search.get("recoup_spotify") === "connected"
+        ? "Spotify preview connected. Your test connection was not added to the live audience."
+        : "Spotify preview was not completed. You can try again from the player."
+      : "",
+  );
   useEffect(() => {
     if (!query.data?.site.id) return;
     const token = sessionStorage.getItem(`site-production:${id}`);
@@ -410,16 +419,34 @@ export default function SiteEditor({ id }: { id: string }) {
               </Button>
             </div>
           </div>
+          {preview.isError && (
+            <p role="status" className="mb-3 text-sm text-destructive">
+              Could not load preview sign-in.{" "}
+              <button
+                type="button"
+                className="underline"
+                onClick={() => preview.refetch()}
+              >
+                Try again
+              </button>
+            </p>
+          )}
           <iframe
             title={`${site.name} draft preview`}
-            sandbox="allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox"
-            allow="web-share *"
+            sandbox="allow-scripts allow-same-origin allow-downloads allow-popups allow-popups-to-escape-sandbox"
+            allow="web-share *; autoplay *; encrypted-media *"
             srcDoc={renderSite(
               site.draft,
               undefined,
-              spotifyConfig.data?.configured && spotifyOrigin
-                ? `${spotifyOrigin}/s/spotify/connect?release=${encodeURIComponent(site.release_url)}`
+              typeof window !== "undefined"
+                ? `${window.location.origin}/s/spotify/connect`
                 : undefined,
+              {
+                preview: true,
+                previewToken: preview.data?.previewToken,
+                siteId: id,
+                playbackAudioUrl: preview.data?.playbackAudioUrl,
+              },
             )}
             className={`mx-auto h-[72vh] min-h-[520px] rounded-lg bg-white shadow-sm ${mobile ? "w-full max-w-[390px]" : "w-full"}`}
           />

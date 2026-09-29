@@ -111,7 +111,10 @@
       fallback.textContent = "Open Spotify player";
       if (status) status.appendChild(fallback);
     };
-    if (document.body.dataset.preview === "true") {
+    if (
+      document.body.dataset.preview === "true" &&
+      document.body.dataset.playerEnabled !== "true"
+    ) {
       const url = document.body.dataset.connectUrl;
       connect.disabled = !url;
       if (url) connect.onclick = () => openPlayer(url);
@@ -120,18 +123,30 @@
     if (document.body.dataset.spotifyPlayer !== "true") {
       const frame = document.getElementById("music-frame");
       if (!frame) return;
+      const runtimeOrigin = new URL(document.baseURI || location.href).origin;
       const playerUrl = new URL(
         document.body.dataset.connectUrl || "/s/spotify/connect",
-        location.origin,
+        runtimeOrigin,
       );
       playerUrl.searchParams.set(
         "release",
         document.body.dataset.release || "",
       );
-      playerUrl.searchParams.set("parent", location.origin);
+      playerUrl.searchParams.set("parent", runtimeOrigin);
       playerUrl.searchParams.set("return", location.pathname);
       const siteId = location.pathname.match(/^\/s\/([0-9a-f-]{36})$/)?.[1];
       if (siteId) playerUrl.searchParams.set("site", siteId);
+      if (document.body.dataset.preview === "true") {
+        playerUrl.searchParams.set(
+          "site",
+          document.body.dataset.previewSite || "",
+        );
+        if (document.body.dataset.previewToken)
+          playerUrl.searchParams.set(
+            "preview",
+            document.body.dataset.previewToken,
+          );
+      }
       for (const key of [
         "background",
         "foreground",
@@ -207,9 +222,23 @@
     const parentOrigin = document.body.dataset.playerParent;
     const fanConnectUrl = document.body.dataset.fanConnectUrl;
     const connectFan = document.getElementById("fan-connect");
+    const openFanConnection = () => {
+      if (document.body.dataset.previewPlayer === "true") {
+        const popup = window.open(
+          fanConnectUrl,
+          "_blank",
+          "noopener,noreferrer",
+        );
+        say(
+          "Complete the Spotify preview in the new tab, then return here to keep playing.",
+        );
+        return popup;
+      }
+      window.top.location.href = fanConnectUrl;
+    };
     if (connectFan && fanConnectUrl) {
       connectFan.onclick = () => {
-        window.top.location.href = fanConnectUrl;
+        openFanConnection();
       };
     }
     const continueButton = document.getElementById("spotify-continue");
@@ -416,13 +445,13 @@
     const configResponse = await fetch("/api/sites/spotify/config").catch(
       () => null,
     );
-    if (!configResponse?.ok) {
+    if (!configResponse?.ok && !fanConnectUrl) {
       if (showSavedAudio()) return;
       throw new Error("Spotify connection is temporarily unavailable.");
     }
-    const config = await configResponse.json();
+    const config = configResponse?.ok ? await configResponse.json() : {};
     if (
-      !config.configured ||
+      (!config.configured && !fanConnectUrl) ||
       (document.body.dataset.fanSite === "true" && !fanConnectUrl)
     ) {
       connect.disabled = true;
@@ -435,7 +464,7 @@
     connect.onclick = async () => {
       try {
         if (fanConnectUrl) {
-          window.top.location.href = fanConnectUrl;
+          openFanConnection();
           return;
         }
         if (parentOrigin) {

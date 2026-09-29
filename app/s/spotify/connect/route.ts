@@ -1,3 +1,4 @@
+import { getSitesApiUrl } from "@/lib/sites/getSitesApiUrl";
 import { z } from "zod";
 import { getPublishedSite } from "@/lib/sites/getPublishedSite";
 import { playerThemeSchema } from "@/lib/sites/schema";
@@ -12,8 +13,15 @@ export async function GET(request: Request) {
     "https://chat.recoupable.dev",
     "https://chat.recoupable.com",
   ];
-  if (process.env.NODE_ENV !== "production")
-    allowedParents.push("http://localhost:3002", "http://127.0.0.1:3002");
+  if (process.env.NODE_ENV !== "production") {
+    // Next can normalize the incoming loopback host to localhost in development.
+    allowedParents.push(
+      "http://localhost:3002",
+      "http://127.0.0.1:3002",
+      `http://localhost:${requestUrl.port}`,
+      `http://127.0.0.1:${requestUrl.port}`,
+    );
+  }
   if (parent && !allowedParents.includes(parent))
     return new Response("Invalid player origin", { status: 400 });
   const audioParam = requestUrl.searchParams.get("audio");
@@ -70,8 +78,21 @@ export async function GET(request: Request) {
   const siteId = requestUrl.searchParams.get("site");
   if (siteId && !z.string().uuid().safeParse(siteId).success)
     return new Response("Invalid site", { status: 400 });
-  const site = siteId ? await getPublishedSite(siteId) : null;
-  const fanConnectUrl = siteId ? site?.fanConnectUrl || null : undefined;
+  const previewToken = requestUrl.searchParams.get("preview");
+  if (
+    previewToken &&
+    (!siteId ||
+      !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(previewToken) ||
+      previewToken.length > 2000)
+  )
+    return new Response("Invalid preview", { status: 400 });
+  const site = siteId && !previewToken ? await getPublishedSite(siteId) : null;
+  // The API validates this owner-issued grant before starting OAuth. No draft is served here.
+  const fanConnectUrl = previewToken
+    ? `${getSitesApiUrl()}/api/sites/public/${siteId}/spotify?preview=${encodeURIComponent(previewToken)}`
+    : siteId
+      ? site?.fanConnectUrl || null
+      : undefined;
   const value = release.data.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
   return new Response(
     renderSpotifyPlayer(
@@ -80,6 +101,7 @@ export async function GET(request: Request) {
       audioUrl,
       theme?.success ? theme.data : undefined,
       fanConnectUrl,
+      !!previewToken,
     ),
     {
       headers: {
