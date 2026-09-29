@@ -129,6 +129,7 @@
         document.body.dataset.release || "",
       );
       playerUrl.searchParams.set("parent", location.origin);
+      playerUrl.searchParams.set("return", location.pathname);
       for (const key of [
         "background",
         "foreground",
@@ -301,6 +302,13 @@
               ? "Finish connecting in the Spotify window."
               : "Allow popups to connect Spotify, then try again.",
           );
+          const fallback = document.createElement("a");
+          const fallbackUrl = new URL(authUrl.href);
+          fallbackUrl.searchParams.set("authorize", "tab");
+          fallback.href = fallbackUrl.href;
+          fallback.target = "_top";
+          fallback.textContent = "Continue in this tab";
+          if (status) status.appendChild(fallback);
           return;
         }
         const verifier = random();
@@ -325,7 +333,11 @@
           created: Date.now(),
           clientId: config.clientId,
           redirectUri: config.redirectUri,
-          returnPath: location.pathname + location.search,
+          returnPath: /^\/s\/[0-9a-f-]{36}$/.test(
+            new URLSearchParams(location.search).get("return") || "",
+          )
+            ? new URLSearchParams(location.search).get("return")
+            : location.pathname + location.search,
         });
         const params = new URLSearchParams({
           client_id: config.clientId,
@@ -342,7 +354,11 @@
         say(e.message);
       }
     };
-    if (new URLSearchParams(location.search).get("authorize") === "1") {
+    if (
+      ["1", "tab"].includes(
+        new URLSearchParams(location.search).get("authorize"),
+      )
+    ) {
       await connect.onclick();
       return;
     }

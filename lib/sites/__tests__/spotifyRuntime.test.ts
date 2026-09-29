@@ -240,6 +240,12 @@ it("accepts a connection only from the opened auth window on the player's origin
   h.ctx.window.open.mockReturnValue(popup);
   await h.run();
   await h.nodes["spotify-connect"].onclick!();
+  expect(h.nodes["spotify-status"].appendChild).toHaveBeenCalledWith(
+    expect.objectContaining({
+      target: "_top",
+      textContent: "Continue in this tab",
+    }),
+  );
   const handler = h.ctx.window.addEventListener.mock.calls
     .filter(([name]) => name === "message")
     .at(-1)![1];
@@ -275,4 +281,26 @@ it("lets visitors play immediately with optional music collapsed", async () => {
   expect(entrance.hidden).toBe(true);
   expect(toggle.hidden).toBe(false);
   expect(panel.classList.add).toHaveBeenCalledWith("collapsed");
+});
+
+it("uses same-tab authorization and preserves only a local site return path", async () => {
+  const h = harness(false);
+  h.ctx.location.search =
+    "?authorize=tab&return=/s/11111111-1111-4111-8111-111111111111";
+  h.ctx.location.pathname = "/s/spotify/connect";
+  h.fetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      configured: true,
+      clientId: "id",
+      redirectUri: "https://example.test/s/spotify/callback",
+    }),
+  });
+  await h.run();
+  const pending = JSON.parse(h.storage.get("recoup-sites-spotify-pending")!);
+  expect(pending.popup).toBe(false);
+  expect(pending.returnPath).toBe("/s/11111111-1111-4111-8111-111111111111");
+  expect(h.ctx.location.assign).toHaveBeenCalledWith(
+    expect.stringContaining("https://accounts.spotify.com/authorize?"),
+  );
 });
