@@ -136,6 +136,7 @@
         "accent",
         "font",
         "title",
+        "artist",
         "artwork",
       ]) {
         const value =
@@ -384,7 +385,7 @@
       if (link) link.href = document.body.dataset.release;
       document.getElementById("spotify-track").hidden = false;
       document.getElementById("spotify-artist-name").textContent =
-        "Artist audio";
+        document.body.dataset.artist || "Music";
       const cover = document.getElementById("spotify-cover");
       const banner = document.getElementById("spotify-artist-image");
       if (banner && cover) banner.src = cover.src;

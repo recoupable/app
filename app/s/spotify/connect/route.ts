@@ -58,6 +58,7 @@ export async function GET(request: Request) {
             "accent",
             "font",
             "title",
+            "artist",
             "artwork",
           ].map((key) => [key, requestUrl.searchParams.get(key)]),
         ),
