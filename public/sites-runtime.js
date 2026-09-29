@@ -130,6 +130,8 @@
       );
       playerUrl.searchParams.set("parent", location.origin);
       playerUrl.searchParams.set("return", location.pathname);
+      const siteId = location.pathname.match(/^\/s\/([0-9a-f-]{36})$/)?.[1];
+      if (siteId) playerUrl.searchParams.set("site", siteId);
       for (const key of [
         "background",
         "foreground",
@@ -203,6 +205,13 @@
       return;
     }
     const parentOrigin = document.body.dataset.playerParent;
+    const fanConnectUrl = document.body.dataset.fanConnectUrl;
+    const connectFan = document.getElementById("fan-connect");
+    if (connectFan && fanConnectUrl) {
+      connectFan.onclick = () => {
+        window.top.location.href = fanConnectUrl;
+      };
+    }
     const continueButton = document.getElementById("spotify-continue");
     const notifyParent = (type) => {
       if (parentOrigin) window.parent.postMessage({ type }, parentOrigin);
@@ -412,7 +421,10 @@
       throw new Error("Spotify connection is temporarily unavailable.");
     }
     const config = await configResponse.json();
-    if (!config.configured) {
+    if (
+      !config.configured ||
+      (document.body.dataset.fanSite === "true" && !fanConnectUrl)
+    ) {
       connect.disabled = true;
       if (showSavedAudio()) return;
       say(
@@ -422,6 +434,10 @@
     }
     connect.onclick = async () => {
       try {
+        if (fanConnectUrl) {
+          window.top.location.href = fanConnectUrl;
+          return;
+        }
         if (parentOrigin) {
           const authUrl = new URL(location.href);
           authUrl.searchParams.delete("parent");

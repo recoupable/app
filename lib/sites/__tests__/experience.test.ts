@@ -35,6 +35,8 @@ describe("interactive experience isolation", () => {
     expect(html).toContain("&lt;button id=&quot;start&quot;");
     expect(html).not.toContain('<button id="start">');
     expect(html).toContain('id="spotify-connect"');
+    expect(html).not.toContain('type="email"');
+    expect(html).not.toContain('id="fan-signup"');
   });
   it("keeps hostile game markup inside the frame attribute", () => {
     const hostile = structuredClone(site);

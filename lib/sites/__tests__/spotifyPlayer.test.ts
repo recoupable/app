@@ -1,5 +1,27 @@
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
+import { getPublishedSite } from "../getPublishedSite";
 import { GET } from "../../../app/s/spotify/connect/route";
+vi.mock("../getPublishedSite", () => ({ getPublishedSite: vi.fn() }));
+
+it("connects through the site's server-provided fan signup URL", async () => {
+  vi.mocked(getPublishedSite).mockResolvedValueOnce({
+    published: {} as never,
+    fanConnectUrl:
+      "https://api.recoupable.dev/api/sites/public/11111111-1111-4111-8111-111111111111/spotify",
+    playbackAudioUrl: null,
+  });
+  const response = await GET(
+    new Request(
+      "https://example.test/s/spotify/connect?site=11111111-1111-4111-8111-111111111111&release=https://open.spotify.com/track/abc",
+    ),
+  );
+  const html = await response.text();
+  expect(html).toContain('id="fan-connect"');
+  expect(html).toContain(
+    'data-fan-connect-url="https://api.recoupable.dev/api/sites/public/11111111-1111-4111-8111-111111111111/spotify"',
+  );
+  expect(html).not.toContain('type="email"');
+});
 it("rejects non-Spotify and markup-bearing release links", async () => {
   for (const release of [
     "https://evil.test/track/abc",
