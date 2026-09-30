@@ -137,6 +137,15 @@ export function SiteCreationExperience({
           aria-label="Your experience taking shape"
         >
           <p className={styles.eyebrow}>TAKING SHAPE</p>
+          <span className={styles.srOnly} role="status" aria-live="polite">
+            {preview
+              ? "Working preview available."
+              : reveal?.assets.length
+                ? "Artwork available."
+                : reveal?.concept
+                  ? "The concept is ready."
+                  : ""}
+          </span>
           {reveal?.concept ? (
             <div className={styles.milestone} key={reveal.concept}>
               <h3>The idea</h3>
