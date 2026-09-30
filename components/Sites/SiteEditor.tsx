@@ -375,7 +375,10 @@ export default function SiteEditor({ id }: { id: string }) {
         </main>
       ) : !site.draft && building ? (
         <main className="flex flex-1 items-center justify-center">
-          <SiteCreationExperience progress={progress} />
+          <SiteCreationExperience
+            progress={progress}
+            releaseUrl={site.release_url}
+          />
         </main>
       ) : !site.draft ? (
         <main
