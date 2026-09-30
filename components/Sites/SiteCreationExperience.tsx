@@ -1,98 +1,107 @@
 "use client";
 
-import { useRef, useState, type CSSProperties } from "react";
-import { Pause, Play } from "lucide-react";
+import { Check, ArrowRight } from "lucide-react";
+import type { SiteBuildProgress } from "@/lib/sites/buildProgress";
 import styles from "./SiteCreationExperience.module.css";
 
-/** One artwork, divided into pieces that always return to their original place. */
-export function SiteCreationExperience({ artwork }: { artwork?: string }) {
-  const [paused, setPaused] = useState(false);
-  const scene = useRef<HTMLDivElement>(null);
-  const image = artwork ? `url(${JSON.stringify(artwork)})` : "none";
+const stages = [
+  {
+    id: "research",
+    title: "Understand the release",
+    detail: "Music, lyrics, artist, and visual identity",
+  },
+  {
+    id: "design",
+    title: "Shape the experience",
+    detail: "Concept, references, and creative direction",
+  },
+  {
+    id: "assets",
+    title: "Create the assets",
+    detail: "Artwork and media for the experience",
+  },
+  {
+    id: "build",
+    title: "Build the site",
+    detail: "Layout, motion, and interactive features",
+  },
+  {
+    id: "review",
+    title: "Test and refine",
+    detail: "Play through, review, and save your preview",
+  },
+];
 
+export function SiteCreationExperience({
+  progress,
+}: {
+  progress?: SiteBuildProgress;
+}) {
+  const current = stages.findIndex((stage) => stage.id === progress?.phase);
   return (
-    <section className={styles.experience} aria-label="Site creation">
-      <div
-        ref={scene}
-        className={styles.scene}
-        data-paused={paused}
-        style={{ "--artwork": image } as CSSProperties}
-        aria-hidden="true"
-        onPointerMove={(event) => {
-          if (event.pointerType !== "mouse" || !scene.current) return;
-          const bounds = event.currentTarget.getBoundingClientRect();
-          scene.current.style.setProperty(
-            "--tilt-x",
-            `${(-(event.clientY - bounds.top - bounds.height / 2) / bounds.height) * 12}deg`,
-          );
-          scene.current.style.setProperty(
-            "--tilt-y",
-            `${((event.clientX - bounds.left - bounds.width / 2) / bounds.width) * 12}deg`,
-          );
-        }}
-        onPointerLeave={() => {
-          scene.current?.style.setProperty("--tilt-x", "0deg");
-          scene.current?.style.setProperty("--tilt-y", "0deg");
-        }}
+    <section className={styles.experience} aria-label="Site creation progress">
+      <div className={styles.heading}>
+        <p className={styles.eyebrow}>YOUR RELEASE → YOUR EXPERIENCE</p>
+        <h2>Bringing it to life.</h2>
+        <p>From the first idea to a playable preview.</p>
+      </div>
+      <p
+        className={styles.status}
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
       >
-        <div className={styles.halo} />
-        <div className={styles.frame} />
-        <div className={styles.sculpture}>
-          {Array.from({ length: 25 }, (_, index) => {
-            const x = index % 5;
-            const y = Math.floor(index / 5);
-            return (
-              <span
-                key={index}
-                className={styles.piece}
-                style={
-                  {
-                    "--x": x,
-                    "--y": y,
-                    "--drift-x": `${(x - 2) * 27}%`,
-                    "--drift-y": `${(y - 2) * 27}%`,
-                    "--twist": `${(x - y) * 3}deg`,
-                    "--depth": `${(Math.abs(x - 2) + Math.abs(y - 2)) * 12}px`,
-                    "--delay": `${(x + y) * -0.12}s`,
-                    backgroundPosition: `${x * 25}% ${y * 25}%`,
-                  } as CSSProperties
-                }
-              />
-            );
-          })}
-        </div>
-        <span className={styles.caption}>
-          A RELEASE. A WORLD OF POSSIBILITIES.
-        </span>
-      </div>
-      <div className={styles.copy}>
-        <p className={styles.eyebrow}>
-          <span />
-          CREATION IN MOTION
-        </p>
-        <h2>
-          Your music.
-          <br />A whole new world.
-        </h2>
-        <p role="status">
-          We’re creating your experience.
-          <br />
-          Your preview will appear here when it’s ready.
-        </p>
-      </div>
-      <div className={styles.footer}>
-        <span>You can leave this page. We’ll keep building.</span>
-        <button
-          type="button"
-          className={styles.pause}
-          onClick={() => setPaused(!paused)}
-          aria-pressed={paused}
-          aria-label={paused ? "Resume animation" : "Pause animation"}
-        >
-          {paused ? <Play size={13} /> : <Pause size={13} />}
-          {paused ? "Resume motion" : "Pause motion"}
-        </button>
-      </div>
+        <span className={styles.liveDot} />
+        {progress?.detail || "Connecting to your build…"}
+        {!!progress?.reviewPass && (
+          <span className={styles.pass}>Review {progress.reviewPass}</span>
+        )}
+      </p>
+      <ol className={styles.timeline}>
+        {stages.map((stage, index) => {
+          const state =
+            index < current ? "done" : index === current ? "active" : "next";
+          return (
+            <li
+              key={stage.id}
+              className={styles.stage}
+              data-state={state}
+              aria-current={state === "active" ? "step" : undefined}
+            >
+              <span className={styles.marker} aria-hidden="true">
+                {state === "done" ? (
+                  <Check size={15} />
+                ) : state === "active" ? (
+                  <ArrowRight size={15} />
+                ) : (
+                  String(index + 1).padStart(2, "0")
+                )}
+              </span>
+              <div className={styles.stageCopy}>
+                <h3>
+                  {stage.title}
+                  <span className={styles.srOnly}>
+                    {" "}
+                    —{" "}
+                    {state === "done"
+                      ? "complete or reused"
+                      : state === "active"
+                        ? "in progress"
+                        : "up next"}
+                  </span>
+                </h3>
+                <p>{stage.detail}</p>
+                {state === "active" && (
+                  <span className={styles.activity} aria-hidden="true" />
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+      <p className={styles.footer}>
+        You can leave this page. We’ll keep building.
+      </p>
     </section>
   );
 }

@@ -1,4 +1,5 @@
 "use client";
+import type { SiteBuildProgress } from "@/lib/sites/buildProgress";
 import { waitForSiteProduction } from "@/lib/sites/waitForSiteProduction";
 import Link from "next/link";
 import { SiteAudience } from "./SiteAudience";
@@ -82,6 +83,7 @@ export default function SiteEditor({ id }: { id: string }) {
   const [view, setView] = useState<"site" | "audience">("site");
   const [mobile, setMobile] = useState(false);
   const [notice, setNotice] = useState("");
+  const [progress, setProgress] = useState<SiteBuildProgress>();
   useEffect(() => {
     if (!query.data?.site.id) return;
     const token = sessionStorage.getItem(`site-production:${id}`);
@@ -98,8 +100,11 @@ export default function SiteEditor({ id }: { id: string }) {
       request,
       id,
       { generation: { token, status: "running" } },
-      (message) => {
-        if (active) setNotice(message);
+      (message, nextProgress) => {
+        if (active) {
+          setNotice(message);
+          setProgress(nextProgress);
+        }
       },
       controller.signal,
     )
@@ -141,6 +146,7 @@ export default function SiteEditor({ id }: { id: string }) {
     setBusy(action);
     setError("");
     setNotice("");
+    setProgress(undefined);
     try {
       let result = await request<{
         site: Site;
@@ -163,7 +169,15 @@ export default function SiteEditor({ id }: { id: string }) {
         }),
       });
       if (action === "generate")
-        result = await waitForSiteProduction(request, id, result, setNotice);
+        result = await waitForSiteProduction(
+          request,
+          id,
+          result,
+          (message, nextProgress) => {
+            setNotice(message);
+            setProgress(nextProgress);
+          },
+        );
       cache.setQueryData(key, { ...query.data, site: result.site });
       void cache.invalidateQueries({ queryKey: ["sites"] });
       if (action !== "generate")
@@ -361,7 +375,7 @@ export default function SiteEditor({ id }: { id: string }) {
         </main>
       ) : !site.draft && building ? (
         <main className="flex flex-1 items-center justify-center">
-          <SiteCreationExperience artwork={artwork?.url} />
+          <SiteCreationExperience progress={progress} />
         </main>
       ) : !site.draft ? (
         <main
@@ -386,7 +400,7 @@ export default function SiteEditor({ id }: { id: string }) {
           <div className="mb-4 flex items-center justify-between gap-3">
             <p role="status" className="text-sm text-muted-foreground">
               {building
-                ? "Updating your site. You can keep playing this version."
+                ? `${progress?.detail || "Updating your site"}. You can keep playing this version.`
                 : "Play your site, then publish or ask for a change."}
             </p>
             <div className="flex shrink-0 gap-1 rounded-lg bg-background p-1 shadow-[0_0_0_1px_var(--border)]">

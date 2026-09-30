@@ -1,7 +1,8 @@
+import type { SiteBuildProgress } from "./buildProgress";
 import type { Site } from "./schema";
 type Result = {
   site?: Site;
-  generation?: { token?: string; status: string };
+  generation?: { token?: string; status: string; progress?: SiteBuildProgress };
   error?: string;
 };
 type Request = <T>(path: string, init?: RequestInit) => Promise<T>;
@@ -10,7 +11,7 @@ export async function waitForSiteProduction(
   request: Request,
   siteId: string,
   result: Result,
-  onStatus?: (message: string) => void,
+  onStatus?: (message: string, progress?: SiteBuildProgress) => void,
   signal?: AbortSignal,
 ): Promise<{ site: Site }> {
   if (result.site && !result.generation) return { site: result.site };
@@ -38,6 +39,8 @@ export async function waitForSiteProduction(
       sessionStorage.removeItem(key);
       return { site: status.site };
     }
+    if (status.generation?.progress)
+      onStatus?.(status.generation.progress.detail, status.generation.progress);
     await new Promise((resolve) => setTimeout(resolve, 4000));
   }
 }
