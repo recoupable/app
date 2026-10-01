@@ -43,7 +43,10 @@ it("removes failed jobs and surfaces the server's error", async () => {
     waitForSiteProduction(request, "site", {
       generation: { token: "job", status: "running" },
     }),
-  ).rejects.toThrow("Build stopped");
+  ).rejects.toMatchObject({
+    message: "Build stopped",
+    name: "SiteProductionFailed",
+  });
   expect(values.size).toBe(0);
 });
 it("keeps the token after a network failure so a refresh can resume", async () => {
@@ -52,7 +55,7 @@ it("keeps the token after a network failure so a refresh can resume", async () =
     waitForSiteProduction(request, "site", {
       generation: { token: "job", status: "running" },
     }),
-  ).rejects.toThrow("offline");
+  ).rejects.toMatchObject({ message: "offline", name: "Error" });
   expect(values.get("site-production:site")).toBe("job");
 });
 it("forwards real progress while recovering an existing job", async () => {
@@ -79,4 +82,28 @@ it("forwards real progress while recovering an existing job", async () => {
     action: "generation",
     token: "existing-job",
   });
+});
+it("keeps a failed job's saved reveal visible and recoverable after refresh", async () => {
+  const progress = {
+    phase: "review",
+    detail: "Review interrupted",
+    reviewPass: 4,
+    reveal: { concept: "A note", assets: [] },
+  };
+  const request = vi.fn().mockResolvedValue({
+    generation: { status: "failed", progress },
+    error: "Review stopped",
+  });
+  const onStatus = vi.fn();
+  await expect(
+    waitForSiteProduction(
+      request,
+      "site",
+      { generation: { token: "job", status: "running" } },
+      onStatus,
+    ),
+  ).rejects.toThrow("Review stopped");
+  expect(onStatus).toHaveBeenCalledWith(progress.detail, progress);
+  expect(values.get("site-production:site")).toBe("job");
+  expect(request).toHaveBeenCalledOnce();
 });
