@@ -80,3 +80,29 @@ it("forwards real progress while recovering an existing job", async () => {
     token: "existing-job",
   });
 });
+it("keeps a failed job's saved reveal visible and recoverable after refresh", async () => {
+  const progress = {
+    phase: "review",
+    detail: "Review interrupted",
+    reviewPass: 4,
+    reveal: { concept: "A note", assets: [] },
+  };
+  const request = vi
+    .fn()
+    .mockResolvedValue({
+      generation: { status: "failed", progress },
+      error: "Review stopped",
+    });
+  const onStatus = vi.fn();
+  await expect(
+    waitForSiteProduction(
+      request,
+      "site",
+      { generation: { token: "job", status: "running" } },
+      onStatus,
+    ),
+  ).rejects.toThrow("Review stopped");
+  expect(onStatus).toHaveBeenCalledWith(progress.detail, progress);
+  expect(values.get("site-production:site")).toBe("job");
+  expect(request).toHaveBeenCalledOnce();
+});

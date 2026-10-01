@@ -373,12 +373,18 @@ export default function SiteEditor({ id }: { id: string }) {
           )}
           <SiteAudience id={id} />
         </main>
-      ) : !site.draft && building ? (
-        <main className="flex flex-1 items-center justify-center">
+      ) : !site.draft && (building || progress?.reveal) ? (
+        <main className="flex flex-1 flex-col items-center justify-center">
           <SiteCreationExperience
             progress={progress}
+            stopped={!building}
             releaseUrl={site.release_url}
           />
+          {!building && (
+            <Button disabled={!!busy} onClick={() => act("generate")}>
+              Build again
+            </Button>
+          )}
         </main>
       ) : !site.draft ? (
         <main

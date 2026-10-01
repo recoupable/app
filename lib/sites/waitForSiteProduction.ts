@@ -30,7 +30,12 @@ export async function waitForSiteProduction(
       body: JSON.stringify({ action: "generation", token }),
     });
     if (status.generation?.status === "failed") {
-      sessionStorage.removeItem(key);
+      if (status.generation.progress)
+        onStatus?.(
+          status.generation.progress.detail,
+          status.generation.progress,
+        );
+      if (!status.generation.progress?.reveal) sessionStorage.removeItem(key);
       throw new Error(
         status.error || "Generation stopped. Your saved draft is unchanged.",
       );

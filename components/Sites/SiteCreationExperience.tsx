@@ -38,9 +38,11 @@ const stages = [
 export function SiteCreationExperience({
   progress,
   releaseUrl,
+  stopped = false,
 }: {
   progress?: SiteBuildProgress;
   releaseUrl?: string;
+  stopped?: boolean;
 }) {
   const current = stages.findIndex((stage) => stage.id === progress?.phase);
   const reveal = progress?.reveal;
@@ -60,8 +62,12 @@ export function SiteCreationExperience({
     <section className={styles.experience} aria-label="Site creation progress">
       <div className={styles.heading}>
         <p className={styles.eyebrow}>YOUR RELEASE → YOUR EXPERIENCE</p>
-        <h2>Bringing it to life.</h2>
-        <p>From the first idea to a playable preview.</p>
+        <h2>{stopped ? "Your progress is saved." : "Bringing it to life."}</h2>
+        <p>
+          {stopped
+            ? "Review stopped. This is the latest unfinished preview."
+            : "From the first idea to a playable preview."}
+        </p>
       </div>
       <div className={styles.workspace}>
         <div>
@@ -71,66 +77,70 @@ export function SiteCreationExperience({
             aria-live="polite"
             aria-atomic="true"
           >
-            <span className={styles.liveDot} />
-            {progress?.detail || "Connecting to your build…"}
+            {!stopped && <span className={styles.liveDot} />}
+            {stopped
+              ? "Review interrupted"
+              : progress?.detail || "Connecting to your build…"}
             {!!progress?.reviewPass && (
               <span className={styles.pass}>Review {progress.reviewPass}</span>
             )}
           </p>
-          <ol className={styles.timeline}>
-            {stages.map((stage, index) => {
-              const state =
-                index < current
-                  ? "done"
-                  : index === current
-                    ? "active"
-                    : "next";
-              return (
-                <li
-                  key={stage.id}
-                  className={styles.stage}
-                  data-state={state}
-                  aria-current={state === "active" ? "step" : undefined}
-                >
-                  <span className={styles.marker} aria-hidden="true">
-                    {state === "done" ? (
-                      <Check size={15} />
-                    ) : state === "active" ? (
-                      <ArrowRight size={15} />
-                    ) : (
-                      String(index + 1).padStart(2, "0")
-                    )}
-                  </span>
-                  <div className={styles.stageCopy}>
-                    <h3>
-                      {stage.title}
-                      <span className={styles.srOnly}>
-                        {" "}
-                        —{" "}
-                        {state === "done"
-                          ? "complete or reused"
-                          : state === "active"
-                            ? "in progress"
-                            : "up next"}
-                      </span>
-                    </h3>
-                    {state === "active" && (
-                      <p>
-                        {stage.id === "research"
-                          ? isAlbum
-                            ? "Album details, artist, and cover artwork"
-                            : "Gathering available release context"
-                          : stage.detail}
-                      </p>
-                    )}
-                    {state === "active" && (
-                      <span className={styles.activity} aria-hidden="true" />
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
+          {!stopped && (
+            <ol className={styles.timeline}>
+              {stages.map((stage, index) => {
+                const state =
+                  index < current
+                    ? "done"
+                    : index === current
+                      ? "active"
+                      : "next";
+                return (
+                  <li
+                    key={stage.id}
+                    className={styles.stage}
+                    data-state={state}
+                    aria-current={state === "active" ? "step" : undefined}
+                  >
+                    <span className={styles.marker} aria-hidden="true">
+                      {state === "done" ? (
+                        <Check size={15} />
+                      ) : state === "active" ? (
+                        <ArrowRight size={15} />
+                      ) : (
+                        String(index + 1).padStart(2, "0")
+                      )}
+                    </span>
+                    <div className={styles.stageCopy}>
+                      <h3>
+                        {stage.title}
+                        <span className={styles.srOnly}>
+                          {" "}
+                          —{" "}
+                          {state === "done"
+                            ? "complete or reused"
+                            : state === "active"
+                              ? "in progress"
+                              : "up next"}
+                        </span>
+                      </h3>
+                      {state === "active" && (
+                        <p>
+                          {stage.id === "research"
+                            ? isAlbum
+                              ? "Album details, artist, and cover artwork"
+                              : "Gathering available release context"
+                            : stage.detail}
+                        </p>
+                      )}
+                      {state === "active" && (
+                        <span className={styles.activity} aria-hidden="true" />
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
         </div>
         <aside
           className={styles.reveal}
@@ -189,7 +199,9 @@ export function SiteCreationExperience({
             <div className={styles.milestone}>
               <div className={styles.previewLabel}>
                 <h3>Working preview</h3>
-                <span>Still being tested</span>
+                <span>
+                  {stopped ? "Not yet approved" : "Still being tested"}
+                </span>
               </div>
               <iframe
                 title="Experience in progress"
@@ -207,7 +219,9 @@ export function SiteCreationExperience({
         </aside>
       </div>
       <p className={styles.footer}>
-        You can leave this page. We’ll keep building.
+        {stopped
+          ? "Your saved preview is available while you decide what to do next."
+          : "You can leave this page. We’ll keep building."}
       </p>
     </section>
   );
