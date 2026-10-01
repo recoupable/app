@@ -83,6 +83,7 @@ export default function SiteEditor({ id }: { id: string }) {
   const [view, setView] = useState<"site" | "audience">("site");
   const [mobile, setMobile] = useState(false);
   const [notice, setNotice] = useState("");
+  const [productionFailed, setProductionFailed] = useState(false);
   const [progress, setProgress] = useState<SiteBuildProgress>();
   useEffect(() => {
     if (!query.data?.site.id) return;
@@ -122,6 +123,7 @@ export default function SiteEditor({ id }: { id: string }) {
       })
       .catch((error) => {
         if (active) {
+          setProductionFailed((error as Error).name === "SiteProductionFailed");
           setError((error as Error).message);
           setNotice("");
         }
@@ -168,6 +170,7 @@ export default function SiteEditor({ id }: { id: string }) {
         }),
       });
       setProgress(undefined);
+      setProductionFailed(false);
       if (action === "generate")
         result = await waitForSiteProduction(
           request,
@@ -194,6 +197,8 @@ export default function SiteEditor({ id }: { id: string }) {
       );
     } catch (e) {
       setNotice("");
+      if ((e as Error).name === "SiteProductionFailed")
+        setProductionFailed(true);
       setError((e as Error).message);
       void cache.invalidateQueries({ queryKey: key });
     } finally {
@@ -377,12 +382,17 @@ export default function SiteEditor({ id }: { id: string }) {
         <main className="flex flex-1 flex-col items-center justify-center">
           <SiteCreationExperience
             progress={progress}
-            stopped={!building}
+            stopped={!building && productionFailed}
             releaseUrl={site.release_url}
           />
           {!building && (
-            <Button disabled={!!busy} onClick={() => act("generate")}>
-              Build again
+            <Button
+              disabled={!!busy}
+              onClick={() =>
+                productionFailed ? act("generate") : location.reload()
+              }
+            >
+              {productionFailed ? "Build again" : "Check progress"}
             </Button>
           )}
         </main>

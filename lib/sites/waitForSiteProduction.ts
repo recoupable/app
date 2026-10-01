@@ -36,8 +36,11 @@ export async function waitForSiteProduction(
           status.generation.progress,
         );
       if (!status.generation.progress?.reveal) sessionStorage.removeItem(key);
-      throw new Error(
-        status.error || "Generation stopped. Your saved draft is unchanged.",
+      throw Object.assign(
+        new Error(
+          status.error || "Generation stopped. Your saved draft is unchanged.",
+        ),
+        { name: "SiteProductionFailed" },
       );
     }
     if (status.generation?.status === "completed" && status.site) {
