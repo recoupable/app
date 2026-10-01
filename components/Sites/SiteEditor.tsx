@@ -1,4 +1,5 @@
 "use client";
+import { PublishSiteButton } from "./PublishSiteButton";
 import { DeleteSiteButton } from "./DeleteSiteButton";
 import type { SiteBuildProgress } from "@/lib/sites/buildProgress";
 import { waitForSiteProduction } from "@/lib/sites/waitForSiteProduction";
@@ -85,6 +86,7 @@ export default function SiteEditor({ id }: { id: string }) {
   const [mobile, setMobile] = useState(false);
   const [notice, setNotice] = useState("");
   const [productionFailed, setProductionFailed] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [progress, setProgress] = useState<SiteBuildProgress>();
   useEffect(() => {
     if (!query.data?.site.id) return;
@@ -144,6 +146,37 @@ export default function SiteEditor({ id }: { id: string }) {
     userData?.account_id,
     selectedOrgId,
   ]);
+  async function publishPreview() {
+    setPublishing(true);
+    setError("");
+    try {
+      const latest = await request<{ site: Site }>(`/api/sites/${id}`);
+      const generationToken = progress?.reveal?.preview
+        ? sessionStorage.getItem(`site-production:${id}`)
+        : null;
+      const result = await request<{ site: Site }>(`/api/sites/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          action: "publish",
+          revision: latest.site.revision,
+          returnUrl: `${location.origin}/s/${id}`,
+          ...(generationToken ? { generationToken } : {}),
+        }),
+      });
+      cache.setQueryData(key, (current: Result | undefined) => ({
+        ...current,
+        site: result.site,
+      }));
+      void cache.invalidateQueries({ queryKey: ["sites"] });
+      setNotice(
+        "Published. Further build changes stay private until you publish again.",
+      );
+    } catch (error) {
+      setError((error as Error).message);
+    } finally {
+      setPublishing(false);
+    }
+  }
   async function act(action: "generate" | "publish" | "unpublish") {
     if (!query.data) return;
     setBusy(action);
@@ -320,14 +353,12 @@ export default function SiteEditor({ id }: { id: string }) {
               </Button>
             </>
           )}
-          {site.draft && (!site.published || hasChanges) && (
-            <Button size="sm" disabled={!!busy} onClick={() => act("publish")}>
-              {busy === "publish" && (
-                <Loader2 size={14} className="animate-spin" />
-              )}
-              {site.published ? "Publish changes" : "Publish"}
-            </Button>
-          )}
+          <PublishSiteButton
+            available={Boolean(site.draft || progress?.reveal?.preview)}
+            publishing={publishing}
+            published={Boolean(site.published)}
+            onPublish={publishPreview}
+          />
         </div>
         <DeleteSiteButton site={site} onDeleted={() => router.push("/sites")} />
       </header>
