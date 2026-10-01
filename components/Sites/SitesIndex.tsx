@@ -1,4 +1,5 @@
 "use client";
+import { DeleteSiteButton } from "./DeleteSiteButton";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight, Globe, Plus, RefreshCw } from "lucide-react";
@@ -79,49 +80,55 @@ export default function SitesIndex() {
       ) : query.data?.sites.length ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {query.data.sites.map((site) => (
-            <Link
-              key={site.id}
-              href={`/sites/${site.id}`}
-              className="group overflow-hidden rounded-xl shadow-[0_0_0_1px_var(--border)] transition-shadow hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
-            >
-              <div
-                className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-muted"
-                style={{
-                  background: site.draft?.design.background,
-                  color: site.draft?.design.foreground,
-                }}
+            <article key={site.id} className="relative">
+              <Link
+                href={`/sites/${site.id}`}
+                className="group block overflow-hidden rounded-xl shadow-[0_0_0_1px_var(--border)] transition-shadow hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
               >
-                {site.assets.find((a) => a.type === "image") ? (
-                  <Image
-                    unoptimized
-                    width={600}
-                    height={450}
-                    src={site.assets.find((a) => a.type === "image")!.url}
-                    alt=""
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <span className="px-8 text-center text-3xl tracking-tight">
-                    {site.draft?.design.headline || site.name}
-                  </span>
-                )}
-              </div>
-              <div className="p-5">
-                <div className="flex items-center justify-between gap-2">
-                  <h2 className="truncate font-medium">{site.name}</h2>
-                  <ArrowUpRight size={16} />
-                </div>
-                <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${site.published ? "bg-emerald-500" : "bg-muted-foreground"}`}
+                <div
+                  className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-muted"
+                  style={{
+                    background: site.draft?.design.background,
+                    color: site.draft?.design.foreground,
+                  }}
+                >
+                  {site.assets.find((a) => a.type === "image") ? (
+                    <Image
+                      unoptimized
+                      width={600}
+                      height={450}
+                      src={site.assets.find((a) => a.type === "image")!.url}
+                      alt=""
+                      className="h-full w-full object-cover"
                     />
-                    {site.published ? "Published" : "Draft"}
-                  </span>
-                  <span>{new Date(site.updated_at).toLocaleDateString()}</span>
+                  ) : (
+                    <span className="px-8 text-center text-3xl tracking-tight">
+                      {site.draft?.design.headline || site.name}
+                    </span>
+                  )}
                 </div>
+                <div className="p-5">
+                  <div className="flex items-center justify-between gap-2">
+                    <h2 className="truncate font-medium">{site.name}</h2>
+                    <ArrowUpRight size={16} />
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1.5">
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${site.published ? "bg-emerald-500" : "bg-muted-foreground"}`}
+                      />
+                      {site.published ? "Published" : "Draft"}
+                    </span>
+                    <span>
+                      {new Date(site.updated_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+              <div className="absolute right-2 top-2 rounded-md bg-background/95">
+                <DeleteSiteButton site={site} />
               </div>
-            </Link>
+            </article>
           ))}
         </div>
       ) : (

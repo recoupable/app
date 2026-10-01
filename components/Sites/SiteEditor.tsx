@@ -1,4 +1,5 @@
 "use client";
+import { DeleteSiteButton } from "./DeleteSiteButton";
 import type { SiteBuildProgress } from "@/lib/sites/buildProgress";
 import { waitForSiteProduction } from "@/lib/sites/waitForSiteProduction";
 import Link from "next/link";
@@ -328,6 +329,7 @@ export default function SiteEditor({ id }: { id: string }) {
             </Button>
           )}
         </div>
+        <DeleteSiteButton site={site} onDeleted={() => router.push("/sites")} />
       </header>
       {error && (
         <p role="alert" className="px-5 pt-4 text-sm text-destructive">
