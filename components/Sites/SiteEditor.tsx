@@ -146,7 +146,6 @@ export default function SiteEditor({ id }: { id: string }) {
     setBusy(action);
     setError("");
     setNotice("");
-    setProgress(undefined);
     try {
       let result = await request<{
         site: Site;
@@ -168,6 +167,7 @@ export default function SiteEditor({ id }: { id: string }) {
             : {}),
         }),
       });
+      setProgress(undefined);
       if (action === "generate")
         result = await waitForSiteProduction(
           request,
