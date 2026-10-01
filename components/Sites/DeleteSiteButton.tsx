@@ -32,8 +32,13 @@ export function DeleteSiteButton({
     setError("");
     try {
       const current = await request<{ site: Site }>(`/api/sites/${site.id}`);
-      const generationToken =
-        sessionStorage.getItem(`site-production:${site.id}`) || undefined;
+      let generationToken: string | undefined;
+      try {
+        generationToken =
+          sessionStorage.getItem(`site-production:${site.id}`) || undefined;
+      } catch {
+        /* Storage may be blocked. */
+      }
       await request(`/api/sites/${site.id}`, {
         method: "PATCH",
         body: JSON.stringify({
@@ -42,9 +47,23 @@ export function DeleteSiteButton({
           generationToken,
         }),
       });
-      sessionStorage.removeItem(`site-production:${site.id}`);
+      try {
+        sessionStorage.removeItem(`site-production:${site.id}`);
+      } catch {
+        /* Deletion already succeeded. */
+      }
       cache.removeQueries({ queryKey: ["site", site.id] });
-      await cache.invalidateQueries({ queryKey: ["sites"] });
+      cache.setQueriesData<{ sites: Site[] }>(
+        { queryKey: ["sites"] },
+        (current) =>
+          current
+            ? {
+                ...current,
+                sites: current.sites.filter((item) => item.id !== site.id),
+              }
+            : current,
+      );
+      void cache.invalidateQueries({ queryKey: ["sites"] });
       setOpen(false);
       onDeleted?.();
     } catch (e) {

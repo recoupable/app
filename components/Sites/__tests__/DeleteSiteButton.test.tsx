@@ -14,6 +14,7 @@ const m = vi.hoisted(() => ({
   request: vi.fn(),
   invalidate: vi.fn(),
   remove: vi.fn(),
+  setQueriesData: vi.fn(),
 }));
 vi.mock("@/hooks/useSitesRequest", () => ({
   useSitesRequest: () => m.request,
@@ -22,6 +23,7 @@ vi.mock("@tanstack/react-query", () => ({
   useQueryClient: () => ({
     invalidateQueries: m.invalidate,
     removeQueries: m.remove,
+    setQueriesData: m.setQueriesData,
   }),
 }));
 afterEach(() => {
