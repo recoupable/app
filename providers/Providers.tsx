@@ -17,46 +17,63 @@ import { UpgradePromptProvider } from "./UpgradePromptProvider";
 import CreditsUpgradePrompt from "@/components/UpgradePrompt/CreditsUpgradePrompt";
 import PlanLimitUpgradeModal from "@/components/UpgradePrompt/PlanLimitUpgradeModal";
 import CheckoutClaimSync from "@/components/Checkout/CheckoutClaimSync";
+import { usePathname } from "next/navigation";
 
 const queryClient = new QueryClient();
 
-const Providers = ({ children }: { children: React.ReactNode }) => (
-  <QueryClientProvider client={queryClient}>
-    <ApiOverrideSync />
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem={true}
-      disableTransitionOnChange
-    >
-      <WagmiProvider>
-        <PrivyProvider>
-          <AccountOverrideProvider>
-          <MiniKitProvider>
-            <MiniAppProvider>
-              <UserProvider>
-                <OrganizationProvider>
-                  <ArtistProvider>
-                    <ConversationsProvider>
-                      <PaymentProvider>
-                        <CheckoutClaimSync />
-                        <UpgradePromptProvider>
-                          {children}
-                          <CreditsUpgradePrompt />
-                          <PlanLimitUpgradeModal />
-                        </UpgradePromptProvider>
-                      </PaymentProvider>
-                    </ConversationsProvider>
-                  </ArtistProvider>
-                </OrganizationProvider>
-              </UserProvider>
-            </MiniAppProvider>
-          </MiniKitProvider>
-        </AccountOverrideProvider>
-        </PrivyProvider>
-      </WagmiProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+const Providers = ({ children }: { children: React.ReactNode }) => {
+  const pathname = usePathname();
+  // Consent must not provision accounts or inherit workspace impersonation/onboarding effects.
+  if (pathname === "/oauth/authorize") {
+    return (
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <PrivyProvider>{children}</PrivyProvider>
+      </ThemeProvider>
+    );
+  }
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ApiOverrideSync />
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem={true}
+        disableTransitionOnChange
+      >
+        <WagmiProvider>
+          <PrivyProvider>
+            <AccountOverrideProvider>
+              <MiniKitProvider>
+                <MiniAppProvider>
+                  <UserProvider>
+                    <OrganizationProvider>
+                      <ArtistProvider>
+                        <ConversationsProvider>
+                          <PaymentProvider>
+                            <CheckoutClaimSync />
+                            <UpgradePromptProvider>
+                              {children}
+                              <CreditsUpgradePrompt />
+                              <PlanLimitUpgradeModal />
+                            </UpgradePromptProvider>
+                          </PaymentProvider>
+                        </ConversationsProvider>
+                      </ArtistProvider>
+                    </OrganizationProvider>
+                  </UserProvider>
+                </MiniAppProvider>
+              </MiniKitProvider>
+            </AccountOverrideProvider>
+          </PrivyProvider>
+        </WagmiProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default Providers;
