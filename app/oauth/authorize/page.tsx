@@ -25,6 +25,10 @@ export default async function OAuthAuthorizePage({
     notFound();
   }
   return (
-    <OAuthConsent issuer={process.env.OAUTH_ISSUER} interaction={interaction} />
+    <OAuthConsent
+      key={`${process.env.OAUTH_ISSUER}:${interaction}`}
+      issuer={process.env.OAUTH_ISSUER}
+      interaction={interaction}
+    />
   );
 }

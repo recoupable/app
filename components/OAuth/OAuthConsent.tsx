@@ -23,13 +23,20 @@ export default function OAuthConsent({
   );
   const [loaded, setLoaded] = useState<{
     userId: string;
+    issuer: string;
+    interaction: string;
     metadata: ConsentMetadata;
   }>();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const submitting = useRef(false);
   const userId = user?.id;
-  const metadata = loaded?.userId === userId ? loaded?.metadata : undefined;
+  const metadata =
+    loaded?.userId === userId &&
+    loaded?.issuer === issuer &&
+    loaded?.interaction === interaction
+      ? loaded.metadata
+      : undefined;
 
   useEffect(() => {
     if (!ready || !authenticated || !userId) return;
@@ -40,7 +47,8 @@ export default function OAuthConsent({
         const token = await getAccessToken();
         if (!token) throw new Error("Sign in again to connect your account.");
         const result = await client.load(token, abort.signal);
-        if (!abort.signal.aborted) setLoaded({ userId, metadata: result });
+        if (!abort.signal.aborted)
+          setLoaded({ userId, issuer, interaction, metadata: result });
       } catch (cause) {
         if (!abort.signal.aborted)
           setError(
@@ -51,7 +59,15 @@ export default function OAuthConsent({
       }
     })();
     return () => abort.abort();
-  }, [ready, authenticated, userId, getAccessToken, client]);
+  }, [
+    ready,
+    authenticated,
+    userId,
+    getAccessToken,
+    client,
+    issuer,
+    interaction,
+  ]);
 
   const decide = async (decision: "approve" | "deny") => {
     if (!metadata || submitting.current) return;

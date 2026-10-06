@@ -44,6 +44,22 @@ beforeEach(() => {
   decide.mockRejectedValue(new Error("Restart connection"));
 });
 afterEach(cleanup);
+it("hides old app permissions immediately when the interaction changes", async () => {
+  const view = render(
+    <OAuthConsent issuer="https://api.example/api/oauth" interaction="first" />,
+  );
+  await screen.findByText("Create records");
+  load.mockImplementation(() => new Promise(() => {}));
+  view.rerender(
+    <OAuthConsent
+      issuer="https://api.example/api/oauth"
+      interaction="second"
+    />,
+  );
+  expect(screen.queryByText("Create records")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Allow access" })).toBeNull();
+  expect(decide).not.toHaveBeenCalled();
+});
 it("does not load or approve permissions before sign-in", () => {
   auth.authenticated = false;
   render(
