@@ -20,6 +20,7 @@ export default function OAuthConnections({ issuer }: { issuer: string }) {
   const [busy, setBusy] = useState<string>();
   const [revision, setRevision] = useState(0);
   const pending = useRef(false);
+  const loadGeneration = useRef(0);
   const owner = user?.id;
   const data =
     authenticated && loaded?.owner === owner && loaded?.issuer === issuer
@@ -28,15 +29,17 @@ export default function OAuthConnections({ issuer }: { issuer: string }) {
   useEffect(() => {
     if (!ready || !authenticated || !owner) return;
     const abort = new AbortController();
+    const generation = ++loadGeneration.current;
     void (async () => {
       try {
         setError("");
         const token = await getAccessToken();
         if (!token) throw new Error("Sign in again to manage connections.");
         const result = await client.load(token, abort.signal);
-        if (!abort.signal.aborted) setLoaded({ owner, issuer, data: result });
+        if (!abort.signal.aborted && generation === loadGeneration.current)
+          setLoaded({ owner, issuer, data: result });
       } catch (cause) {
-        if (!abort.signal.aborted)
+        if (!abort.signal.aborted && generation === loadGeneration.current)
           setError(
             cause instanceof Error
               ? cause.message
@@ -55,6 +58,7 @@ export default function OAuthConnections({ issuer }: { issuer: string }) {
       const token = await getAccessToken();
       if (!token) throw new Error("Sign in again to manage connections.");
       await client.revoke(token, id);
+      loadGeneration.current += 1;
       setLoaded((current) =>
         current && current.owner === owner && current.issuer === issuer
           ? {

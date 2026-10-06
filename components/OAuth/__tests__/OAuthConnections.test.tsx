@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import React from "react";
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -94,4 +95,25 @@ it("requires login and keeps a connection visible if revocation fails", async ()
   fireEvent.click(screen.getByRole("button", { name: "Revoke Test agent" }));
   await screen.findByRole("alert");
   expect(screen.getByText("Test agent")).toBeDefined();
+});
+
+it("does not restore a revoked connection from an older refresh", async () => {
+  render(<OAuthConnections issuer="https://api.example/api/oauth" />);
+  await screen.findByText("Test agent");
+  const stale = await load.mock.results[0].value;
+  let finish!: (value: typeof stale) => void;
+  load.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Refresh connections" }));
+  await waitFor(() => expect(load).toHaveBeenCalledTimes(2));
+  fireEvent.click(screen.getByRole("button", { name: "Revoke Test agent" }));
+  await screen.findByText("No connected agents.");
+  await act(async () => {
+    finish(stale);
+  });
+  expect(screen.queryByText("Test agent")).toBeNull();
 });
