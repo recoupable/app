@@ -12,14 +12,15 @@ export default function SettingsConnectorsPage() {
       }
     >
       <>
-        {process.env.OAUTH_CONSENT_ENABLED === "true" && (
-          <Link
-            href="/oauth/connections"
-            className="block px-6 py-3 text-sm underline"
-          >
-            Manage connected agents
-          </Link>
-        )}
+        {process.env.OAUTH_CONSENT_ENABLED === "true" &&
+          process.env.OAUTH_ISSUER && (
+            <Link
+              href="/oauth/connections"
+              className="block px-6 py-3 text-sm underline"
+            >
+              Manage connected agents
+            </Link>
+          )}
         <ConnectorsPage />
       </>
     </Suspense>
