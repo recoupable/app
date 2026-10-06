@@ -12,7 +12,7 @@ export default function ContextPageLayout({
   workspace: ReactNode;
 }) {
   const pathname = usePathname();
-  if (pathname !== "/context" && pathname !== "/oauth/authorize")
+  if (pathname !== "/context" && !pathname.startsWith("/oauth/"))
     return workspace;
   return (
     <div className="min-h-dvh bg-card text-foreground">

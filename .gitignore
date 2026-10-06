@@ -60,3 +60,6 @@ supabase/.temp.cursor/
 *storybook.log
 storybook-static
 supabase/.temp/
+
+# Local browser-test failure artifacts
+scripts/oauth/__screenshots__/

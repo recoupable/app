@@ -19,6 +19,6 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec eslint app/oauth components/OAuth lib/oauth providers/Providers.tsx components/Context/ContextPageLayout.tsx next.config.mjs
-      - run: pnpm test -- lib/oauth/__tests__/createConsentClient.test.ts components/OAuth/__tests__/OAuthConsent.test.tsx
+      - run: pnpm test -- lib/oauth components/OAuth
       - run: pnpm exec playwright install --with-deps chromium --only-shell
       - run: pnpm exec vitest run --config vitest.oauth.browser.config.ts

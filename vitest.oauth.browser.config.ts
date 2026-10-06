@@ -5,7 +5,7 @@ import path from "node:path";
 export default defineConfig({
   resolve: { alias: { "@": path.resolve(__dirname, "./") } },
   test: {
-    include: ["scripts/oauth/consent.browser.test.tsx"],
+    include: ["scripts/oauth/*.browser.test.tsx"],
     browser: {
       enabled: true,
       provider: playwright(),

@@ -167,7 +167,8 @@ export default function OAuthConsent({
                 <p className="text-sm text-muted-foreground">
                   Access continues when you leave this page and expires after{" "}
                   {metadata.accessDurationDays} days. Your organization
-                  workspaces are not included.
+                  workspaces are not included. You can revoke access from
+                  Connected agents in Recoup.
                 </p>
                 <div className="flex gap-3">
                   <Button

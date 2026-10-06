@@ -24,7 +24,7 @@ const queryClient = new QueryClient();
 const Providers = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   // Consent must not provision accounts or inherit workspace impersonation/onboarding effects.
-  if (pathname === "/oauth/authorize") {
+  if (pathname.startsWith("/oauth/")) {
     return (
       <ThemeProvider
         attribute="class"
