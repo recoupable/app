@@ -1,5 +1,4 @@
-"use client";
-
+import Link from "next/link";
 import { Suspense } from "react";
 import { ConnectorsPage } from "@/components/ConnectorsPage";
 
@@ -12,7 +11,18 @@ export default function SettingsConnectorsPage() {
         </div>
       }
     >
-      <ConnectorsPage />
+      <>
+        {process.env.OAUTH_CONSENT_ENABLED === "true" &&
+          process.env.OAUTH_ISSUER && (
+            <Link
+              href="/oauth/connections"
+              className="block px-6 py-3 text-sm underline"
+            >
+              Manage connected agents
+            </Link>
+          )}
+        <ConnectorsPage />
+      </>
     </Suspense>
   );
 }

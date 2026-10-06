@@ -1,12 +1,24 @@
 // next.config.mjs
 
 import withPWA from "next-pwa";
+import defaultRuntimeCaching from "next-pwa/cache.js";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["geist"],
   serverExternalPackages: ['@browserbasehq/stagehand', 'playwright'],
+  headers() {
+    return [{
+      source: "/oauth/:path*",
+      headers: [
+        { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+        { key: "X-Frame-Options", value: "DENY" },
+        { key: "Referrer-Policy", value: "no-referrer" },
+        { key: "Cache-Control", value: "no-store" },
+      ],
+    }];
+  },
   // The interim `/onboarding/*` mounts (chat#1880) were scaffolding so each
   // step was user-testable before the sequence container existed. `/setup/*`
   // is now the canonical sequence (chat#1889), so they are retired here.
@@ -97,5 +109,14 @@ export default withPWA({
   dest: "public",
   register: true,
   skipWaiting: true,
+  // Consent pages and credentialed API responses must never enter offline caches.
+  runtimeCaching: [
+    {
+      urlPattern: /^https?:\/\/[^/]+\/(?:api\/)?oauth(?:[/?]|$)/,
+      handler: "NetworkOnly",
+      method: "GET",
+    },
+    ...defaultRuntimeCaching,
+  ],
   disable: process.env.NODE_ENV === "development",
 })(nextConfig);

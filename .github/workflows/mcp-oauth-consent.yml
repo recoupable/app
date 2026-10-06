@@ -1,0 +1,24 @@
+name: MCP OAuth consent
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  consent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec eslint app/oauth components/OAuth lib/oauth providers/Providers.tsx components/Context/ContextPageLayout.tsx next.config.mjs
+      - run: pnpm test -- lib/oauth components/OAuth
+      - run: pnpm exec playwright install --with-deps chromium --only-shell
+      - run: pnpm exec vitest run --config vitest.oauth.browser.config.ts
