@@ -159,6 +159,7 @@ export default function OAuthConsent({
               {metadata ? (
                 <>
                   <div className="space-y-3">
+                    <h2 className="sr-only">Requested permissions</h2>
                     <ul className="space-y-3 text-sm">
                       {metadata.permissions.map((permission) => (
                         <li
@@ -189,7 +190,7 @@ export default function OAuthConsent({
                       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
                         <span>Unverified app</span>
                         <ChevronDown
-                          className="size-3 shrink-0 transition-transform group-open:rotate-180"
+                          className="size-3 shrink-0 motion-safe:transition-transform group-open:rotate-180"
                           aria-hidden="true"
                         />
                       </summary>
@@ -210,19 +211,19 @@ export default function OAuthConsent({
                       </div>
                     </details>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex flex-wrap gap-3">
                     <Button
                       variant="ghost"
                       disabled={busy}
                       onClick={() => void decide("deny")}
-                      className="h-11 flex-1"
+                      className="h-11 min-w-20 flex-1"
                     >
                       Cancel
                     </Button>
                     <Button
                       disabled={busy}
                       onClick={() => void decide("approve")}
-                      className="h-11 flex-[2] rounded-xl"
+                      className="h-11 min-w-32 flex-[2] rounded-xl"
                     >
                       {busy ? "Connecting…" : "Allow access"}
                     </Button>
