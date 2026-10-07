@@ -1,14 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import {
-  Unplug,
-  Bot,
-  ChevronDown,
-  RefreshCw,
-  ShieldCheck,
-  UserRound,
-} from "lucide-react";
+import { Bot, RefreshCw } from "lucide-react";
 import LogoIcon from "@/components/Logo/LogoIcon";
 import { Button } from "@/components/ui/button";
 import {
@@ -94,163 +87,131 @@ export default function OAuthConnections({ issuer }: { issuer: string }) {
       className="mx-auto w-full max-w-2xl px-5 pb-12 pt-5 sm:pt-8"
       aria-labelledby="connections-title"
     >
-      <div className="relative mb-7 overflow-hidden rounded-[28px] bg-[var(--brand-on-lime)] px-7 py-9 text-[var(--sky-text)] sm:px-9 sm:py-10">
-        <LogoIcon
-          className="pointer-events-none absolute -right-10 -top-8 h-72 w-64 rotate-12 opacity-[0.06]"
-          aria-hidden="true"
-        />
-        <div className="relative">
-          <span className="mb-6 inline-flex items-center gap-2 rounded-full bg-[var(--sky-text)]/10 px-3 py-1.5 text-[11px] font-medium tracking-wide">
-            <span
-              className="size-1.5 rounded-full bg-[var(--brand-lime)]"
-              aria-hidden="true"
-            />
-            YOUR RECOUP ACCOUNT
-          </span>
-          <h1
-            id="connections-title"
-            className="max-w-sm font-heading text-4xl font-medium leading-[1.05] tracking-[-0.045em] sm:text-5xl"
-          >
-            Connected <span className="text-[var(--brand-lime)]">agents.</span>
-          </h1>
-          <p className="mt-4 max-w-xs text-sm leading-6 text-[var(--sky-text)]/75">
-            A little less busywork.
-            <br />
-            Your agents, working with Recoup.
-          </p>
-        </div>
-      </div>
-      {!ready ? (
-        <p role="status" className="text-sm text-muted-foreground">
-          Loading sign-in…
-        </p>
-      ) : !authenticated ? (
-        <Button onClick={() => login()} className="h-11">
-          Sign in to Recoup
-        </Button>
-      ) : (
-        <div className="overflow-hidden rounded-[24px] bg-card shadow-[0_0_0_1px_var(--border),0_12px_40px_var(--surface-shadow)]">
-          <div className="flex items-center gap-3 bg-secondary/40 px-5 py-3 sm:px-6">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary">
-              <UserRound className="size-4" aria-hidden="true" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs text-muted-foreground">Personal account</p>
-              <p className="break-all text-sm font-medium">
-                {user?.email?.address ?? "Signed in to Recoup"}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-11 shrink-0"
-              disabled={!!busy}
-              aria-label="Refresh connections"
-              title="Refresh connections"
-              onClick={() => setRevision((value) => value + 1)}
+      <div className="overflow-hidden rounded-[28px] bg-card shadow-[0_0_0_1px_var(--border),0_12px_40px_var(--surface-shadow)]">
+        <div className="relative overflow-hidden bg-[var(--brand-on-lime)] px-7 py-8 text-[var(--sky-text)] sm:px-9 sm:py-9">
+          <LogoIcon
+            className="pointer-events-none absolute -right-10 -top-8 h-72 w-64 rotate-12 opacity-[0.06]"
+            aria-hidden="true"
+          />
+          <div className="relative">
+            <h1
+              id="connections-title"
+              className="max-w-sm font-heading text-4xl font-medium leading-[1.05] tracking-[-0.045em] sm:text-5xl"
             >
-              <RefreshCw className="size-4" aria-hidden="true" />
-            </Button>
-          </div>
-          {!data && !error && (
-            <p
-              role="status"
-              className="px-6 py-10 text-sm text-muted-foreground"
-            >
-              Loading connections…
-            </p>
-          )}
-          {data?.connections.length === 0 && (
-            <div className="px-6 py-12 text-center shadow-[0_-1px_0_var(--border)]">
-              <span className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-secondary">
-                <Bot className="size-6" aria-hidden="true" />
-              </span>
-              <h2 className="font-medium">No connected agents.</h2>
-              <p className="mx-auto mt-2 max-w-xs text-sm leading-6 text-muted-foreground">
-                Connect Recoup from your agent’s settings. It will appear here
-                once you allow access.
-              </p>
-            </div>
-          )}
-          {data?.connections.map((connection) => (
-            <article
-              key={connection.id}
-              className="px-5 py-6 shadow-[0_-1px_0_var(--border)] sm:px-6"
-            >
-              <div className="flex items-start gap-3">
-                <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-secondary text-foreground shadow-[inset_0_0_0_1px_var(--border)]">
-                  <Bot className="size-5" aria-hidden="true" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <h2 className="break-words text-lg font-semibold tracking-tight">
-                    {connection.clientName}
-                  </h2>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Expires{" "}
-                    {new Date(connection.expiresAt * 1000).toLocaleDateString(
-                      "en-US",
-                      { month: "short", day: "numeric", year: "numeric" },
-                    )}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap gap-2">
-                  {connection.scopes.includes("mcp:read") && (
-                    <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
-                      Read access
-                    </span>
-                  )}
-                  {connection.scopes.includes("mcp:write") && (
-                    <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
-                      Write access
-                    </span>
-                  )}
-                </div>
+              Connected{" "}
+              <span className="text-[var(--brand-lime)]">agents.</span>
+            </h1>
+            {authenticated && (
+              <div className="mt-5 flex items-center justify-between gap-3">
+                <p className="min-w-0 break-all text-sm text-[var(--sky-text)]/75">
+                  {user?.email?.address ?? "Signed in to Recoup"}
+                </p>
                 <Button
                   variant="ghost"
-                  className="h-10 rounded-full px-4 text-muted-foreground shadow-[0_0_0_1px_var(--border)] hover:bg-destructive/10 hover:text-destructive"
+                  size="icon"
+                  className="size-11 shrink-0 rounded-full text-[var(--sky-text)]/75 hover:bg-[var(--sky-text)]/10 hover:text-[var(--sky-text)]"
                   disabled={!!busy}
-                  aria-label={`Revoke ${connection.clientName}`}
-                  onClick={() => void revoke(connection.id)}
+                  aria-label="Refresh connections"
+                  title="Refresh connections"
+                  onClick={() => setRevision((value) => value + 1)}
                 >
-                  {busy === connection.id ? "Disconnecting…" : "Disconnect"}
-                  <Unplug className="size-3.5" aria-hidden="true" />
+                  <RefreshCw className="size-4" aria-hidden="true" />
                 </Button>
               </div>
-              <details className="group mt-1 text-xs text-muted-foreground">
-                <summary className="flex min-h-11 w-fit cursor-pointer list-none items-center gap-1.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
-                  Connection details
-                  <ChevronDown
-                    className="size-3 transition-transform group-open:rotate-180"
-                    aria-hidden="true"
-                  />
-                </summary>
-                <p className="break-all rounded-lg bg-secondary p-3 leading-5">
-                  Client ID: {connection.clientId}
-                  <br />
-                  Permissions: {connection.scopes.join(", ")}
-                </p>
-              </details>
-            </article>
-          ))}
-          {data?.truncated && (
-            <p className="px-6 pb-5 text-sm text-muted-foreground">
-              Showing the first 200 connections. Revoke unused connections and
-              refresh to see more.
-            </p>
-          )}
+            )}
+          </div>
         </div>
-      )}
-      {error && (
-        <p role="alert" className="mt-4 text-sm text-destructive">
-          {error}
-        </p>
-      )}
-      <p className="mx-auto mt-6 flex max-w-md items-start justify-center gap-2 text-xs leading-5 text-muted-foreground">
-        <ShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-        Disconnecting stops future access. Changes already made stay in Recoup.
-      </p>
+        {!ready ? (
+          <p role="status" className="p-7 text-sm text-muted-foreground">
+            Loading sign-in…
+          </p>
+        ) : !authenticated ? (
+          <Button onClick={() => login()} className="m-7 h-11">
+            Sign in to Recoup
+          </Button>
+        ) : (
+          <div>
+            {!data && !error && (
+              <p
+                role="status"
+                className="px-6 py-10 text-sm text-muted-foreground"
+              >
+                Loading connections…
+              </p>
+            )}
+            {data?.connections.length === 0 && (
+              <div className="px-6 py-12 text-center shadow-[0_-1px_0_var(--border)]">
+                <span className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-secondary">
+                  <Bot className="size-6" aria-hidden="true" />
+                </span>
+                <h2 className="font-medium">No connected agents.</h2>
+                <p className="mx-auto mt-2 max-w-xs text-sm leading-6 text-muted-foreground">
+                  Connect Recoup from your agent’s settings. It will appear here
+                  once you allow access.
+                </p>
+              </div>
+            )}
+            {data?.connections.map((connection) => (
+              <article
+                key={connection.id}
+                className="px-7 py-7 shadow-[0_-1px_0_var(--border)] sm:px-9"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-secondary text-foreground shadow-[inset_0_0_0_1px_var(--border)]">
+                    <Bot className="size-5" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="break-words text-lg font-semibold tracking-tight">
+                      {connection.clientName}
+                    </h2>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Expires{" "}
+                      {new Date(connection.expiresAt * 1000).toLocaleDateString(
+                        "en-US",
+                        { month: "short", day: "numeric", year: "numeric" },
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap gap-2">
+                    {connection.scopes.includes("mcp:read") && (
+                      <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
+                        Read access
+                      </span>
+                    )}
+                    {connection.scopes.includes("mcp:write") && (
+                      <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
+                        Write access
+                      </span>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    className="h-10 rounded-full px-4 text-muted-foreground shadow-[0_0_0_1px_var(--border)] hover:bg-destructive/10 hover:text-destructive"
+                    disabled={!!busy}
+                    aria-label={`Revoke ${connection.clientName}`}
+                    onClick={() => void revoke(connection.id)}
+                  >
+                    {busy === connection.id ? "Disconnecting…" : "Disconnect"}
+                  </Button>
+                </div>
+              </article>
+            ))}
+            {data?.truncated && (
+              <p className="px-6 pb-5 text-sm text-muted-foreground">
+                Showing the first 200 connections. Revoke unused connections and
+                refresh to see more.
+              </p>
+            )}
+          </div>
+        )}
+        {error && (
+          <p role="alert" className="px-7 pb-5 text-sm text-destructive">
+            {error}
+          </p>
+        )}
+      </div>
     </section>
   );
 }
