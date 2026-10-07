@@ -190,7 +190,7 @@ export default function OAuthConnections({ issuer }: { issuer: string }) {
                     variant="ghost"
                     className="h-10 rounded-full px-4 text-muted-foreground shadow-[0_0_0_1px_var(--border)] hover:bg-destructive/10 hover:text-destructive"
                     disabled={!!busy}
-                    aria-label={`Revoke ${connection.clientName}`}
+                    aria-label={`Disconnect ${connection.clientName}`}
                     onClick={() => void revoke(connection.id)}
                   >
                     {busy === connection.id ? "Disconnecting…" : "Disconnect"}

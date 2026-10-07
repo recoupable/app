@@ -160,14 +160,15 @@ export default function OAuthConsent({
                     {metadata.clientName} wants access
                   </h2>
                   <p className="text-xs leading-5 text-muted-foreground">
-                    This app hasn’t been verified by Recoup. Only continue if
-                    you started this connection.
+                    This name is supplied by the app’s developer, not verified
+                    by Recoup. Only continue if you recognize this agent and
+                    started this connection.
                   </p>
                   <details className="group text-xs text-muted-foreground">
                     <summary className="flex min-h-11 w-fit cursor-pointer list-none items-center gap-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
                       Client details
                       <ChevronDown
-                        className="size-3 group-open:rotate-180"
+                        className="size-3 transition-transform group-open:rotate-180"
                         aria-hidden="true"
                       />
                     </summary>
