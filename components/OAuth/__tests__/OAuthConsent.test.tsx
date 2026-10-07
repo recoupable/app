@@ -33,7 +33,7 @@ const details = {
   accessDurationDays: 30,
   permissions: [
     { scope: "mcp:read", description: "Read account data" },
-    { scope: "mcp:write", description: "Create records" },
+    { scope: "mcp:write", description: "Create and edit artist profiles" },
   ],
 };
 beforeEach(() => {
@@ -48,7 +48,7 @@ it("hides old app permissions immediately when the interaction changes", async (
   const view = render(
     <OAuthConsent issuer="https://api.example/api/oauth" interaction="first" />,
   );
-  await screen.findByText("Create records");
+  await screen.findByText("Create and edit artist profiles");
   load.mockImplementation(() => new Promise(() => {}));
   view.rerender(
     <OAuthConsent
@@ -56,7 +56,7 @@ it("hides old app permissions immediately when the interaction changes", async (
       interaction="second"
     />,
   );
-  expect(screen.queryByText("Create records")).toBeNull();
+  expect(screen.queryByText("Create and edit artist profiles")).toBeNull();
   expect(screen.queryByRole("button", { name: "Allow access" })).toBeNull();
   expect(decide).not.toHaveBeenCalled();
 });
@@ -74,8 +74,10 @@ it("shows write permissions and persistent personal access before an explicit ap
   render(
     <OAuthConsent issuer="https://api.example/api/oauth" interaction="id" />,
   );
-  await screen.findByText("Create records");
-  expect(screen.getByText(/expires after 30 days/)).toBeDefined();
+  await screen.findByText("Create and edit artist profiles");
+  expect(
+    screen.getByText(/Personal account · 30 days · Revoke anytime/),
+  ).toBeDefined();
   expect(
     screen.getByText(/organization workspaces are not included/),
   ).toBeDefined();
@@ -91,7 +93,7 @@ it("sends denial when canceled and never reuses another account's loaded consent
   const rendered = render(
     <OAuthConsent issuer="https://api.example/api/oauth" interaction="id" />,
   );
-  await screen.findByText("Create records");
+  await screen.findByText("Create and edit artist profiles");
   fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
   await waitFor(() =>
     expect(decide).toHaveBeenCalledExactlyOnceWith("token", "nonce", "deny"),
