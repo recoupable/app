@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
+import { Bot, Check, ChevronDown, Link2, ShieldCheck } from "lucide-react";
+import LogoIcon from "@/components/Logo/LogoIcon";
 import { Button } from "@/components/ui/button";
 import {
   createConsentClient,
@@ -94,19 +96,31 @@ export default function OAuthConsent({
   return (
     <section
       aria-labelledby="consent-title"
-      className="mx-auto my-10 w-full max-w-lg px-5"
+      className="mx-auto w-full max-w-lg px-5 pb-12 pt-8 sm:pt-14"
     >
-      <div className="space-y-6 rounded-2xl bg-card p-7 shadow-[0_0_0_1px_var(--border),0_4px_16px_rgba(0,0,0,0.04)]">
-        <div className="space-y-2">
-          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Connect an agent
-          </p>
+      <div className="space-y-6 rounded-2xl bg-card p-6 shadow-[0_0_0_1px_var(--border),0_8px_32px_var(--surface-shadow)] sm:p-8">
+        <div className="text-center">
+          <div
+            className="mb-6 flex items-center justify-center gap-4"
+            aria-hidden="true"
+          >
+            <span className="flex size-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+              <LogoIcon className="size-7" />
+            </span>
+            <Link2 className="size-5 text-muted-foreground" />
+            <span className="flex size-14 items-center justify-center rounded-2xl bg-secondary">
+              <Bot className="size-7" />
+            </span>
+          </div>
           <h1
             id="consent-title"
-            className="text-2xl font-semibold tracking-tight"
+            className="font-heading text-2xl font-semibold tracking-tight"
           >
             Connect to Recoup
           </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Review access to your personal account.
+          </p>
         </div>
         {!ready ? (
           <p role="status">Loading sign-in…</p>
@@ -122,7 +136,7 @@ export default function OAuthConsent({
           </>
         ) : (
           <>
-            <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-secondary/60 px-3 py-2 text-sm">
               <span className="break-all">
                 {user?.email?.address ?? "Signed in to Recoup"}
               </span>
@@ -145,44 +159,68 @@ export default function OAuthConsent({
                   <h2 className="break-words text-lg font-medium">
                     {metadata.clientName} wants access
                   </h2>
-                  <p className="break-all text-xs text-muted-foreground">
-                    Client: {metadata.clientId}
+                  <p className="text-xs leading-5 text-muted-foreground">
+                    This name is supplied by the app’s developer, not verified
+                    by Recoup. Only continue if you recognize this agent and
+                    started this connection.
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    This app’s name is supplied by its developer and has not
-                    been verified by Recoup. Continue only if you recognize the
-                    connection you started.
-                  </p>
+                  <details className="group text-xs text-muted-foreground">
+                    <summary className="flex min-h-11 w-fit cursor-pointer list-none items-center gap-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+                      Client details
+                      <ChevronDown
+                        className="size-3 transition-transform group-open:rotate-180"
+                        aria-hidden="true"
+                      />
+                    </summary>
+                    <p className="break-all rounded-lg bg-secondary p-3">
+                      Client ID: {metadata.clientId}
+                    </p>
+                  </details>
                 </div>
                 <div className="space-y-3">
                   <p className="text-sm font-medium">
                     On your personal Recoup account, this agent can:
                   </p>
-                  <ul className="list-disc space-y-2 pl-5 text-sm">
+                  <ul className="space-y-3 text-sm">
                     {metadata.permissions.map((permission) => (
-                      <li key={permission.scope}>{permission.description}</li>
+                      <li
+                        key={permission.scope}
+                        className="flex items-start gap-3 leading-6"
+                      >
+                        <Check
+                          className="mt-1 size-4 shrink-0 text-foreground"
+                          aria-hidden="true"
+                        />
+                        <span>{permission.description}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Access continues when you leave this page and expires after{" "}
-                  {metadata.accessDurationDays} days. Your organization
-                  workspaces are not included. You can revoke access from
-                  Connected agents in Recoup.
+                <p className="flex items-start gap-2 rounded-xl bg-secondary/60 p-3 text-xs leading-5 text-muted-foreground">
+                  <ShieldCheck
+                    className="mt-0.5 size-4 shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span>
+                    Access continues when you leave this page and expires after{" "}
+                    {metadata.accessDurationDays} days. Your organization
+                    workspaces are not included. You can revoke access from
+                    Connected agents in Recoup.
+                  </span>
                 </p>
                 <div className="flex gap-3">
                   <Button
                     variant="secondary"
                     disabled={busy}
                     onClick={() => void decide("deny")}
-                    className="flex-1"
+                    className="h-11 flex-1"
                   >
                     Cancel
                   </Button>
                   <Button
                     disabled={busy}
                     onClick={() => void decide("approve")}
-                    className="flex-1"
+                    className="h-11 flex-1"
                   >
                     {busy ? "Connecting…" : "Allow access"}
                   </Button>

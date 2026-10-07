@@ -64,7 +64,9 @@ afterEach(cleanup);
 it("shows connections and removes a successfully revoked grant", async () => {
   render(<OAuthConnections issuer="https://api.example/api/oauth" />);
   await screen.findByText("Test agent");
-  fireEvent.click(screen.getByRole("button", { name: "Revoke Test agent" }));
+  fireEvent.click(
+    screen.getByRole("button", { name: "Disconnect Test agent" }),
+  );
   await waitFor(() =>
     expect(revoke).toHaveBeenCalledWith("token", "a".repeat(64)),
   );
@@ -92,7 +94,9 @@ it("requires login and keeps a connection visible if revocation fails", async ()
   revoke.mockRejectedValue(new Error("Unable to revoke connection."));
   view.rerender(<OAuthConnections issuer="https://api.example/api/oauth" />);
   await screen.findByText("Test agent");
-  fireEvent.click(screen.getByRole("button", { name: "Revoke Test agent" }));
+  fireEvent.click(
+    screen.getByRole("button", { name: "Disconnect Test agent" }),
+  );
   await screen.findByRole("alert");
   expect(screen.getByText("Test agent")).toBeDefined();
 });
@@ -110,7 +114,9 @@ it("does not restore a revoked connection from an older refresh", async () => {
   );
   fireEvent.click(screen.getByRole("button", { name: "Refresh connections" }));
   await waitFor(() => expect(load).toHaveBeenCalledTimes(2));
-  fireEvent.click(screen.getByRole("button", { name: "Revoke Test agent" }));
+  fireEvent.click(
+    screen.getByRole("button", { name: "Disconnect Test agent" }),
+  );
   await screen.findByText("No connected agents.");
   await act(async () => {
     finish(stale);
