@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   UserRound,
 } from "lucide-react";
+import LogoIcon from "@/components/Logo/LogoIcon";
 import { Button } from "@/components/ui/button";
 import {
   createConnectionsClient,
@@ -90,22 +91,34 @@ export default function OAuthConnections({ issuer }: { issuer: string }) {
   };
   return (
     <section
-      className="mx-auto w-full max-w-2xl px-5 pb-12 pt-10 sm:pt-16"
+      className="mx-auto w-full max-w-2xl px-5 pb-12 pt-5 sm:pt-8"
       aria-labelledby="connections-title"
     >
-      <div className="mb-8">
-        <p className="mb-3 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-          Your account
-        </p>
-        <h1
-          id="connections-title"
-          className="font-heading text-3xl font-semibold tracking-tight sm:text-4xl"
-        >
-          Connected agents
-        </h1>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Manage which agents can access your Recoup account.
-        </p>
+      <div className="relative mb-7 overflow-hidden rounded-[28px] bg-[var(--brand-on-lime)] px-7 py-9 text-[var(--sky-text)] sm:px-9 sm:py-10">
+        <LogoIcon
+          className="pointer-events-none absolute -right-10 -top-8 h-72 w-64 rotate-12 opacity-[0.06]"
+          aria-hidden="true"
+        />
+        <div className="relative">
+          <span className="mb-6 inline-flex items-center gap-2 rounded-full bg-[var(--sky-text)]/10 px-3 py-1.5 text-[11px] font-medium tracking-wide">
+            <span
+              className="size-1.5 rounded-full bg-[var(--brand-lime)]"
+              aria-hidden="true"
+            />
+            YOUR RECOUP ACCOUNT
+          </span>
+          <h1
+            id="connections-title"
+            className="max-w-sm font-heading text-4xl font-medium leading-[1.05] tracking-[-0.045em] sm:text-5xl"
+          >
+            Connected <span className="text-[var(--brand-lime)]">agents.</span>
+          </h1>
+          <p className="mt-4 max-w-xs text-sm leading-6 text-[var(--sky-text)]/75">
+            A little less busywork.
+            <br />
+            Your agents, working with Recoup.
+          </p>
+        </div>
       </div>
       {!ready ? (
         <p role="status" className="text-sm text-muted-foreground">
@@ -116,8 +129,8 @@ export default function OAuthConnections({ issuer }: { issuer: string }) {
           Sign in to Recoup
         </Button>
       ) : (
-        <div className="overflow-hidden rounded-2xl bg-card shadow-[0_0_0_1px_var(--border),0_8px_32px_var(--surface-shadow)]">
-          <div className="flex items-center gap-3 px-5 py-4 sm:px-6">
+        <div className="overflow-hidden rounded-[24px] bg-card shadow-[0_0_0_1px_var(--border),0_12px_40px_var(--surface-shadow)]">
+          <div className="flex items-center gap-3 bg-secondary/40 px-5 py-3 sm:px-6">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary">
               <UserRound className="size-4" aria-hidden="true" />
             </span>
@@ -165,11 +178,11 @@ export default function OAuthConnections({ issuer }: { issuer: string }) {
               className="px-5 py-6 shadow-[0_-1px_0_var(--border)] sm:px-6"
             >
               <div className="flex items-start gap-3">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-secondary text-foreground shadow-[inset_0_0_0_1px_var(--border)]">
                   <Bot className="size-5" aria-hidden="true" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h2 className="break-words text-base font-semibold tracking-tight">
+                  <h2 className="break-words text-lg font-semibold tracking-tight">
                     {connection.clientName}
                   </h2>
                   <p className="mt-1 text-xs text-muted-foreground">
@@ -184,19 +197,19 @@ export default function OAuthConnections({ issuer }: { issuer: string }) {
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap gap-2">
                   {connection.scopes.includes("mcp:read") && (
-                    <span className="rounded-full bg-secondary px-3 py-1.5 text-xs font-medium">
+                    <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
                       Read access
                     </span>
                   )}
                   {connection.scopes.includes("mcp:write") && (
-                    <span className="rounded-full bg-secondary px-3 py-1.5 text-xs font-medium">
+                    <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
                       Write access
                     </span>
                   )}
                 </div>
                 <Button
                   variant="ghost"
-                  className="h-11 px-3 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  className="h-10 rounded-full px-4 text-muted-foreground shadow-[0_0_0_1px_var(--border)] hover:bg-destructive/10 hover:text-destructive"
                   disabled={!!busy}
                   aria-label={`Revoke ${connection.clientName}`}
                   onClick={() => void revoke(connection.id)}
@@ -205,7 +218,7 @@ export default function OAuthConnections({ issuer }: { issuer: string }) {
                   <Unplug className="size-3.5" aria-hidden="true" />
                 </Button>
               </div>
-              <details className="group mt-3 text-xs text-muted-foreground">
+              <details className="group mt-1 text-xs text-muted-foreground">
                 <summary className="flex min-h-11 w-fit cursor-pointer list-none items-center gap-1.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
                   Connection details
                   <ChevronDown
@@ -234,7 +247,7 @@ export default function OAuthConnections({ issuer }: { issuer: string }) {
           {error}
         </p>
       )}
-      <p className="mt-6 flex items-start gap-2 text-xs leading-5 text-muted-foreground">
+      <p className="mx-auto mt-6 flex max-w-md items-start justify-center gap-2 text-xs leading-5 text-muted-foreground">
         <ShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
         Disconnecting stops future access. Changes already made stay in Recoup.
       </p>
