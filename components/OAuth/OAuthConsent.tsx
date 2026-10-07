@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import { Check, ChevronDown, ShieldCheck } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import LogoIcon from "@/components/Logo/LogoIcon";
 import { Button } from "@/components/ui/button";
 import {
@@ -136,7 +136,7 @@ export default function OAuthConsent({
                 }}
                 className="min-h-11 shrink-0 rounded-md px-1 underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime disabled:opacity-50"
               >
-                Switch account
+                Switch
               </button>
             </div>
           )}
@@ -159,7 +159,6 @@ export default function OAuthConsent({
               {metadata ? (
                 <>
                   <div className="space-y-3">
-                    <p className="text-sm font-medium">Allow this agent to:</p>
                     <ul className="space-y-3 text-sm">
                       {metadata.permissions.map((permission) => (
                         <li
@@ -170,42 +169,46 @@ export default function OAuthConsent({
                             className="mt-1 size-4 shrink-0 text-foreground"
                             aria-hidden="true"
                           />
-                          <span>{permission.description}</span>
+                          <span>
+                            {permission.scope === "mcp:read"
+                              ? "View artists, social profiles, and chat list"
+                              : permission.scope === "mcp:write"
+                                ? "Create and edit artist profiles"
+                                : permission.description}
+                          </span>
                         </li>
                       ))}
                     </ul>
                   </div>
                   <div className="space-y-3 text-xs leading-5 text-muted-foreground">
-                    <p className="flex items-start gap-2">
-                      <ShieldCheck
-                        className="mt-0.5 size-4 shrink-0"
-                        aria-hidden="true"
-                      />
-                      <span>
-                        Personal account only; organization workspaces are not
-                        included. Access continues for{" "}
-                        {metadata.accessDurationDays} days, even when you leave.
-                        Revoke anytime in Connected agents.
-                      </span>
+                    <p>
+                      Personal account · {metadata.accessDurationDays} days ·
+                      Revoke anytime
                     </p>
                     <details className="group">
                       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
-                        <span>
-                          Developer-provided name · not verified by Recoup
-                        </span>
+                        <span>Unverified app</span>
                         <ChevronDown
                           className="size-3 shrink-0 transition-transform group-open:rotate-180"
                           aria-hidden="true"
                         />
                       </summary>
-                      <p className="break-all rounded-lg bg-secondary p-3">
-                        Client ID: {metadata.clientId}
-                      </p>
+                      <div className="space-y-2 rounded-lg bg-secondary p-3">
+                        <p>
+                          The app name is supplied by its developer, not
+                          verified by Recoup. Only continue if you recognize
+                          this app and started this connection.
+                        </p>
+                        <p>
+                          Access continues when you leave this page. Your
+                          organization workspaces are not included. Revoke
+                          access in Connected agents.
+                        </p>
+                        <p className="break-all">
+                          Client ID: {metadata.clientId}
+                        </p>
+                      </div>
                     </details>
-                    <p>
-                      Only allow access if you recognize this agent and started
-                      this connection.
-                    </p>
                   </div>
                   <div className="flex gap-3">
                     <Button
