@@ -75,7 +75,7 @@ it("shows write permissions and persistent personal access before an explicit ap
     <OAuthConsent issuer="https://api.example/api/oauth" interaction="id" />,
   );
   await screen.findByText("Create records");
-  expect(screen.getByText(/expires after 30 days/)).toBeDefined();
+  expect(screen.getByText(/Access continues for 30 days/)).toBeDefined();
   expect(
     screen.getByText(/organization workspaces are not included/),
   ).toBeDefined();
