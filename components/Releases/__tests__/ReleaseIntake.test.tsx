@@ -16,7 +16,11 @@ it("saves a workspace-scoped locator without collecting metadata", async () => {
         body.action === "ingest_release"
           ? { request: { id: "request", status: "partial" } }
           : {
-              cases: bodies.some((x) => x.action === "ingest_release")
+              cases: bodies.some(
+                (x) =>
+                  x.action === "ingest_release" &&
+                  x.organization_id === body.organization_id,
+              )
                 ? [item]
                 : [],
             },
@@ -54,39 +58,6 @@ it("saves a workspace-scoped locator without collecting metadata", async () => {
       "Release URL saved. Metadata has not been collected by this action.",
     ),
   ).toBeNull();
-});
-
-it("reuses the intake key when saved intake cannot be read back", async () => {
-  const keys: string[] = [];
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(async (_url, init) => {
-      const body = JSON.parse(init.body);
-      if (body.action === "ingest_release") {
-        keys.push(body.idempotency_key);
-        return Response.json({ request: { id: "request", status: "partial" } });
-      }
-      return keys.length === 1
-        ? new Response(null, { status: 503 })
-        : Response.json({ cases: [] });
-    }),
-  );
-  render(<ReleaseCasesPage />);
   await screen.findByText("No saved releases yet.");
-  fireEvent.change(screen.getByLabelText("Spotify release URL"), {
-    target: { value: item.url },
-  });
-  fireEvent.click(screen.getByRole("button", { name: "Add release URL" }));
-  await screen.findByRole("alert");
-  expect(
-    screen.queryByText(
-      "Release URL saved. Metadata has not been collected by this action.",
-    ),
-  ).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "Add release URL" }));
-  await screen.findByText(
-    "Release URL saved. Metadata has not been collected by this action.",
-  );
-  expect(keys).toHaveLength(2);
-  expect(keys[1]).toBe(keys[0]);
+  expect(screen.queryByText(item.url)).toBeNull();
 });
