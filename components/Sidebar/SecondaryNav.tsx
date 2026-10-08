@@ -5,7 +5,7 @@ import CatalogsNavItem from "./CatalogsNavItem";
 import MusicNavItem from "./MusicNavItem";
 import ArtistsNavItem from "./ArtistsNavItem";
 
-import { Globe } from "lucide-react";
+import { Globe, ListChecks } from "lucide-react";
 import NavButton from "./NavButton";
 
 interface SecondaryNavProps {
@@ -17,6 +17,7 @@ interface SecondaryNavProps {
   isArtists: boolean;
   isMusic: boolean;
   isSites?: boolean;
+  isReleases?: boolean;
   onNavigate: (path: string) => void;
 }
 
@@ -29,6 +30,7 @@ const SecondaryNav = ({
   isArtists,
   isMusic,
   isSites = false,
+  isReleases = false,
   onNavigate,
 }: SecondaryNavProps) => (
   <div className="flex flex-col gap-1 w-full mt-3">
@@ -41,6 +43,14 @@ const SecondaryNav = ({
       isActive={isCatalogs}
       isExpanded={isExpanded}
       onClick={() => onNavigate("catalogs")}
+    />
+    <NavButton
+      icon={ListChecks}
+      label="Release reviews"
+      aria-label="View release reviews"
+      isActive={isReleases}
+      isExpanded={isExpanded}
+      onClick={() => onNavigate("releases")}
     />
     <MusicNavItem
       isActive={isMusic}
