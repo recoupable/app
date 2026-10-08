@@ -163,9 +163,10 @@ export default function WorkspaceContextBar() {
         <button
           type="button"
           className="flex size-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label={`Artist settings for ${selectedArtist.name}`}
+          aria-label={`Artist settings for ${selectedArtist.name || "artist"}`}
           title="Artist settings"
-          onClick={() => {
+          onClick={(event) => {
+            event.currentTarget.focus();
             toggleUpdate(selectedArtist);
             setIsOpenSettingModal(true);
           }}

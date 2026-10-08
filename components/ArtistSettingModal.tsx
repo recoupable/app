@@ -9,16 +9,23 @@ import Settings from "./ArtistSetting/Settings";
 const ArtistSettingModal = () => {
   const { isOpenSettingModal, setIsOpenSettingModal, editableArtist } =
     useArtistProvider();
-  const { selectedOrgId } = useOrganization();
-  const previousOrg = useRef(selectedOrgId);
+  const { selectedOrgId, isInitialized } = useOrganization();
+  const previousOrg = useRef<string | null | undefined>(undefined);
   const opener = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (previousOrg.current !== selectedOrgId) {
-      setIsOpenSettingModal(false);
-      previousOrg.current = selectedOrgId;
+    if (!isInitialized) {
+      previousOrg.current = undefined;
+      return;
     }
-  }, [selectedOrgId, setIsOpenSettingModal]);
+    if (
+      previousOrg.current !== undefined &&
+      previousOrg.current !== selectedOrgId
+    ) {
+      setIsOpenSettingModal(false);
+    }
+    previousOrg.current = selectedOrgId;
+  }, [selectedOrgId, isInitialized, setIsOpenSettingModal]);
 
   return (
     <Dialog open={isOpenSettingModal} onOpenChange={setIsOpenSettingModal}>
@@ -32,8 +39,10 @@ const ArtistSettingModal = () => {
               : null;
         }}
         onCloseAutoFocus={(event) => {
-          event.preventDefault();
-          if (opener.current?.isConnected) opener.current.focus();
+          if (opener.current?.isConnected && opener.current !== document.body) {
+            event.preventDefault();
+            opener.current.focus();
+          }
         }}
       >
         <DialogTitle>

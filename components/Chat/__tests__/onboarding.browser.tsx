@@ -5,7 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import WorkspaceContextBar from "../WorkspaceContextBar";
 import ArtistSettingModal from "@/components/ArtistSettingModal";
-import AddToOrgButton from "@/components/ArtistSetting/AddToOrgButton";
+import Header from "@/components/Header/Header";
+import { SETTING_MODE } from "@/types/Setting";
 import {
   ArtistFixtureContext,
   OrganizationFixtureContext,
@@ -32,7 +33,10 @@ vi.mock("@/providers/OrganizationProvider", () => ({
 }));
 vi.mock("@/hooks/useAccountOrganizations", () => ({
   default: () => ({
-    data: [{ organization_id: "label-1", organization_name: "Fixture Label" }],
+    data: [
+      { organization_id: "label-1", organization_name: "Fixture Label" },
+      { organization_id: "label-2", organization_name: "Other Label" },
+    ],
     isPending: false,
     isError: false,
   }),
@@ -40,26 +44,61 @@ vi.mock("@/hooks/useAccountOrganizations", () => ({
 vi.mock("@/lib/api/getClientApiBaseUrl", () => ({
   getClientApiBaseUrl: () => "http://fixture.invalid",
 }));
-vi.mock("@/components/ArtistSetting/Settings", () => ({
-  default: function SettingsFixture() {
-    const { editableArtist } = useContext(ArtistFixtureContext);
-    return (
-      <AddToOrgButton artistId={(editableArtist as ArtistRecord).account_id} />
-    );
-  },
+vi.mock("@/components/ArtistSetting/DeleteModal", () => ({
+  default: () => null,
+}));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => "/",
+}));
+vi.mock("@/components/SideMenu", () => ({ default: () => null }));
+vi.mock("@/components/Logo", () => ({ default: () => null }));
+vi.mock("@/components/ImageWithFallback", () => ({ default: () => null }));
+vi.mock("@/components/ArtistSetting/ImageSelect", () => ({
+  default: () => null,
+}));
+vi.mock("@/components/ArtistSetting/Inputs", () => ({ default: () => null }));
+vi.mock("@/components/ArtistSetting/KnowledgeSelect", () => ({
+  default: () => null,
+}));
+vi.mock("@/components/ArtistSetting/Knowledges", () => ({
+  default: () => null,
+}));
+vi.mock("@/components/ArtistSetting/TabbedSettings", () => ({
+  TabbedSettings: ({
+    header,
+    generalContent,
+  }: {
+    header: React.ReactNode;
+    generalContent: React.ReactNode;
+  }) => (
+    <>
+      {header}
+      {generalContent}
+    </>
+  ),
 }));
 const artists = [
   { account_id: "artist-a", name: "Artist A" },
   { account_id: "artist-b", name: "Artist B" },
 ] as ArtistRecord[];
 let client: QueryClient;
-function Harness() {
+function Harness({
+  mobileHeader = false,
+  workspace,
+  initialized = true,
+}: {
+  mobileHeader?: boolean;
+  workspace?: string | null;
+  initialized?: boolean;
+}) {
   const [selectedArtist, setSelectedArtist] = useState<ArtistRecord | null>(
     artists[0],
   );
   const [editableArtist, toggleUpdate] = useState<ArtistRecord | null>(null);
   const [isOpenSettingModal, setIsOpenSettingModal] = useState(false);
-  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+  const [chosenOrgId, setSelectedOrgId] = useState<string | null>(null);
+  const selectedOrgId = workspace === undefined ? chosenOrgId : workspace;
   const artistContext = {
     selectedArtist,
     setSelectedArtist,
@@ -71,25 +110,39 @@ function Harness() {
     isLoading: false,
     isError: false,
     toggleCreation: vi.fn(),
+    toggleSettingModal: () => setIsOpenSettingModal((open) => !open),
+    sorted: artists,
+    settingMode: SETTING_MODE.UPDATE,
+    saveSetting: vi.fn(),
+    updating: false,
+    knowledgeUploading: false,
   };
   const orgContext = {
     selectedOrgId,
     setSelectedOrgId,
-    isInitialized: true,
+    isInitialized: initialized,
     openCreateOrg: vi.fn(),
   };
   return (
     <QueryClientProvider client={client}>
       <ArtistFixtureContext.Provider value={artistContext}>
         <OrganizationFixtureContext.Provider value={orgContext}>
-          <WorkspaceContextBar />
+          {mobileHeader ? <Header /> : <WorkspaceContextBar />}
           <ArtistSettingModal />
         </OrganizationFixtureContext.Provider>
       </ArtistFixtureContext.Provider>
     </QueryClientProvider>
   );
 }
-afterEach(() => {
+afterEach(async () => {
+  if (screen.queryByRole("menu")) await userEvent.keyboard("{Escape}");
+  if (screen.queryByRole("dialog")) {
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  }
+  await waitFor(() =>
+    expect(document.body.style.pointerEvents).not.toBe("none"),
+  );
   cleanup();
   vi.unstubAllGlobals();
 });
@@ -115,6 +168,7 @@ async function chooseOrganization() {
     screen.getByRole("button", { name: "Add to Organization" }),
   );
   await userEvent.keyboard("{ArrowDown}{Enter}");
+  await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
 }
 
 describe("artist settings onboarding", () => {
@@ -129,7 +183,7 @@ describe("artist settings onboarding", () => {
       }),
     );
     const invalidate = vi.spyOn(client, "invalidateQueries");
-    render(<Harness />);
+    render(<Harness mobileHeader={width === 390} />);
     const trigger = await openSettings();
     expect(trigger.getBoundingClientRect().width).toBeGreaterThanOrEqual(44);
     expect(trigger.getBoundingClientRect().right).toBeLessThanOrEqual(width);
@@ -184,15 +238,60 @@ describe("artist settings onboarding", () => {
     await userEvent.click(
       await screen.findByRole("menuitem", { name: "Fixture Label" }),
     );
+    await waitFor(() =>
+      expect(document.body.style.pointerEvents).not.toBe("none"),
+    );
     await openSettings("Artist B");
     expect(screen.getByRole("dialog").textContent).toContain("Artist B");
-    expect(
-      (
-        screen.getByRole("button", {
-          name: "Add to Organization",
-        }) as HTMLButtonElement
-      ).disabled,
-    ).toBe(true);
-    expect(fixture.fetch).not.toHaveBeenCalled();
+    fixture.fetch.mockResolvedValue(
+      new Response(JSON.stringify({ status: "success", id: "relationship" }), {
+        status: 200,
+      }),
+    );
+    await chooseOrganization();
+    await waitFor(() => expect(fixture.fetch).toHaveBeenCalledTimes(1));
+    expect(JSON.parse(fixture.fetch.mock.calls[0][1].body)).toEqual({
+      artistId: "artist-b",
+      organizationId: "label-2",
+    });
+  });
+
+  it("shows retry copy when a gateway returns HTML", async () => {
+    fixture.fetch.mockResolvedValue(
+      new Response("<html>Gateway error</html>", { status: 502 }),
+    );
+    render(<Harness />);
+    await openSettings();
+    await chooseOrganization();
+    await waitFor(() =>
+      expect(screen.getByRole("alert").textContent).toBe(
+        "Could not add artist. Please retry.",
+      ),
+    );
+  });
+
+  it("returns focus to a pointer-activated mobile avatar", async () => {
+    await page.viewport(390, 844);
+    render(<Harness mobileHeader />);
+    const trigger = await screen.findByRole("button", {
+      name: "Artist settings for Artist A",
+    });
+    trigger.addEventListener("mousedown", (event) => event.preventDefault(), {
+      once: true,
+    });
+    trigger.blur();
+    await userEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeDefined());
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(document.activeElement).toBe(trigger));
+  });
+  it("keeps settings open during workspace hydration and closes on a later switch", async () => {
+    await page.viewport(1280, 900);
+    const view = render(<Harness initialized={false} />);
+    await openSettings();
+    view.rerender(<Harness initialized workspace="label-1" />);
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeDefined());
+    view.rerender(<Harness initialized workspace="label-2" />);
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });
 });

@@ -39,9 +39,17 @@ const useAddArtistToOrganization = (
             },
           },
         );
-        const body = await response.json();
-        if (!response.ok || body.status !== "success") {
-          throw new Error(body.error || "Could not add artist. Please retry.");
+        const payload: unknown = await response.json().catch(() => null);
+        const body =
+          typeof payload === "object" && payload !== null
+            ? (payload as Record<string, unknown>)
+            : null;
+        if (!response.ok || body?.status !== "success") {
+          throw new Error(
+            typeof body?.error === "string"
+              ? body.error
+              : "Could not add artist. Please retry.",
+          );
         }
         await queryClient.invalidateQueries({ queryKey: ["artists"] });
         setAddedToOrgId(organizationId);
