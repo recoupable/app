@@ -8,4 +8,5 @@ export const createReleaseCaseState = (scope: string): ReleaseCaseState => ({
   busy: false,
   error: "",
   loaded: false,
+  notice: "",
 });

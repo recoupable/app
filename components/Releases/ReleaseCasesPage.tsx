@@ -6,6 +6,7 @@ import { useReleaseCases } from "@/hooks/useReleaseCases";
 import { Button } from "@/components/ui/button";
 import ReleaseCasesList from "./ReleaseCasesList";
 import ReleaseCaseDetails from "./ReleaseCaseDetails";
+import ReleaseIntakeForm from "./ReleaseIntakeForm";
 export default function ReleaseCasesPage() {
   const { ready, authenticated, getAccessToken, login } = usePrivy();
   const { userData } = useUserProvider();
@@ -49,6 +50,12 @@ export default function ReleaseCasesPage() {
           Refresh list
         </Button>
       </div>
+      <ReleaseIntakeForm
+        key={JSON.stringify([accountId, selectedOrgId])}
+        disabled={!accountId || cases.busy}
+        onAdd={cases.add}
+      />
+      {cases.notice && <p role="status">{cases.notice}</p>}
       {cases.error && (
         <p role="alert" className="text-destructive">
           {cases.error}

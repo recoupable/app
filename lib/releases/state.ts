@@ -7,4 +7,5 @@ export interface ReleaseCaseState {
   busy: boolean;
   error: string;
   loaded: boolean;
+  notice: string;
 }

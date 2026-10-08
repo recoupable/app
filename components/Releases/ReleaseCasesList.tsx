@@ -12,8 +12,7 @@ export default function ReleaseCasesList({
         <div className="rounded-xl p-6 shadow-[0_0_0_1px_var(--border)]">
           <p>No saved releases yet.</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            Ask Recoup to gather a release in this workspace, then return here
-            to review its evidence.
+            Add a release URL above, or ask Recoup to help gather its metadata.
           </p>
           <Button asChild className="mt-4">
             <Link href="/">Open chat</Link>
