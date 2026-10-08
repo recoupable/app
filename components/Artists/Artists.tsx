@@ -1,5 +1,6 @@
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import ValuationRunStatusChip from "@/components/Valuation/ValuationRunStatusChip";
+import ProfessionalRosterSection from "./ProfessionalRosterSection";
 import Artist from "./Artist";
 
 const Artists = () => {
@@ -16,6 +17,7 @@ const Artists = () => {
           Choose an artist to dive into their insights and data.
         </p>
         <div className="mt-8 pb-4 space-y-4 md:space-y-0 md:flex md:flex-row gap-8 md:flex-wrap grow overflow-y-auto">
+          <ProfessionalRosterSection />
           {artists.map((artist) => (
             <Artist
               artist={artist}
@@ -28,7 +30,7 @@ const Artists = () => {
             className="w-[335px] !h-[162px] overflow-hidden rounded-xl relative border-grey border text-grey-dark text-xl"
             onClick={toggleCreation}
           >
-            Add New Artist
+            Add to roster
           </button>
         </div>
       </div>
