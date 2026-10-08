@@ -26,16 +26,15 @@ export function useReleaseCaseReview(
         pendingReview.current = { input, key: crypto.randomUUID() };
       const pending = pendingReview.current;
       await request({ ...body, idempotency_key: pending.key }, revision);
+      const updated = await request(
+        {
+          action: "read_release_case",
+          request_id: current.request_id,
+        },
+        revision,
+      );
       if (pendingReview.current === pending) pendingReview.current = null;
-      return {
-        current: await request(
-          {
-            action: "read_release_case",
-            request_id: current.request_id,
-          },
-          revision,
-        ),
-      };
+      return { current: updated };
     });
   return review;
 }
