@@ -313,7 +313,11 @@ it("loads later-page namesakes before allowing a new-person confirmation", async
       .hasAttribute("disabled"),
   ).toBe(false);
 });
-it("ignores a malformed pending request without a new-person name", async () => {
+it.each([
+  {},
+  { name: "Test Writer", roles: ["songwriter", "songwriter"] },
+  { mode: "existing" },
+])("ignores malformed pending input %j", async (patch) => {
   sessionStorage.setItem(
     `professional-roster-pending:${actor}:${org}`,
     JSON.stringify({
@@ -323,6 +327,7 @@ it("ignores a malformed pending request without a new-person name", async () => 
       roles: ["songwriter"],
       roster_intent: "add",
       confirmed: true,
+      ...patch,
     }),
   );
   render(form());

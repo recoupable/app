@@ -25,7 +25,14 @@ export const pendingProfessionalSchema = z
     mode: z.enum(["new", "existing"]),
     name: z.string().trim().min(2).max(200).optional(),
     professional_id: z.string().uuid().optional(),
-    roles: z.array(z.enum(["songwriter", "producer"])).min(1),
+    roles: z
+      .array(z.enum(["songwriter", "producer"]))
+      .min(1)
+      .max(2)
+      .refine(
+        (roles) => new Set(roles).size === roles.length,
+        "Choose distinct roles",
+      ),
     roster_intent: z.literal("add"),
     confirmed: z.literal(true),
   })
