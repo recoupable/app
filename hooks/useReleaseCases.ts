@@ -21,10 +21,11 @@ export function useReleaseCases({
   const scope = JSON.stringify([accountId, organizationId]);
   const [state, setState] = useState<State>(() => empty(scope));
   const generation = useRef(0);
+  const getGeneration = useCallback(() => generation.current, []);
   const request = useReleaseCaseRequest(
     organizationId,
     getAccessToken,
-    generation,
+    getGeneration,
   );
   const run = useCallback(
     async (work: (revision: number) => Promise<Partial<State>>) => {

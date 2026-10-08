@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef } from "react";
-import type { RefObject } from "react";
 import {
   RELEASE_CASE_ERROR,
   ReleaseCaseRequestError,
@@ -7,7 +6,7 @@ import {
 export function useReleaseCaseRequest(
   organizationId: string | null,
   getAccessToken: () => Promise<string | null>,
-  generation: RefObject<number>,
+  getGeneration: () => number,
 ) {
   const tokenReader = useRef(getAccessToken);
   useEffect(() => {
@@ -16,7 +15,7 @@ export function useReleaseCaseRequest(
   const request = useCallback(
     async (body: Record<string, unknown>, revision: number) => {
       const token = await tokenReader.current();
-      if (revision !== generation.current) throw new Error("Workspace changed");
+      if (revision !== getGeneration()) throw new Error("Workspace changed");
       if (!token) throw new ReleaseCaseRequestError("Please sign in again.");
       const response = await fetch("/api/context", {
         method: "POST",
@@ -37,7 +36,7 @@ export function useReleaseCaseRequest(
       if (!response.ok) throw new Error(RELEASE_CASE_ERROR);
       return result;
     },
-    [organizationId, generation],
+    [organizationId, getGeneration],
   );
   return request;
 }
