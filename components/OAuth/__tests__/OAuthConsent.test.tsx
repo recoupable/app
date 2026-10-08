@@ -105,3 +105,11 @@ it("sends denial when canceled and never reuses another account's loaded consent
   );
   expect(screen.queryByRole("button", { name: "Allow access" })).toBeNull();
 });
+
+it("shows the historical finite duration during rollout", async () => {
+  load.mockResolvedValue({ ...details, accessDurationDays: 30 });
+  render(
+    <OAuthConsent issuer="https://api.example/api/oauth" interaction="id" />,
+  );
+  await screen.findByText(/Personal account · 30 days · Revoke anytime/);
+});

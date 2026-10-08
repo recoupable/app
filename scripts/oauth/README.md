@@ -4,7 +4,7 @@ The `/oauth/authorize` page is disabled unless the server environment has `OAUTH
 
 The page uses the existing Privy provider without mounting workspace onboarding, account overrides or checkout effects. Only the configured API receives the Privy token. Requests include the browser's API interaction cookie, and the API permits only its configured chat Origin. Deploy chat/API under same-site HTTPS domains for cookie compatibility; unrelated Vercel preview domains are not equivalent.
 
-The first consent slice covers personal-account access for 30 days, including requested write scopes. Organization selection, Connected Apps and production tool authorization remain separate launch requirements. Client names are unverified text. Approval and cancellation are explicit; the browser cannot submit account IDs or scopes. Returned navigation must stay on the issuer's authorization resume path before the OAuth provider redirects to the client.
+The first consent slice covers personal-account access until disconnected (existing 30-day approvals keep their original deadline), including requested write scopes. Organization selection, Connected Apps and production tool authorization remain separate launch requirements. Client names are unverified text. Approval and cancellation are explicit; the browser cannot submit account IDs or scopes. Returned navigation must stay on the issuer's authorization resume path before the OAuth provider redirects to the client.
 
 Run:
 
