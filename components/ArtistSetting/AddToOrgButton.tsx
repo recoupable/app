@@ -1,83 +1,99 @@
 "use client";
 
-import { useState, useRef, useMemo, useCallback } from "react";
 import { Building2, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonPatterns } from "@/lib/styles/patterns";
+import { useOrganization } from "@/providers/OrganizationProvider";
 import useAccountOrganizations from "@/hooks/useAccountOrganizations";
 import useAddArtistToOrganization from "@/hooks/useAddArtistToOrganization";
-import useClickOutside from "@/hooks/useClickOutside";
-import { useArtistProvider } from "@/providers/ArtistProvider";
-import { useOrganization } from "@/providers/OrganizationProvider";
-import OrganizationButton from "./OrganizationButton";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 interface AddToOrgButtonProps {
   artistId: string;
 }
 
 const AddToOrgButton = ({ artistId }: AddToOrgButtonProps) => {
-  const { data: organizations } = useAccountOrganizations();
-  const { toggleSettingModal } = useArtistProvider();
-  const { setSelectedOrgId } = useOrganization();
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Memoize callbacks to prevent hook recreation
-  const hookOptions = useMemo(
-    () => ({
-      onSuccess: (orgId: string) => {
-        toggleSettingModal();
-        setSelectedOrgId(orgId);
-      },
-    }),
-    [toggleSettingModal, setSelectedOrgId]
+  const {
+    data: organizations = [],
+    isPending,
+    isError,
+    refetch,
+  } = useAccountOrganizations();
+  const { addArtistToOrganization, isAdding, error, addedToOrgId } =
+    useAddArtistToOrganization();
+  const { selectedOrgId } = useOrganization();
+  const availableOrganizations = organizations.filter(
+    (org) => org.organization_id !== selectedOrgId,
+  );
+  const addedOrg = organizations.find(
+    (org) => org.organization_id === addedToOrgId,
   );
 
-  const { addArtistToOrganization, addingToOrgId, isAdding } =
-    useAddArtistToOrganization(hookOptions);
-
-  // Close dropdown when clicking outside
-  const closeDropdown = useCallback(() => setIsOpen(false), []);
-  useClickOutside(dropdownRef, closeDropdown, isOpen);
-
-  // Don't render if user has no orgs
-  if (!organizations || organizations.length === 0) {
-    return null;
-  }
-
-  const handleAddToOrg = (orgId: string) => {
-    addArtistToOrganization(artistId, orgId);
-  };
-
   return (
-    <div className="col-span-12 relative" ref={dropdownRef}>
-      <button
-        className={cn(buttonPatterns.secondary, "w-full py-2 flex items-center justify-center gap-2")}
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <Building2 className="h-4 w-4" />
-        Add to Organization
-        <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
-      </button>
-
-      {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg z-100 py-1">
-          {organizations.map((org) => (
-            <OrganizationButton
+    <div className="col-span-12 space-y-2">
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          disabled={
+            isAdding || isPending || isError || !availableOrganizations.length
+          }
+          className={cn(
+            buttonPatterns.secondary,
+            "w-full min-h-11 py-2 flex items-center justify-center gap-2",
+          )}
+        >
+          <Building2 className="size-4" />
+          {isAdding ? "Adding…" : "Add to Organization"}
+          <ChevronDown className="size-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          {availableOrganizations.map((org) => (
+            <DropdownMenuItem
               key={org.organization_id}
-              organizationId={org.organization_id}
-              organizationName={org.organization_name}
-              isLoading={addingToOrgId === org.organization_id}
-              disabled={isAdding}
-              onClick={() => handleAddToOrg(org.organization_id)}
-            />
+              onSelect={() => {
+                void addArtistToOrganization(artistId, org.organization_id);
+              }}
+            >
+              {org.organization_name || "Organization"}
+            </DropdownMenuItem>
           ))}
-        </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
+      {addedOrg && (
+        <p role="status" className="text-sm text-muted-foreground">
+          Artist is on {addedOrg.organization_name || "the organization"}&apos;s
+          roster.
+        </p>
+      )}
+      {isError && (
+        <p role="alert" className="text-sm text-destructive">
+          Couldn’t load organizations.{" "}
+          <button
+            type="button"
+            className="underline"
+            onClick={() => void refetch()}
+          >
+            Retry
+          </button>
+        </p>
+      )}
+      {!isPending && !isError && !availableOrganizations.length && (
+        <p className="text-sm text-muted-foreground">
+          No other organizations are available. Join or create an organization
+          to add this artist.
+        </p>
       )}
     </div>
   );
 };
 
 export default AddToOrgButton;
-

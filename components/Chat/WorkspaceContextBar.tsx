@@ -8,6 +8,7 @@ import {
   Users,
   Plus,
   Search,
+  Settings,
 } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useOrganization } from "@/providers/OrganizationProvider";
@@ -46,6 +47,8 @@ export default function WorkspaceContextBar() {
     isError,
     setSelectedArtist,
     toggleCreation,
+    toggleUpdate,
+    setIsOpenSettingModal,
   } = useArtistProvider();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -156,6 +159,21 @@ export default function WorkspaceContextBar() {
           className="size-3.5 shrink-0 text-muted-foreground"
         />
       </button>
+      {selectedArtist && (
+        <button
+          type="button"
+          className="flex size-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label={`Artist settings for ${selectedArtist.name || "artist"}`}
+          title="Artist settings"
+          onClick={(event) => {
+            event.currentTarget.focus();
+            toggleUpdate(selectedArtist);
+            setIsOpenSettingModal(true);
+          }}
+        >
+          <Settings strokeWidth={1.5} className="size-[18px]" />
+        </button>
+      )}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           className="gap-0 overflow-hidden p-0 sm:max-w-md"
@@ -215,7 +233,10 @@ export default function WorkspaceContextBar() {
                     onClick={() => selectArtist(artist)}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm hover:bg-muted focus-visible:bg-muted"
                   >
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
+                    <span
+                      aria-hidden="true"
+                      className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground"
+                    >
                       {artist.name?.slice(0, 2).toUpperCase()}
                     </span>
                     <span className="truncate">{artist.name}</span>
