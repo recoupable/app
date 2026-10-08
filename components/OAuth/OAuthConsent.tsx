@@ -183,8 +183,10 @@ export default function OAuthConsent({
                   </div>
                   <div className="space-y-3 text-xs leading-5 text-muted-foreground">
                     <p>
-                      Personal account · {metadata.accessDurationDays} days ·
-                      Revoke anytime
+                      Personal account ·{" "}
+                      {metadata.accessDurationDays === null
+                        ? "Until you disconnect"
+                        : `${metadata.accessDurationDays} days · Revoke anytime`}
                     </p>
                     <details className="group">
                       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">

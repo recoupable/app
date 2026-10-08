@@ -9,7 +9,7 @@ const listSchema = z.object({
         clientName: z.string(),
         scopes: z.array(z.string()),
         createdAt: z.number(),
-        expiresAt: z.number(),
+        expiresAt: z.number().nullable(),
       }),
     )
     .max(200),

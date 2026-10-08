@@ -30,7 +30,7 @@ const details = {
   csrf: "nonce",
   clientName: "Test agent",
   clientId: "agent-id",
-  accessDurationDays: 30,
+  accessDurationDays: null,
   permissions: [
     { scope: "mcp:read", description: "Read account data" },
     { scope: "mcp:write", description: "Create and edit artist profiles" },
@@ -76,7 +76,7 @@ it("shows write permissions and persistent personal access before an explicit ap
   );
   await screen.findByText("Create and edit artist profiles");
   expect(
-    screen.getByText(/Personal account · 30 days · Revoke anytime/),
+    screen.getByText(/Personal account · Until you disconnect/),
   ).toBeDefined();
   expect(
     screen.getByText(/organization workspaces are not included/),
@@ -104,4 +104,12 @@ it("sends denial when canceled and never reuses another account's loaded consent
     <OAuthConsent issuer="https://api.example/api/oauth" interaction="id" />,
   );
   expect(screen.queryByRole("button", { name: "Allow access" })).toBeNull();
+});
+
+it("shows the historical finite duration during rollout", async () => {
+  load.mockResolvedValue({ ...details, accessDurationDays: 30 });
+  render(
+    <OAuthConsent issuer="https://api.example/api/oauth" interaction="id" />,
+  );
+  await screen.findByText(/Personal account · 30 days · Revoke anytime/);
 });

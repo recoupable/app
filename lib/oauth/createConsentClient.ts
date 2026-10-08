@@ -7,7 +7,7 @@ const metadataSchema = z.object({
   clientVerified: z.literal(false),
   accountId: z.string().uuid(),
   context: z.literal("personal"),
-  accessDurationDays: z.literal(30),
+  accessDurationDays: z.literal(30).nullable(),
   expiresIn: z.number().positive(),
   permissions: z
     .array(z.object({ scope: z.string(), description: z.string() }))

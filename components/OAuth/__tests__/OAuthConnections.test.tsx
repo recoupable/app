@@ -123,3 +123,22 @@ it("does not restore a revoked connection from an older refresh", async () => {
   });
   expect(screen.queryByText("Test agent")).toBeNull();
 });
+
+it("shows persistent connections without an expiration date", async () => {
+  load.mockResolvedValue({
+    connections: [
+      {
+        id: "a".repeat(64),
+        clientName: "Persistent agent",
+        clientId: "client",
+        scopes: ["mcp:read"],
+        createdAt: 1,
+        expiresAt: null,
+      },
+    ],
+    truncated: false,
+  });
+  render(<OAuthConnections issuer="https://api.example/api/oauth" />);
+  await screen.findByText("Until you disconnect");
+  expect(screen.queryByText(/Expires/)).toBeNull();
+});
