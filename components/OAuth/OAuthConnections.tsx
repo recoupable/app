@@ -165,11 +165,15 @@ export default function OAuthConnections({ issuer }: { issuer: string }) {
                       {connection.clientName}
                     </h2>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Expires{" "}
-                      {new Date(connection.expiresAt * 1000).toLocaleDateString(
-                        "en-US",
-                        { month: "short", day: "numeric", year: "numeric" },
-                      )}
+                      {connection.expiresAt === null
+                        ? "Until you disconnect"
+                        : `Expires ${new Date(
+                            connection.expiresAt * 1000,
+                          ).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}`}
                     </p>
                   </div>
                 </div>

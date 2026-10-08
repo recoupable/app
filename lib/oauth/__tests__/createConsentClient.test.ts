@@ -45,3 +45,29 @@ it("sends credentials only to the configured interaction and accepts only issuer
     ).rejects.toThrow();
   }
 });
+
+it.each([30, null])(
+  "accepts the server's approved duration %s during rollout",
+  async (accessDurationDays) => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        Response.json({
+          csrf: "a".repeat(43),
+          clientId: "client",
+          clientName: "Agent",
+          clientVerified: false,
+          accountId: "00000000-0000-4000-8000-000000000001",
+          context: "personal",
+          accessDurationDays,
+          expiresIn: 300,
+          permissions: [{ scope: "mcp:read", description: "Read" }],
+        }),
+      ),
+    );
+    expect(
+      (await createConsentClient(issuer, "id").load("token"))
+        .accessDurationDays,
+    ).toBe(accessDurationDays);
+  },
+);
