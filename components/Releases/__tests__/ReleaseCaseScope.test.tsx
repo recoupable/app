@@ -13,13 +13,17 @@ import ReleaseCasesPage from "../ReleaseCasesPage";
 it("immediately hides private case content on workspace switch", async () => {
   vi.stubGlobal(
     "fetch",
-    vi.fn(async (_url, init) =>
-      Response.json(
-        JSON.parse(init.body).action === "list_release_cases"
-          ? { cases: [item], has_more: false }
+    vi.fn(async (_url, init) => {
+      const body = JSON.parse(init.body);
+      return Response.json(
+        body.action === "list_release_cases"
+          ? {
+              cases: body.organization_id === "org-a" ? [item] : [],
+              has_more: false,
+            }
           : projection,
-      ),
-    ),
+      );
+    }),
   );
   const { rerender } = render(<ReleaseCasesPage />);
   fireEvent.click(
@@ -31,6 +35,10 @@ it("immediately hides private case content on workspace switch", async () => {
     rerender(<ReleaseCasesPage />);
   });
   expect(screen.queryByText("Fixture release")).toBeNull();
+  await screen.findByText("No saved releases yet.");
+  expect(
+    screen.queryByRole("button", { name: /Open saved release/ }),
+  ).toBeNull();
 });
 
 it("ignores an old workspace response arriving after a switch", async () => {

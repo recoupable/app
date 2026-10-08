@@ -24,10 +24,9 @@ export function useReleaseCaseReview(
       const input = JSON.stringify([scope, body]);
       if (pendingReview.current?.input !== input)
         pendingReview.current = { input, key: crypto.randomUUID() };
-      await request(
-        { ...body, idempotency_key: pendingReview.current.key },
-        revision,
-      );
+      const pending = pendingReview.current;
+      await request({ ...body, idempotency_key: pending.key }, revision);
+      if (pendingReview.current === pending) pendingReview.current = null;
       return {
         current: await request(
           {
