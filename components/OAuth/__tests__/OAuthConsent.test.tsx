@@ -113,3 +113,41 @@ it("shows the historical finite duration during rollout", async () => {
   );
   await screen.findByText(/Personal account · 30 days · Revoke anytime/);
 });
+
+it("discloses full tool access across accessible workspaces before approval", async () => {
+  load.mockResolvedValue({
+    ...details,
+    permissions: [
+      {
+        scope: "mcp:tools",
+        description:
+          "Use all Recoup tools, including sending messages, publishing content and paid generation",
+      },
+    ],
+  });
+  render(
+    <OAuthConsent issuer="https://api.example/api/oauth" interaction="full" />,
+  );
+  await screen.findByText(/Use all Recoup tools/);
+  expect(
+    screen.getByText(/Accessible workspaces · Until you disconnect/),
+  ).toBeDefined();
+  expect(
+    screen.queryByText(/organization workspaces are not included/),
+  ).toBeNull();
+  expect(decide).not.toHaveBeenCalled();
+});
+
+it("shows organization access outside collapsed details", async () => {
+  load.mockResolvedValue({
+    ...details,
+    permissions: [{ scope: "mcp:tools", description: "Full business tools" }],
+  });
+  render(
+    <OAuthConsent issuer="https://api.example/api/oauth" interaction="full" />,
+  );
+  const disclosure = await screen.findByText(
+    /Includes personal and organization workspaces/,
+  );
+  expect(disclosure.closest("details")).toBeNull();
+});

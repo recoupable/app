@@ -179,6 +179,11 @@ export default function OAuthConnections({ issuer }: { issuer: string }) {
                 </div>
                 <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                   <div className="flex flex-wrap gap-2">
+                    {connection.scopes.includes("mcp:tools") && (
+                      <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
+                        Full tool access
+                      </span>
+                    )}
                     {connection.scopes.includes("mcp:read") && (
                       <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
                         Read access
