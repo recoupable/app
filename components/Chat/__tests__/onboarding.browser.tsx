@@ -41,14 +41,12 @@ vi.mock("@/lib/api/getClientApiBaseUrl", () => ({
   getClientApiBaseUrl: () => "http://fixture.invalid",
 }));
 vi.mock("@/components/ArtistSetting/Settings", () => ({
-  default: () => (
-    <AddToOrgButton
-      artistId={
-        (useContext(ArtistFixtureContext).editableArtist as ArtistRecord)
-          .account_id
-      }
-    />
-  ),
+  default: function SettingsFixture() {
+    const { editableArtist } = useContext(ArtistFixtureContext);
+    return (
+      <AddToOrgButton artistId={(editableArtist as ArtistRecord).account_id} />
+    );
+  },
 }));
 const artists = [
   { account_id: "artist-a", name: "Artist A" },
