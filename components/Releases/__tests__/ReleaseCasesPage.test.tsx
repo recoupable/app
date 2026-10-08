@@ -10,12 +10,16 @@ import {
 } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import ReleaseCasesPage from "../ReleaseCasesPage";
-const state = vi.hoisted(() => ({ org: "org-a", authenticated: true }));
+const state = vi.hoisted(() => ({
+  org: "org-a",
+  authenticated: true,
+  token: "token" as string | null,
+}));
 vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({
     authenticated: state.authenticated,
     ready: true,
-    getAccessToken: async () => "token",
+    getAccessToken: async () => state.token,
     login: vi.fn(),
   }),
 }));
@@ -28,7 +32,7 @@ vi.mock("@/providers/OrganizationProvider", () => ({
 const item = {
   request_id: "request",
   url: "https://open.spotify.com/album/example",
-  created_at: "2026-10-08",
+  created_at: "2026-10-08T15:00:00Z",
   status: "partial",
 };
 const projection = {
@@ -49,6 +53,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
   state.org = "org-a";
   state.authenticated = true;
+  state.token = "token";
 });
 it("reviews the exact observed fingerprint and does not authorize distribution", async () => {
   const bodies: Record<string, unknown>[] = [];
@@ -214,4 +219,26 @@ it("does not allow a review of a truncated release", async () => {
       }) as HTMLButtonElement
     ).disabled,
   ).toBe(true);
+});
+
+it("offers a route back to chat when no saved releases exist", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => Response.json({ cases: [] })),
+  );
+  render(<ReleaseCasesPage />);
+  await screen.findByText("No saved releases yet.");
+  expect(
+    screen.getByRole("link", { name: "Open chat" }).getAttribute("href"),
+  ).toBe("/");
+});
+it("identifies expired authentication without exposing raw response errors", async () => {
+  state.token = null;
+  const fetcher = vi.fn();
+  vi.stubGlobal("fetch", fetcher);
+  render(<ReleaseCasesPage />);
+  expect((await screen.findByRole("alert")).textContent).toContain(
+    "Please sign in again.",
+  );
+  expect(fetcher).not.toHaveBeenCalled();
 });
