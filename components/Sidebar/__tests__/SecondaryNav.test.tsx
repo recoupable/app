@@ -73,6 +73,13 @@ describe("SecondaryNav", () => {
 
     expect(onNavigate).toHaveBeenCalledWith("music");
   });
+  it("opens the release review workflow", () => {
+    const { onNavigate } = renderNav();
+    fireEvent.click(
+      screen.getByRole("button", { name: /view release reviews/i }),
+    );
+    expect(onNavigate).toHaveBeenCalledWith("releases");
+  });
   it("does not list Billing (it lives in the profile dropdown)", () => {
     renderNav();
     expect(screen.queryByRole("button", { name: "View billing" })).toBeNull();

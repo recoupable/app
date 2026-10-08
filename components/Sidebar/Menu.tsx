@@ -51,6 +51,7 @@ const Menu = ({ isExpanded }: MenuProps) => {
         isTasks={isTasks}
         isFiles={isFiles}
         isCatalogs={isCatalogs}
+        isReleases={pathname.startsWith("/releases")}
         isArtists={isArtists}
         isMusic={isMusic}
         isSites={pathname.startsWith("/sites")}
