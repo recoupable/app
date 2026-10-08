@@ -17,6 +17,7 @@ export default defineConfig({
     include: [
       "components/Chat/__tests__/onboarding.browser.tsx",
       "components/Artists/__tests__/manualProfessional.browser.tsx",
+      "components/Artists/__tests__/rosterDialog.browser.tsx",
     ],
     browser: {
       enabled: true,

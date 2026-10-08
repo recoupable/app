@@ -117,7 +117,9 @@ it.each([
       confirmed: true,
       roster_intent: "add",
     });
-    expect(body.idempotency_key).toMatch(/^[0-9a-f-]{36}$/);
+    expect(body.idempotency_key).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+    );
     expect(
       fixture.fetch.mock.calls.every(([url]) =>
         String(url).includes("/api/organizations/professionals"),
@@ -258,4 +260,67 @@ it("a completed old-workspace request cannot close the new-workspace form", asyn
   expect(
     (screen.getByLabelText("Professional name") as HTMLInputElement).value,
   ).toBe("");
+});
+
+it("loads later-page namesakes before allowing a new-person confirmation", async () => {
+  fixture.fetch.mockImplementation(async (url: string) =>
+    response(
+      String(url).includes("after=")
+        ? { professionals: [professional], next_cursor: null }
+        : { professionals: [], next_cursor: id },
+    ),
+  );
+  render(form());
+  await userEvent.fill(
+    screen.getByLabelText("Professional name"),
+    "Test Writer",
+  );
+  await userEvent.click(
+    screen.getByRole("checkbox", { name: /^songwriter$/i }),
+  );
+  const confirmation = screen.getByRole("checkbox", {
+    name: /I confirm this is a new person/,
+  });
+  await waitFor(() =>
+    expect(
+      screen.getByRole("button", { name: "Load more existing records" }),
+    ).toBeTruthy(),
+  );
+  expect(confirmation.hasAttribute("disabled")).toBe(true);
+  expect(
+    screen
+      .getByRole("button", { name: "Confirm roster addition" })
+      .hasAttribute("disabled"),
+  ).toBe(true);
+  await userEvent.click(
+    screen.getByRole("button", { name: "Load more existing records" }),
+  );
+  await waitFor(() =>
+    expect(screen.getByRole("status").textContent).toContain("1 record(s)"),
+  );
+  expect(confirmation.hasAttribute("disabled")).toBe(false);
+  await userEvent.click(confirmation);
+  expect(
+    screen
+      .getByRole("button", { name: "Confirm roster addition" })
+      .hasAttribute("disabled"),
+  ).toBe(false);
+});
+it("ignores a malformed pending request without a new-person name", async () => {
+  sessionStorage.setItem(
+    `professional-roster-pending:${actor}:${org}`,
+    JSON.stringify({
+      organization_id: org,
+      idempotency_key: id,
+      mode: "new",
+      roles: ["songwriter"],
+      roster_intent: "add",
+      confirmed: true,
+    }),
+  );
+  render(form());
+  expect(
+    screen.queryByRole("button", { name: "Retry saved request" }),
+  ).toBeNull();
+  expect(screen.getByLabelText("Professional name")).toBeTruthy();
 });

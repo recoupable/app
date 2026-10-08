@@ -62,7 +62,15 @@ export default function ManualProfessionalForm({
   );
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (lock.current) return;
+    if (
+      lock.current ||
+      (!pending &&
+        (!confirmed ||
+          roster.isPending ||
+          roster.isError ||
+          (mode === "new" && roster.hasNextPage)))
+    )
+      return;
     lock.current = true;
     setBusy(true);
     setError("");
@@ -200,12 +208,20 @@ export default function ManualProfessionalForm({
               create a new record for a different person.
             </p>
           )}
+          {roster.hasNextPage && mode === "new" && (
+            <p className="text-sm">
+              Load all existing records before confirming a distinct new person.
+            </p>
+          )}
           {roster.hasNextPage && (
             <Button
               type="button"
               variant="outline"
               disabled={roster.isFetchingNextPage}
-              onClick={() => roster.fetchNextPage()}
+              onClick={() => {
+                setConfirmed(false);
+                void roster.fetchNextPage();
+              }}
             >
               Load more existing records
             </Button>
@@ -234,6 +250,12 @@ export default function ManualProfessionalForm({
             <input
               type="checkbox"
               checked={confirmed}
+              disabled={
+                mode === "new" &&
+                (roster.isPending ||
+                  roster.isError ||
+                  Boolean(roster.hasNextPage))
+              }
               onChange={(e) => setConfirmed(e.target.checked)}
             />
             {mode === "new"
@@ -263,6 +285,7 @@ export default function ManualProfessionalForm({
           (!pending &&
             (roster.isPending ||
               roster.isError ||
+              (mode === "new" && roster.hasNextPage) ||
               !confirmed ||
               !roles.length ||
               (mode === "new" ? name.trim().length < 2 : !professionalId)))

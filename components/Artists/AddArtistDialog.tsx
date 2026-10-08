@@ -61,6 +61,7 @@ const AddArtistDialog = () => {
           <Button
             variant={manual ? "outline" : "default"}
             aria-pressed={!manual}
+            disabled={isAdding}
             onClick={() => setManual(false)}
           >
             Spotify artist
@@ -68,6 +69,7 @@ const AddArtistDialog = () => {
           <Button
             variant={manual ? "default" : "outline"}
             aria-pressed={manual}
+            disabled={isAdding}
             onClick={() => setManual(true)}
           >
             Songwriter / producer
@@ -84,6 +86,20 @@ const AddArtistDialog = () => {
               actorId={userData.account_id}
               onSaved={closeCreation}
             />
+          ) : selectedOrgId && organizations.isPending ? (
+            <p role="status">Loading organization…</p>
+          ) : selectedOrgId ? (
+            <div role="alert">
+              <p>Could not confirm access to this organization.</p>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={organizations.isFetching}
+                onClick={() => void organizations.refetch()}
+              >
+                Retry organization
+              </Button>
+            </div>
           ) : (
             <p>
               Select an organization workspace to add a songwriter or producer.
