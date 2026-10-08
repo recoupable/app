@@ -14,7 +14,7 @@ export default function ReleaseCaseEvidence({
           <li key={`${source.result_id}:${source.source_version_id}`}>
             <p className="break-all">{source.source_url}</p>
             <p className="text-muted-foreground">
-              Captured {source.retrieved_at}
+              Captured {new Date(source.retrieved_at).toLocaleString()}
             </p>
             <code className="break-all text-xs">
               {source.source_version_id}

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
+import type { ReleaseCaseResponses } from "@/lib/releases/responseTypes";
 import {
   RELEASE_CASE_ERROR,
   ReleaseCaseRequestError,
@@ -13,7 +14,10 @@ export function useReleaseCaseRequest(
     tokenReader.current = getAccessToken;
   }, [getAccessToken]);
   const request = useCallback(
-    async (body: Record<string, unknown>, revision: number) => {
+    async <Action extends keyof ReleaseCaseResponses>(
+      body: Record<string, unknown> & { action: Action },
+      revision: number,
+    ): Promise<ReleaseCaseResponses[Action]> => {
       const token = await tokenReader.current();
       if (revision !== getGeneration()) throw new Error("Workspace changed");
       if (!token) throw new ReleaseCaseRequestError("Please sign in again.");
@@ -30,11 +34,11 @@ export function useReleaseCaseRequest(
         }),
         signal: AbortSignal.timeout(30000),
       });
-      const result = await response.json();
       if (response.status === 401)
         throw new ReleaseCaseRequestError("Please sign in again.");
       if (!response.ok) throw new Error(RELEASE_CASE_ERROR);
-      return result;
+      const result: unknown = await response.json();
+      return result as ReleaseCaseResponses[Action];
     },
     [organizationId, getGeneration],
   );

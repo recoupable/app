@@ -15,7 +15,7 @@ export function useReleaseCaseReview(
     run(async (revision) => {
       if (!current) throw new Error("Select a release");
       const body = {
-        action: "review_release_case",
+        action: "review_release_case" as const,
         request_id: current.request_id,
         fingerprint: current.fingerprint,
         decision,

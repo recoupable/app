@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { empty, type ReleaseCaseState as State } from "@/lib/releases/state";
+import type { ReleaseCaseState as State } from "@/lib/releases/state";
+import { createReleaseCaseState as empty } from "@/lib/releases/createReleaseCaseState";
 import {
   RELEASE_CASE_ERROR,
   ReleaseCaseRequestError,
