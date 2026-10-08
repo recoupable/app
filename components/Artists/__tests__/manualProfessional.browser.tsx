@@ -4,16 +4,22 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import ManualProfessionalForm from "../ManualProfessionalForm";
+import ProfessionalRosterSection from "../ProfessionalRosterSection";
 import "@/app/globals.css";
-const fixture = vi.hoisted(() => ({ fetch: vi.fn() }));
+const fixture = vi.hoisted(() => ({ fetch: vi.fn(), authenticated: true }));
 const actor = "10000000-0000-4000-8000-000000000001";
 const org = "10000000-0000-4000-8000-000000000002";
 const other = "10000000-0000-4000-8000-000000000004";
 const id = "10000000-0000-4000-8000-000000000003";
 vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({
-    authenticated: true,
+    authenticated: fixture.authenticated,
     getAccessToken: async () => "fixture-token",
+  }),
+}));
+vi.mock("@/providers/OrganizationProvider", () => ({
+  useOrganization: () => ({
+    selectedOrgId: "10000000-0000-4000-8000-000000000002",
   }),
 }));
 vi.mock("@/providers/UserProvder", () => ({
@@ -52,6 +58,7 @@ const form = (organizationId = org) => (
 );
 beforeEach(() => {
   sessionStorage.clear();
+  fixture.authenticated = true;
   saved = vi.fn();
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   fixture.fetch.mockReset();
@@ -323,4 +330,65 @@ it("ignores a malformed pending request without a new-person name", async () => 
     screen.queryByRole("button", { name: "Retry saved request" }),
   ).toBeNull();
   expect(screen.getByLabelText("Professional name")).toBeTruthy();
+});
+
+it("keeps loaded professionals visible when the next page fails", async () => {
+  fixture.fetch.mockImplementation(async (url: string) =>
+    String(url).includes("after=")
+      ? response({ error: "temporary" }, 503)
+      : response({ professionals: [professional], next_cursor: id }),
+  );
+  render(
+    <QueryClientProvider client={client}>
+      <ProfessionalRosterSection />
+    </QueryClientProvider>,
+  );
+  await waitFor(() => expect(screen.getByText("Test Writer")).toBeTruthy());
+  await userEvent.click(
+    screen.getByRole("button", { name: "Load more professionals" }),
+  );
+  await waitFor(() =>
+    expect(screen.getByRole("alert").textContent).toContain(
+      "Could not load more",
+    ),
+  );
+  expect(screen.getByText("Test Writer")).toBeTruthy();
+  expect(
+    screen.getByRole("button", { name: "Load more professionals" }),
+  ).toBeTruthy();
+});
+it("does not announce endless loading when signed out", () => {
+  fixture.authenticated = false;
+  render(
+    <QueryClientProvider client={client}>
+      <ProfessionalRosterSection />
+    </QueryClientProvider>,
+  );
+  expect(screen.queryByText("Loading professional roster…")).toBeNull();
+  expect(screen.getByText(/Sign in to view/)).toBeTruthy();
+});
+it("can explicitly add a distinct new person despite a same-name candidate", async () => {
+  fixture.fetch.mockImplementation(
+    async (_url: string, options: RequestInit) =>
+      options.method === "POST"
+        ? response(
+            { professional: { ...professional, id: other }, created: true },
+            201,
+          )
+        : response({ professionals: [professional], next_cursor: null }),
+  );
+  render(form());
+  await enter();
+  expect(screen.getByRole("status").textContent).toContain("1 record(s)");
+  await userEvent.click(
+    screen.getByRole("button", { name: "Confirm roster addition" }),
+  );
+  await waitFor(() => expect(saved).toHaveBeenCalledTimes(1));
+  const body = JSON.parse(
+    fixture.fetch.mock.calls.find(
+      ([, options]) => options.method === "POST",
+    )![1].body,
+  );
+  expect(body.mode).toBe("new");
+  expect(body.professional_id).toBeUndefined();
 });

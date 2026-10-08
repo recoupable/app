@@ -4,10 +4,8 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useQueryClient } from "@tanstack/react-query";
 import { useProfessionalRoster } from "@/hooks/useProfessionalRoster";
 import { requestProfessionalRoster } from "@/lib/professionals/requestProfessionalRoster";
-import {
-  pendingProfessionalSchema,
-  type ProfessionalRequest,
-} from "@/lib/professionals/schema";
+import type { ProfessionalRequest } from "@/lib/professionals/schema";
+import { usePendingProfessionalRequest } from "@/hooks/usePendingProfessionalRequest";
 import { ProfessionalRequestError } from "@/lib/professionals/ProfessionalRequestError";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,20 +24,8 @@ export default function ManualProfessionalForm({
   const roster = useProfessionalRoster(organizationId);
   const { getAccessToken } = usePrivy();
   const queryClient = useQueryClient();
-  const storageKey = `professional-roster-pending:${actorId}:${organizationId}`;
-  const [pending, setPending] = useState<ProfessionalRequest | null>(() => {
-    if (typeof window === "undefined") return null;
-    try {
-      const saved = pendingProfessionalSchema.safeParse(
-        JSON.parse(sessionStorage.getItem(storageKey) || "null"),
-      );
-      return saved.success && saved.data.organization_id === organizationId
-        ? saved.data
-        : null;
-    } catch {
-      return null;
-    }
-  });
+  const { storageKey, pending, setPending, restored } =
+    usePendingProfessionalRequest(actorId, organizationId);
   const [mode, setMode] = useState<"new" | "existing">("new");
   const [name, setName] = useState("");
   const [professionalId, setProfessionalId] = useState("");
@@ -63,6 +49,7 @@ export default function ManualProfessionalForm({
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (
+      !restored ||
       lock.current ||
       (!pending &&
         (!confirmed ||
@@ -281,6 +268,7 @@ export default function ManualProfessionalForm({
         type="submit"
         className="min-h-11"
         disabled={
+          !restored ||
           busy ||
           (!pending &&
             (roster.isPending ||
