@@ -32,7 +32,9 @@ export async function requestProfessionalRoster(
     throw new ProfessionalRequestError(
       response.status === 403
         ? "You no longer have access to this organization."
-        : "Could not load or save the roster. Please retry.",
+        : body && [400, 409].includes(response.status)
+          ? "Review and correct the name, selected record, and roles before submitting again."
+          : "Could not load or save the roster. Please retry.",
       response.status,
     );
   const parsed = body
