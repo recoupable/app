@@ -8,6 +8,7 @@ import {
 } from "@/lib/releases/errors";
 import { useReleaseCaseRequest } from "./useReleaseCaseRequest";
 import { useReleaseCaseReview } from "./useReleaseCaseReview";
+import { useReleaseCaseIntake } from "./useReleaseCaseIntake";
 interface Options {
   accountId: string | null;
   organizationId: string | null;
@@ -31,7 +32,7 @@ export function useReleaseCases({
   const run = useCallback(
     async (work: (revision: number) => Promise<Partial<State>>) => {
       const revision = generation.current;
-      setState((s) => ({ ...s, busy: true, error: "" }));
+      setState((s) => ({ ...s, busy: true, error: "", notice: "" }));
       try {
         const update = await work(revision);
         if (revision === generation.current)
@@ -93,5 +94,6 @@ export function useReleaseCases({
       };
     });
   const review = useReleaseCaseReview(visible.current, scope, request, run);
-  return { ...visible, reload, open, more, review };
+  const add = useReleaseCaseIntake(scope, request, run);
+  return { ...visible, reload, open, more, review, add };
 }
