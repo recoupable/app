@@ -13,9 +13,13 @@ import DeleteModal from "./DeleteModal";
 import AddToOrgButton from "./AddToOrgButton";
 import { useState } from "react";
 import AccountIdDisplay from "./AccountIdDisplay";
-import { borderPatterns, buttonPatterns, iconPatterns, textPatterns } from "@/lib/styles/patterns";
+import {
+  borderPatterns,
+  buttonPatterns,
+  iconPatterns,
+  textPatterns,
+} from "@/lib/styles/patterns";
 import { cn } from "@/lib/utils";
-import { useOrganization } from "@/providers/OrganizationProvider";
 import { TabbedSettings } from "./TabbedSettings";
 
 interface SettingsProps {
@@ -33,11 +37,10 @@ const Settings = ({ defaultTab = "general" }: SettingsProps) => {
     setSelectedArtist,
     editableArtist,
   } = useArtistProvider();
-  const { selectedOrgId } = useOrganization();
   const [isVisibleDeleteModal, setIsVisibleDeleteModal] = useState(false);
 
-  // Show "Add to Org" only when editing in Personal view
-  const showAddToOrg = settingMode === SETTING_MODE.UPDATE && selectedOrgId === null;
+  // Organization choices come from the authenticated membership list.
+  const showAddToOrg = settingMode === SETTING_MODE.UPDATE;
 
   // Show tabs only when editing an existing artist (not create mode)
   const showTabs = settingMode === SETTING_MODE.UPDATE;
@@ -53,7 +56,12 @@ const Settings = ({ defaultTab = "general" }: SettingsProps) => {
 
   // Header is shared between tabbed and non-tabbed views
   const header = (
-    <div className={cn("col-span-12 flex justify-between items-center pb-3", borderPatterns.divider)}>
+    <div
+      className={cn(
+        "col-span-12 flex justify-between items-center pb-3",
+        borderPatterns.divider,
+      )}
+    >
       <div className="flex gap-2 items-center">
         <MicVocal className={iconPatterns.primary} />
         <div className="flex flex-col">

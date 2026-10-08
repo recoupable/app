@@ -27,10 +27,6 @@ const Header = () => {
   const isArtistSelected = selectedArtist !== null;
 
   const handleClickPfp = () => {
-    if (isMobile) {
-      push("/artists");
-      return;
-    }
     // Update the artist details for editing
     toggleUpdate(selectedArtist as ArtistRecord);
     toggleSettingModal();
@@ -83,7 +79,7 @@ const Header = () => {
               data-testid="mobile-pfp-button"
               className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center shadow-md hover:shadow-lg transition-shadow"
               onClick={handleClickPfp}
-              aria-label="Open artist options"
+              aria-label={`Artist settings for ${selectedArtist.name}`}
             >
               <ImageWithFallback
                 src={selectedArtist?.image || ""}
