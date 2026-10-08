@@ -60,12 +60,14 @@ const AddArtistDialog = () => {
         <div className="flex gap-2">
           <Button
             variant={manual ? "outline" : "default"}
+            aria-pressed={!manual}
             onClick={() => setManual(false)}
           >
             Spotify artist
           </Button>
           <Button
             variant={manual ? "default" : "outline"}
+            aria-pressed={manual}
             onClick={() => setManual(true)}
           >
             Songwriter / producer
