@@ -183,7 +183,12 @@ export default function OAuthConsent({
                   </div>
                   <div className="space-y-3 text-xs leading-5 text-muted-foreground">
                     <p>
-                      Personal account ·{" "}
+                      {metadata.permissions.some(
+                        (permission) => permission.scope === "mcp:tools",
+                      )
+                        ? "Accessible workspaces"
+                        : "Personal account"}{" "}
+                      ·{" "}
                       {metadata.accessDurationDays === null
                         ? "Until you disconnect"
                         : `${metadata.accessDurationDays} days · Revoke anytime`}
@@ -203,9 +208,13 @@ export default function OAuthConsent({
                           this app and started this connection.
                         </p>
                         <p>
-                          Access continues when you leave this page. Your
-                          organization workspaces are not included. Revoke
-                          access in Connected agents.
+                          Access continues when you leave this page.{" "}
+                          {metadata.permissions.some(
+                            (permission) => permission.scope === "mcp:tools",
+                          )
+                            ? "Includes personal and organization workspaces your account can access. Private conversations and tasks stay account-bound."
+                            : "Your organization workspaces are not included."}{" "}
+                          Revoke access in Connected agents.
                         </p>
                         <p className="break-all">
                           Client ID: {metadata.clientId}
