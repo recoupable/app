@@ -142,3 +142,28 @@ it("shows persistent connections without an expiration date", async () => {
   await screen.findByText("Until you disconnect");
   expect(screen.queryByText(/Expires/)).toBeNull();
 });
+
+it.each([
+  ["mcp:tools", true],
+  ["mcp:read", false],
+])(
+  "shows the full tool badge only for full scope: %s",
+  async (scope, visible) => {
+    load.mockResolvedValue({
+      connections: [
+        {
+          id: "a".repeat(64),
+          clientName: "Full agent",
+          clientId: "client",
+          scopes: [scope],
+          createdAt: 1,
+          expiresAt: null,
+        },
+      ],
+      truncated: false,
+    });
+    render(<OAuthConnections issuer="https://api.example/api/oauth" />);
+    await screen.findByText("Full agent");
+    expect(screen.queryByText("Full tool access") !== null).toBe(visible);
+  },
+);

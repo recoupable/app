@@ -137,3 +137,17 @@ it("discloses full tool access across accessible workspaces before approval", as
   ).toBeNull();
   expect(decide).not.toHaveBeenCalled();
 });
+
+it("shows organization access outside collapsed details", async () => {
+  load.mockResolvedValue({
+    ...details,
+    permissions: [{ scope: "mcp:tools", description: "Full business tools" }],
+  });
+  render(
+    <OAuthConsent issuer="https://api.example/api/oauth" interaction="full" />,
+  );
+  const disclosure = await screen.findByText(
+    /Includes personal and organization workspaces/,
+  );
+  expect(disclosure.closest("details")).toBeNull();
+});

@@ -193,6 +193,13 @@ export default function OAuthConsent({
                         ? "Until you disconnect"
                         : `${metadata.accessDurationDays} days · Revoke anytime`}
                     </p>
+                    <p>
+                      {metadata.permissions.some(
+                        (permission) => permission.scope === "mcp:tools",
+                      )
+                        ? "Includes personal and organization workspaces your account can access. Private conversations and tasks stay account-bound."
+                        : "Your organization workspaces are not included."}{" "}
+                    </p>
                     <details className="group">
                       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
                         <span>Unverified app</span>
@@ -208,13 +215,8 @@ export default function OAuthConsent({
                           this app and started this connection.
                         </p>
                         <p>
-                          Access continues when you leave this page.{" "}
-                          {metadata.permissions.some(
-                            (permission) => permission.scope === "mcp:tools",
-                          )
-                            ? "Includes personal and organization workspaces your account can access. Private conversations and tasks stay account-bound."
-                            : "Your organization workspaces are not included."}{" "}
-                          Revoke access in Connected agents.
+                          Access continues when you leave this page. Revoke
+                          access in Connected agents.
                         </p>
                         <p className="break-all">
                           Client ID: {metadata.clientId}
