@@ -186,5 +186,13 @@ describe("artist settings onboarding", () => {
     );
     await openSettings("Artist B");
     expect(screen.getByRole("dialog").textContent).toContain("Artist B");
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Add to Organization",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    expect(fixture.fetch).not.toHaveBeenCalled();
   });
 });

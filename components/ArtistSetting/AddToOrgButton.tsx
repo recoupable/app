@@ -3,6 +3,7 @@
 import { Building2, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonPatterns } from "@/lib/styles/patterns";
+import { useOrganization } from "@/providers/OrganizationProvider";
 import useAccountOrganizations from "@/hooks/useAccountOrganizations";
 import useAddArtistToOrganization from "@/hooks/useAddArtistToOrganization";
 import {
@@ -25,6 +26,10 @@ const AddToOrgButton = ({ artistId }: AddToOrgButtonProps) => {
   } = useAccountOrganizations();
   const { addArtistToOrganization, isAdding, error, addedToOrgId } =
     useAddArtistToOrganization();
+  const { selectedOrgId } = useOrganization();
+  const availableOrganizations = organizations.filter(
+    (org) => org.organization_id !== selectedOrgId,
+  );
   const addedOrg = organizations.find(
     (org) => org.organization_id === addedToOrgId,
   );
@@ -33,7 +38,9 @@ const AddToOrgButton = ({ artistId }: AddToOrgButtonProps) => {
     <div className="col-span-12 space-y-2">
       <DropdownMenu>
         <DropdownMenuTrigger
-          disabled={isAdding || isPending || isError || !organizations.length}
+          disabled={
+            isAdding || isPending || isError || !availableOrganizations.length
+          }
           className={cn(
             buttonPatterns.secondary,
             "w-full min-h-11 py-2 flex items-center justify-center gap-2",
@@ -44,7 +51,7 @@ const AddToOrgButton = ({ artistId }: AddToOrgButtonProps) => {
           <ChevronDown className="size-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
-          {organizations.map((org) => (
+          {availableOrganizations.map((org) => (
             <DropdownMenuItem
               key={org.organization_id}
               onSelect={() => {
@@ -79,9 +86,10 @@ const AddToOrgButton = ({ artistId }: AddToOrgButtonProps) => {
           </button>
         </p>
       )}
-      {!isPending && !isError && !organizations.length && (
+      {!isPending && !isError && !availableOrganizations.length && (
         <p className="text-sm text-muted-foreground">
-          Join or create an organization to add this artist.
+          No other organizations are available. Join or create an organization
+          to add this artist.
         </p>
       )}
     </div>
