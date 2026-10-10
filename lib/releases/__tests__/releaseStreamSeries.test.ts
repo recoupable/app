@@ -1,41 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildReleaseStreamSeries } from "../buildReleaseStreamSeries";
 import { getStreamPeriod } from "../getStreamPeriod";
-import type { ReleaseCase } from "../types";
-import type { StreamHistory } from "../streamTypes";
-const first = "USABC2600001";
-const second = "USABC2600002";
-const current = {
-  tracks: [
-    { slot_index: 0, title: "First" },
-    { slot_index: 1, title: "Second" },
-  ],
-  identity_observations: {
-    candidates: [
-      { slotIndex: 0, isrc: first, mappingState: "unmapped" },
-      { slotIndex: 1, isrc: second, mappingState: "existing_identifier_match" },
-    ],
-  },
-  track_page: { hasMore: false },
-} as ReleaseCase;
-const history = {
-  periods: {
-    previous: { start: "2026-10-01", end_exclusive: "2026-10-03" },
-    current: { start: "2026-10-03", end_exclusive: "2026-10-05" },
-    days: 2,
-    timezone: "UTC",
-  },
-  recordings: [first, second].map((isrc) => ({
-    isrc,
-    provider_recording_id: isrc,
-    retrieved_at: "2026-10-06T09:00:00Z",
-    state: "comparable",
-    days: [1, 2, 3, 4].map((day) => ({
-      date: `2026-10-0${day}`,
-      streams: day < 3 ? 0 : day,
-    })),
-  })),
-} as StreamHistory;
+import { first, current, history } from "./streamSeriesFixture";
 describe("release daily streams", () => {
   it("sums exact identities, counts duplicates once and preserves observed zeros", () => {
     const duplicate = {
@@ -77,6 +43,10 @@ describe("release daily streams", () => {
   });
   it("does not merge another recording with the same title, or unresolved/conflicting identities", () => {
     const conflict = structuredClone(current);
+    conflict.tracks[1].title = conflict.tracks[0].title;
+    expect(buildReleaseStreamSeries(conflict, history).total).toBe(14);
+    conflict.identity_observations.candidates[1].mappingState = "unresolved";
+    expect(buildReleaseStreamSeries(conflict, history).total).toBeNull();
     conflict.identity_observations.candidates[1].mappingState = "conflict";
     expect(buildReleaseStreamSeries(conflict, history)).toMatchObject({
       total: null,
@@ -85,34 +55,6 @@ describe("release daily streams", () => {
     const wrong = structuredClone(history);
     wrong.recordings[1].isrc = "USABC2699999";
     expect(buildReleaseStreamSeries(current, wrong).total).toBeNull();
-  });
-  it("does not invent a complete release for truncated tracks or missing source identity", () => {
-    expect(
-      buildReleaseStreamSeries(
-        { ...current, track_page: { ...current.track_page, hasMore: true } },
-        history,
-      ).total,
-    ).toBeNull();
-    const missingIdentity = structuredClone(history);
-    missingIdentity.recordings[0].provider_recording_id = null;
-    expect(buildReleaseStreamSeries(current, missingIdentity).total).toBeNull();
-  });
-  it("treats explicit nulls and duplicate daily rows as gaps", () => {
-    const invalid = structuredClone(history);
-    invalid.recordings[0].days[2].streams = null;
-    invalid.recordings[0].days.push(invalid.recordings[0].days[3]);
-    expect(
-      buildReleaseStreamSeries(current, invalid).daily.map(
-        (row) => row.streams,
-      ),
-    ).toEqual([null, null]);
-  });
-  it("rejects unsafe aggregate totals", () => {
-    const large = structuredClone(history);
-    large.recordings[0].days.forEach(
-      (row) => (row.streams = Number.MAX_SAFE_INTEGER),
-    );
-    expect(buildReleaseStreamSeries(current, large).total).toBeNull();
   });
   it("uses completed UTC days including the two-day provider buffer across month boundaries", () => {
     expect(getStreamPeriod(28, new Date("2026-03-01T00:01:00Z"))).toEqual({

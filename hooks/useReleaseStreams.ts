@@ -1,14 +1,8 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { getReleaseStreamCatalogs } from "@/lib/releases/getReleaseStreamCatalogs";
-import { getReleaseStreamHistory } from "@/lib/releases/getReleaseStreamHistory";
-import { getStreamPeriod } from "@/lib/releases/getStreamPeriod";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { requestStreamData } from "@/lib/releases/requestStreamData";
-import {
-  streamTrackingSchema,
-  type StreamHistory,
-  type StreamTracking,
-} from "@/lib/releases/streamTypes";
+import { useReleaseStreamCatalogChoices } from "./useReleaseStreamCatalogChoices";
+import { useCatalogStreamRead } from "./useCatalogStreamRead";
 
 /** The parent keys this hook's component by account, workspace, release and evidence fingerprint. */
 export function useReleaseStreams(
@@ -20,96 +14,25 @@ export function useReleaseStreams(
   useEffect(() => {
     tokenReader.current = getAccessToken;
   }, [getAccessToken]);
-  const [catalogs, setCatalogs] = useState<{ id: string; name: string }[]>([]);
+  const getToken = useCallback(() => tokenReader.current(), []);
   const [catalogId, setCatalogId] = useState("");
   const [days, setDays] = useState(28);
   const [reload, setReload] = useState(0);
-  const [catalogError, setCatalogError] = useState("");
-  const [catalogsLoading, setCatalogsLoading] = useState(true);
-  const [catalogReload, setCatalogReload] = useState(0);
   const [enabling, setEnabling] = useState(false);
   const [mutationError, setMutationError] = useState("");
   const lifetime = useRef<AbortController | null>(null);
-  const [read, setRead] = useState<{
-    key: string;
-    history: StreamHistory | null;
-    tracking: StreamTracking | null;
-    error: string;
-    loading: boolean;
-  }>({ key: "", history: null, tracking: null, error: "", loading: false });
-  const key = JSON.stringify([catalogId, days, reload]);
-  const visible =
-    read.key === key
-      ? read
-      : { history: null, tracking: null, error: "", loading: !!catalogId };
+  const choices = useReleaseStreamCatalogChoices(
+    accountId,
+    organizationId,
+    getToken,
+    setCatalogId,
+  );
   useEffect(() => {
     const controller = new AbortController();
     lifetime.current = controller;
-    void getReleaseStreamCatalogs(
-      accountId,
-      () => tokenReader.current(),
-      controller.signal,
-      organizationId,
-    )
-      .then((items) => {
-        if (controller.signal.aborted) return;
-        setCatalogs(items);
-        if (items.length === 1) setCatalogId(items[0].id);
-      })
-      .catch(() => {
-        if (!controller.signal.aborted)
-          setCatalogError("Could not load workspace catalogs. Please retry.");
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setCatalogsLoading(false);
-      });
     return () => controller.abort();
-  }, [accountId, organizationId, catalogReload]);
-  useEffect(() => {
-    if (!catalogId) return;
-    const controller = new AbortController();
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const load = async () => {
-      try {
-        const [history, tracking] = await Promise.all([
-          getReleaseStreamHistory(
-            catalogId,
-            getStreamPeriod(days),
-            () => tokenReader.current(),
-            controller.signal,
-          ),
-          requestStreamData(
-            `catalogs/${encodeURIComponent(catalogId)}/stream-tracking`,
-            () => tokenReader.current(),
-            controller.signal,
-          ).then((result) => streamTrackingSchema.parse(result)),
-        ]);
-        if (tracking.catalog_id !== catalogId)
-          throw new Error("Unexpected catalog response");
-        if (controller.signal.aborted) return;
-        setRead({ key, history, tracking, error: "", loading: false });
-        if (["queued", "running"].includes(tracking.latest_run?.status ?? ""))
-          timer = setTimeout(load, 10000);
-      } catch (error) {
-        if (!controller.signal.aborted)
-          setRead({
-            key,
-            history: null,
-            tracking: null,
-            error:
-              error instanceof Error && !(error.name === "ZodError")
-                ? error.message
-                : "Could not load streams. Please retry.",
-            loading: false,
-          });
-      }
-    };
-    void load();
-    return () => {
-      controller.abort();
-      clearTimeout(timer);
-    };
-  }, [catalogId, days, key]);
+  }, []);
+  const visible = useCatalogStreamRead(catalogId, days, reload, getToken);
   const selectCatalog = (id: string) => {
     if (enabling) return;
     setMutationError("");
@@ -142,13 +65,13 @@ export function useReleaseStreams(
     }
   };
   return {
-    catalogs,
+    catalogs: choices.catalogs,
     catalogId,
     selectCatalog,
     days,
     setDays,
-    catalogsLoading,
-    catalogError,
+    catalogsLoading: choices.catalogsLoading,
+    catalogError: choices.catalogError,
     history: visible.history,
     tracking: visible.tracking,
     error: visible.error,
@@ -156,11 +79,7 @@ export function useReleaseStreams(
     enabling,
     mutationError,
     enable,
-    retryCatalogs: () => {
-      setCatalogError("");
-      setCatalogsLoading(true);
-      setCatalogReload((value) => value + 1);
-    },
+    retryCatalogs: choices.retryCatalogs,
     refresh: () => setReload((value) => value + 1),
   };
 }

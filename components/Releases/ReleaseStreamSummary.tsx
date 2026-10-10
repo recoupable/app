@@ -1,5 +1,5 @@
 import type { buildReleaseStreamSeries } from "@/lib/releases/buildReleaseStreamSeries";
-const number = (value: number | null) =>
+const formatNumber = (value: number | null) =>
   value?.toLocaleString("en-US") ?? "Unavailable";
 export default function ReleaseStreamSummary({
   series,
@@ -13,20 +13,20 @@ export default function ReleaseStreamSummary({
       <div>
         <dt className="text-sm text-muted-foreground">Last {days} days</dt>
         <dd className="mt-1 text-2xl font-semibold tabular-nums">
-          {number(series.total)}
+          {formatNumber(series.total)}
         </dd>
       </div>
       <div>
         <dt className="text-sm text-muted-foreground">Previous {days} days</dt>
         <dd className="mt-1 text-2xl font-semibold tabular-nums">
-          {number(series.previous)}
+          {formatNumber(series.previous)}
         </dd>
       </div>
       <div>
         <dt className="text-sm text-muted-foreground">Change</dt>
         <dd className="mt-1 text-2xl font-semibold tabular-nums">
           {series.growth != null
-            ? `${series.growth > 0 ? "+" : ""}${number(series.growth)}`
+            ? `${series.growth > 0 ? "+" : ""}${formatNumber(series.growth)}`
             : "Unavailable"}
         </dd>
         <dd className="text-xs text-muted-foreground">

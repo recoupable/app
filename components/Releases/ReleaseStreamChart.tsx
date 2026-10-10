@@ -6,6 +6,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import type { StreamPoint } from "@/lib/releases/streamTypes";
+import ReleaseStreamDailyValues from "./ReleaseStreamDailyValues";
 const config = { streams: { label: "Streams", color: "var(--foreground)" } };
 const label = (date: string) =>
   new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", {
@@ -25,6 +26,7 @@ export default function ReleaseStreamChart({
       <ChartContainer
         config={config}
         className="h-[240px] w-full"
+        role="group"
         aria-label="Daily streams chart"
       >
         <LineChart
@@ -50,6 +52,11 @@ export default function ReleaseStreamChart({
           <ChartTooltip
             content={
               <ChartTooltipContent
+                formatter={(value) => (
+                  <span className="tabular-nums">
+                    {Number(value).toLocaleString("en-US")} streams
+                  </span>
+                )}
                 labelFormatter={(_, payload) =>
                   label(String(payload?.[0]?.payload?.date ?? points[0]?.date))
                 }
@@ -67,36 +74,7 @@ export default function ReleaseStreamChart({
           />
         </LineChart>
       </ChartContainer>
-      <details className="mt-3 text-sm text-muted-foreground">
-        <summary className="cursor-pointer">View daily values</summary>
-        <div className="mt-3 max-h-60 overflow-auto">
-          <table className="w-full text-left text-sm">
-            <caption className="sr-only">
-              Daily streams, UTC dates. Missing values are unavailable.
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Date (UTC)</th>
-                <th scope="col" className="text-right">
-                  Streams
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {points.map((point) => (
-                <tr key={point.date}>
-                  <th scope="row" className="py-1 font-normal">
-                    {point.date}
-                  </th>
-                  <td className="text-right tabular-nums">
-                    {point.streams?.toLocaleString("en-US") ?? "Unavailable"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </details>
+      <ReleaseStreamDailyValues points={points} />
     </div>
   );
 }

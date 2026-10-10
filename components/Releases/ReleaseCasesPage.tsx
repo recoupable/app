@@ -8,7 +8,7 @@ import ReleaseCasesList from "./ReleaseCasesList";
 import ReleaseCaseDetails from "./ReleaseCaseDetails";
 import CompanyAssessment from "./CompanyAssessment";
 import ReleaseIntakeForm from "./ReleaseIntakeForm";
-import ReleaseStreams from "./ReleaseStreams";
+import ReleaseStreamSection from "./ReleaseStreamSection";
 export default function ReleaseCasesPage() {
   const { ready, authenticated, getAccessToken, login } = usePrivy();
   const { userData } = useUserProvider();
@@ -21,6 +21,12 @@ export default function ReleaseCasesPage() {
     getAccessToken,
   });
   const current = cases.current;
+  const currentKey = JSON.stringify([
+    accountId,
+    selectedOrgId,
+    current?.request_id,
+    current?.fingerprint,
+  ]);
   if (!ready)
     return (
       <p className="p-6" role="status">
@@ -67,54 +73,22 @@ export default function ReleaseCasesPage() {
       <ReleaseCasesList cases={cases} />
       {current && (
         <>
-          {accountId && current.tracks.length > 0 && (
-            <ReleaseStreams
-              key={JSON.stringify([
-                "streams",
-                accountId,
-                selectedOrgId,
-                current.request_id,
-                current.fingerprint,
-              ])}
-              current={current}
-              accountId={accountId}
-              organizationId={selectedOrgId}
-              getAccessToken={getAccessToken}
-            />
-          )}
-          {current.tracks.length === 0 && (
-            <section
-              aria-label="Release streams"
-              className="space-y-2 rounded-xl bg-card p-6 shadow-[0_0_0_1px_var(--border)]"
-            >
-              <h2 className="text-xl font-semibold">Streams</h2>
-              <p className="text-sm text-muted-foreground">
-                Save this release’s recording metadata and ISRCs to match its
-                daily stream history.
-              </p>
-            </section>
-          )}
+          <ReleaseStreamSection
+            key={"streams" + currentKey}
+            current={current}
+            accountId={accountId}
+            organizationId={selectedOrgId}
+            getAccessToken={getAccessToken}
+          />
           <ReleaseCaseDetails
-            key={JSON.stringify([
-              "case",
-              accountId,
-              selectedOrgId,
-              current.request_id,
-              current.fingerprint,
-            ])}
+            key={"case" + currentKey}
             current={current}
             busy={cases.busy}
             onReview={cases.review}
             onReload={() => cases.open(current.request_id)}
           />
           <CompanyAssessment
-            key={JSON.stringify([
-              "assessment",
-              accountId,
-              selectedOrgId,
-              current.request_id,
-              current.fingerprint,
-            ])}
+            key={"assessment" + currentKey}
             requestId={current.request_id}
             organizationId={selectedOrgId}
             getAccessToken={getAccessToken}

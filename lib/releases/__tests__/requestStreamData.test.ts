@@ -5,7 +5,7 @@ vi.mock("@/lib/api/getClientApiBaseUrl", () => ({
 }));
 afterEach(() => vi.unstubAllGlobals());
 it("uses the configured API for both saved reads and explicit tracking writes", async () => {
-  const fetcher = vi.fn(async (_url: string) =>
+  const fetcher = vi.fn<(url: string) => Promise<Response>>(async () =>
     Response.json({ status: "success" }),
   );
   vi.stubGlobal("fetch", fetcher);

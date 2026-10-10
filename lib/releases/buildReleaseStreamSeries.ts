@@ -1,3 +1,4 @@
+import { getReleaseStreamIdentities } from "./getReleaseStreamIdentities";
 import type { ReleaseCase } from "./types";
 import type { StreamHistory, StreamPoint } from "./streamTypes";
 
@@ -7,22 +8,7 @@ export function buildReleaseStreamSeries(
   history: StreamHistory,
   selectedIsrc?: string,
 ) {
-  const identities = current.tracks.map((track) => {
-    const candidates = current.identity_observations.candidates.filter(
-      (candidate) => candidate.slotIndex === track.slot_index,
-    );
-    const identity = candidates.length === 1 ? candidates[0] : null;
-    return {
-      title: track.title ?? `Track ${track.slot_index + 1}`,
-      isrc:
-        identity &&
-        identity.mappingState !== "conflict" &&
-        identity.mappingState !== "unresolved" &&
-        /^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(identity.isrc ?? "")
-          ? identity.isrc
-          : null,
-    };
-  });
+  const identities = getReleaseStreamIdentities(current);
   const isrcs = [
     ...new Set(identities.flatMap((track) => (track.isrc ? [track.isrc] : []))),
   ];
@@ -91,6 +77,7 @@ export function buildReleaseStreamSeries(
       .at(-1) ?? null;
   const currentTotal = total(daily);
   return {
+    selectedIsrc,
     tracks: identities,
     daily,
     previous,

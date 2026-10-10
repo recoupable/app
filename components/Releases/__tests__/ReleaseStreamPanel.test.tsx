@@ -3,42 +3,35 @@ import React from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { history, release } from "./streamFixture";
+import { buildReleaseStreamSeries } from "@/lib/releases/buildReleaseStreamSeries";
+import type { StreamPoint } from "@/lib/releases/streamTypes";
 import ReleaseStreamPanel from "../ReleaseStreamPanel";
-vi.mock("next/dynamic", () => ({ default: () => () => <p>Chart loaded</p> }));
-const data = {
-  catalogs: [{ id: "preview-catalog", name: "Sample catalog" }],
-  catalogId: "preview-catalog",
-  selectCatalog: vi.fn(),
-  days: 28,
-  setDays: vi.fn(),
-  catalogsLoading: false,
-  catalogError: "",
-  history,
-  tracking: {
-    catalog_id: "preview-catalog",
-    tracking: { enabled: true },
-    latest_run: { status: "complete", finished_at: null },
-  },
-  error: "",
-  loading: false,
-  enabling: false,
-  mutationError: "",
-  enable: vi.fn(),
-  retryCatalogs: vi.fn(),
-  refresh: vi.fn(),
-};
+vi.mock("next/dynamic", () => ({
+  default:
+    () =>
+    ({ points }: { points: StreamPoint[] }) => (
+      <p data-testid="chart-points">{JSON.stringify(points)}</p>
+    ),
+}));
+import { data } from "./streamPanelFixture";
 afterEach(cleanup);
 it("shows a release total and switches to the exact selected recording", () => {
   render(<ReleaseStreamPanel current={release} data={data} />);
   expect(
     screen.getByText("Worldwide · All reporting DSPs · Luminate"),
   ).toBeTruthy();
-  expect(screen.getByText("Chart loaded")).toBeTruthy();
+  expect(screen.getByTestId("chart-points").textContent).toBe(
+    JSON.stringify(buildReleaseStreamSeries(release, history).daily),
+  );
   expect(screen.getByLabelText("Stream recording")).toBeTruthy();
   fireEvent.change(screen.getByLabelText("Stream recording"), {
     target: { value: "USABC2600001" },
   });
-  expect(screen.getByText("Chart loaded")).toBeTruthy();
+  expect(screen.getByTestId("chart-points").textContent).toBe(
+    JSON.stringify(
+      buildReleaseStreamSeries(release, history, "USABC2600001").daily,
+    ),
+  );
   expect(screen.getByText("Daily tracking on · 09:00 UTC")).toBeTruthy();
 });
 it("gaps do not render numeric release totals, and tracking is explicitly catalog-wide", () => {
@@ -63,4 +56,29 @@ it("gaps do not render numeric release totals, and tracking is explicitly catalo
     screen.getByRole("button", { name: "Enable daily tracking" }),
   );
   expect(data.enable).toHaveBeenCalled();
+});
+
+it("resets song selection when the selected catalog changes", () => {
+  const { rerender } = render(
+    <ReleaseStreamPanel current={release} data={data} />,
+  );
+  fireEvent.change(screen.getByLabelText("Stream recording"), {
+    target: { value: "USABC2600001" },
+  });
+  rerender(
+    <ReleaseStreamPanel
+      current={release}
+      data={{
+        ...data,
+        catalogId: "other",
+        history: { ...history, catalog_id: "other" },
+      }}
+    />,
+  );
+  expect(
+    (screen.getByLabelText("Stream recording") as HTMLSelectElement).value,
+  ).toBe("");
+  expect(screen.getByTestId("chart-points").textContent).toBe(
+    JSON.stringify(buildReleaseStreamSeries(release, history).daily),
+  );
 });
