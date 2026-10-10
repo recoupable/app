@@ -3,54 +3,13 @@ import React from "react";
 import { render, screen, cleanup } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import ReleaseCaseDetails from "../ReleaseCaseDetails";
-import type { ReleaseCase, ReleaseFormat } from "@/lib/releases/types";
+import type { ReleaseCase } from "@/lib/releases/types";
+import {
+  formatCase as base,
+  formatTrack as track,
+  observedFormat as observed,
+} from "./releaseFormatFixture";
 afterEach(cleanup);
-const track = (
-  slot_index: number,
-  title: string,
-  disc_number: number,
-  track_number: number,
-): ReleaseCase["tracks"][number] => ({
-  slot_index,
-  title,
-  spotify_track_id: `track-${slot_index}`,
-  disc_number,
-  track_number,
-  credited_artists: [],
-});
-const observed: ReleaseFormat = {
-  source: "spotify_album_observation",
-  state: "observed",
-  observed_type: "album",
-  format_state: "album",
-  reported_total_tracks: 3,
-  release_date: "2024-05-17",
-  release_date_precision: "day",
-  label: "Fixture label",
-  upc: null,
-  upc_state: "not_observed",
-  disc_count: 2,
-  multi_disc: true,
-  reissue: "unknown",
-  physical_format: "unknown",
-};
-const base: ReleaseCase = {
-  request_id: "request",
-  title: "Fixture double album",
-  fingerprint: "a".repeat(64),
-  readiness: "partial",
-  reviewable: true,
-  tracks: [
-    track(0, "First", 1, 1),
-    track(1, "Second", 1, 2),
-    track(2, "Third", 2, 1),
-  ],
-  gaps: [],
-  evidence_manifest: [],
-  track_page: { state: "ready", hasMore: false },
-  identity_observations: { state: "not_collected", candidates: [] },
-  latest_review: null,
-};
 function show(current: ReleaseCase) {
   render(
     <ReleaseCaseDetails
@@ -128,4 +87,10 @@ it("treats an uncollected server block like a missing one", () => {
     },
   });
   expect(screen.getByText("Format not collected")).toBeTruthy();
+});
+it("does not claim a UPC was looked for when it was not collected", () => {
+  show({ ...base, release_format: { ...observed, upc_state: "uncollected" } });
+  const line = screen.getByText(/^Album · 2 discs/);
+  expect(line.textContent).toContain("UPC not collected");
+  expect(line.textContent).not.toContain("UPC not observed");
 });

@@ -26,7 +26,9 @@ export default function ReleaseCaseFormat({
     format.label,
     format.upc_state === "observed" && format.upc
       ? `UPC ${format.upc}`
-      : "UPC not observed",
+      : format.upc_state === "uncollected"
+        ? "UPC not collected"
+        : "UPC not observed",
     "Reissue/physical format unknown",
   ].filter((part): part is string => Boolean(part));
   return <p className={className}>{parts.join(" · ")}</p>;
