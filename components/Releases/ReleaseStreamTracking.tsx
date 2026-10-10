@@ -1,4 +1,4 @@
-import { Check, Loader2 } from "lucide-react";
+import { AlertCircle, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { useReleaseStreams } from "@/hooks/useReleaseStreams";
 export default function ReleaseStreamTracking({
@@ -24,7 +24,11 @@ export default function ReleaseStreamTracking({
         </p>
       </div>
     );
-  const Icon = collecting ? Loader2 : Check;
+  const Icon = collecting
+    ? Loader2
+    : ["failed", "partial"].includes(status ?? "")
+      ? AlertCircle
+      : Check;
   return (
     <span
       role={collecting ? "status" : undefined}
