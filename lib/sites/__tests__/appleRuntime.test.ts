@@ -34,8 +34,15 @@ it("authorizes before queueing and never sends the Music User Token to the exter
       onclick?: () => Promise<void>;
     }
   > = {};
+  const handlers: Record<string, () => void> = {};
+  const reporter = { state: vi.fn(), event: vi.fn() };
   const music = {
-    addEventListener: vi.fn(),
+    nowPlayingItem: { id: "song1", title: "Track" },
+    playbackState: 2,
+    currentPlaybackTime: 12,
+    addEventListener: vi.fn((event: string, handler: () => void) => {
+      handlers[event] = handler;
+    }),
     authorize: vi.fn().mockResolvedValue("private-token"),
     setQueue: vi.fn(),
     play: vi.fn(),
@@ -64,11 +71,21 @@ it("authorizes before queueing and never sends the Music User Token to the exter
     },
     window: {
       parent: { postMessage },
+      RecoupReleasePlayer: reporter,
       MusicKit: {
         configure: vi.fn(),
         getInstance: () => music,
-        Events: {},
-        PlaybackStates: {},
+        Events: {
+          playbackStateDidChange: "state",
+          nowPlayingItemDidChange: "track",
+        },
+        PlaybackStates: {
+          playing: 2,
+          paused: 3,
+          stopped: 4,
+          ended: 5,
+          completed: 6,
+        },
       },
     },
     fetch: vi.fn().mockResolvedValue({
@@ -84,6 +101,9 @@ it("authorizes before queueing and never sends the Music User Token to the exter
   expect(music.setQueue).not.toHaveBeenCalled();
   await nodes["apple-connect"].onclick!();
   expect(music.authorize).toHaveBeenCalledOnce();
+  expect(music.authorize.mock.invocationCallOrder[0]).toBeLessThan(
+    music.setQueue.mock.invocationCallOrder[0],
+  );
   expect(music.setQueue).toHaveBeenCalledWith({ album: "123" });
   expect(postMessage).toHaveBeenCalledWith(
     { type: "recoup:playback", provider: "apple_music", event: "connected" },
@@ -91,4 +111,21 @@ it("authorizes before queueing and never sends the Music User Token to the exter
   );
   expect(JSON.stringify(postMessage.mock.calls)).not.toContain("private-token");
   expect(music.play).not.toHaveBeenCalled();
+  expect(reporter.event).toHaveBeenCalledWith("connected");
+  handlers.state();
+  expect(reporter.state).toHaveBeenLastCalledWith("song1", false, 12000);
+  music.playbackState = 3;
+  handlers.state();
+  expect(reporter.state).toHaveBeenLastCalledWith("song1", true, 12000);
+  music.nowPlayingItem = { id: "song2", title: "Next" };
+  handlers.track();
+  expect(reporter.state).toHaveBeenLastCalledWith("song2", true, 12000);
+  music.playbackState = 4;
+  handlers.state();
+  expect(reporter.state).toHaveBeenLastCalledWith(
+    "song2",
+    true,
+    12000,
+    "stopped",
+  );
 });

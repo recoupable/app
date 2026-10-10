@@ -124,3 +124,28 @@ it("omits game navigation from an explicit listening destination", async () => {
   expect(html).not.toContain('id="spotify-skip"');
   expect(html).toContain('id="spotify-play"');
 });
+
+it.each(["https://gatsby.wtf", "https://www.gatsby.wtf"])(
+  "rejects the removed artist-specific embed origin %s",
+  async (parent) => {
+    const response = await GET(
+      new Request(
+        "https://app.recoupable.dev/s/spotify/connect?release=https://open.spotify.com/track/abc&flow=untrusted&parent=" +
+          encodeURIComponent(parent),
+      ),
+    );
+    expect(response.status).toBe(400);
+  },
+);
+it("does not enable fan connection through a supplied legacy flow", async () => {
+  const response = await GET(
+    new Request(
+      "https://app.recoupable.dev/s/spotify/connect?release=https://open.spotify.com/track/abc&flow=untrusted",
+    ),
+  );
+  expect(response.status).toBe(200);
+  const html = await response.text();
+  expect(html).toContain('data-player-flow=""');
+  expect(html).toContain('data-player-config="null"');
+  expect(html).not.toContain("gatsby-fan");
+});

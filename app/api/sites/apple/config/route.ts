@@ -1,3 +1,4 @@
+import { z } from "zod";
 /** Proxy only the public, origin-bound MusicKit token, never Apple signing keys. */
 export async function GET() {
   try {
@@ -6,7 +7,12 @@ export async function GET() {
       { cache: "no-store", signal: AbortSignal.timeout(10000) },
     );
     if (!response.ok) throw new Error("Unavailable");
-    const config = await response.json();
+    const config = z
+      .object({
+        configured: z.boolean(),
+        developerToken: z.string().optional(),
+      })
+      .parse(await response.json());
     return Response.json(
       config.configured && typeof config.developerToken === "string"
         ? { configured: true, developerToken: config.developerToken }

@@ -380,3 +380,18 @@ it("offers the Spotify fallback without loading an unusable SDK for Free account
   expect(h.nodes["spotify-status"].textContent).toContain("Open Spotify");
   expect(h.head.appendChild).not.toHaveBeenCalled();
 });
+
+it("suppresses Continue and game messages in listening mode", async () => {
+  const h = harness(false);
+  Object.assign(h.ctx.document.body.dataset, { listeningOnly: "true" });
+  const parent = { postMessage: vi.fn() };
+  Object.assign(h.ctx.window, { parent });
+  h.fetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({ configured: false }),
+  });
+  await h.run();
+  expect(h.nodes["spotify-skip"]).toMatchObject({ hidden: true });
+  await h.nodes["spotify-skip"].onclick!();
+  expect(parent.postMessage).not.toHaveBeenCalled();
+});
