@@ -14,6 +14,7 @@ import {
 export function useReleaseStreams(
   accountId: string,
   getAccessToken: () => Promise<string | null>,
+  organizationId: string | null = null,
 ) {
   const tokenReader = useRef(getAccessToken);
   useEffect(() => {
@@ -48,6 +49,7 @@ export function useReleaseStreams(
       accountId,
       () => tokenReader.current(),
       controller.signal,
+      organizationId,
     )
       .then((items) => {
         if (controller.signal.aborted) return;
@@ -62,7 +64,7 @@ export function useReleaseStreams(
         if (!controller.signal.aborted) setCatalogsLoading(false);
       });
     return () => controller.abort();
-  }, [accountId, catalogReload]);
+  }, [accountId, organizationId, catalogReload]);
   useEffect(() => {
     if (!catalogId) return;
     const controller = new AbortController();

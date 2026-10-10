@@ -9,11 +9,12 @@ const schema = z.object({
     }),
   ),
 });
-/** Read only catalogs available through the selected workspace's account. */
+/** Read through the viewer, then narrow the visible union to the exact workspace. */
 export async function getReleaseStreamCatalogs(
   accountId: string,
   getAccessToken: () => Promise<string | null>,
   signal: AbortSignal,
+  organizationId: string | null = null,
 ) {
   return schema
     .parse(
@@ -23,5 +24,7 @@ export async function getReleaseStreamCatalogs(
         signal,
       ),
     )
-    .catalogs.filter((catalog) => catalog.owner?.id === accountId);
+    .catalogs.filter(
+      (catalog) => catalog.owner?.id === (organizationId ?? accountId),
+    );
 }

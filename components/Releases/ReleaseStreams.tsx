@@ -7,12 +7,14 @@ import ReleaseStreamPanel from "./ReleaseStreamPanel";
 export default function ReleaseStreams({
   current,
   accountId,
+  organizationId,
   getAccessToken,
 }: {
   current: ReleaseCase;
   accountId: string;
+  organizationId: string | null;
   getAccessToken: () => Promise<string | null>;
 }) {
-  const data = useReleaseStreams(accountId, getAccessToken);
+  const data = useReleaseStreams(accountId, getAccessToken, organizationId);
   return <ReleaseStreamPanel current={current} data={data} />;
 }

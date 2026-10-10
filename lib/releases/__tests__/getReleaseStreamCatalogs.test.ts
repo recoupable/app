@@ -19,7 +19,7 @@ it("keeps personal and organization catalogs in their exact workspace, excluding
     await getReleaseStreamCatalogs("actor", async () => "token", signal),
   ).toEqual([{ id: "personal", name: "Personal", owner: { id: "actor" } }]);
   expect(
-    await getReleaseStreamCatalogs("org", async () => "token", signal),
+    await getReleaseStreamCatalogs("actor", async () => "token", signal, "org"),
   ).toEqual([{ id: "org", name: "Organization", owner: { id: "org" } }]);
 });
 it("does not fetch anonymously or expose raw access errors", async () => {

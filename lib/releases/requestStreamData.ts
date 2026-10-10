@@ -1,4 +1,4 @@
-import { API_PUBLIC_BASE_URL } from "@/lib/consts";
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
 /** Reuse the viewer's existing access; never expose provider credentials or raw errors. */
 export async function requestStreamData(
@@ -10,8 +10,7 @@ export async function requestStreamData(
   const token = await getAccessToken();
   signal.throwIfAborted();
   if (!token) throw new Error("Please sign in again to view streams.");
-  // Release cases use the canonical context API, including in app previews.
-  const response = await fetch(`${API_PUBLIC_BASE_URL}/api/${path}`, {
+  const response = await fetch(`${getClientApiBaseUrl()}/api/${path}`, {
     method: body ? "POST" : "GET",
     headers: {
       Authorization: `Bearer ${token}`,

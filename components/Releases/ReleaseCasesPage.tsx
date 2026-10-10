@@ -77,7 +77,8 @@ export default function ReleaseCasesPage() {
                 current.fingerprint,
               ])}
               current={current}
-              accountId={selectedOrgId ?? accountId}
+              accountId={accountId}
+              organizationId={selectedOrgId}
               getAccessToken={getAccessToken}
             />
           )}
