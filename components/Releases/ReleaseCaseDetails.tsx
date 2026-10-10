@@ -1,6 +1,7 @@
 import { Disc3, ExternalLink, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ReleaseCase } from "@/lib/releases/types";
+import ReleaseCaseFormat from "./ReleaseCaseFormat";
 import ReleaseCaseTracks from "./ReleaseCaseTracks";
 import ReleaseCaseEvidence from "./ReleaseCaseEvidence";
 import ReleaseCaseReviewForm from "./ReleaseCaseReviewForm";
@@ -39,6 +40,7 @@ export default function ReleaseCaseDetails({
           <h2 className="text-xl font-semibold">
             {current.title ?? "Spotify release"}
           </h2>
+          <ReleaseCaseFormat current={current} />
           <p className="mt-1 text-sm text-muted-foreground">
             {awaitingMetadata
               ? "Link saved · no collected review metadata"
