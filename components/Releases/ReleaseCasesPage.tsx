@@ -41,11 +41,7 @@ export default function ReleaseCasesPage() {
     );
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 px-6 py-10">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-heading text-2xl font-semibold">Releases</h1>
-        </div>
-      </div>
+      <h1 className="font-heading text-2xl font-semibold">Releases</h1>
       {accountId && (
         <CatalogReleaseStreams
           key={JSON.stringify([accountId, selectedOrgId])}

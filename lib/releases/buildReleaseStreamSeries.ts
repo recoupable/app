@@ -1,4 +1,4 @@
-import { getReleaseStreamIdentities } from "./getReleaseStreamIdentities";
+import { getStreamReleaseIdentities } from "./getStreamReleaseIdentities";
 import type { StreamRelease } from "./catalogStreamTypes";
 import type { StreamHistory, StreamPoint } from "./streamTypes";
 
@@ -8,10 +8,7 @@ export function buildReleaseStreamSeries(
   history: StreamHistory,
   selectedIsrc?: string,
 ) {
-  const identities =
-    "recordings" in current
-      ? current.recordings
-      : getReleaseStreamIdentities(current);
+  const { identities, complete } = getStreamReleaseIdentities(current);
   const isrcs = [
     ...new Set(identities.flatMap((track) => (track.isrc ? [track.isrc] : []))),
   ];
@@ -19,9 +16,7 @@ export function buildReleaseStreamSeries(
   const unknownIdentity =
     !selectedIsrc &&
     (identities.some((track) => !track.isrc) ||
-      ("recordings" in current
-        ? !current.complete
-        : current.track_page.hasMore) ||
+      !complete ||
       identities.length === 0);
   const records = new Map(
     history.recordings.map((recording) => [recording.isrc, recording]),

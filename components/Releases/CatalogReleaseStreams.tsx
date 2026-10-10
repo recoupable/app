@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useReleaseStreams } from "@/hooks/useReleaseStreams";
 import { useReleaseCatalogSongs } from "@/hooks/useReleaseCatalogSongs";
 import { buildCatalogStreamReleases } from "@/lib/releases/buildCatalogStreamReleases";
+import CatalogReleaseSelector from "./CatalogReleaseSelector";
 import ReleaseStreamPanel from "./ReleaseStreamPanel";
 import ReleaseStreamControls from "./ReleaseStreamControls";
 import ReleaseStreamRequestStates from "./ReleaseStreamRequestStates";
@@ -77,24 +78,14 @@ export default function CatalogReleaseStreams({
     );
   return (
     <div className="space-y-4">
-      <select
-        aria-label="Release"
-        className="h-11 max-w-full rounded-lg bg-background pl-3 pr-8 text-sm shadow-[0_0_0_1px_var(--input)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-10"
-        value={selected?.id ?? ""}
-        onChange={(event) =>
-          setSelection({
-            catalogId: streams.catalogId,
-            releaseId: event.target.value,
-          })
+      <CatalogReleaseSelector
+        releases={releases}
+        selectedId={selected?.id ?? ""}
+        songCount={metadata.songs.length}
+        onSelect={(releaseId) =>
+          setSelection({ catalogId: streams.catalogId, releaseId })
         }
-      >
-        <option value="">All releases · {metadata.songs.length} songs</option>
-        {releases.map((release) => (
-          <option key={release.id} value={release.id}>
-            {release.title} · {release.recordings.length} songs
-          </option>
-        ))}
-      </select>
+      />
       <ReleaseStreamPanel
         key={JSON.stringify([streams.catalogId, current.id])}
         current={current}
