@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CompanyAssessmentBrief } from "@/lib/releases/assessmentTypes";
+import { ReleaseCaseRequestError } from "@/lib/releases/errors";
 import { useReleaseCaseRequest } from "./useReleaseCaseRequest";
 export function useCompanyAssessment(
   requestId: string,
@@ -38,7 +39,12 @@ export function useCompanyAssessment(
         );
         if (result.purpose !== "company_onboarding")
           throw new Error("Unexpected assessment purpose");
-        if (revision === generation.current) setBrief(result);
+        if (revision === generation.current) {
+          setSavedId("");
+          setOpenId("");
+          workKey.current = null;
+          setBrief(result);
+        }
       } else {
         workKey.current ??= `company-assessment:${crypto.randomUUID()}`;
         const result =
@@ -59,28 +65,34 @@ export function useCompanyAssessment(
           result.snapshot.brief.purpose !== "company_onboarding"
         )
           throw new Error("Unexpected assessment purpose");
-        setBrief(result.snapshot.brief);
         if (result.snapshot.state !== "saved" || !result.snapshot.brief) {
+          setBrief(null);
+          setSavedId("");
           setNotice(
             "This saved assessment is unavailable. Check current access and evidence.",
           );
         } else {
+          setBrief(result.snapshot.brief);
           setSavedId(result.snapshot.id);
           setOpenId(result.snapshot.id);
+          const confirmation =
+            action === "read_brief"
+              ? "Saved assessment reopened."
+              : "Assessment saved. Keep its ID to reopen later.";
           setNotice(
             result.snapshot.superseded
-              ? "Saved assessment reopened. Newer evidence is available."
-              : action === "read_brief"
-                ? "Saved assessment reopened."
-                : "Assessment saved. Keep its ID to reopen later.",
+              ? `${confirmation} Newer evidence is available.`
+              : confirmation,
           );
         }
       }
-    } catch {
+    } catch (error) {
       if (revision === generation.current) {
         setBrief(null);
         setNotice(
-          "Assessment unavailable. Check your workspace and that the request has saved partial or completed evidence.",
+          error instanceof ReleaseCaseRequestError
+            ? error.message
+            : "Assessment unavailable. Check your workspace and that the request has saved partial or completed evidence.",
         );
       }
     } finally {

@@ -49,10 +49,7 @@ export default function CompanyAssessment({
           <p className="text-sm">Coverage: {assessment.brief.readiness}</p>
           <p className="whitespace-pre-wrap text-sm">{assessment.brief.text}</p>
           <h3 className="font-medium">Next review steps</h3>
-          <p className="text-sm">
-            Review coverage omitted from this assessment; some evidence may be
-            unavailable or excluded by its size limit.
-          </p>
+          <p className="text-sm">{assessment.brief.guidance}</p>
           <ul className="list-disc pl-5 text-sm">
             {assessment.brief.missingTopics.map((topic) => (
               <li key={topic}>{topic.replaceAll("_", " ")}</li>

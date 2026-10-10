@@ -5,9 +5,10 @@ export interface CompanyAssessmentBrief {
   missingTopics: string[];
   guidance: string;
 }
-export interface CompanyAssessmentSnapshot {
+export type CompanyAssessmentSnapshot = {
   id: string;
-  state: "saved" | "unavailable";
   superseded?: boolean;
-  brief: CompanyAssessmentBrief | null;
-}
+} & (
+  | { state: "saved"; brief: CompanyAssessmentBrief }
+  | { state: "unavailable"; brief: null }
+);

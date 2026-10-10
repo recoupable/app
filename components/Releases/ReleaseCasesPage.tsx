@@ -79,7 +79,12 @@ export default function ReleaseCasesPage() {
             onReload={() => cases.open(current.request_id)}
           />
           <CompanyAssessment
-            key={JSON.stringify([accountId, selectedOrgId, current.request_id])}
+            key={JSON.stringify([
+              accountId,
+              selectedOrgId,
+              current.request_id,
+              current.fingerprint,
+            ])}
             requestId={current.request_id}
             organizationId={selectedOrgId}
             getAccessToken={getAccessToken}
