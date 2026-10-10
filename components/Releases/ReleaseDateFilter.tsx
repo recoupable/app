@@ -1,6 +1,11 @@
 "use client";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { CalendarDays } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { useReleaseStreams } from "@/hooks/useReleaseStreams";
@@ -9,7 +14,7 @@ export default function ReleaseDateFilter({
 }: {
   data: ReturnType<typeof useReleaseStreams>;
 }) {
-  const menu = useRef<HTMLDetailsElement>(null);
+  const [open, setOpen] = useState(false);
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [error, setError] = useState("");
@@ -33,7 +38,7 @@ export default function ReleaseDateFilter({
     }
     setError("");
     data.setRange(start, days);
-    if (menu.current) menu.current.open = false;
+    setOpen(false);
   };
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -55,12 +60,23 @@ export default function ReleaseDateFilter({
           </button>
         ))}
       </div>
-      <details ref={menu} className="relative">
-        <summary className="flex h-10 cursor-pointer list-none items-center gap-2 rounded-lg px-3 text-sm shadow-[0_0_0_1px_var(--input)] focus-visible:ring-2 focus-visible:ring-ring">
-          <CalendarDays className="size-4" aria-hidden="true" />
-          {data.since ? "Custom range" : "Dates"}
-        </summary>
-        <div className="absolute right-0 top-12 z-20 w-72 rounded-xl bg-popover p-4 shadow-lg ring-1 ring-border">
+      <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="flex h-10 cursor-pointer list-none items-center gap-2 rounded-lg px-3 text-sm shadow-[0_0_0_1px_var(--input)] focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <CalendarDays className="size-4" aria-hidden="true" />
+            {data.since ? "Custom range" : "Dates"}
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          className="w-72 p-4 border-0 ring-1 ring-border"
+          onKeyDown={(e) => {
+            if (e.key !== "Escape") e.stopPropagation();
+          }}
+        >
           <label className="block text-xs">
             From
             <Input
@@ -93,8 +109,8 @@ export default function ReleaseDateFilter({
           <Button size="sm" className="mt-3 w-full" onClick={apply}>
             Apply dates
           </Button>
-        </div>
-      </details>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

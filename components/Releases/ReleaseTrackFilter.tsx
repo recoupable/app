@@ -1,6 +1,11 @@
 "use client";
 import { useState } from "react";
 import { ChevronDown, Search } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import type { buildReleaseStreamSeries } from "@/lib/releases/buildReleaseStreamSeries";
 export default function ReleaseTrackFilter({
@@ -12,17 +17,31 @@ export default function ReleaseTrackFilter({
   selected: string[];
   onChange: (ids: string[]) => void;
 }) {
+  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const unique = [
     ...new Map(tracks.filter((t) => t.isrc).map((t) => [t.isrc!, t])).values(),
   ];
   return (
-    <details className="relative min-w-48">
-      <summary className="flex h-10 cursor-pointer list-none items-center justify-between gap-4 rounded-lg px-3 text-sm shadow-[0_0_0_1px_var(--input)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-        {selected.length ? `${selected.length} tracks selected` : "All tracks"}
-        <ChevronDown className="size-4" aria-hidden="true" />
-      </summary>
-      <div className="absolute left-0 top-12 z-20 w-72 max-w-[80vw] rounded-xl bg-popover p-3 shadow-lg ring-1 ring-border">
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="flex min-w-48 h-10 cursor-pointer items-center justify-between gap-4 rounded-lg px-3 text-sm shadow-[0_0_0_1px_var(--input)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {selected.length
+            ? `${selected.length} tracks selected`
+            : "All tracks"}
+          <ChevronDown className="size-4" aria-hidden="true" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        className="w-72 max-w-[80vw] p-3 border-0 ring-1 ring-border"
+        onKeyDown={(e) => {
+          if (e.key !== "Escape") e.stopPropagation();
+        }}
+      >
         <div className="relative">
           <Search
             className="absolute left-3 top-3 size-4 text-muted-foreground"
@@ -87,7 +106,7 @@ export default function ReleaseTrackFilter({
             </p>
           )}
         </div>
-      </div>
-    </details>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

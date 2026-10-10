@@ -21,6 +21,9 @@ it("searches track names and identifiers and selects several recordings", () => 
       onChange={change}
     />,
   );
+  fireEvent.keyDown(screen.getByRole("button", { name: "1 tracks selected" }), {
+    key: "Enter",
+  });
   fireEvent.change(screen.getByLabelText("Search tracks"), {
     target: { value: "Butter" },
   });
@@ -32,6 +35,9 @@ it("applies inclusive custom dates and offers longer presets", () => {
   render(<ReleaseDateFilter data={data} />);
   fireEvent.click(screen.getByRole("button", { name: "Last 90 days" }));
   expect(data.setDays).toHaveBeenCalledWith(90);
+  fireEvent.keyDown(screen.getByRole("button", { name: "Dates" }), {
+    key: "Enter",
+  });
   fireEvent.change(screen.getByLabelText("Start date"), {
     target: { value: "2026-08-01" },
   });
@@ -40,4 +46,20 @@ it("applies inclusive custom dates and offers longer presets", () => {
   });
   fireEvent.click(screen.getByRole("button", { name: "Apply dates" }));
   expect(data.setRange).toHaveBeenCalledWith("2026-08-01", 14);
+  expect(screen.queryByLabelText("Start date")).toBeNull();
+});
+
+it("dismisses track filters with Escape", async () => {
+  render(
+    <ReleaseTrackFilter
+      tracks={[{ title: "Wish", isrc: "USABC2600001" }]}
+      selected={[]}
+      onChange={vi.fn()}
+    />,
+  );
+  const trigger = screen.getByRole("button", { name: "All tracks" });
+  fireEvent.keyDown(trigger, { key: "Enter" });
+  expect(screen.getByLabelText("Search tracks")).toBeTruthy();
+  fireEvent.keyDown(screen.getByLabelText("Search tracks"), { key: "Escape" });
+  expect(screen.queryByLabelText("Search tracks")).toBeNull();
 });
