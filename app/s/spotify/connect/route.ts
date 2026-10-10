@@ -11,9 +11,17 @@ export async function GET(request: Request) {
     requestUrl.origin,
     "https://chat.recoupable.dev",
     "https://chat.recoupable.com",
+    "https://gatsby.wtf",
+    "https://www.gatsby.wtf",
   ];
   if (process.env.NODE_ENV !== "production")
-    allowedParents.push("http://localhost:3002", "http://127.0.0.1:3002");
+    allowedParents.push(
+      "http://localhost:3002",
+      "http://127.0.0.1:3002",
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "http://localhost:3006",
+    );
   if (parent && !allowedParents.includes(parent))
     return new Response("Invalid player origin", { status: 400 });
   const audioParam = requestUrl.searchParams.get("audio");

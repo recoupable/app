@@ -427,9 +427,7 @@
     ) {
       connect.disabled = true;
       if (showSavedAudio()) return;
-      say(
-        "Spotify connection is not configured for this site yet. You can still play.",
-      );
+      say("Spotify connection is not configured. Open Spotify to listen.");
       return;
     }
     connect.onclick = async () => {
@@ -551,6 +549,33 @@
       }
       return session.access_token;
     }
+    const gatsby =
+      ["https://gatsby.wtf", "https://www.gatsby.wtf"].includes(parentOrigin) &&
+      [
+        "https://open.spotify.com/playlist/5b8JKnvweOEaLqS00nIr7n",
+        "https://open.spotify.com/track/4HJjUdcezdSSCBdy5JVHDs",
+      ].includes(document.body.dataset.release);
+    const notifyPlayback = (event) => {
+      if (gatsby)
+        window.parent.postMessage(
+          { type: "recoup:playback", provider: "spotify", event },
+          parentOrigin,
+        );
+    };
+    if (gatsby) {
+      (async () => {
+        try {
+          const captured = await fetch("/api/sites/spotify/gatsby-fan", {
+            method: "POST",
+            headers: { Authorization: "Bearer " + (await getToken()) },
+          });
+          notifyPlayback(captured.ok ? "fan_captured" : "capture_failed");
+        } catch {
+          notifyPlayback("capture_failed");
+        }
+      })();
+    }
+    let lastPlayback = "";
     let product = "unknown";
     try {
       const profileResponse = await fetch("https://api.spotify.com/v1/me", {
@@ -575,14 +600,13 @@
             ? "Spotify connected · subscription unavailable"
             : "Spotify Free connected";
     }
+    notifyPlayback("connected");
     session.product = product;
     write(sessionKey, session);
     if (product === "free" || product === "open") {
       if (!activateSavedAudio()) {
         play.hidden = true;
-        say(
-          "Spotify Free connected. This site has no audio file yet. You can still play the game.",
-        );
+        say("Spotify Free connected. Open Spotify to listen.");
       }
       return;
     }
@@ -655,6 +679,16 @@
         });
       player.addListener("player_state_changed", (state) => {
         if (state && !audioActive) {
+          const playback =
+            state.track_window.current_track.id + ":" + state.paused;
+          if (playback !== lastPlayback) {
+            if (
+              lastPlayback.split(":")[0] !== state.track_window.current_track.id
+            )
+              notifyPlayback("track_changed");
+            notifyPlayback(state.paused ? "paused" : "playing");
+            lastPlayback = playback;
+          }
           latestState = state;
           updatedAt = Date.now();
           duration = state.duration;

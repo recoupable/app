@@ -102,3 +102,17 @@ it("uses validated release colors and escapes release titles", async () => {
   url.searchParams.set("accent", "red;}body{display:none");
   expect((await GET(new Request(url))).status).toBe(400);
 });
+it("allows Gatsby's exact origins but rejects lookalike domains", async () => {
+  const base =
+    "https://app.recoupable.dev/s/spotify/connect?release=https://open.spotify.com/track/abc";
+  for (const origin of ["https://gatsby.wtf", "https://www.gatsby.wtf"]) {
+    expect(
+      (await GET(new Request(base + "&parent=" + encodeURIComponent(origin))))
+        .status,
+    ).toBe(200);
+  }
+  expect(
+    (await GET(new Request(base + "&parent=https://gatsby.wtf.evil.test")))
+      .status,
+  ).toBe(400);
+});

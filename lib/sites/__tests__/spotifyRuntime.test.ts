@@ -447,9 +447,9 @@ it("keeps failed profile lookups unknown while still offering saved audio", asyn
     playbackSource: "audio",
   });
 });
-it("explains missing audio without loading an unusable SDK for Free accounts", async () => {
+it("offers the Spotify fallback without loading an unusable SDK for Free accounts", async () => {
   const h = playbackHarness("open", false);
   await h.run();
-  expect(h.nodes["spotify-status"].textContent).toContain("no audio file");
+  expect(h.nodes["spotify-status"].textContent).toContain("Open Spotify");
   expect(h.head.appendChild).not.toHaveBeenCalled();
 });
