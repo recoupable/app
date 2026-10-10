@@ -17,24 +17,24 @@ import { data } from "./streamPanelFixture";
 afterEach(cleanup);
 it("shows a release total and switches to the exact selected recording", () => {
   render(<ReleaseStreamPanel current={release} data={data} />);
-  expect(screen.getByText("Worldwide · All DSPs")).toBeTruthy();
+  expect(screen.getByText(/Worldwide · All DSPs/)).toBeTruthy();
   expect(screen.getByTestId("chart-points").textContent).toBe(
     JSON.stringify(buildReleaseStreamSeries(release, history).daily),
   );
-  expect(screen.getByLabelText("Stream recording")).toBeTruthy();
-  fireEvent.change(screen.getByLabelText("Stream recording"), {
-    target: { value: "USABC2600001" },
-  });
+  expect(screen.getByLabelText("Search tracks")).toBeTruthy();
+  fireEvent.click(screen.getByLabelText(/First song/));
   expect(screen.getByTestId("chart-points").textContent).toBe(
     JSON.stringify(
       buildReleaseStreamSeries(release, history, "USABC2600001").daily,
     ),
   );
-  expect(screen.getByText("Daily updates")).toBeTruthy();
+  expect(screen.queryByText("Daily updates")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Last 7 days" }));
   expect(data.setDays).toHaveBeenCalledWith(7);
-  fireEvent.click(screen.getByRole("button", { name: "Refresh streams" }));
-  expect(data.refresh).toHaveBeenCalled();
+  expect(screen.queryByRole("button", { name: "Refresh streams" })).toBeNull();
+  expect(screen.queryByText("Data details")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "table" }));
+  expect(screen.getByRole("table")).toBeTruthy();
 });
 it("gaps do not render numeric release totals, and tracking is explicitly catalog-wide", () => {
   const missing = structuredClone(history);
@@ -64,9 +64,7 @@ it("resets song selection when the selected catalog changes", () => {
   const { rerender } = render(
     <ReleaseStreamPanel current={release} data={data} />,
   );
-  fireEvent.change(screen.getByLabelText("Stream recording"), {
-    target: { value: "USABC2600001" },
-  });
+  fireEvent.click(screen.getByLabelText(/First song/));
   rerender(
     <ReleaseStreamPanel
       current={release}
@@ -78,8 +76,8 @@ it("resets song selection when the selected catalog changes", () => {
     />,
   );
   expect(
-    (screen.getByLabelText("Stream recording") as HTMLSelectElement).value,
-  ).toBe("");
+    (screen.getByLabelText(/First song/) as HTMLInputElement).checked,
+  ).toBe(false);
   expect(screen.getByTestId("chart-points").textContent).toBe(
     JSON.stringify(buildReleaseStreamSeries(release, history).daily),
   );

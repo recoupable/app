@@ -6,6 +6,8 @@ export const data = {
   selectCatalog: vi.fn(),
   days: 28,
   setDays: vi.fn(),
+  since: null,
+  setRange: vi.fn(),
   catalogsLoading: false,
   catalogError: "",
   history,

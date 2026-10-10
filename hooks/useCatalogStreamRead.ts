@@ -14,6 +14,7 @@ export function useCatalogStreamRead(
   days: number,
   reload: number,
   getAccessToken: () => Promise<string | null>,
+  since: string | null = null,
 ) {
   const [read, setRead] = useState<{
     key: string;
@@ -22,7 +23,7 @@ export function useCatalogStreamRead(
     error: string;
     loading: boolean;
   }>({ key: "", history: null, tracking: null, error: "", loading: false });
-  const key = JSON.stringify([catalogId, days, reload]);
+  const key = JSON.stringify([catalogId, days, since, reload]);
   const visible =
     read.key === key
       ? read
@@ -43,7 +44,7 @@ export function useCatalogStreamRead(
         const [history, tracking] = await Promise.all([
           getReleaseStreamHistory(
             catalogId,
-            getStreamPeriod(days),
+            getStreamPeriod(days, new Date(), since),
             getAccessToken,
             controller.signal,
           ),
@@ -86,6 +87,6 @@ export function useCatalogStreamRead(
       controller.abort();
       clearTimeout(timer);
     };
-  }, [catalogId, days, key, getAccessToken]);
+  }, [catalogId, days, since, key, getAccessToken]);
   return visible;
 }

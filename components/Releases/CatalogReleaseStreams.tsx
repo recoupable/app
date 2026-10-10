@@ -49,7 +49,7 @@ export default function CatalogReleaseStreams({
         <ReleaseStreamControls
           data={streams}
           series={null}
-          selectedIsrc=""
+          selectedIsrc={[]}
           setSelectedIsrc={() => {}}
         />
         <ReleaseStreamRequestStates data={streams} />

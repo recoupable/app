@@ -1,7 +1,5 @@
 "use client";
 import { useMemo, useState } from "react";
-import { RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import type { useReleaseStreams } from "@/hooks/useReleaseStreams";
 import { buildReleaseStreamSeries } from "@/lib/releases/buildReleaseStreamSeries";
 import type { StreamRelease } from "@/lib/releases/catalogStreamTypes";
@@ -16,20 +14,18 @@ interface Props {
 export default function ReleaseStreamPanel({ current, data }: Props) {
   const [selection, setSelection] = useState({
     catalogId: data.catalogId,
-    isrc: "",
+    isrc: [] as string[],
   });
-  const selectedIsrc =
-    selection.catalogId === data.catalogId ? selection.isrc : "";
-  const setSelectedIsrc = (isrc: string) =>
+  const selectedIsrc = useMemo(
+    () => (selection.catalogId === data.catalogId ? selection.isrc : []),
+    [selection, data.catalogId],
+  );
+  const setSelectedIsrc = (isrc: string[]) =>
     setSelection({ catalogId: data.catalogId, isrc });
   const series = useMemo(
     () =>
       data.history
-        ? buildReleaseStreamSeries(
-            current,
-            data.history,
-            selectedIsrc || undefined,
-          )
+        ? buildReleaseStreamSeries(current, data.history, selectedIsrc)
         : null,
     [current, data.history, selectedIsrc],
   );
@@ -40,19 +36,6 @@ export default function ReleaseStreamPanel({ current, data }: Props) {
     >
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-medium tracking-tight">Streams</h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Refresh streams"
-          title="Refresh streams"
-          disabled={data.loading || data.enabling || !data.catalogId}
-          onClick={data.refresh}
-        >
-          <RefreshCw
-            aria-hidden="true"
-            className={`size-4 ${data.loading ? "animate-spin motion-reduce:animate-none" : ""}`}
-          />
-        </Button>
       </div>
       <ReleaseStreamControls
         data={data}

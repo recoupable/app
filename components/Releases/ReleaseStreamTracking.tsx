@@ -24,6 +24,7 @@ export default function ReleaseStreamTracking({
         </p>
       </div>
     );
+  if (!collecting && !["failed", "partial"].includes(status ?? "")) return null;
   const Icon = collecting
     ? Loader2
     : ["failed", "partial"].includes(status ?? "")

@@ -16,7 +16,16 @@ export function useReleaseStreams(
   }, [getAccessToken]);
   const getToken = useCallback(() => tokenReader.current(), []);
   const [catalogId, setCatalogId] = useState("");
-  const [days, setDays] = useState(28);
+  const [days, updateDays] = useState(28);
+  const [since, setSince] = useState<string | null>(null);
+  const setDays = (value: number) => {
+    updateDays(value);
+    setSince(null);
+  };
+  const setRange = (start: string, length: number) => {
+    setSince(start);
+    updateDays(length);
+  };
   const [reload, setReload] = useState(0);
   const [enabling, setEnabling] = useState(false);
   const [mutationError, setMutationError] = useState("");
@@ -32,7 +41,13 @@ export function useReleaseStreams(
     lifetime.current = controller;
     return () => controller.abort();
   }, []);
-  const visible = useCatalogStreamRead(catalogId, days, reload, getToken);
+  const visible = useCatalogStreamRead(
+    catalogId,
+    days,
+    reload,
+    getToken,
+    since,
+  );
   const selectCatalog = (id: string) => {
     if (enabling) return;
     setMutationError("");
@@ -70,6 +85,8 @@ export function useReleaseStreams(
     selectCatalog,
     days,
     setDays,
+    since,
+    setRange,
     catalogsLoading: choices.catalogsLoading,
     catalogError: choices.catalogError,
     history: visible.history,

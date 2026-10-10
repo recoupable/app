@@ -80,16 +80,14 @@ it("charts catalog albums in the actual Releases page when no metadata review ex
   fireEvent.change(selector, { target: { value: JSON.stringify("ADHD") } });
   expect(screen.getByTestId("chart").textContent).not.toBe(all);
   expect(screen.queryByRole("option", { name: "Second" })).toBeNull();
-  fireEvent.change(screen.getByLabelText("Stream recording"), {
-    target: { value: "USABC2600001" },
-  });
+  fireEvent.click(screen.getByLabelText(/First/));
   fireEvent.change(selector, {
     target: { value: JSON.stringify("Beautiful Tomorrow") },
   });
-  expect(
-    (screen.getByLabelText("Stream recording") as HTMLSelectElement).value,
-  ).toBe("");
-  expect(screen.getByRole("option", { name: "Second" })).toBeTruthy();
+  expect(screen.queryByLabelText(/First/)).toBeNull();
+  expect((screen.getByLabelText(/Second/) as HTMLInputElement).checked).toBe(
+    false,
+  );
   expect(
     fetcher.mock.calls
       .filter(([, init]) => init.method === "POST")
