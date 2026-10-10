@@ -7,7 +7,7 @@ export async function GET(request: Request) {
       release,
     );
   const parent = url.searchParams.get("parent") || "";
-  const origins = [url.origin, "https://gatsby.wtf", "https://www.gatsby.wtf"];
+  const origins = ["https://gatsby.wtf", "https://www.gatsby.wtf"];
   if (process.env.NODE_ENV !== "production")
     origins.push(
       "http://localhost:3002",

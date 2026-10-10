@@ -267,6 +267,10 @@
       continueButton.onclick = async () => {
         showPlayer();
         if (!play.disabled && play.onclick) await play.onclick();
+        if (document.body.dataset.listeningOnly === "true") {
+          continueButton.hidden = true;
+          return;
+        }
         window.parent.postMessage(
           { type: "recoup-music-continue" },
           parentOrigin,
@@ -493,6 +497,11 @@
           throw new Error(
             "Open this site on " + callback.origin + " to connect Spotify.",
           );
+        const returnUrl = new URL(
+          location.pathname + location.search,
+          location.origin,
+        );
+        returnUrl.searchParams.delete("authorize");
         write(pendingKey, {
           verifier,
           flow: document.body.dataset.gatsbyFlow || null,
@@ -505,7 +514,7 @@
             new URLSearchParams(location.search).get("return") || "",
           )
             ? new URLSearchParams(location.search).get("return")
-            : location.pathname + location.search,
+            : returnUrl.pathname + returnUrl.search,
         });
         const params = new URLSearchParams({
           client_id: config.clientId,

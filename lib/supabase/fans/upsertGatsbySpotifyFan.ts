@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { v5 as uuidv5 } from "uuid";
 import supabase from "@/lib/supabase/serverClient";
 /** Match Gatsby's existing fan capture namespace without storing provider tokens. */
 export async function upsertGatsbySpotifyFan(profile: {
@@ -6,10 +6,7 @@ export async function upsertGatsbySpotifyFan(profile: {
   email?: string | null;
   display_name?: string | null;
 }) {
-  const hex = createHash("sha256")
-    .update(`GatsbyWebsite1:spotify:${profile.id}`)
-    .digest("hex");
-  const id = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-5${hex.slice(13, 16)}-8${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+  const id = uuidv5(`GatsbyWebsite1:spotify:${profile.id}`, uuidv5.URL);
   const { error } = await supabase.from("fans").upsert(
     {
       id,

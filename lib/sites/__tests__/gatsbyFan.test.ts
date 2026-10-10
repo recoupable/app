@@ -61,3 +61,58 @@ it("rejects forged audience context and cross-origin calls before exchanging tok
   expect(save).not.toHaveBeenCalled();
   expect(fetch).not.toHaveBeenCalled();
 });
+it("rejects a correctly signed non-Gatsby audience before contacting Spotify", async () => {
+  const { createHmac } = await import("node:crypto");
+  const payload = Buffer.from(
+    JSON.stringify({
+      audience: "other-label",
+      origin: "https://app.recoupable.dev",
+      release: "https://open.spotify.com/track/4HJjUdcezdSSCBdy5JVHDs",
+      expires: Date.now() + 600000,
+    }),
+  ).toString("base64url");
+  const flow = `${payload}.${createHmac("sha256", "test-key").update(`gatsby-flow:v1:${payload}`).digest("base64url")}`;
+  const fetch = vi.fn();
+  vi.stubGlobal("fetch", fetch);
+  expect((await POST(request(flow))).status).toBe(400);
+  expect(fetch).not.toHaveBeenCalled();
+  expect(save).not.toHaveBeenCalled();
+});
+it("never accepts an email injected into the authorization request", async () => {
+  const valid = request(
+    signGatsbyFlow(
+      "https://app.recoupable.dev",
+      "https://open.spotify.com/track/4HJjUdcezdSSCBdy5JVHDs",
+    ),
+  );
+  const body = await valid.json();
+  const fetch = vi.fn();
+  vi.stubGlobal("fetch", fetch);
+  const forged = new Request(valid.url, {
+    method: "POST",
+    headers: valid.headers,
+    body: JSON.stringify({ ...body, email: "forged@example.com" }),
+  });
+  expect((await POST(forged)).status).toBe(400);
+  expect(fetch).not.toHaveBeenCalled();
+  expect(save).not.toHaveBeenCalled();
+});
+it("rejects provider authorization failures without capturing a fan", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(new Response("", { status: 401 })),
+  );
+  expect(
+    (
+      await POST(
+        request(
+          signGatsbyFlow(
+            "https://app.recoupable.dev",
+            "https://open.spotify.com/track/4HJjUdcezdSSCBdy5JVHDs",
+          ),
+        ),
+      )
+    ).status,
+  ).toBe(401);
+  expect(save).not.toHaveBeenCalled();
+});

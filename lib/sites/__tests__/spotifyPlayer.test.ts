@@ -127,3 +127,19 @@ it("omits game navigation from an explicit listening destination", async () => {
   expect(html).not.toContain('id="spotify-skip"');
   expect(html).toContain('id="spotify-play"');
 });
+it("carries a valid signed Gatsby flow into trusted player markup", async () => {
+  vi.stubEnv("SITES_GATSBY_FLOW_SECRET", "test-key");
+  try {
+    const { signGatsbyFlow } = await import("../gatsby/signGatsbyFlow");
+    const release = "https://open.spotify.com/track/4HJjUdcezdSSCBdy5JVHDs";
+    const flow = signGatsbyFlow("https://app.recoupable.dev", release);
+    const url = new URL("https://app.recoupable.dev/s/spotify/connect");
+    url.searchParams.set("release", release);
+    url.searchParams.set("flow", flow);
+    const response = await GET(new Request(url));
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain(`data-gatsby-flow="${flow}"`);
+  } finally {
+    vi.unstubAllEnvs();
+  }
+});
