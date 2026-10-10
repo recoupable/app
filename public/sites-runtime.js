@@ -641,6 +641,20 @@
     session.product = product;
     write(sessionKey, session);
     if (product === "free" || product === "open") {
+      if (document.body.dataset.listeningOnly === "true") {
+        play.hidden = true;
+        if (continueButton) continueButton.hidden = true;
+        say("Opening Spotify to listen…");
+        if (parentOrigin) {
+          window.parent.postMessage(
+            { type: "recoup:open-dsp", provider: "spotify" },
+            parentOrigin,
+          );
+        } else {
+          location.assign(document.body.dataset.release);
+        }
+        return;
+      }
       if (!activateSavedAudio()) {
         play.hidden = true;
         say("Spotify Free connected. Open Spotify to listen.");
