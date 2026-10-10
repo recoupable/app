@@ -8,6 +8,7 @@ import ReleaseCasesList from "./ReleaseCasesList";
 import ReleaseCaseDetails from "./ReleaseCaseDetails";
 import CompanyAssessment from "./CompanyAssessment";
 import ReleaseIntakeForm from "./ReleaseIntakeForm";
+import ReleaseStreams from "./ReleaseStreams";
 export default function ReleaseCasesPage() {
   const { ready, authenticated, getAccessToken, login } = usePrivy();
   const { userData } = useUserProvider();
@@ -66,8 +67,35 @@ export default function ReleaseCasesPage() {
       <ReleaseCasesList cases={cases} />
       {current && (
         <>
+          {accountId && current.tracks.length > 0 && (
+            <ReleaseStreams
+              key={JSON.stringify([
+                "streams",
+                accountId,
+                selectedOrgId,
+                current.request_id,
+                current.fingerprint,
+              ])}
+              current={current}
+              accountId={selectedOrgId ?? accountId}
+              getAccessToken={getAccessToken}
+            />
+          )}
+          {current.tracks.length === 0 && (
+            <section
+              aria-label="Release streams"
+              className="space-y-2 rounded-xl bg-card p-6 shadow-[0_0_0_1px_var(--border)]"
+            >
+              <h2 className="text-xl font-semibold">Streams</h2>
+              <p className="text-sm text-muted-foreground">
+                Save this release’s recording metadata and ISRCs to match its
+                daily stream history.
+              </p>
+            </section>
+          )}
           <ReleaseCaseDetails
             key={JSON.stringify([
+              "case",
               accountId,
               selectedOrgId,
               current.request_id,
@@ -80,6 +108,7 @@ export default function ReleaseCasesPage() {
           />
           <CompanyAssessment
             key={JSON.stringify([
+              "assessment",
               accountId,
               selectedOrgId,
               current.request_id,
