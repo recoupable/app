@@ -41,7 +41,7 @@ export default function ReleaseCaseDetails({
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {awaitingMetadata
-              ? "Link saved · waiting for track details"
+              ? "Link saved · no collected review metadata"
               : `${current.tracks.length} saved tracks · ${current.reviewable ? "Ready for metadata review" : "Needs attention"}`}
           </p>
         </div>
@@ -60,8 +60,8 @@ export default function ReleaseCaseDetails({
           <div className="rounded-xl bg-muted/50 p-5">
             <h3 className="font-medium">Your release link is saved</h3>
             <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
-              Track details haven’t been collected yet. Once metadata is
-              available, you’ll see the tracklist here and can review it.
+              This review has no collected track details yet. Your saved catalog
+              recordings and charts remain available above.
             </p>
             {sourceUrl && (
               <Button asChild variant="outline" className="mt-4">

@@ -30,7 +30,9 @@ it("explains the next step without an empty table or disabled review form", () =
   );
   expect(screen.getByText("Your release link is saved")).toBeTruthy();
   expect(
-    screen.getByText(/Track details haven’t been collected yet/),
+    screen.getByText(
+      /Your saved catalog recordings and charts remain available above/,
+    ),
   ).toBeTruthy();
   expect(screen.queryByRole("table")).toBeNull();
   expect(screen.queryByLabelText("Review note")).toBeNull();

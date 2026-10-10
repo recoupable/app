@@ -1,78 +1,5 @@
-import { readFileSync } from "node:fs";
-import { runInNewContext } from "node:vm";
-import { webcrypto } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
-const source = readFileSync("public/sites-runtime.js", "utf8");
-function harness(callback: boolean, pending: unknown = null, search = "") {
-  const nodes: Record<
-    string,
-    {
-      appendChild?: ReturnType<typeof vi.fn>;
-      textContent?: string;
-      href?: string;
-      disabled?: boolean;
-      onclick?: () => Promise<void>;
-    }
-  > = {};
-  const storage = new Map<string, string>();
-  if (pending)
-    storage.set("recoup-sites-spotify-pending", JSON.stringify(pending));
-  const fetch = vi.fn();
-  const location = {
-    search,
-    href: "https://example.test/s/spotify/connect?parent=https://example.test",
-    reload: vi.fn(),
-    pathname: "/s/spotify/callback",
-    origin: "https://example.test",
-    replace: vi.fn(),
-    assign: vi.fn(),
-  };
-  const ctx = {
-    document: {
-      body: {
-        hasAttribute: (a: string) =>
-          a === (callback ? "data-spotify-callback" : "data-sites-runtime"),
-        dataset: {
-          preview: "false",
-          spotifyPlayer: "true",
-          connectUrl: "",
-          release: "",
-          playerParent: "",
-        },
-      },
-      getElementById: (id: string) =>
-        nodes[id] ?? (nodes[id] = { appendChild: vi.fn() }),
-      createElement: () => ({}),
-    },
-    sessionStorage: {
-      getItem: (k: string) => storage.get(k),
-      setItem: (k: string, v: string) => storage.set(k, v),
-      removeItem: (k: string) => storage.delete(k),
-    },
-    window: {
-      open: vi.fn(),
-      addEventListener: vi.fn(),
-      opener: null as null | { postMessage: ReturnType<typeof vi.fn> },
-      close: vi.fn(),
-    },
-    history: { replaceState: vi.fn() },
-    location,
-    fetch,
-    URL,
-    URLSearchParams,
-    crypto: webcrypto,
-    TextEncoder,
-    Uint8Array,
-    btoa: (v: string) => Buffer.from(v, "binary").toString("base64"),
-  };
-  return {
-    ctx,
-    nodes,
-    fetch,
-    storage,
-    run: () => runInNewContext(source, ctx),
-  };
-}
+import { spotifyRuntimeHarness as harness } from "./fixtures/spotifyRuntimeHarness";
 describe("Spotify fan auth", () => {
   it("rejects mismatched OAuth state without exchanging the code", async () => {
     const h = harness(
@@ -447,9 +374,30 @@ it("keeps failed profile lookups unknown while still offering saved audio", asyn
     playbackSource: "audio",
   });
 });
-it("explains missing audio without loading an unusable SDK for Free accounts", async () => {
+it("offers the Spotify fallback without loading an unusable SDK for Free accounts", async () => {
   const h = playbackHarness("open", false);
   await h.run();
-  expect(h.nodes["spotify-status"].textContent).toContain("no audio file");
+  expect(h.nodes["spotify-status"].textContent).toContain("Open Spotify");
   expect(h.head.appendChild).not.toHaveBeenCalled();
+});
+
+it("suppresses Continue and game messages in listening mode", async () => {
+  const h = harness(false);
+  Object.assign(h.ctx.document.body.dataset, {
+    listeningOnly: "true",
+    playerParent: "https://artist.example",
+  });
+  const parent = { postMessage: vi.fn() };
+  Object.assign(h.ctx.window, { parent });
+  h.fetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({ configured: false }),
+  });
+  await h.run();
+  expect(h.nodes["spotify-skip"]).toMatchObject({ hidden: true });
+  await h.nodes["spotify-skip"].onclick!();
+  await h.nodes["spotify-continue"].onclick!();
+  expect(h.nodes["spotify-continue"]).toMatchObject({ hidden: true });
+  expect(h.ctx.document.body.dataset).toMatchObject({ playerVisible: "true" });
+  expect(parent.postMessage).not.toHaveBeenCalled();
 });

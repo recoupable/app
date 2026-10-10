@@ -433,3 +433,8 @@ body[data-themed] input[type="range"] {
   border-radius: 8px;
   margin-bottom: 16px;
 }
+
+body[data-apple-player] .sign-button {
+  background: #d60017;
+  color: #fff;
+}

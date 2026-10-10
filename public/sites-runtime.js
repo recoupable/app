@@ -8,7 +8,19 @@
       status.hidden = quiet;
     }
   };
-  const sessionKey = "recoup-sites-spotify";
+  const playerConfig = JSON.parse(document.body.dataset.playerConfig || "null");
+  if (playerConfig?.flow) {
+    const currentPlayerUrl = new URL(location.href);
+    currentPlayerUrl.searchParams.set("flow", playerConfig.flow);
+    history.replaceState(
+      null,
+      "",
+      currentPlayerUrl.pathname + currentPlayerUrl.search,
+    );
+  }
+  const sessionKey = playerConfig?.playerId
+    ? "recoup-player-spotify:" + playerConfig.playerId
+    : "recoup-sites-spotify";
   const pendingKey = "recoup-sites-spotify-pending";
   const read = (key) => {
     try {
@@ -48,7 +60,10 @@
       const safeReturn =
         returnUrl.origin === location.origin &&
         (/^\/s\/[0-9a-f-]{36}$/.test(returnUrl.pathname) ||
-          returnUrl.pathname === "/s/spotify/connect")
+          returnUrl.pathname === "/s/spotify/connect" ||
+          /^\/listen\/[0-9a-f-]{36}\/(spotify|apple_music)$/.test(
+            returnUrl.pathname,
+          ))
           ? returnUrl.pathname + returnUrl.search
           : "/";
       const link = document.getElementById("return-link");
@@ -67,21 +82,39 @@
         throw new Error(
           "This connection expired. Return to the site and connect again.",
         );
-      const token = await exchange({
-        grant_type: "authorization_code",
-        client_id: pending.clientId,
-        code,
-        redirect_uri: pending.redirectUri,
-        code_verifier: pending.verifier,
-      });
-      write(sessionKey, {
+      const token = pending.flow
+        ? await (async () => {
+            const response = await fetch("/api/players/spotify/session", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                code,
+                verifier: pending.verifier,
+                flow: pending.flow,
+              }),
+            });
+            if (!response.ok)
+              throw new Error(
+                "Spotify could not complete this fan connection.",
+              );
+            return response.json();
+          })()
+        : await exchange({
+            grant_type: "authorization_code",
+            client_id: pending.clientId,
+            code,
+            redirect_uri: pending.redirectUri,
+            code_verifier: pending.verifier,
+          });
+      const callbackSessionKey = pending.sessionKey || sessionKey;
+      write(callbackSessionKey, {
         ...token,
         clientId: pending.clientId,
         expiresAt: Date.now() + token.expires_in * 1000,
       });
       if (pending.popup && window.opener) {
         window.opener.postMessage(
-          { type: "recoup-spotify-session", session: read(sessionKey) },
+          { type: "recoup-spotify-session", session: read(callbackSessionKey) },
           location.origin,
         );
         say("Connected. Return to your experience.");
@@ -222,8 +255,12 @@
     }
     const skip = document.getElementById("spotify-skip");
     if (skip) {
-      skip.hidden = !parentOrigin;
-      skip.onclick = () => notifyParent("recoup-music-continue");
+      skip.hidden =
+        !parentOrigin || document.body.dataset.listeningOnly === "true";
+      skip.onclick = () => {
+        if (document.body.dataset.listeningOnly !== "true")
+          notifyParent("recoup-music-continue");
+      };
     }
     if (parentOrigin && typeof ResizeObserver !== "undefined") {
       const observer = new ResizeObserver(() =>
@@ -250,6 +287,10 @@
       continueButton.onclick = async () => {
         showPlayer();
         if (!play.disabled && play.onclick) await play.onclick();
+        if (document.body.dataset.listeningOnly === "true") {
+          continueButton.hidden = true;
+          return;
+        }
         window.parent.postMessage(
           { type: "recoup-music-continue" },
           parentOrigin,
@@ -318,6 +359,13 @@
     const audio = document.getElementById("site-audio");
     let audioActive = false;
     function activateSavedAudio() {
+      if (
+        playerConfig &&
+        document.body.dataset.listeningOnly === "true" &&
+        (playerConfig.freePlayback !== "audio" ||
+          !["free", "open"].includes(document.body.dataset.spotifyProduct))
+      )
+        return false;
       if (!audio || !audio.src) return false;
       if (audioActive) return true;
       audioActive = true;
@@ -352,7 +400,11 @@
       ])
         audio.addEventListener(event, sync);
       audio.addEventListener("error", () =>
-        say("Music could not load. Reload this page to try again."),
+        say(
+          document.body.dataset.listeningOnly === "true"
+            ? "Artist audio could not load. Open in Spotify to listen."
+            : "Music could not load. Reload this page to try again.",
+        ),
       );
       audio.volume = 0.7;
       play.onclick = async () => {
@@ -413,9 +465,9 @@
       if (skip) skip.hidden = true;
       return true;
     }
-    const configResponse = await fetch("/api/sites/spotify/config").catch(
-      () => null,
-    );
+    const configResponse = playerConfig?.spotify
+      ? { ok: true, json: async () => playerConfig.spotify }
+      : await fetch("/api/sites/spotify/config").catch(() => null);
     if (!configResponse?.ok) {
       if (showSavedAudio()) return;
       throw new Error("Spotify connection is temporarily unavailable.");
@@ -427,9 +479,7 @@
     ) {
       connect.disabled = true;
       if (showSavedAudio()) return;
-      say(
-        "Spotify connection is not configured for this site yet. You can still play.",
-      );
+      say("Spotify connection is not configured. Open Spotify to listen.");
       return;
     }
     connect.onclick = async () => {
@@ -441,6 +491,8 @@
         if (parentOrigin) {
           const authUrl = new URL(location.href);
           authUrl.searchParams.delete("parent");
+          if (document.body.dataset.playerFlow)
+            authUrl.searchParams.set("flow", document.body.dataset.playerFlow);
           authUrl.searchParams.set("authorize", "1");
           authPopup = window.open(
             authUrl.href,
@@ -476,8 +528,15 @@
           throw new Error(
             "Open this site on " + callback.origin + " to connect Spotify.",
           );
+        const returnUrl = new URL(
+          location.pathname + location.search,
+          location.origin,
+        );
+        returnUrl.searchParams.delete("authorize");
         write(pendingKey, {
           verifier,
+          flow: document.body.dataset.playerFlow || null,
+          sessionKey,
           popup: new URLSearchParams(location.search).get("authorize") === "1",
           state,
           created: Date.now(),
@@ -487,7 +546,7 @@
             new URLSearchParams(location.search).get("return") || "",
           )
             ? new URLSearchParams(location.search).get("return")
-            : location.pathname + location.search,
+            : returnUrl.pathname + returnUrl.search,
         });
         const params = new URLSearchParams({
           client_id: config.clientId,
@@ -496,8 +555,9 @@
           state,
           code_challenge_method: "S256",
           code_challenge: challenge,
-          scope:
-            "streaming user-read-email user-read-private user-modify-playback-state",
+          scope: playerConfig?.spotify
+            ? config.scopes.join(" ")
+            : "streaming user-read-email user-read-private user-modify-playback-state",
         });
         location.assign("https://accounts.spotify.com/authorize?" + params);
       } catch (e) {
@@ -513,6 +573,8 @@
       return;
     }
     let session = read(sessionKey);
+    if (playerConfig && session?.player_session_id !== playerConfig.sessionId)
+      session = null;
     if (!session) {
       showSavedAudio();
       return;
@@ -528,6 +590,7 @@
     disconnect.hidden = false;
     disconnect.onclick = () => {
       if (player) player.disconnect();
+      window.RecoupReleasePlayer?.event("disconnected");
       sessionStorage.removeItem(sessionKey);
       location.reload();
     };
@@ -551,6 +614,16 @@
       }
       return session.access_token;
     }
+    const notifyPlayback = (event) => {
+      if (playerConfig && parentOrigin)
+        window.parent.postMessage(
+          { type: "recoup:playback", provider: "spotify", event },
+          parentOrigin,
+        );
+    };
+    if (playerConfig)
+      notifyPlayback(session.fanCapture ? "fan_captured" : "capture_failed");
+    let lastPlayback = "";
     let product = "unknown";
     try {
       const profileResponse = await fetch("https://api.spotify.com/v1/me", {
@@ -575,14 +648,35 @@
             ? "Spotify connected · subscription unavailable"
             : "Spotify Free connected";
     }
+    notifyPlayback("connected");
+    window.RecoupReleasePlayer?.event("connected");
     session.product = product;
     write(sessionKey, session);
     if (product === "free" || product === "open") {
+      if (document.body.dataset.listeningOnly === "true") {
+        if (playerConfig?.freePlayback === "audio" && showSavedAudio()) {
+          say(
+            "Artist audio ready. Press Play music. This playback does not count as a Spotify stream.",
+            true,
+          );
+          return;
+        }
+        play.hidden = true;
+        if (continueButton) continueButton.hidden = true;
+        say("Opening Spotify to listen…");
+        if (parentOrigin) {
+          window.parent.postMessage(
+            { type: "recoup:open-dsp", provider: "spotify" },
+            parentOrigin,
+          );
+        } else {
+          location.assign(document.body.dataset.release);
+        }
+        return;
+      }
       if (!activateSavedAudio()) {
         play.hidden = true;
-        say(
-          "Spotify Free connected. This site has no audio file yet. You can still play the game.",
-        );
+        say("Spotify Free connected. Open Spotify to listen.");
       }
       return;
     }
@@ -616,8 +710,16 @@
         );
       const previous = document.getElementById("spotify-previous");
       const next = document.getElementById("spotify-next");
-      if (previous) previous.onclick = act(() => player.previousTrack());
-      if (next) next.onclick = act(() => player.nextTrack());
+      if (previous)
+        previous.onclick = act(
+          () => (
+            window.RecoupReleasePlayer?.event("skip"), player.previousTrack()
+          ),
+        );
+      if (next)
+        next.onclick = act(
+          () => (window.RecoupReleasePlayer?.event("skip"), player.nextTrack()),
+        );
       setInterval(updateProgress, 1000);
       player.addListener("ready", ({ device_id }) => {
         if (audioActive) return;
@@ -625,13 +727,16 @@
         play.disabled = false;
         say(
           parentOrigin
-            ? "Spotify connected. Continue to start listening."
+            ? document.body.dataset.listeningOnly === "true"
+              ? "Spotify connected. Press Listen."
+              : "Spotify connected. Continue to start listening."
             : "Spotify connected. Press Play music.",
           true,
         );
       });
       player.addListener("not_ready", () => {
         if (audioActive) return;
+        window.RecoupReleasePlayer?.state(null, true, 0, "stopped");
         deviceId = null;
         play.disabled = true;
         say("Player disconnected. Reconnect Spotify.");
@@ -655,6 +760,22 @@
         });
       player.addListener("player_state_changed", (state) => {
         if (state && !audioActive) {
+          const playback =
+            state.track_window.current_track.id + ":" + state.paused;
+          window.RecoupReleasePlayer?.state(
+            state.track_window.current_track.id,
+            state.paused,
+            state.position,
+          );
+          if (playback !== lastPlayback) {
+            if (
+              lastPlayback.split(":")[0] !== state.track_window.current_track.id
+            )
+              notifyPlayback("track_changed");
+            if (lastPlayback.split(":")[1] !== String(state.paused))
+              notifyPlayback(state.paused ? "paused" : "playing");
+            lastPlayback = playback;
+          }
           latestState = state;
           updatedAt = Date.now();
           duration = state.duration;
