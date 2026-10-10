@@ -255,8 +255,12 @@
     }
     const skip = document.getElementById("spotify-skip");
     if (skip) {
-      skip.hidden = !parentOrigin;
-      skip.onclick = () => notifyParent("recoup-music-continue");
+      skip.hidden =
+        !parentOrigin || document.body.dataset.listeningOnly === "true";
+      skip.onclick = () => {
+        if (document.body.dataset.listeningOnly !== "true")
+          notifyParent("recoup-music-continue");
+      };
     }
     if (parentOrigin && typeof ResizeObserver !== "undefined") {
       const observer = new ResizeObserver(() =>

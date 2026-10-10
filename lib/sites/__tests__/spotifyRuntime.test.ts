@@ -383,7 +383,10 @@ it("offers the Spotify fallback without loading an unusable SDK for Free account
 
 it("suppresses Continue and game messages in listening mode", async () => {
   const h = harness(false);
-  Object.assign(h.ctx.document.body.dataset, { listeningOnly: "true" });
+  Object.assign(h.ctx.document.body.dataset, {
+    listeningOnly: "true",
+    playerParent: "https://artist.example",
+  });
   const parent = { postMessage: vi.fn() };
   Object.assign(h.ctx.window, { parent });
   h.fetch.mockResolvedValue({
@@ -393,5 +396,8 @@ it("suppresses Continue and game messages in listening mode", async () => {
   await h.run();
   expect(h.nodes["spotify-skip"]).toMatchObject({ hidden: true });
   await h.nodes["spotify-skip"].onclick!();
+  await h.nodes["spotify-continue"].onclick!();
+  expect(h.nodes["spotify-continue"]).toMatchObject({ hidden: true });
+  expect(h.ctx.document.body.dataset).toMatchObject({ playerVisible: "true" });
   expect(parent.postMessage).not.toHaveBeenCalled();
 });
