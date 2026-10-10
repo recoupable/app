@@ -4,12 +4,12 @@ import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { useReleaseStreams } from "@/hooks/useReleaseStreams";
 import { buildReleaseStreamSeries } from "@/lib/releases/buildReleaseStreamSeries";
-import type { ReleaseCase } from "@/lib/releases/types";
+import type { StreamRelease } from "@/lib/releases/catalogStreamTypes";
 import ReleaseStreamControls from "./ReleaseStreamControls";
 import ReleaseStreamRequestStates from "./ReleaseStreamRequestStates";
 import ReleaseStreamHistory from "./ReleaseStreamHistory";
 interface Props {
-  current: ReleaseCase;
+  current: StreamRelease;
   data: ReturnType<typeof useReleaseStreams>;
 }
 

@@ -4,7 +4,7 @@ import { requestStreamData } from "@/lib/releases/requestStreamData";
 import { useReleaseStreamCatalogChoices } from "./useReleaseStreamCatalogChoices";
 import { useCatalogStreamRead } from "./useCatalogStreamRead";
 
-/** The parent keys this hook's component by account, workspace, release and evidence fingerprint. */
+/** The parent keys this hook's component by account and workspace. */
 export function useReleaseStreams(
   accountId: string,
   getAccessToken: () => Promise<string | null>,

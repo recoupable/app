@@ -1,4 +1,10 @@
-import { cleanup } from "@testing-library/react";
+import type { ReactElement } from "react";
+import {
+  cleanup,
+  fireEvent,
+  render as renderUI,
+  screen,
+} from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 const mockState = vi.hoisted(() => ({
   org: "org-a",
@@ -49,3 +55,12 @@ afterEach(() => {
   mockState.authenticated = true;
   mockState.token = "token";
 });
+
+// Keep metadata-review tests focused on that independent workflow.
+vi.mock("../CatalogReleaseStreams", () => ({ default: () => null }));
+export function render(element: ReactElement) {
+  const result = renderUI(element);
+  const summary = screen.queryByText("Metadata reviews");
+  if (summary) fireEvent.click(summary);
+  return result;
+}

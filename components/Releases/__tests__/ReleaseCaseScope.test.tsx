@@ -1,13 +1,7 @@
 // @vitest-environment jsdom
-import { state, item, projection } from "./setup";
+import { render, state, item, projection } from "./setup";
 import React from "react";
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 import ReleaseCasesPage from "../ReleaseCasesPage";
 it("immediately hides private case content on workspace switch", async () => {
