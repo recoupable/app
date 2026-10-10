@@ -23,6 +23,7 @@ export const observedFormat: ReleaseFormat = {
   label: "Fixture label",
   upc: null,
   upc_state: "not_observed",
+  track_coverage: "full",
   disc_count: 2,
   multi_disc: true,
   reissue: "unknown",

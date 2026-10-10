@@ -18,10 +18,15 @@ export default function ReleaseCaseFormat({
   // Only observed values are shown; nothing is inferred on the client.
   const parts = [
     FORMAT_LABELS[format.format_state] ?? "Format unknown",
-    format.disc_count === null ? null : count(format.disc_count, "disc"),
+    format.disc_count !== null
+      ? count(format.disc_count, "disc")
+      : format.multi_disc
+        ? "Multiple discs"
+        : "Disc count unknown",
     format.reported_total_tracks === null
       ? null
       : `${count(format.reported_total_tracks, "track")} reported`,
+    format.track_coverage === "partial" ? "Track list incomplete" : null,
     format.release_date ? `Released ${format.release_date}` : null,
     format.label,
     format.upc_state === "observed" && format.upc

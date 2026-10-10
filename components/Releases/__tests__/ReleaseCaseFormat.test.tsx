@@ -1,25 +1,13 @@
 // @vitest-environment jsdom
-import React from "react";
-import { render, screen, cleanup } from "@testing-library/react";
-import { afterEach, expect, it, vi } from "vitest";
-import ReleaseCaseDetails from "../ReleaseCaseDetails";
-import type { ReleaseCase } from "@/lib/releases/types";
+import { screen, cleanup } from "@testing-library/react";
+import { afterEach, expect, it } from "vitest";
 import {
   formatCase as base,
   formatTrack as track,
   observedFormat as observed,
 } from "./releaseFormatFixture";
+import { renderReleaseCase as show } from "./renderReleaseCase";
 afterEach(cleanup);
-function show(current: ReleaseCase) {
-  render(
-    <ReleaseCaseDetails
-      current={current}
-      busy={false}
-      onReview={vi.fn()}
-      onReload={vi.fn()}
-    />,
-  );
-}
 it("shows the observed multi-disc album and disc prefixes without inventing a UPC", () => {
   show({ ...base, release_format: observed });
   const line = screen.getByText(/^Album · 2 discs · 3 tracks reported/);
@@ -70,7 +58,11 @@ it("keeps an observed but unknown type distinct from uncollected", () => {
       multi_disc: null,
     },
   });
-  expect(screen.getByText(/^Format unknown · 3 tracks reported/)).toBeTruthy();
+  expect(
+    screen.getByText(
+      /^Format unknown · Disc count unknown · 3 tracks reported/,
+    ),
+  ).toBeTruthy();
   expect(screen.queryByText("Format not collected")).toBeNull();
   expect(screen.queryByText(/Disc \d/)).toBeNull();
 });
