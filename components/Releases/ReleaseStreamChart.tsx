@@ -6,7 +6,6 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import type { StreamPoint } from "@/lib/releases/streamTypes";
-import ReleaseStreamDailyValues from "./ReleaseStreamDailyValues";
 const config = { streams: { label: "Streams", color: "var(--foreground)" } };
 const label = (date: string) =>
   new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", {
@@ -75,7 +74,6 @@ export default function ReleaseStreamChart({
           />
         </LineChart>
       </ChartContainer>
-      <ReleaseStreamDailyValues points={points} />
     </div>
   );
 }

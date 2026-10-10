@@ -1,5 +1,7 @@
 import type { useReleaseStreams } from "@/hooks/useReleaseStreams";
 import type { buildReleaseStreamSeries } from "@/lib/releases/buildReleaseStreamSeries";
+import ReleaseTrackFilter from "./ReleaseTrackFilter";
+import ReleaseDateFilter from "./ReleaseDateFilter";
 const selectClass =
   "h-11 sm:h-9 max-w-full min-w-0 rounded-lg bg-transparent pl-3 pr-7 text-sm shadow-[0_0_0_1px_var(--input)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 export default function ReleaseStreamControls({
@@ -10,8 +12,8 @@ export default function ReleaseStreamControls({
 }: {
   data: ReturnType<typeof useReleaseStreams>;
   series: ReturnType<typeof buildReleaseStreamSeries> | null;
-  selectedIsrc: string;
-  setSelectedIsrc: (isrc: string) => void;
+  selectedIsrc: string[];
+  setSelectedIsrc: (isrc: string[]) => void;
 }) {
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -33,43 +35,14 @@ export default function ReleaseStreamControls({
         </select>
       )}
       {series && (
-        <select
-          aria-label="Stream recording"
-          className={`${selectClass} w-full sm:w-auto sm:max-w-48`}
-          value={selectedIsrc}
-          onChange={(event) => setSelectedIsrc(event.target.value)}
-        >
-          <option value="">All songs</option>
-          {[
-            ...new Map(
-              series.tracks
-                .filter((track) => track.isrc)
-                .map((track) => [track.isrc, track]),
-            ).values(),
-          ].map((track) => (
-            <option key={track.isrc} value={track.isrc!}>
-              {track.title}
-            </option>
-          ))}
-        </select>
+        <ReleaseTrackFilter
+          tracks={series.tracks}
+          selected={selectedIsrc}
+          onChange={setSelectedIsrc}
+        />
       )}
-      <div
-        role="group"
-        aria-label="Stream period"
-        className="flex rounded-lg bg-muted p-1"
-      >
-        {[7, 28, 31].map((days) => (
-          <button
-            key={days}
-            type="button"
-            aria-label={`Last ${days} days`}
-            aria-pressed={data.days === days}
-            onClick={() => data.setDays(days)}
-            className={`h-9 min-w-11 rounded-md px-3 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-7 ${data.days === days ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            {days}D
-          </button>
-        ))}
+      <div className="sm:ml-auto">
+        <ReleaseDateFilter data={data} />
       </div>
     </div>
   );

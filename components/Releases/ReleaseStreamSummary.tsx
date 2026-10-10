@@ -5,9 +5,11 @@ const formatNumber = (value: number | null) =>
 export default function ReleaseStreamSummary({
   series,
   days,
+  since,
 }: {
   series: ReturnType<typeof buildReleaseStreamSeries>;
   days: number;
+  since?: string | null;
 }) {
   const Trend =
     series.growth === 0
@@ -18,7 +20,11 @@ export default function ReleaseStreamSummary({
   return (
     <dl className="flex flex-wrap items-end justify-between gap-6 py-2">
       <div>
-        <dt className="text-xs text-muted-foreground">Last {days} days</dt>
+        <dt className="text-xs text-muted-foreground">
+          {since
+            ? `${since} – ${series.daily.at(-1)?.date}`
+            : `Last ${days} days`}
+        </dt>
         <dd
           className={`mt-2 font-medium tracking-[-0.045em] tabular-nums ${series.total === null ? "text-3xl" : "text-5xl sm:text-6xl"}`}
         >

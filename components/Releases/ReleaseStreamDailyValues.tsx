@@ -5,10 +5,7 @@ export default function ReleaseStreamDailyValues({
   points: StreamPoint[];
 }) {
   return (
-    <details className="mt-2 text-xs text-muted-foreground">
-      <summary className="w-fit cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-        Daily values
-      </summary>
+    <div className="text-xs text-muted-foreground">
       <div className="mt-3 max-h-60 overflow-auto">
         <table className="w-full text-left text-sm">
           <caption className="sr-only">
@@ -36,6 +33,6 @@ export default function ReleaseStreamDailyValues({
           </tbody>
         </table>
       </div>
-    </details>
+    </div>
   );
 }

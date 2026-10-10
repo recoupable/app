@@ -37,7 +37,14 @@ export default function ReleaseStreamRequestStates({
         </p>
       )}
       {data.loading && <p role="status">Loading saved streams…</p>}
-      {data.error && <p role="alert">{data.error}</p>}
+      {data.error && (
+        <div className="space-y-2">
+          <p role="alert">{data.error}</p>
+          <Button variant="outline" size="sm" onClick={data.refresh}>
+            Retry
+          </Button>
+        </div>
+      )}
       {data.mutationError && <p role="alert">{data.mutationError}</p>}
     </>
   );

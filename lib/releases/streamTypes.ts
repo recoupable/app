@@ -28,7 +28,7 @@ export const streamHistorySchema = z
     periods: z.object({
       current: z.object({ start: date, end_exclusive: date }),
       previous: z.object({ start: date, end_exclusive: date }),
-      days: z.number().int().positive().max(31),
+      days: z.number().int().positive().max(366),
       timezone: z.literal("UTC"),
     }),
     pagination: z.object({

@@ -64,3 +64,24 @@ it("clears displayed history after permission failure on refresh", async () => {
   await waitFor(() => expect(result.current.error).toContain("unavailable"));
   expect(result.current.history).toBeNull();
 });
+it("reloads saved history for a historical range without enabling collection", async () => {
+  source.catalogs.mockResolvedValue([{ id: "a", name: "A" }]);
+  source.history.mockResolvedValue({ catalog_id: "a" });
+  source.request.mockResolvedValue(tracking("a"));
+  const { result } = renderHook(() =>
+    useReleaseStreams("workspace", async () => "token"),
+  );
+  await waitFor(() => expect(result.current.history).toBeTruthy());
+  act(() => result.current.setRange("2026-07-01", 90));
+  await waitFor(() =>
+    expect(source.history).toHaveBeenLastCalledWith(
+      "a",
+      { since: "2026-07-01", days: 90 },
+      expect.any(Function),
+      expect.any(AbortSignal),
+    ),
+  );
+  expect(source.request.mock.calls.every((call) => call.length === 3)).toBe(
+    true,
+  );
+});

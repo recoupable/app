@@ -6,18 +6,21 @@ import type { StreamHistory, StreamPoint } from "./streamTypes";
 export function buildReleaseStreamSeries(
   current: StreamRelease,
   history: StreamHistory,
-  selectedIsrc?: string,
+  selectedIsrc?: string | string[],
 ) {
   const { identities, complete } = getStreamReleaseIdentities(current);
   const isrcs = [
     ...new Set(identities.flatMap((track) => (track.isrc ? [track.isrc] : []))),
   ];
-  const expected = selectedIsrc ? [selectedIsrc] : isrcs;
+  const selected =
+    typeof selectedIsrc === "string" ? [selectedIsrc] : selectedIsrc;
+  const expected = selected?.length ? [...new Set(selected)] : isrcs;
   const unknownIdentity =
-    !selectedIsrc &&
-    (identities.some((track) => !track.isrc) ||
-      !complete ||
-      identities.length === 0);
+    (!selected?.length &&
+      (identities.some((track) => !track.isrc) ||
+        !complete ||
+        identities.length === 0)) ||
+    expected.some((isrc) => !isrcs.includes(isrc));
   const records = new Map(
     history.recordings.map((recording) => [recording.isrc, recording]),
   );
