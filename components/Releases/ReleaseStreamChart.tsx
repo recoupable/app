@@ -25,7 +25,7 @@ export default function ReleaseStreamChart({
     <div>
       <ChartContainer
         config={config}
-        className="h-[240px] w-full"
+        className="h-[240px] w-full sm:h-[260px]"
         role="group"
         aria-label="Daily streams chart"
       >
@@ -34,7 +34,7 @@ export default function ReleaseStreamChart({
           margin={{ top: 12, right: 12, left: 0, bottom: 0 }}
           accessibilityLayer
         >
-          <CartesianGrid vertical={false} strokeOpacity={0.15} />
+          <CartesianGrid vertical={false} strokeOpacity={0.12} />
           <XAxis
             dataKey="date"
             tickFormatter={label}
@@ -68,7 +68,8 @@ export default function ReleaseStreamChart({
             dataKey="streams"
             stroke="var(--color-streams)"
             strokeWidth={2}
-            dot={{ r: 2 }}
+            dot={false}
+            activeDot={{ r: 4, strokeWidth: 2 }}
             connectNulls={false}
             isAnimationActive={false}
           />

@@ -17,9 +17,7 @@ import { data } from "./streamPanelFixture";
 afterEach(cleanup);
 it("shows a release total and switches to the exact selected recording", () => {
   render(<ReleaseStreamPanel current={release} data={data} />);
-  expect(
-    screen.getByText("Worldwide · All reporting DSPs · Luminate"),
-  ).toBeTruthy();
+  expect(screen.getByText("Worldwide · All DSPs")).toBeTruthy();
   expect(screen.getByTestId("chart-points").textContent).toBe(
     JSON.stringify(buildReleaseStreamSeries(release, history).daily),
   );
@@ -32,7 +30,11 @@ it("shows a release total and switches to the exact selected recording", () => {
       buildReleaseStreamSeries(release, history, "USABC2600001").daily,
     ),
   );
-  expect(screen.getByText("Daily tracking on · 09:00 UTC")).toBeTruthy();
+  expect(screen.getByText("Daily updates")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Last 7 days" }));
+  expect(data.setDays).toHaveBeenCalledWith(7);
+  fireEvent.click(screen.getByRole("button", { name: "Refresh streams" }));
+  expect(data.refresh).toHaveBeenCalled();
 });
 it("gaps do not render numeric release totals, and tracking is explicitly catalog-wide", () => {
   const missing = structuredClone(history);

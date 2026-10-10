@@ -1,3 +1,4 @@
+import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { useReleaseStreams } from "@/hooks/useReleaseStreams";
 export default function ReleaseStreamTracking({
@@ -5,42 +6,41 @@ export default function ReleaseStreamTracking({
 }: {
   data: ReturnType<typeof useReleaseStreams>;
 }) {
-  const collecting = ["queued", "running"].includes(
-    data.tracking?.latest_run?.status ?? "",
-  );
+  if (!data.tracking) return null;
+  const status = data.tracking.latest_run?.status;
+  const collecting = ["queued", "running"].includes(status ?? "");
+  if (!data.tracking.tracking?.enabled)
+    return (
+      <div className="space-y-2">
+        <Button
+          size="sm"
+          disabled={data.enabling}
+          onClick={() => void data.enable()}
+        >
+          {data.enabling ? "Enabling…" : "Enable daily tracking"}
+        </Button>
+        <p className="text-xs text-muted-foreground">
+          Tracks every recording in the selected catalog.
+        </p>
+      </div>
+    );
+  const Icon = collecting ? Loader2 : Check;
   return (
-    <>
-      {data.tracking && (
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          <p className="text-muted-foreground">
-            {collecting
-              ? "Collecting daily history… Refresh streams to check progress."
-              : data.tracking.tracking?.enabled
-                ? "Daily tracking on · 09:00 UTC"
-                : "Daily tracking off"}
-            {data.tracking.latest_run?.status === "failed"
-              ? " · Last collection failed"
-              : data.tracking.latest_run?.status === "partial"
-                ? " · Last collection has gaps"
-                : ""}
-          </p>
-          {!data.tracking.tracking?.enabled && (
-            <Button
-              size="sm"
-              disabled={data.enabling}
-              onClick={() => void data.enable()}
-            >
-              {data.enabling ? "Enabling…" : "Enable daily tracking"}
-            </Button>
-          )}
-          {!data.tracking.tracking?.enabled && (
-            <p className="text-xs text-muted-foreground">
-              Enables daily collection for every recording in the selected
-              catalog.
-            </p>
-          )}
-        </div>
-      )}
-    </>
+    <span
+      role={collecting ? "status" : undefined}
+      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"
+    >
+      <Icon
+        aria-hidden="true"
+        className={`size-3.5 ${collecting ? "animate-spin motion-reduce:animate-none" : ""}`}
+      />
+      {collecting
+        ? "Updating…"
+        : status === "failed"
+          ? "Update failed"
+          : status === "partial"
+            ? "Some days missing"
+            : "Daily updates"}
+    </span>
   );
 }

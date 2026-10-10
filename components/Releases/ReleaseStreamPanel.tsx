@@ -1,12 +1,12 @@
 "use client";
 import { useMemo, useState } from "react";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { useReleaseStreams } from "@/hooks/useReleaseStreams";
 import { buildReleaseStreamSeries } from "@/lib/releases/buildReleaseStreamSeries";
 import type { ReleaseCase } from "@/lib/releases/types";
 import ReleaseStreamControls from "./ReleaseStreamControls";
 import ReleaseStreamRequestStates from "./ReleaseStreamRequestStates";
-import ReleaseStreamTracking from "./ReleaseStreamTracking";
 import ReleaseStreamHistory from "./ReleaseStreamHistory";
 interface Props {
   current: ReleaseCase;
@@ -35,22 +35,23 @@ export default function ReleaseStreamPanel({ current, data }: Props) {
   );
   return (
     <section
-      className="space-y-5 rounded-xl bg-card p-4 sm:p-6 shadow-[0_0_0_1px_var(--border)]"
+      className="space-y-5 rounded-2xl bg-card p-5 sm:p-7 shadow-[0_0_0_1px_var(--border)]"
       aria-label="Release streams"
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-semibold">Streams</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Worldwide · All reporting DSPs · Luminate
-          </p>
-        </div>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-lg font-medium tracking-tight">Streams</h2>
         <Button
-          variant="outline"
+          variant="ghost"
+          size="icon"
+          aria-label="Refresh streams"
+          title="Refresh streams"
           disabled={data.loading || data.enabling || !data.catalogId}
           onClick={data.refresh}
         >
-          Refresh streams
+          <RefreshCw
+            aria-hidden="true"
+            className={`size-4 ${data.loading ? "animate-spin motion-reduce:animate-none" : ""}`}
+          />
         </Button>
       </div>
       <ReleaseStreamControls
@@ -60,11 +61,7 @@ export default function ReleaseStreamPanel({ current, data }: Props) {
         setSelectedIsrc={setSelectedIsrc}
       />
       <ReleaseStreamRequestStates data={data} />
-      <ReleaseStreamTracking data={data} />
       <ReleaseStreamHistory data={data} series={series} />
-      <p className="text-xs text-muted-foreground">
-        Source-reported streams across DSPs, with a two-day reporting buffer.
-      </p>
     </section>
   );
 }
