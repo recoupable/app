@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import ReleaseCasesList from "./ReleaseCasesList";
 import ReleaseCaseDetails from "./ReleaseCaseDetails";
 import CompanyAssessment from "./CompanyAssessment";
+import ReleaseExecutionTrace from "./ReleaseExecutionTrace";
 import ReleaseIntakeForm from "./ReleaseIntakeForm";
 import CatalogReleaseStreams from "./CatalogReleaseStreams";
 export default function ReleaseCasesPage() {
@@ -90,6 +91,12 @@ export default function ReleaseCasesPage() {
             />
             <CompanyAssessment
               key={"assessment" + currentKey}
+              requestId={current.request_id}
+              organizationId={selectedOrgId}
+              getAccessToken={getAccessToken}
+            />
+            <ReleaseExecutionTrace
+              key={"trace" + currentKey}
               requestId={current.request_id}
               organizationId={selectedOrgId}
               getAccessToken={getAccessToken}
