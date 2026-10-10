@@ -329,6 +329,7 @@
     let player;
     let deviceId;
     let started = false;
+    let playlistView;
     let duration = 0;
     let latestState = null;
     let updatedAt = Date.now();
@@ -369,6 +370,7 @@
       if (!audio || !audio.src) return false;
       if (audioActive) return true;
       audioActive = true;
+      playlistView?.ready(false);
       if (player) player.disconnect();
       document.body.dataset.playbackSource = "audio";
       play.hidden = false;
@@ -682,6 +684,54 @@
     }
     if (product === "unknown" && activateSavedAudio()) return;
     document.body.dataset.playbackSource = "spotify";
+    async function startRelease(position) {
+      if (!deviceId) throw new Error("The Spotify player is not ready yet.");
+      await player.activateElement();
+      const url = new URL(document.body.dataset.release);
+      const match =
+        url.hostname === "open.spotify.com" &&
+        url.pathname.match(
+          /^\/(?:intl-[a-z-]+\/)?(track|album|playlist)\/([A-Za-z0-9]+)\/?$/,
+        );
+      if (!match)
+        throw new Error(
+          "This player needs a Spotify track, album, or playlist link.",
+        );
+      const uri = "spotify:" + match[1] + ":" + match[2];
+      const body =
+        match[1] === "track" ? { uris: [uri] } : { context_uri: uri };
+      if (
+        Number.isInteger(position) &&
+        position >= 0 &&
+        match[1] === "playlist"
+      )
+        body.offset = { position };
+      const response = await fetch(
+        "https://api.spotify.com/v1/me/player/play?device_id=" +
+          encodeURIComponent(deviceId),
+        {
+          method: "PUT",
+          headers: {
+            Authorization: "Bearer " + (await getToken()),
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        },
+      );
+      if (!response.ok)
+        throw new Error(
+          response.status === 403
+            ? "Spotify Premium is required for browser playback."
+            : "Spotify could not start this release. Try Open in Spotify.",
+        );
+      started = true;
+    }
+    playlistView = window.RecoupSpotifyPlaylist?.create({
+      release: document.body.dataset.release,
+      getToken,
+      start: startRelease,
+    });
+    playlistView?.load();
     say("Preparing music…", true);
     window.onSpotifyWebPlaybackSDKReady = () => {
       player = new window.Spotify.Player({
@@ -724,6 +774,7 @@
       player.addListener("ready", ({ device_id }) => {
         if (audioActive) return;
         deviceId = device_id;
+        playlistView?.ready(true);
         play.disabled = false;
         say(
           parentOrigin
@@ -738,6 +789,7 @@
         if (audioActive) return;
         window.RecoupReleasePlayer?.state(null, true, 0, "stopped");
         deviceId = null;
+        playlistView?.ready(false);
         play.disabled = true;
         say("Player disconnected. Reconnect Spotify.");
       });
@@ -748,6 +800,7 @@
         "playback_error",
       ])
         player.addListener(event, ({ message }) => {
+          if (event !== "playback_error") playlistView?.ready(false);
           if (event === "account_error") {
             if (!activateSavedAudio()) {
               play.hidden = true;
@@ -790,6 +843,7 @@
           else play.dataset.playing = "true";
           say(state.paused ? "Paused." : "Playing on Spotify.", true);
           const track = state.track_window.current_track;
+          playlistView?.current(track.id);
           const label = document.getElementById("spotify-track-link");
           const cover = document.getElementById("spotify-cover");
           label.textContent = track.name;
@@ -827,38 +881,7 @@
           await player.togglePlay();
           return;
         }
-        const url = new URL(document.body.dataset.release);
-        const match =
-          url.hostname === "open.spotify.com" &&
-          url.pathname.match(
-            /^\/(?:intl-[a-z]+\/)?(track|album|playlist)\/([A-Za-z0-9]+)\/?$/,
-          );
-        if (!match)
-          throw new Error(
-            "This experience needs a Spotify track, album, or playlist link for playback.",
-          );
-        const uri = "spotify:" + match[1] + ":" + match[2];
-        const response = await fetch(
-          "https://api.spotify.com/v1/me/player/play?device_id=" +
-            encodeURIComponent(deviceId),
-          {
-            method: "PUT",
-            headers: {
-              Authorization: "Bearer " + (await getToken()),
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(
-              match[1] === "track" ? { uris: [uri] } : { context_uri: uri },
-            ),
-          },
-        );
-        if (!response.ok)
-          throw new Error(
-            response.status === 403
-              ? "Spotify Premium is required for browser playback."
-              : "Spotify could not start this release. Try Open music.",
-          );
-        started = true;
+        await startRelease();
         say("Playing on Spotify.", true);
       } catch (e) {
         say(e.message);
