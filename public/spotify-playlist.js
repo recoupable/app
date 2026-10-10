@@ -8,6 +8,8 @@
       const status = document.getElementById("spotify-playlist-status");
       const more = document.getElementById("spotify-playlist-more");
       const rows = [];
+      let selectedPosition = null,
+        currentId = null;
       let offset = 0,
         total = 0,
         ready = false,
@@ -27,6 +29,16 @@
         rows.forEach(({ button, playable }) => {
           button.disabled = !playable || !ready || busy;
         });
+      const highlight = () => {
+        const matches = rows.filter(({ id }) => currentId && id === currentId);
+        const current =
+          matches.find(({ position }) => position === selectedPosition) ||
+          matches[0];
+        rows.forEach((row) => {
+          if (row === current) row.button.setAttribute("aria-current", "true");
+          else row.button.removeAttribute("aria-current");
+        });
+      };
       async function request(path) {
         const response = await fetch("https://api.spotify.com/v1/" + path, {
           headers: { Authorization: "Bearer " + (await getToken()) },
@@ -84,18 +96,22 @@
               if (!playable || !ready || busy) return;
               busy = true;
               enabled();
+              const previousPosition = selectedPosition;
+              selectedPosition = position;
               try {
                 await start(position);
                 status.textContent = "";
               } catch (error) {
+                selectedPosition = previousPosition;
                 status.textContent =
                   error.message || "Playback unavailable. Try Open in Spotify.";
               } finally {
                 busy = false;
                 enabled();
+                highlight();
               }
             };
-            rows.push({ button, playable, id: track?.id });
+            rows.push({ button, playable, id: track?.id, position });
             row.appendChild(button);
             list.appendChild(row);
           }
@@ -105,6 +121,7 @@
           more.textContent = "Load more songs";
           status.textContent = total === 0 ? "This playlist is empty." : "";
           enabled();
+          highlight();
         } catch (error) {
           status.textContent = error.message;
           more.hidden = false;
@@ -137,11 +154,8 @@
           enabled();
         },
         current(id) {
-          rows.forEach(({ button, id: trackId }) => {
-            if (id && trackId === id)
-              button.setAttribute("aria-current", "true");
-            else button.removeAttribute("aria-current");
-          });
+          currentId = id;
+          highlight();
         },
       };
     },

@@ -145,8 +145,18 @@ it("paginates without following untrusted next URLs and preserves duplicate posi
     );
   await h.list.load();
   h.list.ready(true);
+  h.list.current("same");
   await h.nodes["spotify-playlist-more"].onclick!();
+  const first = h.nodes["spotify-playlist-tracks"].children[0].children[0];
+  const second = h.nodes["spotify-playlist-tracks"].children[1].children[0];
+  expect(first.setAttribute).toHaveBeenCalledWith("aria-current", "true");
+  expect(second.setAttribute).not.toHaveBeenCalledWith("aria-current", "true");
+  first.setAttribute.mockClear();
+  second.setAttribute.mockClear();
   await h.nodes["spotify-playlist-tracks"].children[1].children[0].onclick!();
+  h.list.current("same");
+  expect(first.setAttribute).not.toHaveBeenCalledWith("aria-current", "true");
+  expect(second.setAttribute).toHaveBeenCalledWith("aria-current", "true");
   expect(h.start).toHaveBeenCalledWith(1);
   expect(h.fetch.mock.calls[2][0]).toBe(
     "https://api.spotify.com/v1/playlists/abc/tracks?limit=50&offset=1",
