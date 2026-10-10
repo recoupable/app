@@ -11,7 +11,7 @@ afterEach(() => {
 const request = (origin = "https://app.recoupable.dev") =>
   new Request("https://app.recoupable.dev/api/sites/spotify/gatsby-fan", {
     method: "POST",
-    headers: { origin, authorization: "Bearer verified-token" },
+    headers: { origin, authorization: "Bearer a+b/c==" },
     body: JSON.stringify({ email: "forged@example.com" }),
   });
 it("never trusts the submitted email", async () => {

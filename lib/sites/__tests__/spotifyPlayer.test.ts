@@ -116,3 +116,14 @@ it("allows Gatsby's exact origins but rejects lookalike domains", async () => {
       .status,
   ).toBe(400);
 });
+
+it("omits game navigation from an explicit listening destination", async () => {
+  const response = await GET(
+    new Request(
+      "https://app.recoupable.dev/s/spotify/connect?mode=listen&release=https://open.spotify.com/track/abc",
+    ),
+  );
+  const html = await response.text();
+  expect(html).not.toContain('id="spotify-skip"');
+  expect(html).toContain('id="spotify-play"');
+});

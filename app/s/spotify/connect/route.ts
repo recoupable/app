@@ -88,6 +88,7 @@ export async function GET(request: Request) {
       audioUrl,
       theme?.success ? theme.data : undefined,
       fanConnectUrl,
+      requestUrl.searchParams.get("mode") === "listen",
     ),
     {
       headers: {

@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   if (request.headers.get("origin") !== new URL(request.url).origin)
     return Response.json({ saved: false }, { status: 403, headers });
   const authorization = request.headers.get("authorization") || "";
-  if (!/^Bearer [A-Za-z0-9._~-]{1,4096}$/.test(authorization))
+  if (!/^Bearer [A-Za-z0-9._~+/-]{1,4096}={0,2}$/.test(authorization))
     return Response.json({ saved: false }, { status: 401, headers });
   try {
     const response = await fetch("https://api.spotify.com/v1/me", {
