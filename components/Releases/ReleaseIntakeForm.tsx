@@ -20,12 +20,11 @@ export default function ReleaseIntakeForm({
       }}
     >
       <label htmlFor={id} className="block text-sm font-medium">
-        Add a release
+        Spotify release URL
       </label>
       <div className="flex flex-col gap-3 sm:flex-row">
         <Input
           id={id}
-          aria-label="Spotify release URL"
           type="url"
           required
           maxLength={2048}

@@ -20,7 +20,7 @@ export default function CompanyAssessment({
   return (
     <section
       className="space-y-4 rounded-2xl bg-background p-6 shadow-[0_0_0_1px_var(--border)]"
-      aria-label="Company assessment"
+      aria-label="Evidence summary"
     >
       <h2 className="text-lg font-semibold">Evidence summary</h2>
       <p className="text-sm text-muted-foreground">
