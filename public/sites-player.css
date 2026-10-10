@@ -438,3 +438,54 @@ body[data-apple-player] .sign-button {
   background: #d60017;
   color: #fff;
 }
+
+/* Playlist rows use the same trusted player palette and keep controls visible. */
+.playlist {
+  padding: 16px 24px;
+}
+.playlist-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.playlist-tracks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.playlist-song {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 8px;
+  width: 100%;
+  min-height: 48px;
+  text-align: left;
+  border-radius: 6px;
+}
+.playlist-song-name {
+  overflow-wrap: anywhere;
+}
+.playlist-song-detail {
+  font-size: 12px;
+  opacity: 0.65;
+}
+.playlist-song:hover:not(:disabled),
+.playlist-song[aria-current="true"] {
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+.playlist-song[aria-current="true"] .playlist-song-name {
+  font-weight: 600;
+}
+.playlist-status {
+  font-size: 12px;
+  padding-top: 8px;
+}
+.playlist-more {
+  min-height: 44px;
+  text-decoration: underline;
+}
