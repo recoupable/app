@@ -138,7 +138,9 @@ it("carries a valid signed Gatsby flow into trusted player markup", async () => 
     url.searchParams.set("flow", flow);
     const response = await GET(new Request(url));
     expect(response.status).toBe(200);
-    expect(await response.text()).toContain(`data-gatsby-flow="${flow}"`);
+    const html = await response.text();
+    expect(html).toContain(`data-gatsby-flow="${flow}"`);
+    expect(html).toContain("available email are shared with Gatsby");
   } finally {
     vi.unstubAllEnvs();
   }
