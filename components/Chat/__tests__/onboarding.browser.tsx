@@ -227,7 +227,7 @@ describe("artist settings onboarding", () => {
   it("uses the selected identity after artist and workspace switching", async () => {
     render(<Harness />);
     await userEvent.click(
-      screen.getByRole("button", { name: "Artist: Artist A" }),
+      screen.getByRole("button", { name: "Roster: Artist A" }),
     );
     await userEvent.click(screen.getByRole("button", { name: "Artist B" }));
     await openSettings("Artist B");

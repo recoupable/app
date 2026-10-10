@@ -59,12 +59,12 @@ export default function WorkspaceContextBar() {
   const artistLabel =
     selectedArtist?.name ||
     (isLoading
-      ? "Loading artists…"
+      ? "Loading roster…"
       : isError
-        ? "Artists unavailable"
+        ? "Roster unavailable"
         : artists.length
-          ? "All artists"
-          : "No artists yet");
+          ? "Entire roster"
+          : "Roster is empty");
   const selectArtist = (artist: ArtistRecord | null) => {
     setOpen(false);
     if ((artist?.account_id ?? null) === (selectedArtist?.account_id ?? null))
@@ -80,7 +80,7 @@ export default function WorkspaceContextBar() {
     "flex min-w-0 items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
   return (
     <nav
-      aria-label="Workspace and artist"
+      aria-label="Workspace and roster"
       className="flex min-w-0 flex-1 items-center gap-1 bg-card px-2 py-2"
     >
       <DropdownMenu>
@@ -145,7 +145,7 @@ export default function WorkspaceContextBar() {
           setSearch("");
           setOpen(true);
         }}
-        aria-label={`Artist: ${artistLabel}`}
+        aria-label={`Roster: ${artistLabel}`}
       >
         <Users
           strokeWidth={1.5}
@@ -180,7 +180,7 @@ export default function WorkspaceContextBar() {
           aria-describedby={undefined}
         >
           <DialogHeader className="px-5 pb-3 pt-5">
-            <DialogTitle>Artists in {workspace}</DialogTitle>
+            <DialogTitle>Roster in {workspace}</DialogTitle>
           </DialogHeader>
           <div className="mx-5 mb-3 flex items-center gap-2 rounded-xl bg-muted px-3">
             <Search
@@ -189,8 +189,8 @@ export default function WorkspaceContextBar() {
             />
             <input
               autoFocus
-              aria-label="Search artists"
-              placeholder="Find an artist…"
+              aria-label="Search roster"
+              placeholder="Find a roster member…"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               className="w-full bg-transparent py-3 text-sm outline-none"
@@ -207,7 +207,7 @@ export default function WorkspaceContextBar() {
                   strokeWidth={1.5}
                   className="size-5 text-muted-foreground"
                 />
-                All artists
+                Entire roster
                 {!selectedArtist && (
                   <Check strokeWidth={1.5} className="ml-auto size-4" />
                 )}
@@ -215,11 +215,11 @@ export default function WorkspaceContextBar() {
             )}
             {isLoading ? (
               <p className="p-3 text-sm leading-relaxed text-muted-foreground">
-                Loading artists…
+                Loading roster…
               </p>
             ) : isError ? (
               <p className="p-3 text-sm text-destructive">
-                Couldn’t load artists. Try again later.
+                Couldn’t load roster. Try again later.
               </p>
             ) : (
               artists
@@ -256,8 +256,8 @@ export default function WorkspaceContextBar() {
               ) && (
                 <p className="p-3 text-sm leading-relaxed text-muted-foreground">
                   {artists.length
-                    ? "No artists match your search."
-                    : "Add your first artist to get started."}
+                    ? "No roster members match your search."
+                    : "Add your first roster member to get started."}
                 </p>
               )}
           </div>
@@ -270,7 +270,7 @@ export default function WorkspaceContextBar() {
             className="flex items-center gap-2 px-5 py-4 text-sm font-medium shadow-[0_-1px_0_var(--border)] hover:bg-muted"
           >
             <Plus strokeWidth={1.5} className="size-4" />
-            Add artist
+            Add to roster
           </button>
         </DialogContent>
       </Dialog>
