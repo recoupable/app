@@ -29,7 +29,9 @@ it.each([503, 401, 403])(
       }),
     );
     render(<ReleaseCasesPage />);
-    await screen.findByText(item.url);
+    await screen.findByRole("button", {
+      name: `Open saved release ${item.url}`,
+    });
     fireEvent.change(screen.getByLabelText("Spotify release URL"), {
       target: { value: item.url },
     });
@@ -40,7 +42,9 @@ it.each([503, 401, 403])(
     );
     if (status === 401)
       expect(alert.textContent).toContain("Please sign in again.");
-    expect(screen.queryByText(item.url)).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: `Open saved release ${item.url}` }),
+    ).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Add release URL" }));
     await screen.findByText(
       "Release URL saved. Metadata has not been collected by this action.",

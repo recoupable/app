@@ -79,6 +79,11 @@ export default function ReleaseCasesPage() {
             <ReleaseCaseDetails
               key={"case" + currentKey}
               current={current}
+              sourceUrl={
+                cases.items.find(
+                  (item) => item.request_id === current.request_id,
+                )?.url
+              }
               busy={cases.busy}
               onReview={cases.review}
               onReload={() => cases.open(current.request_id)}

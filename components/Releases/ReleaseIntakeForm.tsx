@@ -39,8 +39,7 @@ export default function ReleaseIntakeForm({
         </Button>
       </div>
       <p id={`${id}-help`} className="text-sm text-muted-foreground">
-        Save an album or single’s album link in this workspace. Metadata
-        collection and verification are separate steps.
+        Paste a Spotify album or single link to save it to this workspace.
       </p>
     </form>
   );

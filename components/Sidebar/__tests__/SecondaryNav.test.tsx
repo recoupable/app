@@ -73,11 +73,9 @@ describe("SecondaryNav", () => {
 
     expect(onNavigate).toHaveBeenCalledWith("music");
   });
-  it("opens the release review workflow", () => {
+  it("opens release management", () => {
     const { onNavigate } = renderNav();
-    fireEvent.click(
-      screen.getByRole("button", { name: /view release reviews/i }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /view releases/i }));
     expect(onNavigate).toHaveBeenCalledWith("releases");
   });
   it("does not list Billing (it lives in the profile dropdown)", () => {
