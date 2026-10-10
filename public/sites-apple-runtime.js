@@ -33,14 +33,37 @@
           const music = window.MusicKit.getInstance();
           const events = window.MusicKit.Events;
           music.addEventListener(events.playbackStateDidChange, () => {
-            const playing =
-              music.playbackState === window.MusicKit.PlaybackStates.playing;
+            const states = window.MusicKit.PlaybackStates;
+            const playing = music.playbackState === states.playing;
             node("play").textContent = playing ? "Pause" : "Play";
-            notify(playing ? "playing" : "paused");
+            if (playing || music.playbackState === states.paused) {
+              notify(playing ? "playing" : "paused");
+              window.RecoupReleasePlayer?.state(
+                music.nowPlayingItem?.id || null,
+                !playing,
+                (music.currentPlaybackTime || 0) * 1000,
+              );
+            } else if (
+              [states.stopped, states.ended, states.completed].includes(
+                music.playbackState,
+              )
+            ) {
+              window.RecoupReleasePlayer?.state(
+                music.nowPlayingItem?.id || null,
+                true,
+                (music.currentPlaybackTime || 0) * 1000,
+                "stopped",
+              );
+            }
           });
           music.addEventListener(events.nowPlayingItemDidChange, () => {
             node("track").textContent = music.nowPlayingItem?.title || "";
             notify("track_changed");
+            window.RecoupReleasePlayer?.state(
+              music.nowPlayingItem?.id || null,
+              music.playbackState !== window.MusicKit.PlaybackStates.playing,
+              (music.currentPlaybackTime || 0) * 1000,
+            );
           });
           const connect = node("connect");
           connect.disabled = false;
@@ -55,6 +78,7 @@
               connect.hidden = true;
               node("controls").hidden = false;
               notify("connected");
+              window.RecoupReleasePlayer?.event("connected");
               status("Connected. Press Play to listen.");
             } catch {
               status("Could not connect. Try again or open Apple Music below.");
@@ -76,9 +100,19 @@
               ? music.pause()
               : music.play(),
           );
-          node("next").onclick = act(() => music.skipToNextItem());
-          node("previous").onclick = act(() => music.skipToPreviousItem());
+          node("next").onclick = act(
+            () => (
+              window.RecoupReleasePlayer?.event("skip"), music.skipToNextItem()
+            ),
+          );
+          node("previous").onclick = act(
+            () => (
+              window.RecoupReleasePlayer?.event("skip"),
+              music.skipToPreviousItem()
+            ),
+          );
           node("disconnect").onclick = act(async () => {
+            window.RecoupReleasePlayer?.event("disconnected");
             await music.stop();
             await music.unauthorize();
             location.reload();

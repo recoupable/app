@@ -1,3 +1,4 @@
+import type { PlayerConfig } from "@/lib/players/getPlayerConfig";
 import type { PlayerTheme } from "./schema";
 /** Trusted player markup, matching the original SyncStream OneTap layout. Inputs are escaped by the route. */
 export function renderSpotifyPlayer(
@@ -7,7 +8,7 @@ export function renderSpotifyPlayer(
   theme?: PlayerTheme,
   fanConnectUrl?: string | null,
   listeningOnly = false,
-  flow = "",
+  playerConfig?: PlayerConfig,
 ): string {
   const escape = (value: string) =>
     value.replace(
@@ -42,9 +43,9 @@ export function renderSpotifyPlayer(
     : "";
   const icon = (path: string, size = 20) =>
     `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${path}"/></svg>`;
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Spotify · Recoup</title><link rel="stylesheet" href="/sites-player.css">${themeStyle}</head><body ${theme ? 'data-themed="true"' : ""} data-artist="${escape(theme?.artist || "")}" data-fan-site="${fanConnectUrl !== undefined}" data-fan-connect-url="${escape(fanConnectUrl || "")}" data-gatsby-flow="${escape(flow)}" data-listening-only="${listeningOnly}" data-sites-runtime data-spotify-player="true" data-player-parent="${parent}" data-release="${release}"><main id="syncstream-player">
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Spotify · Recoup</title><link rel="stylesheet" href="/sites-player.css">${themeStyle}</head><body ${theme ? 'data-themed="true"' : ""} data-artist="${escape(theme?.artist || "")}" data-fan-site="${fanConnectUrl !== undefined}" data-fan-connect-url="${escape(fanConnectUrl || "")}" data-player-config="${escape(JSON.stringify(playerConfig || null))}" data-player-id="${playerConfig?.playerId || ""}" data-player-flow="${escape(playerConfig?.flow || "")}" data-listening-only="${listeningOnly}" data-sites-runtime data-spotify-player="true" data-player-parent="${parent}" data-release="${release}"><main id="syncstream-player">
   <header class="sign-header"><span><img src="/syncstream/spotify.svg" alt="Spotify" width="20" height="20">Spotify</span><button id="spotify-minimize" class="close" aria-label="Minimize player">${icon("M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4Z")}</button></header>
-  <section class="sign-body">${artwork}<h1>${theme ? escape(theme.title) : "Music, while you play."}</h1><p id="spotify-intro" class="sign-description">Sign in to listen here. Spotify browser playback requires Premium.</p><button id="spotify-connect" class="sign-button">Sign in with Spotify</button><button id="spotify-continue" class="sign-button" hidden>Listen</button><p class="terms"><span class="consent-copy">${flow ? "Your Spotify profile and available email are shared with Gatsby." : "Spotify shares your profile and available email with this player."}</span> <a href="https://recoupable.dev/privacy" target="_blank" rel="noopener noreferrer">Privacy</a> · <a href="https://recoupable.dev/terms" target="_blank" rel="noopener noreferrer">Terms</a>.</p></section>
+  <section class="sign-body">${artwork}<h1>${theme ? escape(theme.title) : "Music, while you play."}</h1><p id="spotify-intro" class="sign-description">Sign in to listen here. Spotify browser playback requires Premium.</p><button id="spotify-connect" class="sign-button">Sign in with Spotify</button><button id="spotify-continue" class="sign-button" hidden>Listen</button><p class="terms"><span class="consent-copy">${playerConfig ? "Your Spotify profile and available email are shared with this artist through Recoup. Recoup records listening activity in this player. This does not subscribe you to marketing emails." : "Spotify shares your profile and available email with this player."}</span> <a href="https://recoupable.dev/privacy" target="_blank" rel="noopener noreferrer">Privacy</a> · <a href="https://recoupable.dev/terms" target="_blank" rel="noopener noreferrer">Terms</a>.</p></section>
   <section id="player-display" hidden>
     <div class="artist-banner"><img id="spotify-artist-image" alt=""><div class="banner-shade"></div><strong id="spotify-artist-name">Spotify</strong><button id="spotify-player-minimize" aria-label="Minimize player" class="banner-minimize">${icon("M6 5h13v13h-2V8.4L5.7 19.7l-1.4-1.4L15.6 7H6Z", 16)}</button></div>
     <div id="spotify-track" class="track-row" hidden><img id="spotify-cover" width="30" height="30" src="${theme?.artwork ? escape(theme.artwork) : ""}" alt=""><a id="spotify-track-link" target="_blank" rel="noopener noreferrer">${theme ? escape(theme.title) : "Music"}</a><span id="spotify-duration">0:00</span></div>
@@ -52,5 +53,5 @@ export function renderSpotifyPlayer(
   </section>
   ${audioUrl ? `<audio id="site-audio" hidden preload="metadata" src="${audioUrl}"></audio>` : ""}
   <p id="spotify-account" class="terms" hidden></p><p id="spotify-status" role="status" hidden></p><footer>${fanConnectUrl ? `<button id="fan-connect" class="player-link">Connect Spotify</button><p>Connect to share your Spotify profile and available email with the artist.</p>` : ""}${listeningOnly ? "" : `<button id="spotify-skip">Continue without music</button>`}<a class="player-link" href="${release}" target="_blank" rel="noopener noreferrer">Open in Spotify</a><button id="spotify-disconnect" class="player-link" hidden>Disconnect</button></footer>
-  </main><script src="/sites-runtime.js" defer></script></body></html>`;
+  </main>${playerConfig ? '<script src="/release-player-runtime.js" defer></script>' : ""}<script src="/sites-runtime.js" defer></script></body></html>`;
 }

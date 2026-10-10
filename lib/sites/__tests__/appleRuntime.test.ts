@@ -24,7 +24,7 @@ it("never loads MusicKit or enables sign-in when config is unavailable", async (
   expect(nodes["apple-status"].textContent).toContain("unavailable");
   expect(appendChild).not.toHaveBeenCalled();
 });
-it("authorizes before queueing and never sends the Music User Token to Gatsby", async () => {
+it("authorizes before queueing and never sends the Music User Token to the external artist website", async () => {
   const nodes: Record<
     string,
     {
@@ -50,7 +50,7 @@ it("authorizes before queueing and never sends the Music User Token to Gatsby", 
       body: {
         hasAttribute: () => true,
         dataset: {
-          playerParent: "https://www.gatsby.wtf",
+          playerParent: "https://artist.example",
           releaseKind: "album",
           releaseId: "123",
         },
@@ -87,7 +87,7 @@ it("authorizes before queueing and never sends the Music User Token to Gatsby", 
   expect(music.setQueue).toHaveBeenCalledWith({ album: "123" });
   expect(postMessage).toHaveBeenCalledWith(
     { type: "recoup:playback", provider: "apple_music", event: "connected" },
-    "https://www.gatsby.wtf",
+    "https://artist.example",
   );
   expect(JSON.stringify(postMessage.mock.calls)).not.toContain("private-token");
   expect(music.play).not.toHaveBeenCalled();

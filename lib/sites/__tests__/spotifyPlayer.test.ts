@@ -102,18 +102,15 @@ it("uses validated release colors and escapes release titles", async () => {
   url.searchParams.set("accent", "red;}body{display:none");
   expect((await GET(new Request(url))).status).toBe(400);
 });
-it("allows Gatsby's exact origins but rejects lookalike domains", async () => {
-  const base =
-    "https://app.recoupable.dev/s/spotify/connect?release=https://open.spotify.com/track/abc";
-  for (const origin of ["https://gatsby.wtf", "https://www.gatsby.wtf"]) {
-    expect(
-      (await GET(new Request(base + "&parent=" + encodeURIComponent(origin))))
-        .status,
-    ).toBe(200);
-  }
+it("requires external websites to use a registered release player", async () => {
   expect(
-    (await GET(new Request(base + "&parent=https://gatsby.wtf.evil.test")))
-      .status,
+    (
+      await GET(
+        new Request(
+          "https://app.recoupable.dev/s/spotify/connect?release=https://open.spotify.com/track/abc&parent=https://artist.example",
+        ),
+      )
+    ).status,
   ).toBe(400);
 });
 
@@ -126,22 +123,4 @@ it("omits game navigation from an explicit listening destination", async () => {
   const html = await response.text();
   expect(html).not.toContain('id="spotify-skip"');
   expect(html).toContain('id="spotify-play"');
-});
-it("carries a valid signed Gatsby flow into trusted player markup", async () => {
-  vi.stubEnv("SITES_GATSBY_FLOW_SECRET", "test-key");
-  try {
-    const { signGatsbyFlow } = await import("../gatsby/signGatsbyFlow");
-    const release = "https://open.spotify.com/track/4HJjUdcezdSSCBdy5JVHDs";
-    const flow = signGatsbyFlow("https://app.recoupable.dev", release);
-    const url = new URL("https://app.recoupable.dev/s/spotify/connect");
-    url.searchParams.set("release", release);
-    url.searchParams.set("flow", flow);
-    const response = await GET(new Request(url));
-    expect(response.status).toBe(200);
-    const html = await response.text();
-    expect(html).toContain(`data-gatsby-flow="${flow}"`);
-    expect(html).toContain("available email are shared with Gatsby");
-  } finally {
-    vi.unstubAllEnvs();
-  }
 });
