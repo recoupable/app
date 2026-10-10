@@ -48,10 +48,10 @@ describe("SecondaryNav", () => {
 
   // chat#1976: the right-side artist rail is removed; the roster's only
   // entry point is this nav item, so its absence would strand switching.
-  it("links Artists and navigates to the roster route", () => {
+  it("links Roster and navigates to the roster route", () => {
     const { onNavigate } = renderNav();
 
-    fireEvent.click(screen.getByRole("button", { name: /view artists/i }));
+    fireEvent.click(screen.getByRole("button", { name: /view roster/i }));
 
     expect(onNavigate).toHaveBeenCalledWith("artists");
   });

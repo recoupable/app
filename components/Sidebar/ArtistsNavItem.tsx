@@ -15,11 +15,11 @@ const ArtistsNavItem = ({
   return (
     <NavButton
       icon={Users}
-      label="Artists"
+      label="Roster"
       isActive={isActive}
       isExpanded={isExpanded}
       onClick={onClick}
-      aria-label="View artists"
+      aria-label="View roster"
     />
   );
 };
