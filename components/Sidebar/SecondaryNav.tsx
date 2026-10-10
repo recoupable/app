@@ -46,8 +46,8 @@ const SecondaryNav = ({
     />
     <NavButton
       icon={ListChecks}
-      label="Release reviews"
-      aria-label="View release reviews"
+      label="Releases"
+      aria-label="View releases"
       isActive={isReleases}
       isExpanded={isExpanded}
       onClick={() => onNavigate("releases")}
