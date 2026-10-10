@@ -18,6 +18,8 @@
     sampled = now;
   };
   const report = (event) => {
+    // Uploaded-file playback is not DSP playback and is excluded from these reports.
+    if (document.body.dataset.playbackSource === "audio") return;
     sample();
     const payload = {
       flow: config.flow,

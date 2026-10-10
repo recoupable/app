@@ -359,6 +359,13 @@
     const audio = document.getElementById("site-audio");
     let audioActive = false;
     function activateSavedAudio() {
+      if (
+        playerConfig &&
+        document.body.dataset.listeningOnly === "true" &&
+        (playerConfig.freePlayback !== "audio" ||
+          !["free", "open"].includes(document.body.dataset.spotifyProduct))
+      )
+        return false;
       if (!audio || !audio.src) return false;
       if (audioActive) return true;
       audioActive = true;
@@ -393,7 +400,11 @@
       ])
         audio.addEventListener(event, sync);
       audio.addEventListener("error", () =>
-        say("Music could not load. Reload this page to try again."),
+        say(
+          document.body.dataset.listeningOnly === "true"
+            ? "Artist audio could not load. Open in Spotify to listen."
+            : "Music could not load. Reload this page to try again.",
+        ),
       );
       audio.volume = 0.7;
       play.onclick = async () => {
@@ -544,8 +555,9 @@
           state,
           code_challenge_method: "S256",
           code_challenge: challenge,
-          scope:
-            "streaming user-read-email user-read-private user-modify-playback-state",
+          scope: playerConfig
+            ? config.scopes.join(" ")
+            : "streaming user-read-email user-read-private user-modify-playback-state",
         });
         location.assign("https://accounts.spotify.com/authorize?" + params);
       } catch (e) {
@@ -642,6 +654,13 @@
     write(sessionKey, session);
     if (product === "free" || product === "open") {
       if (document.body.dataset.listeningOnly === "true") {
+        if (playerConfig?.freePlayback === "audio" && showSavedAudio()) {
+          say(
+            "Artist audio ready. Press Play music. This playback does not count as a Spotify stream.",
+            true,
+          );
+          return;
+        }
         play.hidden = true;
         if (continueButton) continueButton.hidden = true;
         say("Opening Spotify to listen…");

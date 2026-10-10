@@ -11,6 +11,8 @@ const configSchema = z.object({
   spotifyUrl: dsp.nullable(),
   appleUrl: dsp.nullable(),
   revision: z.number().int().positive(),
+  freePlayback: z.enum(["spotify", "audio"]).default("spotify"),
+  audioUrl: dsp.nullable().default(null),
   sessionId: z.string().uuid().optional(),
   flow: z.string().max(2048).optional(),
   release: dsp.optional(),

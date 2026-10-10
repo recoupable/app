@@ -87,3 +87,29 @@ it("renders Apple destinations from the same registered player", async () => {
   expect(html).toContain('data-release-id="123"');
   expect(html).not.toContain("developerToken");
 });
+
+it("renders only API-configured uploaded audio, escaping its markup", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi
+      .fn()
+      .mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...config,
+          freePlayback: "audio",
+          audioUrl: "https://storage.test/song.mp3?x=1&y=2",
+        }),
+      }),
+  );
+  const response = await GET(
+    new Request(
+      `https://app.recoupable.dev/listen/${id}/spotify?audioUrl=https://evil.test/x.mp3`,
+    ),
+    { params: Promise.resolve({ id, provider: "spotify" }) },
+  );
+  const html = await response.text();
+  expect(html).toContain('src="https://storage.test/song.mp3?x=1&amp;y=2"');
+  expect(html).toContain("Free plays the artist’s uploaded audio");
+  expect(html).not.toContain("https://evil.test");
+});

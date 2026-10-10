@@ -27,7 +27,9 @@ export async function GET(
         ? renderSpotifyPlayer(
             escapePlayerHtml(config.spotifyUrl!),
             escapePlayerHtml(parent),
-            null,
+            config.freePlayback === "audio" && config.audioUrl
+              ? escapePlayerHtml(config.audioUrl)
+              : null,
             {
               background: "#121212",
               foreground: "#ffffff",

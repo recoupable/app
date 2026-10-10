@@ -69,3 +69,35 @@ it("does nothing on legacy Sites without a registered player session", () => {
   expect(window).not.toHaveProperty("RecoupReleasePlayer");
   expect(fetch).not.toHaveBeenCalled();
 });
+
+it("excludes uploaded-file playback from DSP listening reports", async () => {
+  const fetch = vi.fn();
+  const ctx = {
+    document: {
+      body: {
+        dataset: {
+          playerConfig: JSON.stringify({ flow: "signed", provider: "spotify" }),
+          playbackSource: "audio",
+        },
+      },
+    },
+    window: { addEventListener: vi.fn() },
+    Date,
+    crypto,
+    fetch,
+    setInterval: vi.fn(),
+  };
+  runInNewContext(source, ctx);
+  const runtime = (
+    ctx.window as unknown as {
+      RecoupReleasePlayer: {
+        state: (track: string, paused: boolean, position: number) => void;
+        event: (event: string) => void;
+      };
+    }
+  ).RecoupReleasePlayer;
+  runtime.state("file", false, 0);
+  runtime.event("heartbeat");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(fetch).not.toHaveBeenCalled();
+});
