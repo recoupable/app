@@ -13,7 +13,13 @@ export async function GET(request: Request) {
     "https://chat.recoupable.com",
   ];
   if (process.env.NODE_ENV !== "production")
-    allowedParents.push("http://localhost:3002", "http://127.0.0.1:3002");
+    allowedParents.push(
+      "http://localhost:3002",
+      "http://127.0.0.1:3002",
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "http://localhost:3006",
+    );
   if (parent && !allowedParents.includes(parent))
     return new Response("Invalid player origin", { status: 400 });
   const audioParam = requestUrl.searchParams.get("audio");
@@ -80,6 +86,7 @@ export async function GET(request: Request) {
       audioUrl,
       theme?.success ? theme.data : undefined,
       fanConnectUrl,
+      requestUrl.searchParams.get("mode") === "listen",
     ),
     {
       headers: {
