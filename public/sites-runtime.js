@@ -555,7 +555,7 @@
           state,
           code_challenge_method: "S256",
           code_challenge: challenge,
-          scope: playerConfig
+          scope: playerConfig?.spotify
             ? config.scopes.join(" ")
             : "streaming user-read-email user-read-private user-modify-playback-state",
         });

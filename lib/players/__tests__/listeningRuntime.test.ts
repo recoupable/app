@@ -41,6 +41,12 @@ it("reports track-linked active listening and excludes paused time without leaki
   runtime.state("track1", false, 5000);
   now += 2000;
   runtime.event("skip");
+  Object.assign(ctx.document.body.dataset, { playbackSource: "audio" });
+  now += 3000;
+  runtime.event("heartbeat");
+  Object.assign(ctx.document.body.dataset, { playbackSource: "spotify" });
+  now += 1000;
+  runtime.event("paused");
   await new Promise((resolve) => setTimeout(resolve, 0));
   const reports = fetch.mock.calls.map((call) => JSON.parse(call[1].body));
   expect(
@@ -49,7 +55,7 @@ it("reports track-linked active listening and excludes paused time without leaki
         total + row.event.listenedMs,
       0,
     ),
-  ).toBe(7000);
+  ).toBe(8000);
   expect(
     reports.some(
       (row) => row.event.event === "skip" && row.event.trackId === "track1",

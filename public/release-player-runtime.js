@@ -10,7 +10,7 @@
     queue = Promise.resolve();
   const sample = () => {
     const now = Date.now();
-    if (!paused && track)
+    if (document.body.dataset.playbackSource !== "audio" && !paused && track)
       listened = Math.min(
         30000,
         listened + Math.max(0, Math.min(30000, now - sampled)),
@@ -19,7 +19,11 @@
   };
   const report = (event) => {
     // Uploaded-file playback is not DSP playback and is excluded from these reports.
-    if (document.body.dataset.playbackSource === "audio") return;
+    if (document.body.dataset.playbackSource === "audio") {
+      listened = 0;
+      sampled = Date.now();
+      return;
+    }
     sample();
     const payload = {
       flow: config.flow,
@@ -64,7 +68,8 @@
     },
   };
   setInterval(() => {
-    if (!paused && track) report("heartbeat");
+    if (document.body.dataset.playbackSource !== "audio" && !paused && track)
+      report("heartbeat");
   }, 15000);
   window.addEventListener("pagehide", () => {
     report("stopped");
