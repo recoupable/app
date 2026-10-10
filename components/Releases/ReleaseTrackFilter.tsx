@@ -2,10 +2,10 @@
 import { useState } from "react";
 import { ChevronDown, Search } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-} from "@/components/ui/dropdown-menu";
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import type { buildReleaseStreamSeries } from "@/lib/releases/buildReleaseStreamSeries";
 export default function ReleaseTrackFilter({
@@ -22,9 +22,14 @@ export default function ReleaseTrackFilter({
   const unique = [
     ...new Map(tracks.filter((t) => t.isrc).map((t) => [t.isrc!, t])).values(),
   ];
+  const filtered = unique.filter(
+    (track) =>
+      track.title.toLowerCase().includes(query.toLowerCase()) ||
+      track.isrc!.toLowerCase().includes(query.toLowerCase()),
+  );
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-      <DropdownMenuTrigger asChild>
+    <Popover open={open} onOpenChange={setOpen} modal={false}>
+      <PopoverTrigger asChild>
         <button
           type="button"
           className="flex min-w-48 h-10 cursor-pointer items-center justify-between gap-4 rounded-lg px-3 text-sm shadow-[0_0_0_1px_var(--input)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -34,13 +39,10 @@ export default function ReleaseTrackFilter({
             : "All tracks"}
           <ChevronDown className="size-4" aria-hidden="true" />
         </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
+      </PopoverTrigger>
+      <PopoverContent
         align="start"
         className="w-72 max-w-[80vw] p-3 border-0 ring-1 ring-border"
-        onKeyDown={(e) => {
-          if (e.key !== "Escape") e.stopPropagation();
-        }}
       >
         <div className="relative">
           <Search
@@ -66,47 +68,37 @@ export default function ReleaseTrackFilter({
           </button>
         </div>
         <div className="max-h-64 overflow-auto space-y-1">
-          {unique
-            .filter(
-              (t) =>
-                t.title.toLowerCase().includes(query.toLowerCase()) ||
-                t.isrc!.toLowerCase().includes(query.toLowerCase()),
-            )
-            .map((t) => (
-              <label
-                key={t.isrc}
-                className="flex cursor-pointer items-center gap-3 rounded-md p-2 text-sm hover:bg-muted"
-              >
-                <input
-                  type="checkbox"
-                  checked={selected.includes(t.isrc!)}
-                  onChange={(e) =>
-                    onChange(
-                      e.target.checked
-                        ? [...selected, t.isrc!]
-                        : selected.filter((id) => id !== t.isrc),
-                    )
-                  }
-                />
-                <span className="min-w-0">
-                  <span className="block truncate">{t.title}</span>
-                  <span className="text-[10px] text-muted-foreground">
-                    {t.isrc}
-                  </span>
+          {filtered.map((t) => (
+            <label
+              key={t.isrc}
+              className="flex cursor-pointer items-center gap-3 rounded-md p-2 text-sm hover:bg-muted"
+            >
+              <input
+                type="checkbox"
+                checked={selected.includes(t.isrc!)}
+                onChange={(e) =>
+                  onChange(
+                    e.target.checked
+                      ? [...selected, t.isrc!]
+                      : selected.filter((id) => id !== t.isrc),
+                  )
+                }
+              />
+              <span className="min-w-0">
+                <span className="block truncate">{t.title}</span>
+                <span className="text-[10px] text-muted-foreground">
+                  {t.isrc}
                 </span>
-              </label>
-            ))}
-          {!unique.some(
-            (t) =>
-              t.title.toLowerCase().includes(query.toLowerCase()) ||
-              t.isrc!.toLowerCase().includes(query.toLowerCase()),
-          ) && (
+              </span>
+            </label>
+          ))}
+          {filtered.length === 0 && (
             <p className="p-2 text-sm text-muted-foreground">
               No matching tracks.
             </p>
           )}
         </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </PopoverContent>
+    </Popover>
   );
 }

@@ -21,9 +21,7 @@ it("shows a release total and switches to the exact selected recording", () => {
   expect(screen.getByTestId("chart-points").textContent).toBe(
     JSON.stringify(buildReleaseStreamSeries(release, history).daily),
   );
-  fireEvent.keyDown(screen.getByRole("button", { name: "All tracks" }), {
-    key: "Enter",
-  });
+  fireEvent.click(screen.getByRole("button", { name: "All tracks" }));
   expect(screen.getByLabelText("Search tracks")).toBeTruthy();
   fireEvent.click(screen.getByLabelText(/First song/));
   expect(screen.getByTestId("chart-points").textContent).toBe(
@@ -67,9 +65,7 @@ it("resets song selection when the selected catalog changes", () => {
   const { rerender } = render(
     <ReleaseStreamPanel current={release} data={data} />,
   );
-  fireEvent.keyDown(screen.getByRole("button", { name: "All tracks" }), {
-    key: "Enter",
-  });
+  fireEvent.click(screen.getByRole("button", { name: "All tracks" }));
   fireEvent.click(screen.getByLabelText(/First song/));
   rerender(
     <ReleaseStreamPanel

@@ -80,17 +80,16 @@ it("charts catalog albums in the actual Releases page when no metadata review ex
   fireEvent.change(selector, { target: { value: JSON.stringify("ADHD") } });
   expect(screen.getByTestId("chart").textContent).not.toBe(all);
   expect(screen.queryByRole("option", { name: "Second" })).toBeNull();
-  fireEvent.keyDown(screen.getByRole("button", { name: "All tracks" }), {
-    key: "Enter",
-  });
+  fireEvent.click(screen.getByRole("button", { name: "All tracks" }));
   fireEvent.click(screen.getByLabelText(/First/));
+  expect((screen.getByLabelText(/First/) as HTMLInputElement).checked).toBe(
+    true,
+  );
   fireEvent.change(selector, {
     target: { value: JSON.stringify("Beautiful Tomorrow") },
   });
   expect(screen.queryByLabelText(/First/)).toBeNull();
-  fireEvent.keyDown(screen.getByRole("button", { name: "All tracks" }), {
-    key: "Enter",
-  });
+  fireEvent.click(screen.getByRole("button", { name: "All tracks" }));
   expect((screen.getByLabelText(/Second/) as HTMLInputElement).checked).toBe(
     false,
   );

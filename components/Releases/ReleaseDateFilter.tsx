@@ -2,10 +2,10 @@
 import { useState } from "react";
 import { CalendarDays } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-} from "@/components/ui/dropdown-menu";
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { useReleaseStreams } from "@/hooks/useReleaseStreams";
@@ -60,8 +60,8 @@ export default function ReleaseDateFilter({
           </button>
         ))}
       </div>
-      <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-        <DropdownMenuTrigger asChild>
+      <Popover open={open} onOpenChange={setOpen} modal={false}>
+        <PopoverTrigger asChild>
           <button
             type="button"
             className="flex h-10 cursor-pointer list-none items-center gap-2 rounded-lg px-3 text-sm shadow-[0_0_0_1px_var(--input)] focus-visible:ring-2 focus-visible:ring-ring"
@@ -69,13 +69,10 @@ export default function ReleaseDateFilter({
             <CalendarDays className="size-4" aria-hidden="true" />
             {data.since ? "Custom range" : "Dates"}
           </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
+        </PopoverTrigger>
+        <PopoverContent
           align="end"
           className="w-72 p-4 border-0 ring-1 ring-border"
-          onKeyDown={(e) => {
-            if (e.key !== "Escape") e.stopPropagation();
-          }}
         >
           <label className="block text-xs">
             From
@@ -109,8 +106,8 @@ export default function ReleaseDateFilter({
           <Button size="sm" className="mt-3 w-full" onClick={apply}>
             Apply dates
           </Button>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
