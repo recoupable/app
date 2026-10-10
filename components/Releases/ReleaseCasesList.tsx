@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Disc3, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { useReleaseCases } from "@/hooks/useReleaseCases";
 export default function ReleaseCasesList({
@@ -24,15 +25,28 @@ export default function ReleaseCasesList({
           <li key={item.request_id}>
             <Button
               variant="outline"
-              className="h-auto min-h-11 w-full flex-col items-start justify-start whitespace-normal text-left sm:flex-row sm:items-center"
+              className={`h-auto min-h-20 w-full justify-start gap-3 whitespace-normal rounded-xl p-4 text-left ${cases.current?.request_id === item.request_id ? "bg-muted shadow-[0_0_0_2px_var(--foreground)]" : ""}`}
               disabled={cases.busy}
               onClick={() => void cases.open(item.request_id)}
               aria-label={`Open saved release ${item.url}`}
             >
-              <span className="min-w-0 break-all">{item.url}</span>
-              <span className="shrink-0 text-xs text-muted-foreground sm:ml-auto sm:pl-3">
-                {new Date(item.created_at).toLocaleDateString()}
+              <Disc3
+                className="size-5 shrink-0 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <span className="min-w-0 flex-1">
+                <span className="block font-medium">Spotify release</span>
+                <span className="block text-xs text-muted-foreground">
+                  Added {new Date(item.created_at).toLocaleDateString()}
+                </span>
+                <span className="block truncate text-xs text-muted-foreground">
+                  {item.url.replace("https://open.spotify.com/", "")}
+                </span>
               </span>
+              <ChevronRight
+                className="size-4 shrink-0 text-muted-foreground"
+                aria-hidden="true"
+              />
             </Button>
           </li>
         ))}

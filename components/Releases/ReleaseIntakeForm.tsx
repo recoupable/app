@@ -20,11 +20,12 @@ export default function ReleaseIntakeForm({
       }}
     >
       <label htmlFor={id} className="block text-sm font-medium">
-        Spotify release URL
+        Add a release
       </label>
       <div className="flex flex-col gap-3 sm:flex-row">
         <Input
           id={id}
+          aria-label="Spotify release URL"
           type="url"
           required
           maxLength={2048}
@@ -39,8 +40,7 @@ export default function ReleaseIntakeForm({
         </Button>
       </div>
       <p id={`${id}-help`} className="text-sm text-muted-foreground">
-        Save an album or single’s album link in this workspace. Metadata
-        collection and verification are separate steps.
+        Paste a Spotify album or single link to save it to this workspace.
       </p>
     </form>
   );

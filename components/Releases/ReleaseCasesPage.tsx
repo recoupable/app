@@ -33,13 +33,12 @@ export default function ReleaseCasesPage() {
       </div>
     );
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 px-6 py-10">
+    <div className="mx-auto w-full max-w-6xl space-y-6 px-6 py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-heading text-2xl font-semibold">Releases</h1>
           <p className="mt-2 text-muted-foreground">
-            Manage releases, review their saved evidence, and track what needs
-            attention.
+            Your releases, track details, and next steps.
           </p>
         </div>
         <Button
@@ -62,34 +61,57 @@ export default function ReleaseCasesPage() {
         </p>
       )}
       {cases.busy && <p role="status">Loading…</p>}
-      <ReleaseCasesList cases={cases} />
-      {current && (
-        <>
-          <ReleaseCaseDetails
-            key={JSON.stringify([
-              accountId,
-              selectedOrgId,
-              current.request_id,
-              current.fingerprint,
-            ])}
-            current={current}
-            busy={cases.busy}
-            onReview={cases.review}
-            onReload={() => cases.open(current.request_id)}
-          />
-          <CompanyAssessment
-            key={JSON.stringify([
-              accountId,
-              selectedOrgId,
-              current.request_id,
-              current.fingerprint,
-            ])}
-            requestId={current.request_id}
-            organizationId={selectedOrgId}
-            getAccessToken={getAccessToken}
-          />
-        </>
-      )}
+      <div className="grid items-start gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <aside className="space-y-3" aria-label="Your releases">
+          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            Your releases
+          </p>
+          <ReleaseCasesList cases={cases} />
+        </aside>
+        <div className="min-w-0 space-y-6">
+          {current && (
+            <>
+              <ReleaseCaseDetails
+                key={JSON.stringify([
+                  accountId,
+                  selectedOrgId,
+                  current.request_id,
+                  current.fingerprint,
+                ])}
+                current={current}
+                sourceUrl={
+                  cases.items.find(
+                    (item) => item.request_id === current.request_id,
+                  )?.url
+                }
+                busy={cases.busy}
+                onReview={cases.review}
+                onReload={() => cases.open(current.request_id)}
+              />
+              <CompanyAssessment
+                key={JSON.stringify([
+                  "assessment",
+                  accountId,
+                  selectedOrgId,
+                  current.request_id,
+                  current.fingerprint,
+                ])}
+                requestId={current.request_id}
+                organizationId={selectedOrgId}
+                getAccessToken={getAccessToken}
+              />
+            </>
+          )}
+          {!current && cases.items.length > 0 && (
+            <div className="rounded-2xl bg-muted/40 px-6 py-16 text-center">
+              <h2 className="font-medium">Choose a release to get started</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Open a release to see its tracks, sources, and next steps.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
