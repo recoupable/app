@@ -67,13 +67,30 @@
         throw new Error(
           "This connection expired. Return to the site and connect again.",
         );
-      const token = await exchange({
-        grant_type: "authorization_code",
-        client_id: pending.clientId,
-        code,
-        redirect_uri: pending.redirectUri,
-        code_verifier: pending.verifier,
-      });
+      const token = pending.flow
+        ? await (async () => {
+            const response = await fetch("/api/sites/spotify/gatsby-fan", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                code,
+                verifier: pending.verifier,
+                flow: pending.flow,
+              }),
+            });
+            if (!response.ok)
+              throw new Error(
+                "Spotify could not complete this fan connection.",
+              );
+            return response.json();
+          })()
+        : await exchange({
+            grant_type: "authorization_code",
+            client_id: pending.clientId,
+            code,
+            redirect_uri: pending.redirectUri,
+            code_verifier: pending.verifier,
+          });
       write(sessionKey, {
         ...token,
         clientId: pending.clientId,
@@ -439,6 +456,8 @@
         if (parentOrigin) {
           const authUrl = new URL(location.href);
           authUrl.searchParams.delete("parent");
+          if (document.body.dataset.gatsbyFlow)
+            authUrl.searchParams.set("flow", document.body.dataset.gatsbyFlow);
           authUrl.searchParams.set("authorize", "1");
           authPopup = window.open(
             authUrl.href,
@@ -476,6 +495,7 @@
           );
         write(pendingKey, {
           verifier,
+          flow: document.body.dataset.gatsbyFlow || null,
           popup: new URLSearchParams(location.search).get("authorize") === "1",
           state,
           created: Date.now(),
@@ -511,6 +531,8 @@
       return;
     }
     let session = read(sessionKey);
+    if (document.body.dataset.gatsbyFlow && !session?.gatsby_flow_completed)
+      session = null;
     if (!session) {
       showSavedAudio();
       return;
@@ -562,19 +584,8 @@
           parentOrigin,
         );
     };
-    if (gatsby) {
-      (async () => {
-        try {
-          const captured = await fetch("/api/sites/spotify/gatsby-fan", {
-            method: "POST",
-            headers: { Authorization: "Bearer " + (await getToken()) },
-          });
-          notifyPlayback(captured.ok ? "fan_captured" : "capture_failed");
-        } catch {
-          notifyPlayback("capture_failed");
-        }
-      })();
-    }
+    if (gatsby)
+      notifyPlayback(session.fanCapture ? "fan_captured" : "capture_failed");
     let lastPlayback = "";
     let product = "unknown";
     try {

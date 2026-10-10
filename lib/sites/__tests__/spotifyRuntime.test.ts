@@ -453,3 +453,38 @@ it("offers the Spotify fallback without loading an unusable SDK for Free account
   expect(h.nodes["spotify-status"].textContent).toContain("Open Spotify");
   expect(h.head.appendChild).not.toHaveBeenCalled();
 });
+it("exchanges Gatsby codes through Recoup's audience-bound server endpoint", async () => {
+  const h = harness(
+    true,
+    {
+      state: "ok",
+      created: Date.now(),
+      returnPath: "/s/spotify/connect",
+      clientId: "recoup-client",
+      redirectUri: "https://example.test/s/spotify/callback",
+      verifier: "v".repeat(64),
+      flow: "signed-flow",
+    },
+    "?code=provider-code&state=ok",
+  );
+  h.fetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      access_token: "token",
+      expires_in: 3600,
+      gatsby_flow_completed: true,
+      fanCapture: true,
+    }),
+  });
+  await h.run();
+  expect(h.fetch.mock.calls[0][0]).toBe("/api/sites/spotify/gatsby-fan");
+  expect(JSON.parse(h.fetch.mock.calls[0][1].body)).toEqual({
+    code: "provider-code",
+    verifier: "v".repeat(64),
+    flow: "signed-flow",
+  });
+  expect(JSON.parse(h.storage.get("recoup-sites-spotify")!)).toHaveProperty(
+    "gatsby_flow_completed",
+    true,
+  );
+});

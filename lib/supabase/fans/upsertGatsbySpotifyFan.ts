@@ -14,8 +14,8 @@ export async function upsertGatsbySpotifyFan(profile: {
     {
       id,
       clientId: "GatsbyWebsite1",
-      email: profile.email || null,
-      display_name: profile.display_name || null,
+      ...(profile.email ? { email: profile.email } : {}),
+      ...(profile.display_name ? { display_name: profile.display_name } : {}),
       type: "spotify",
       last_login: new Date().toISOString(),
     },

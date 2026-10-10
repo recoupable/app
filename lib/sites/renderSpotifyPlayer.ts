@@ -7,6 +7,7 @@ export function renderSpotifyPlayer(
   theme?: PlayerTheme,
   fanConnectUrl?: string | null,
   listeningOnly = false,
+  flow = "",
 ): string {
   const escape = (value: string) =>
     value.replace(
@@ -41,7 +42,7 @@ export function renderSpotifyPlayer(
     : "";
   const icon = (path: string, size = 20) =>
     `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${path}"/></svg>`;
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Spotify · Recoup</title><link rel="stylesheet" href="/sites-player.css">${themeStyle}</head><body ${theme ? 'data-themed="true"' : ""} data-artist="${escape(theme?.artist || "")}" data-fan-site="${fanConnectUrl !== undefined}" data-fan-connect-url="${escape(fanConnectUrl || "")}" data-listening-only="${listeningOnly}" data-sites-runtime data-spotify-player="true" data-player-parent="${parent}" data-release="${release}"><main id="syncstream-player">
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Spotify · Recoup</title><link rel="stylesheet" href="/sites-player.css">${themeStyle}</head><body ${theme ? 'data-themed="true"' : ""} data-artist="${escape(theme?.artist || "")}" data-fan-site="${fanConnectUrl !== undefined}" data-fan-connect-url="${escape(fanConnectUrl || "")}" data-gatsby-flow="${escape(flow)}" data-listening-only="${listeningOnly}" data-sites-runtime data-spotify-player="true" data-player-parent="${parent}" data-release="${release}"><main id="syncstream-player">
   <header class="sign-header"><span><img src="/syncstream/spotify.svg" alt="Spotify" width="20" height="20">Spotify</span><button id="spotify-minimize" class="close" aria-label="Minimize player">${icon("M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4Z")}</button></header>
   <section class="sign-body">${artwork}<h1>${theme ? escape(theme.title) : "Music, while you play."}</h1><p id="spotify-intro" class="sign-description">Sign in to listen here. Spotify browser playback requires Premium.</p><button id="spotify-connect" class="sign-button">Sign in with Spotify</button><button id="spotify-continue" class="sign-button" hidden>Listen</button><p class="terms"><span class="consent-copy">Spotify shares your profile and available email with this player.</span> <a href="https://recoupable.dev/privacy" target="_blank" rel="noopener noreferrer">Privacy</a> · <a href="https://recoupable.dev/terms" target="_blank" rel="noopener noreferrer">Terms</a>.</p></section>
   <section id="player-display" hidden>

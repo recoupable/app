@@ -1,3 +1,5 @@
+import { signGatsbyFlow } from "@/lib/sites/gatsby/signGatsbyFlow";
+import { verifyGatsbyFlow } from "@/lib/sites/gatsby/verifyGatsbyFlow";
 import { z } from "zod";
 import { getPublishedSite } from "@/lib/sites/getPublishedSite";
 import { playerThemeSchema } from "@/lib/sites/schema";
@@ -80,6 +82,27 @@ export async function GET(request: Request) {
     return new Response("Invalid site", { status: 400 });
   const site = siteId ? await getPublishedSite(siteId) : null;
   const fanConnectUrl = siteId ? site?.fanConnectUrl || null : undefined;
+  let flow = requestUrl.searchParams.get("flow") || "";
+  try {
+    if (flow) {
+      const context = verifyGatsbyFlow(flow, requestUrl.origin);
+      if (context.release !== release.data) throw new Error("Invalid flow");
+    } else if (
+      [
+        "https://gatsby.wtf",
+        "https://www.gatsby.wtf",
+        "http://localhost:3006",
+      ].includes(parent || "") &&
+      [
+        "https://open.spotify.com/playlist/5b8JKnvweOEaLqS00nIr7n",
+        "https://open.spotify.com/track/4HJjUdcezdSSCBdy5JVHDs",
+      ].includes(release.data)
+    ) {
+      flow = signGatsbyFlow(requestUrl.origin, release.data);
+    }
+  } catch {
+    return new Response("Invalid fan connection context", { status: 400 });
+  }
   const value = release.data.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
   return new Response(
     renderSpotifyPlayer(
@@ -89,6 +112,7 @@ export async function GET(request: Request) {
       theme?.success ? theme.data : undefined,
       fanConnectUrl,
       requestUrl.searchParams.get("mode") === "listen",
+      flow,
     ),
     {
       headers: {
