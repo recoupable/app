@@ -6,6 +6,7 @@ import { useReleaseCases } from "@/hooks/useReleaseCases";
 import { Button } from "@/components/ui/button";
 import ReleaseCasesList from "./ReleaseCasesList";
 import ReleaseCaseDetails from "./ReleaseCaseDetails";
+import CompanyAssessment from "./CompanyAssessment";
 import ReleaseIntakeForm from "./ReleaseIntakeForm";
 export default function ReleaseCasesPage() {
   const { ready, authenticated, getAccessToken, login } = usePrivy();
@@ -64,18 +65,31 @@ export default function ReleaseCasesPage() {
       {cases.busy && <p role="status">Loading…</p>}
       <ReleaseCasesList cases={cases} />
       {current && (
-        <ReleaseCaseDetails
-          key={JSON.stringify([
-            accountId,
-            selectedOrgId,
-            current.request_id,
-            current.fingerprint,
-          ])}
-          current={current}
-          busy={cases.busy}
-          onReview={cases.review}
-          onReload={() => cases.open(current.request_id)}
-        />
+        <>
+          <ReleaseCaseDetails
+            key={JSON.stringify([
+              accountId,
+              selectedOrgId,
+              current.request_id,
+              current.fingerprint,
+            ])}
+            current={current}
+            busy={cases.busy}
+            onReview={cases.review}
+            onReload={() => cases.open(current.request_id)}
+          />
+          <CompanyAssessment
+            key={JSON.stringify([
+              accountId,
+              selectedOrgId,
+              current.request_id,
+              current.fingerprint,
+            ])}
+            requestId={current.request_id}
+            organizationId={selectedOrgId}
+            getAccessToken={getAccessToken}
+          />
+        </>
       )}
     </div>
   );
