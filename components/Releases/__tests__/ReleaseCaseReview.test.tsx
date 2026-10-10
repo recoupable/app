@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { item, projection } from "./setup";
+import { render, item, projection } from "./setup";
 import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 import ReleaseCasesPage from "../ReleaseCasesPage";
 it("reviews the exact observed fingerprint and does not authorize distribution", async () => {

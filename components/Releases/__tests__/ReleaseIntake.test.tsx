@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { item, state } from "./setup";
+import { render, item, state } from "./setup";
 import React from "react";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, screen } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 import ReleaseCasesPage from "../ReleaseCasesPage";
 

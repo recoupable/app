@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { state } from "./setup";
+import { render, state } from "./setup";
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 import ReleaseCasesPage from "../ReleaseCasesPage";
 it("offers a route back to chat when no saved releases exist", async () => {
