@@ -32,6 +32,13 @@ it("renders any registered release without trusting caller-supplied destinations
     { params: Promise.resolve({ id, provider: "spotify" }) },
   );
   expect(response.status).toBe(200);
+  const [url, options] = vi.mocked(fetch).mock.calls[0];
+  expect(String(url)).toContain("/api/players/public/" + id + "/session");
+  expect(options).toMatchObject({ method: "POST" });
+  expect(JSON.parse(options!.body as string)).toMatchObject({
+    provider: "spotify",
+    parent: "https://artist.example",
+  });
   const html = await response.text();
   expect(html).toContain("data-player-config=");
   expect(html).toContain("Other artist &lt;release&gt;");
@@ -62,16 +69,14 @@ it("fails closed when API configuration or provider is unavailable", async () =>
 it("renders Apple destinations from the same registered player", async () => {
   vi.stubGlobal(
     "fetch",
-    vi
-      .fn()
-      .mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          ...config,
-          provider: "apple_music",
-          release: config.appleUrl,
-        }),
+    vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ...config,
+        provider: "apple_music",
+        release: config.appleUrl,
       }),
+    }),
   );
   const response = await GET(
     new Request(`https://app.recoupable.dev/listen/${id}/apple_music`),

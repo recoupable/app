@@ -41,7 +41,22 @@ export async function getPlayerConfig(id: string, query: URLSearchParams) {
     const value = query.get(key);
     if (value) url.searchParams.set(key, value);
   }
+  const provider = query.get("provider");
+  const body = Object.fromEntries(url.searchParams);
+  if (provider && !body.parent)
+    body.parent = process.env.PLAYER_APP_ORIGIN || "https://app.recoupable.dev";
+  if (provider) {
+    url.pathname += "/session";
+    url.search = "";
+  }
   const response = await fetch(url, {
+    ...(provider
+      ? {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      : {}),
     cache: "no-store",
     redirect: "error",
     signal: AbortSignal.timeout(10000),
