@@ -13,6 +13,7 @@ describe("plan table", () => {
       "Report runs that buys",
       "Scheduled tasks",
       "Fastest cadence",
+      "Tracks analyzed a month",
       "Reports emailed to",
       "API keys",
       "Daily social monitoring",
@@ -26,6 +27,7 @@ describe("plan table", () => {
     expect(byLabel["Report runs that buys"]).toEqual(["~4", "~26", "~391"]);
     expect(byLabel["Scheduled tasks"]).toEqual(["1", "3", "Unlimited"]);
     expect(byLabel["Fastest cadence"]).toEqual(["Weekly", "Daily", "Hourly"]);
+    expect(byLabel["Tracks analyzed a month"]).toEqual(["5", "Unlimited", "Unlimited"]);
     expect(byLabel["Reports emailed to"]).toEqual(["You", "You", "Anyone"]);
     expect(byLabel["API keys"]).toEqual(["check", "check", "check"]);
     expect(byLabel["Daily social monitoring"]).toEqual(["dash", "dash", "check"]);

@@ -31,6 +31,7 @@ export const PLAN_TABLE_ROWS: PlanTableRow[] = [
   { label: "Report runs that buys", mobileLabel: "Report runs", cells: ["~4", "~26", "~391"] },
   { label: "Scheduled tasks", mobileLabel: "Tasks", cells: ["1", "3", "Unlimited"] },
   { label: "Fastest cadence", mobileLabel: "Fastest cadence", cells: ["Weekly", "Daily", "Hourly"] },
+  { label: "Tracks analyzed a month", mobileLabel: "Tracks analyzed", cells: ["5", "Unlimited", "Unlimited"] },
   { label: "Reports emailed to", mobileLabel: "Reports emailed to", cells: ["You", "You", "Anyone"] },
   { label: "API keys", mobileLabel: "API keys", cells: ["check", "check", "check"] },
   { label: "Daily social monitoring", mobileLabel: "Social monitoring", cells: ["dash", "dash", "check"] },
