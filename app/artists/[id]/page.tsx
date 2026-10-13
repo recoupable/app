@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   if (!profile?.name) return {};
   return {
     title: `${profile.name} — Recoupable`,
-    description: `${profile.name} on Recoupable: connected socials and music catalogs.`,
+    description: `${profile.name} on Recoupable: connected socials and recordings.`,
     openGraph: {
       title: `${profile.name} — Recoupable`,
       ...(profile.image ? { images: [profile.image] } : {}),
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 /**
  * Public artist profile at /artists/[id] — name, image, connected socials,
- * and linked catalogs. Server-rendered from the unauthenticated
+ * and credited recordings. Server-rendered from the unauthenticated
  * GET /api/artists/{id}/profile endpoint; no account required to view.
  */
 const ArtistProfilePage = async ({ params }: Params) => {
@@ -41,7 +41,11 @@ const ArtistProfilePage = async ({ params }: Params) => {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <ArtistHero profile={profile} />
-      <SongsSection catalogs={profile.catalogs} artistId={profile.id} socials={profile.socials} />
+      <SongsSection
+        songs={profile.songs}
+        artistId={profile.id}
+        socials={profile.socials}
+      />
       <PublicFooter />
     </div>
   );
