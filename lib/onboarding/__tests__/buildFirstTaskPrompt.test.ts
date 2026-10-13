@@ -124,4 +124,18 @@ describe("buildFirstTaskPrompt image and escaping rules", () => {
     expect(prompt.toLowerCase()).toContain("html-escape");
     expect(prompt).toContain("https:");
   });
+
+  it("never calls a removed Songstats-backed research endpoint (chat#1987)", () => {
+    const prompt = buildFirstTaskPrompt(base);
+    expect(prompt).not.toMatch(
+      /research\/(metrics|insights|playlists|milestones|career|similar|audience|urls|lookup|profile|albums\b|tracks\?artist)/,
+    );
+    expect(prompt).not.toMatch(/Songstats/i);
+  });
+
+  it("sources context from the Spotify artist object and one web search", () => {
+    const prompt = buildFirstTaskPrompt(base);
+    expect(prompt).toContain("followers.total");
+    expect(prompt).toContain("POST /api/research/web");
+  });
 });
