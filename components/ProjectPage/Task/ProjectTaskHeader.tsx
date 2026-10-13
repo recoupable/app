@@ -38,7 +38,9 @@ const ProjectTaskHeader = ({
         )}
       </div>
       {task.description && (
-        <p className="text-[15px] leading-relaxed">{task.description}</p>
+        <p className="whitespace-pre-line text-[15px] leading-relaxed">
+          {task.description}
+        </p>
       )}
     </div>
   );
