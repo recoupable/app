@@ -100,6 +100,8 @@ it("authorizes before queueing and never sends the Music User Token to the exter
   await loaded();
   expect(music.setQueue).not.toHaveBeenCalled();
   await nodes["apple-connect"].onclick!();
+  expect(nodes["apple-intro"].hidden).toBe(true);
+  expect(nodes["apple-controls"].hidden).toBe(false);
   expect(music.authorize).toHaveBeenCalledOnce();
   expect(music.authorize.mock.invocationCallOrder[0]).toBeLessThan(
     music.setQueue.mock.invocationCallOrder[0],

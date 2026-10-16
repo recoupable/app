@@ -271,6 +271,7 @@ body[data-player-visible] .sign-body {
 }
 body[data-player-visible] {
   background: black;
+  color: white;
 }
 body[data-player-visible] #spotify-status,
 body[data-player-visible] footer {
@@ -313,10 +314,6 @@ body[data-player-visible] #audio-fallback {
   }
 }
 
-/* Keep account and playback actions out of the entrance card. */
-body:not([data-player-visible]) .player-link {
-  display: none;
-}
 body:not([data-player-visible]) footer {
   justify-content: center;
   padding-bottom: 22px;
@@ -488,4 +485,41 @@ body[data-apple-player] .sign-button {
 .playlist-more {
   min-height: 44px;
   text-decoration: underline;
+}
+
+/* Listening pages keep the music close to the controls. */
+body[data-listening-only="true"] .artist-banner {
+  height: 56px;
+  padding-right: 60px;
+}
+body[data-listening-only="true"] .artist-banner > img,
+body[data-listening-only="true"] .banner-shade,
+body[data-listening-only="true"] #spotify-duration {
+  display: none;
+}
+body[data-listening-only="true"] .artist-banner strong {
+  font-size: 16px;
+  padding-bottom: 0;
+}
+.close,
+.banner-minimize,
+.transport button,
+.player-link {
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+}
+.player-link {
+  display: inline-flex;
+}
+footer {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.track-row img:not([src]),
+.track-row img[src=""] {
+  display: none;
 }

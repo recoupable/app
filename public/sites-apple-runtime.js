@@ -76,6 +76,7 @@
                 [body.dataset.releaseKind]: body.dataset.releaseId,
               });
               connect.hidden = true;
+              node("intro").hidden = true;
               node("controls").hidden = false;
               notify("connected");
               window.RecoupReleasePlayer?.event("connected");

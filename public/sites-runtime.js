@@ -581,8 +581,9 @@
       showSavedAudio();
       return;
     }
-    if (continueButton && parentOrigin) continueButton.hidden = false;
-    if (!parentOrigin) showPlayer();
+    const listeningOnly = document.body.dataset.listeningOnly === "true";
+    if (continueButton && parentOrigin) continueButton.hidden = listeningOnly;
+    if (!parentOrigin || listeningOnly) showPlayer();
 
     document.body.dataset.connected = "true";
     if (intro) intro.textContent = "Spotify connected. You’re ready to go.";
@@ -642,7 +643,7 @@
     document.body.dataset.spotifyProduct = product;
     const accountLabel = document.getElementById("spotify-account");
     if (accountLabel) {
-      accountLabel.hidden = false;
+      accountLabel.hidden = listeningOnly && product !== "unknown";
       accountLabel.textContent =
         product === "premium"
           ? "Spotify Premium connected"
@@ -779,7 +780,7 @@
         say(
           parentOrigin
             ? document.body.dataset.listeningOnly === "true"
-              ? "Spotify connected. Press Listen."
+              ? "Press Play to listen."
               : "Spotify connected. Continue to start listening."
             : "Spotify connected. Press Play music.",
           true,

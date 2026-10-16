@@ -185,3 +185,28 @@ it("requests the API-configured permissions for registered-player authorization"
     "streaming user-read-playback-state",
   );
 });
+
+it("shows embedded listening controls immediately after connecting without starting playback", async () => {
+  const h = listeningHarness("premium", true);
+  await h.run();
+  expect(h.ctx.document.body.dataset).toMatchObject({ playerVisible: "true" });
+  expect(h.nodes["player-display"]).toMatchObject({ hidden: false });
+  expect(h.nodes["spotify-continue"]).toMatchObject({ hidden: true });
+  expect(h.nodes["spotify-account"]).toMatchObject({ hidden: true });
+  expect(
+    h.fetch.mock.calls.some(([url]) => String(url).includes("/me/player")),
+  ).toBe(false);
+  expect(
+    h.parent.postMessage.mock.calls.some(
+      ([message]) => message.type === "recoup-music-continue",
+    ),
+  ).toBe(false);
+});
+
+it("preserves the Continue step for embedded experiences", async () => {
+  const h = listeningHarness("premium", true);
+  Object.assign(h.ctx.document.body.dataset, { listeningOnly: "false" });
+  await h.run();
+  expect(h.ctx.document.body.dataset).not.toHaveProperty("playerVisible");
+  expect(h.nodes["spotify-continue"]).toMatchObject({ hidden: false });
+});
