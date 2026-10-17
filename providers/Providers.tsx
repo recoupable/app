@@ -18,11 +18,26 @@ import CreditsUpgradePrompt from "@/components/UpgradePrompt/CreditsUpgradePromp
 import PlanLimitUpgradeModal from "@/components/UpgradePrompt/PlanLimitUpgradeModal";
 import CheckoutClaimSync from "@/components/Checkout/CheckoutClaimSync";
 import { usePathname } from "next/navigation";
+import { isPlaygroundRoute } from "@/lib/intelligent-ui/playground/isPlaygroundRoute";
 
 const queryClient = new QueryClient();
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
+  // Synthetic examples must not provision accounts or inherit customer effects.
+  // The page and stream independently enforce the server-side availability gate.
+  if (isPlaygroundRoute(pathname)) {
+    return (
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        {children}
+      </ThemeProvider>
+    );
+  }
   // Consent must not provision accounts or inherit workspace impersonation/onboarding effects.
   if (pathname.startsWith("/oauth/")) {
     return (

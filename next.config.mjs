@@ -109,8 +109,23 @@ export default withPWA({
   dest: "public",
   register: true,
   skipWaiting: true,
-  // Consent pages and credentialed API responses must never enter offline caches.
+  // Gated fixtures and consent responses must never survive in offline caches.
   runtimeCaching: [
+    {
+      urlPattern: /^https?:\/\/[^/]+\/labs\/intelligent-ui(?:[?]|$)/,
+      handler: "NetworkOnly",
+      method: "GET",
+    },
+    {
+      urlPattern: /^https?:\/\/[^/]+\/api\/intelligent-ui\/playground(?:[?]|$)/,
+      handler: "NetworkOnly",
+      method: "GET",
+    },
+    {
+      urlPattern: /^https?:\/\/[^/]+\/api\/intelligent-ui\/playground\/audio(?:[?]|$)/,
+      handler: "NetworkOnly",
+      method: "GET",
+    },
     {
       urlPattern: /^https?:\/\/[^/]+\/(?:api\/)?oauth(?:[/?]|$)/,
       handler: "NetworkOnly",

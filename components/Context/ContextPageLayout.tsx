@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import Logo from "@/components/Logo/Logo";
 import { ArrowLeft } from "lucide-react";
+import { isPlaygroundRoute } from "@/lib/intelligent-ui/playground/isPlaygroundRoute";
 
 /** Public entry retains authentication providers without displaying private workspace chrome. */
 export default function ContextPageLayout({
@@ -14,6 +15,7 @@ export default function ContextPageLayout({
   workspace: ReactNode;
 }) {
   const pathname = usePathname();
+  if (isPlaygroundRoute(pathname)) return children;
   if (pathname !== "/context" && !pathname.startsWith("/oauth/"))
     return workspace;
   if (pathname.startsWith("/oauth/"))

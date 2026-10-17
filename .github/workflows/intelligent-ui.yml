@@ -1,0 +1,66 @@
+name: Intelligent UI playground
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/intelligent-ui.yml"
+      - "lib/intelligent-ui/**"
+      - "components/IntelligentUI/**"
+      - "app/labs/intelligent-ui/**"
+      - "app/api/intelligent-ui/**"
+      - "providers/Providers.tsx"
+      - "providers/__tests__/PlaygroundProviders.test.tsx"
+      - "components/Context/**"
+      - "next.config.mjs"
+      - "proxy.ts"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "tsconfig.json"
+      - "vitest.config.ts"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/intelligent-ui.yml"
+      - "lib/intelligent-ui/**"
+      - "components/IntelligentUI/**"
+      - "app/labs/intelligent-ui/**"
+      - "app/api/intelligent-ui/**"
+      - "providers/Providers.tsx"
+      - "providers/__tests__/PlaygroundProviders.test.tsx"
+      - "components/Context/**"
+      - "next.config.mjs"
+      - "proxy.ts"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "tsconfig.json"
+      - "vitest.config.ts"
+
+permissions:
+  contents: read
+
+jobs:
+  contracts-and-interactions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec next typegen
+      - run: pnpm exec tsc --noEmit
+      - run: >-
+          pnpm exec eslint proxy.ts lib/intelligent-ui components/IntelligentUI
+          app/labs/intelligent-ui app/api/intelligent-ui/playground
+          providers/Providers.tsx components/Context/ContextPageLayout.tsx
+          providers/__tests__/PlaygroundProviders.test.tsx
+          components/Context/__tests__/ContextPageLayout.test.tsx
+      - run: >-
+          pnpm exec vitest run lib/intelligent-ui components/IntelligentUI
+          app/labs/intelligent-ui providers/__tests__/PlaygroundProviders.test.tsx
+          components/Context/__tests__/ContextPageLayout.test.tsx
