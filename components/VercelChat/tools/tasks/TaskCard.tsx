@@ -25,6 +25,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   ownerEmail,
   artistName,
 }) => {
+  const schedule = task.schedule?.trim() ?? "";
   const statusLabel = isDeleted
     ? "Deleted"
     : task.enabled
@@ -54,11 +55,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
             {statusLabel}
           </span>
           <span className="inline-flex min-w-0 items-start gap-1.5">
-            {isRecurring(task.schedule) && (
+            {schedule && isRecurring(schedule) && (
               <Repeat className="mt-0.5 h-4 w-4 shrink-0" />
             )}
             <span className="break-words">
-              {parseCronToHuman(task.schedule.trim())}
+              {schedule ? parseCronToHuman(schedule) : "No schedule"}
             </span>
           </span>
         </div>
