@@ -8,6 +8,26 @@ import {
 } from "./releaseFormatFixture";
 import { renderReleaseCase as show } from "./renderReleaseCase";
 afterEach(cleanup);
+it("distinguishes uncollected tracks from observed format metadata", () => {
+  show({
+    ...base,
+    tracks: [],
+    release_format: {
+      ...observed,
+      track_coverage: "uncollected",
+      disc_count: null,
+      multi_disc: null,
+    },
+  });
+  expect(
+    screen.getByText(
+      /^Album · Disc count unknown · 3 tracks reported · Track list not collected/,
+    ),
+  ).toBeTruthy();
+  expect(screen.queryByText("Format not collected")).toBeNull();
+  expect(screen.queryByText(/Track list incomplete/)).toBeNull();
+  expect(screen.queryByText(/Disc \d ·/)).toBeNull();
+});
 it("does not claim a disc count when only part of the track list was collected", () => {
   show({
     ...base,

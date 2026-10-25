@@ -25,7 +25,11 @@ export default function ReleaseCaseFormat({
     format.reported_total_tracks === null
       ? null
       : `${count(format.reported_total_tracks, "track")} reported`,
-    format.track_coverage === "partial" ? "Track list incomplete" : null,
+    format.track_coverage === "partial"
+      ? "Track list incomplete"
+      : format.track_coverage === "uncollected"
+        ? "Track list not collected"
+        : null,
     format.release_date ? `Released ${format.release_date}` : null,
     format.label,
     format.upc_state === "observed" && format.upc
