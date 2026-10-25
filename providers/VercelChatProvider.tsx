@@ -47,7 +47,7 @@ interface VercelChatContextType {
   setInput: (input: string) => void;
   input: string;
   setMessages: UseChatHelpers<UIMessage>["setMessages"];
-  reload: () => void;
+  reload: (editedMessage?: UIMessage) => void;
   append: (message: UIMessage) => void;
   attachments: FileUIPart[];
   pendingAttachments: FileUIPart[];
@@ -194,9 +194,12 @@ export function VercelChatProvider({
     },
   });
 
-  const reload = useCallback(() => {
-    return originalReload();
-  }, [originalReload]);
+  const reload = useCallback(
+    (editedMessage?: UIMessage) => {
+      return originalReload(editedMessage);
+    },
+    [originalReload],
+  );
 
   // Create the context value object
   const contextValue: VercelChatContextType = {

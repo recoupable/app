@@ -72,17 +72,17 @@ export function MessageEditor({ message, setMode }: EditingMessageProps) {
         isCurrent: canPublish,
       });
       if (!canPublish()) return;
+      const updatedMessage: UIMessage = {
+        ...message,
+        parts: [{ type: "text", text: submittedText }],
+      };
       setMessages((current) => {
         const index = current.findIndex((m) => m.id === message.id);
         if (index === -1) return current;
-        const updatedMessage: UIMessage = {
-          ...message,
-          parts: [{ type: "text", text: submittedText }],
-        };
         return [...current.slice(0, index), updatedMessage];
       });
       setMode("view");
-      reload();
+      reload(updatedMessage);
     } catch {
       if (canPublish())
         setEditError(

@@ -905,8 +905,9 @@ export function useVercelChat({
     );
   };
 
-  const handleReload = async () => {
+  const handleReload = async (editedMessage?: UIMessage) => {
     const message =
+      editedMessage ??
       messages.findLast((message) => message.role === "user") ??
       messages.at(-1);
     if (!message) return;

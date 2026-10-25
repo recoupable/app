@@ -2363,3 +2363,23 @@ it("resends the edited persisted question only after successful deletion through
     parts: [{ type: "text", text: "Edited persisted question" }],
   });
 });
+
+it("retains the edited text in recovery when resend admission fails after successful deletion", async () => {
+  const f = fixture(() => Response.json({ error: "Busy" }, { status: 409 }));
+  const h = await mount();
+  const saved = h.current().messages.find((m) => m.role === "user")!;
+  const ui = render(
+    <QueryClientProvider client={h.client}>
+      <VercelChatContext.Provider value={h.current()}>
+        <MessageEditor message={saved} setMode={vi.fn()} />
+      </VercelChatContext.Provider>
+    </QueryClientProvider>,
+  );
+  fireEvent.change(ui.getByTestId("message-editor"), {
+    target: { value: "Edited recovery text" },
+  });
+  fireEvent.click(ui.getByTestId("message-editor-send-button"));
+  await waitFor(() => expect(h.current().hasFailedSubmission).toBe(true));
+  expect(f.posts()).toHaveLength(1);
+  expect(h.current().failedDraftPreview).toBe("Edited recovery text");
+});
