@@ -239,6 +239,52 @@ describe("actual report body totals", () => {
       expect(screen.getByText("5 measured · total unknown")).toBeTruthy(),
     );
     expect(screen.queryByText("5 of 5")).toBeNull();
-    expect(screen.getByText("Unknown")).toBeTruthy();
+    expect(screen.getByText("Unknown", { selector: "dd" })).toBeTruthy();
+  });
+});
+
+describe("track observations in the authorized report", () => {
+  it("shows measured zero without rendering a valuation card", async () => {
+    getCatalogMeasurements.mockResolvedValue({
+      measurements: [{ isrc: "ZERO", playcount: 0 }],
+      total_streams: 0,
+      measured_song_count: 1,
+    });
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    render(
+      <QueryClientProvider client={client}>
+        <CatalogReportContent catalogId={second} />
+      </QueryClientProvider>,
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole("region", { name: "Track play counts" }),
+      ).toBeTruthy(),
+    );
+    expect(screen.getByText("ZERO")).toBeTruthy();
+    expect(
+      screen.queryByRole("region", { name: "Estimated catalog value" }),
+    ).toBeNull();
+  });
+  it("removes track observations immediately while another actor authorizes", async () => {
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const view = () => (
+      <QueryClientProvider client={client}>
+        <CatalogReportContent catalogId={second} />
+      </QueryClientProvider>
+    );
+    const { rerender } = render(view());
+    await waitFor(() => expect(screen.getByText("OLD")).toBeTruthy());
+    getCatalogs.mockImplementation(() => new Promise(() => {}));
+    scope.actor = "actor-b";
+    rerender(view());
+    expect(screen.queryByText("OLD")).toBeNull();
+    expect(
+      screen.queryByRole("region", { name: "Track play counts" }),
+    ).toBeNull();
   });
 });
