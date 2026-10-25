@@ -1,3 +1,4 @@
+import { usePrivy } from "@privy-io/react-auth";
 import { useCallback } from "react";
 import { useUserProvider } from "@/providers/UserProvder";
 import type { AgentTemplateRow } from "@/types/AgentTemplates";
@@ -30,7 +31,8 @@ export function useAgentCard({
   onClick,
   onToggleFavorite,
 }: UseAgentCardProps): UseAgentCardReturn {
-  const { userData, email } = useUserProvider();
+  const { userData } = useUserProvider();
+  const { authenticated } = usePrivy();
 
   // Define action tags that should be displayed in cards
   const actionTags = [
@@ -47,12 +49,13 @@ export function useAgentCard({
   const pillTag = displayedActionTags[0] ?? agent.tags?.[0] ?? "General";
 
   // Check if this agent is shared with the current user
+  // The API only returns private templates to their owner or share recipients;
+  // recipient addresses are intentionally not disclosed to a non-owner.
   const isSharedWithUser = Boolean(
-    !!agent.is_private &&
-      !!userData?.id &&
-      userData.id !== agent.creator &&
-      !!email &&
-      agent.shared_emails?.includes(email)
+    authenticated &&
+      agent.is_private &&
+      userData?.account_id &&
+      userData.account_id !== agent.creator?.id,
   );
 
   const handleCardKeyDown = useCallback(
@@ -73,14 +76,14 @@ export function useAgentCard({
         onClick(agent);
       }
     },
-    [onClick, agent]
+    [onClick, agent],
   );
 
   const handleCardClick = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const target = event.target as HTMLElement;
       const interactiveAncestor = target.closest(
-        "button, [role='button'], input, textarea, select, a"
+        "button, [role='button'], input, textarea, select, a",
       );
 
       // Ignore clicks on interactive elements, but allow the card itself (role=button)
@@ -93,14 +96,14 @@ export function useAgentCard({
 
       onClick(agent);
     },
-    [onClick, agent]
+    [onClick, agent],
   );
 
   const handleToggleFavorite = useCallback(
     (agentId: string, nextFavourite: boolean) => {
       onToggleFavorite?.(agentId, nextFavourite);
     },
-    [onToggleFavorite]
+    [onToggleFavorite],
   );
 
   return {
