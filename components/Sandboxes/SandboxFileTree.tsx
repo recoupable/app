@@ -8,8 +8,10 @@ import { useState } from "react";
 import { getGuardedGitApiBaseUrl } from "@/lib/sandboxes/getGuardedGitApiBaseUrl";
 import { useGuardedFileReplacement } from "@/hooks/useGuardedFileReplacement";
 import GuardedFileReplacementNotice from "./GuardedFileReplacementNotice";
+import { useSandboxAccountScope } from "@/hooks/useSandboxAccountScope";
 
 export default function SandboxFileTree() {
+  const { readOnly } = useSandboxAccountScope();
   const listing = useSandboxes();
   const { filetree, refetch } = listing;
   const [protectReplacement, setProtectReplacement] = useState(false);
@@ -23,7 +25,7 @@ export default function SandboxFileTree() {
     refetch,
   });
   const guarded = useGuardedFileReplacement({
-    enabled: protectReplacement,
+    enabled: protectReplacement && !readOnly,
     opened: fileContent.openedRevision,
     selectedPath: fileContent.selectedPath,
     scopeKey: fileContent.scopeKey,
@@ -35,18 +37,25 @@ export default function SandboxFileTree() {
   });
   const busy = uploading || guarded.saving;
   const onDrop = (files: File[]) => {
+    if (readOnly) return;
     if (protectReplacement || guarded.hasPending) void guarded.replace(files);
     else handleFilesDropped(files);
   };
 
   return (
     <div className="space-y-4">
+      {readOnly && (
+        <p className="text-sm text-muted-foreground">
+          Files for the selected account are read-only. Return to your account
+          to upload or replace files.
+        </p>
+      )}
       {(available || protectReplacement || guarded.hasPending) && (
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
             checked={protectReplacement || guarded.hasPending}
-            disabled={busy || guarded.hasPending}
+            disabled={busy || guarded.hasPending || readOnly}
             onChange={(event) => setProtectReplacement(event.target.checked)}
           />
           Protect replacement of the opened file
@@ -67,6 +76,7 @@ export default function SandboxFileTree() {
         fileContent={fileContent}
         onDrop={onDrop}
         busy={busy}
+        readOnly={readOnly}
       />
     </div>
   );

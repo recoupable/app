@@ -35,13 +35,16 @@ export async function uploadSandboxFiles({
   path,
   message,
   guard,
+  assertCurrent,
 }: {
   accessToken: string;
   files: File[];
   path?: string;
   message?: string;
   guard?: FileReplacementGuard;
+  assertCurrent?: () => void;
 }): Promise<{ uploaded: UploadedFile[]; errors?: string[] }> {
+  assertCurrent?.();
   if (guard) assertFileReplacementGuard(guard, files, path);
   const apiBaseUrl = guard?.opened.apiBaseUrl ?? getClientApiBaseUrl();
   const { blobFiles, blobErrors } = await stageSandboxFiles(
@@ -51,6 +54,7 @@ export async function uploadSandboxFiles({
     guard?.opened.sha,
   );
 
+  assertCurrent?.();
   if (guard) assertFileReplacementGuard(guard, files, path);
   const response = await fetch(`${apiBaseUrl}/api/sandboxes/files`, {
     method: "POST",

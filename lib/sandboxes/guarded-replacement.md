@@ -26,6 +26,14 @@ This narrow immutable-target gate matters because predecessor APIs ignore unknow
 
 Replacement retention is in memory for this mounted Files view; it is not a new persistent draft store. Keep a copy before navigating away/closing the tab. A prior account's retained replacement is withheld when the identity changes, and no operation is resumed automatically.
 
+## Selected-account reads
+
+The Files account-selection companion depends on [API #1131](https://github.com/recoupable/api/pull/1131), reviewed source `b6ee204c`. Deploy that API change before this App change. Explicit `account_id` reads of `/api/sandboxes` and `/api/sandboxes/file` require the response to confirm the same authorized `account_id`; an older or mismatched API origin fails closed instead of showing the signed-in account's files. Default self-account reads retain their existing response shape.
+
+Listing, preview and mentioned-file reads follow the selected account and isolate their cache/results by authenticated identity, selection and API origin. Pending email resolution never falls back to self. Superseded lookups and responses cannot persist a different account's selection or content, including when switching away and back while a request is pending.
+
+Every explicit account override is **read-only**, including an override naming the current account: the existing upload and deletion endpoints target the authenticated account, not an override. Upload, delete and protected replacement remain unavailable until returning to the default account. No writable opened revision is created for an override, and an account/authentication/origin change blocks a pending write before staging or commit. This does not enable cross-account writes or alter the default-off protected-replacement gate above. No hosted write or production permission/configuration change is established by these source and regression checks.
+
 ## Tests and remaining limits
 
 Synthetic tests exercise the actual upload/read helpers, revision query, replacement controller and Files UI. They cover a disabled/mismatched gate with no guarded request or staged upload; predecessor read without a SHA; unchanged SHA forwarding; conflict without retry; success receipt; uncertain outcome; context change after staging; retained File/original revision after viewing newer data; duplicate-drop suppression; empty text; identity changes during authentication; explicit reopen; and the unchanged legacy upload branch. Provider/auth boundaries are fixtures, not hosted mutation evidence.

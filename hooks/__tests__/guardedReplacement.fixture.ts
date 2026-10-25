@@ -7,7 +7,11 @@ import { SandboxFileConflictError } from "@/lib/sandboxes/SandboxFileConflictErr
 
 const token = vi.fn(async (): Promise<string | null> => "synthetic-token");
 vi.mock("@privy-io/react-auth", () => ({
-  usePrivy: () => ({ getAccessToken: token }),
+  usePrivy: () => ({
+    getAccessToken: token,
+    authenticated: true,
+    user: { id: "actor-a" },
+  }),
 }));
 vi.mock("@/lib/sandboxes/uploadSandboxFiles", () => ({
   uploadSandboxFiles: vi.fn(),

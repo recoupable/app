@@ -23,7 +23,7 @@ interface SandboxDeleteButtonProps {
 export default function SandboxDeleteButton({
   onSuccess,
 }: SandboxDeleteButtonProps) {
-  const { deleteSandbox, isDeleting } = useDeleteSandbox();
+  const { deleteSandbox, isDeleting, readOnly } = useDeleteSandbox();
 
   const handleDelete = async () => {
     await deleteSandbox();
@@ -34,7 +34,11 @@ export default function SandboxDeleteButton({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="icon" disabled={isDeleting}>
+        <Button
+          variant="destructive"
+          size="icon"
+          disabled={isDeleting || readOnly}
+        >
           {isDeleting ? (
             <Loader className="h-4 w-4 animate-spin" />
           ) : (
@@ -53,6 +57,7 @@ export default function SandboxDeleteButton({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
+            disabled={isDeleting || readOnly}
             onClick={handleDelete}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >

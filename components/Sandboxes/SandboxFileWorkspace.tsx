@@ -13,11 +13,13 @@ export default function SandboxFileWorkspace({
   fileContent,
   onDrop,
   busy,
+  readOnly = false,
 }: {
   listing: ReturnType<typeof useSandboxes>;
   fileContent: ReturnType<typeof useSandboxFileContent>;
   onDrop: (files: File[]) => void;
   busy: boolean;
+  readOnly?: boolean;
 }) {
   const withPreview = (status: ReactNode) => (
     <>
@@ -43,6 +45,15 @@ export default function SandboxFileWorkspace({
           Try again
         </button>
       </div>,
+    );
+  if (readOnly)
+    return listing.filetree.length ? (
+      <SandboxFileBrowser
+        filetree={listing.filetree}
+        fileContent={fileContent}
+      />
+    ) : (
+      withPreview(<p>No files yet.</p>)
     );
   if (!listing.filetree.length)
     return withPreview(<NoSandboxFiles onDrop={onDrop} disabled={busy} />);

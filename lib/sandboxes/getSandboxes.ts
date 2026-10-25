@@ -7,6 +7,7 @@ interface GetSandboxesResponse {
   sandboxes?: Sandbox[];
   filetree?: FileTreeEntry[];
   error?: string;
+  account_id?: string;
 }
 
 export interface GetSandboxesResult {
@@ -15,9 +16,12 @@ export interface GetSandboxesResult {
 }
 
 export async function getSandboxes(
-  accessToken: string
+  accessToken: string,
+  accountId?: string | null,
 ): Promise<GetSandboxesResult> {
-  const response = await fetch(`${getClientApiBaseUrl()}/api/sandboxes`, {
+  const url = new URL(`${getClientApiBaseUrl()}/api/sandboxes`);
+  if (accountId) url.searchParams.set("account_id", accountId);
+  const response = await fetch(url.toString(), {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -29,6 +33,10 @@ export async function getSandboxes(
   if (!response.ok || data.status === "error") {
     throw new Error(data.error || "Failed to fetch sandboxes");
   }
+  if (accountId && data.account_id !== accountId)
+    throw new Error(
+      "This connection did not confirm the selected account. Files are unavailable.",
+    );
 
   return {
     sandboxes: data.sandboxes || [],

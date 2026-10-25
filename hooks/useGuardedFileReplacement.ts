@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { saveOpenedFileReplacement } from "@/lib/sandboxes/saveOpenedFileReplacement";
 import { isOpenedRevisionCurrent } from "@/lib/sandboxes/isOpenedRevisionCurrent";
+import { useSandboxAccountScope } from "./useSandboxAccountScope";
 import type {
   GuardedReplacementOptions,
   PendingFileReplacement,
@@ -9,6 +10,7 @@ import type {
 } from "@/lib/sandboxes/guardedFileTypes";
 export function useGuardedFileReplacement(options: GuardedReplacementOptions) {
   const { getAccessToken } = usePrivy();
+  const accountScope = useSandboxAccountScope();
   const latest = useRef(options);
   const mounted = useRef(false);
   useLayoutEffect(() => {
@@ -26,6 +28,17 @@ export function useGuardedFileReplacement(options: GuardedReplacementOptions) {
 
   const replace = async (files: File[]) => {
     if (inFlight.current) return;
+    if (
+      !accountScope.ready ||
+      accountScope.readOnly ||
+      !accountScope.isCurrent()
+    ) {
+      setFailure({
+        scope: options.scopeKey,
+        message: "Files for a selected account are read-only.",
+      });
+      return;
+    }
     const { opened, scopeKey, selectedPath, enabled } = latest.current;
     if (retained.current) {
       setFailure({
@@ -60,6 +73,7 @@ export function useGuardedFileReplacement(options: GuardedReplacementOptions) {
     setSaving(true);
     const isCurrent = () =>
       mounted.current &&
+      accountScope.isCurrent() &&
       isOpenedRevisionCurrent(latest.current, original.opened);
     try {
       await saveOpenedFileReplacement(getAccessToken, original, isCurrent);
