@@ -19,7 +19,6 @@ export const createCatalogResult = (
       limit: 50,
       total_pages: pages[0].pagination.total_pages,
     },
-    total_added: totalCount,
     message: `Found ${totalCount} songs in catalog`,
   };
 };

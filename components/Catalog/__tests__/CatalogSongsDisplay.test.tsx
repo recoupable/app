@@ -61,6 +61,8 @@ afterEach(cleanup);
 it("requests more data only on explicit load, disables while pending and keeps rows after failure", () => {
   const { rerender } = render(<CatalogSongsDisplay {...props} />);
   expect(screen.getByText("Loaded song")).toBeTruthy();
+  expect(screen.getByText("Found 10000 songs in catalog")).toBeTruthy();
+  expect(screen.queryByText("Songs Processed")).toBeNull();
   expect(fixture.fetchNextPage).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "Load more songs" }));
   expect(fixture.fetchNextPage).toHaveBeenCalledTimes(1);
