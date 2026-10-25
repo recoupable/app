@@ -1,6 +1,6 @@
 import CatalogSongsResult from "@/components/VercelChat/tools/catalog/CatalogSongsResult";
 import CatalogSongsSkeleton from "@/components/VercelChat/tools/catalog/CatalogSongsSkeleton";
-import CatalogSongsInfiniteScrollTrigger from "./CatalogSongsInfiniteScrollTrigger";
+import { Button } from "@/components/ui/button";
 import { SongsByIsrcResponse } from "@/lib/catalog/getSongsByIsrc";
 import { createSearchResult } from "@/lib/catalog/createSearchResult";
 import { createErrorResult } from "@/lib/catalog/createErrorResult";
@@ -24,12 +24,18 @@ const CatalogSongsDisplay = ({
   searchError,
   activeIsrc,
 }: CatalogSongsDisplayProps) => {
-  const { data, isLoading, error, isFetchingNextPage, observerTarget } =
-    useArtistCatalogSongs({
-      catalogId,
-      pageSize: 50,
-      enabled: !isSearchMode,
-    });
+  const {
+    data,
+    isLoading,
+    error,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useArtistCatalogSongs({
+    catalogId,
+    pageSize: 50,
+    enabled: !isSearchMode,
+  });
 
   const currentLoading = isSearchMode ? searchLoading : isLoading;
   const currentError = isSearchMode ? searchError : error;
@@ -49,7 +55,12 @@ const CatalogSongsDisplay = ({
   }
 
   // Handle errors
-  if (currentError || !data || !data.pages || data.pages.length === 0) {
+  if (
+    (isSearchMode && currentError) ||
+    !data ||
+    !data.pages ||
+    data.pages.length === 0
+  ) {
     return (
       <CatalogSongsResult
         catalogId={catalogId}
@@ -65,10 +76,28 @@ const CatalogSongsDisplay = ({
         catalogId={catalogId}
         result={createCatalogResult(data.pages)}
       />
-      <CatalogSongsInfiniteScrollTrigger
-        observerTarget={observerTarget}
-        isFetchingNextPage={isFetchingNextPage}
-      />
+      {hasNextPage && (
+        <div className="flex flex-col items-center gap-2 py-4">
+          {error && (
+            <p role="status" className="text-sm text-muted-foreground">
+              Couldn’t load more songs. Try again.
+            </p>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isFetchingNextPage}
+            onClick={() => {
+              void fetchNextPage();
+            }}
+          >
+            {isFetchingNextPage ? "Loading more songs…" : "Load more songs"}
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Requests the next catalog page. Filters apply to loaded songs only.
+          </p>
+        </div>
+      )}
     </>
   );
 };

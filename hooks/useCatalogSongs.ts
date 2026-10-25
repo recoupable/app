@@ -7,8 +7,6 @@ import {
   CatalogSongsResponse,
   getCatalogSongs,
 } from "@/lib/catalog/getCatalogSongs";
-import useObserverTarget from "./useObserverTarget";
-import { RefObject } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 
 interface UseCatalogSongsOptions {
@@ -20,9 +18,7 @@ interface UseCatalogSongsOptions {
 
 type UseCatalogSongsReturn = UseInfiniteQueryResult<
   InfiniteData<CatalogSongsResponse>
-> & {
-  observerTarget: RefObject<HTMLDivElement | null>;
-};
+>;
 
 const useCatalogSongs = ({
   catalogId,
@@ -58,17 +54,7 @@ const useCatalogSongs = ({
     refetchOnWindowFocus: false,
   });
 
-  const { hasNextPage, isFetchingNextPage, fetchNextPage } = queryResult;
-
-  const observerTarget = useObserverTarget({
-    onIntersect: fetchNextPage,
-    enabled: !!hasNextPage && !isFetchingNextPage,
-  });
-
-  return {
-    ...queryResult,
-    observerTarget,
-  };
+  return queryResult;
 };
 
 export default useCatalogSongs;
