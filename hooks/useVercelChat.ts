@@ -711,14 +711,16 @@ export function useVercelChat({
     setStopState,
   ]);
   const historyScopeKey = intelligentUI?.scopeKey;
+  const isHistoryCurrent = useCallback(
+    () =>
+      isActionCurrent() &&
+      historyScopeRef.current === historyLoadScope &&
+      supersededHistoryScopeRef.current !== historyLoadScope,
+    [isActionCurrent, historyLoadScope],
+  );
   const setHistoryMessages = useCallback(
     (loaded: UIMessage[]) => {
-      if (!isActionCurrent()) return;
-      if (
-        historyScopeRef.current !== historyLoadScope ||
-        supersededHistoryScopeRef.current === historyLoadScope
-      )
-        return;
+      if (!isHistoryCurrent()) return;
       const canonical = historyScopeKey
         ? snapshotConsumer.hydrate(loaded, historyScopeKey)
         : loaded;
@@ -727,26 +729,16 @@ export function useVercelChat({
       messagesRef.current = canonical;
       setMessages(canonical);
     },
-    [
-      isActionCurrent,
-      historyLoadScope,
-      historyScopeKey,
-      snapshotConsumer,
-      setMessages,
-    ],
+    [isHistoryCurrent, historyScopeKey, snapshotConsumer, setMessages],
   );
   const onHistoryLoaded = useCallback(() => {
-    if (
-      historyScopeRef.current !== historyLoadScope ||
-      supersededHistoryScopeRef.current === historyLoadScope
-    )
-      return;
+    if (!isHistoryCurrent()) return;
     setHistoryReadiness((previous) =>
       previous?.scopeKey === historyLoadScope && previous.state === "cancelled"
         ? previous
         : { scopeKey: historyLoadScope, state: "ready" },
     );
-  }, [historyLoadScope]);
+  }, [historyLoadScope, isHistoryCurrent]);
 
   // Reconnection through a dropped stream is the transport's job now — see
   // `createWorkflowChatTransport`. A long turn's stream ends at the ~120s
@@ -951,6 +943,7 @@ export function useVercelChat({
     userId,
     setHistoryMessages,
     onHistoryLoaded,
+    isHistoryCurrent,
   );
 
   const retryHistory = useCallback(() => {

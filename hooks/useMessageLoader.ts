@@ -13,6 +13,8 @@ export function useMessageLoader(
   setMessages: (messages: UIMessage[]) => void,
   /** Coordinated resume: called only after a successful current load, including empty history. */
   onLoaded?: () => void,
+  /** The owning chat may supersede history with a deliberate send in the same scope. */
+  isCurrent?: () => boolean,
 ) {
   const { getAccessToken } = usePrivy();
   const [isLoading, setIsLoading] = useState(!!chatId);
@@ -51,11 +53,11 @@ export function useMessageLoader(
           chatId,
           accessToken,
         );
-        if (!active) return;
+        if (!active || (isCurrent && !isCurrent())) return;
         setMessages(initialMessages);
         onLoaded?.();
       } catch (err) {
-        if (!active) return;
+        if (!active || (isCurrent && !isCurrent())) return;
         setError(
           err instanceof Error ? err : new Error("Failed to load messages"),
         );
@@ -75,6 +77,7 @@ export function useMessageLoader(
     getAccessToken,
     setMessages,
     onLoaded,
+    isCurrent,
     attempt,
   ]);
 

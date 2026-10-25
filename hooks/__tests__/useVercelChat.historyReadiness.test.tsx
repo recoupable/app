@@ -614,11 +614,13 @@ it.each(
 
 it.each(
   ["send", "retry", "append"].flatMap((action) =>
-    [true, false].map((enabled) => ({ action, enabled })),
+    [true, false].flatMap((enabled) =>
+      [true, false].map((failed) => ({ action, enabled, failed })),
+    ),
   ),
 )(
-  "does not replace an intentional $action with history that was already pending (UI=$enabled)",
-  async ({ action, enabled }) => {
+  "does not replace an intentional $action with history that was already pending (UI=$enabled, failed=$failed)",
+  async ({ action, enabled, failed }) => {
     vi.stubEnv("NEXT_PUBLIC_RECOUP_INTELLIGENT_UI_CHAT", String(enabled));
     const history = pendingResponse();
     const fetch = vi.fn().mockImplementation(async (url) => {
@@ -675,8 +677,13 @@ it.each(
     await waitFor(() => expect(harness.current().status).toBe("ready"));
     const newMessages = structuredClone(harness.current().messages);
     await act(async () => {
-      history.resolve(Response.json({ messages: [saved] }));
+      history.resolve(
+        failed
+          ? new Response(null, { status: 503 })
+          : Response.json({ messages: [saved] }),
+      );
     });
+    expect(harness.current().hasError).toBe(false);
     expect(harness.current().messages).toEqual(newMessages);
     expect(harness.getMessages()).toEqual(newMessages);
     expect(screen.getByText("New intentional response.")).toBeTruthy();
