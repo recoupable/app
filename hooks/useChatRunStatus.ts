@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { usePrivy } from "@privy-io/react-auth";
+import { useTaskRunScope, type TaskRunScopeOptions } from "./useTaskRunScope";
 import {
   getChatRunStatus,
   type ChatRunStatus,
@@ -10,16 +10,24 @@ import { getChatRunPollInterval } from "@/lib/tasks/getChatRunPollInterval";
  * Polls a workflow run's status every 3s until it settles or the fetch
  * fails (chat#2006 item 4b). Disabled until a workflow run id is known.
  */
-export function useChatRunStatus(workflowRunId: string | undefined) {
-  const { getAccessToken, authenticated } = usePrivy();
+export function useChatRunStatus(
+  workflowRunId: string | undefined,
+  options: TaskRunScopeOptions = {},
+) {
+  const scope = useTaskRunScope(options);
+  const enabled = Boolean(workflowRunId) && scope.ready;
 
-  return useQuery<ChatRunStatus>({
-    queryKey: ["chatRunStatus", workflowRunId],
-    queryFn: async () => {
-      const accessToken = await getAccessToken();
-      return getChatRunStatus(workflowRunId!, accessToken!);
-    },
-    enabled: !!workflowRunId && authenticated,
+  const query = useQuery<ChatRunStatus>({
+    queryKey: ["chatRunStatus", scope.scopeKey, workflowRunId],
+    queryFn: ({ signal }) =>
+      scope.read(signal, (token) =>
+        getChatRunStatus(workflowRunId!, token, {
+          apiBaseUrl: scope.apiBaseUrl,
+          signal,
+        }),
+      ),
+    enabled,
+    gcTime: 0,
     refetchInterval: (query) =>
       getChatRunPollInterval({
         status: query.state.data?.status,
@@ -28,4 +36,10 @@ export function useChatRunStatus(workflowRunId: string | undefined) {
     retry: 3,
     staleTime: 1000,
   });
+  return {
+    ...query,
+    data: enabled && !query.error ? query.data : undefined,
+    scopeReady: scope.ready,
+    accountId: scope.accountId,
+  };
 }

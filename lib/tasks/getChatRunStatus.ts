@@ -1,4 +1,4 @@
-import { NEW_API_BASE_URL } from "@/lib/consts";
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
 export type ChatRunLifecycle =
   | "queued"
@@ -23,10 +23,15 @@ export interface ChatRunStatus {
 export async function getChatRunStatus(
   workflowRunId: string,
   accessToken: string,
+  options: { apiBaseUrl?: string; signal?: AbortSignal } = {},
 ): Promise<ChatRunStatus> {
   const response = await fetch(
-    `${NEW_API_BASE_URL}/api/chat/runs/${workflowRunId}`,
-    { method: "GET", headers: { Authorization: `Bearer ${accessToken}` } },
+    `${options.apiBaseUrl ?? getClientApiBaseUrl()}/api/chat/runs/${encodeURIComponent(workflowRunId)}`,
+    {
+      method: "GET",
+      signal: options.signal,
+      headers: { Authorization: `Bearer ${accessToken}` },
+    },
   );
   if (!response.ok) {
     let message = `Failed to fetch workflow run status (HTTP ${response.status})`;

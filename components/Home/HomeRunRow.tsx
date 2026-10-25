@@ -13,9 +13,15 @@ import { getRunHref } from "@/lib/tasks/getRunHref";
  * by `GET /api/tasks/runs` yet, so this shows what is available: run
  * name, status, and finished-at (recoupable/chat#1850).
  */
-const HomeRunRow = ({ run }: { run: TaskRunItem }) => (
+const HomeRunRow = ({
+  run,
+  accountId,
+}: {
+  run: TaskRunItem;
+  accountId?: string;
+}) => (
   <Link
-    href={getRunHref(run.id)}
+    href={getRunHref(run.id, accountId)}
     className="group -mx-2 flex items-center justify-between gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-muted"
   >
     <div className="min-w-0">

@@ -1,5 +1,7 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
+import RunAccountNotice from "../RunAccountNotice";
 import { XCircle } from "lucide-react";
 import { useTaskRunStatus } from "@/hooks/useTaskRunStatus";
 import RunBreadcrumb from "./RunBreadcrumb";
@@ -12,11 +14,18 @@ interface RunPageProps {
 }
 
 export default function RunPage({ runId }: RunPageProps) {
-  const { data, isPending, error } = useTaskRunStatus(runId);
+  const searchParams = useSearchParams();
+  const accountIdOverride = searchParams.get("account_id") ?? undefined;
+  const { data, isPending, error, scopeReady, accountId } = useTaskRunStatus(
+    runId,
+    { accountIdOverride },
+  );
 
   let content;
 
-  if (isPending) {
+  if (scopeReady === false) {
+    content = null;
+  } else if (isPending) {
     content = <RunPageSkeleton />;
   } else if (error || !data) {
     content = (
@@ -28,12 +37,19 @@ export default function RunPage({ runId }: RunPageProps) {
       </div>
     );
   } else {
-    content = <RunDetails runId={runId} data={data} />;
+    content = <RunDetails runId={runId} data={data} accountId={accountId} />;
   }
 
   return (
     <PageContainer className="h-screen">
-      <RunBreadcrumb runId={runId} />
+      <RunBreadcrumb runId={runId} accountId={accountIdOverride ?? accountId} />
+      <div className="px-6 pt-4">
+        <RunAccountNotice
+          scopeReady={scopeReady}
+          accountId={accountId}
+          explicit={accountIdOverride !== undefined}
+        />
+      </div>
       {content}
     </PageContainer>
   );

@@ -5,6 +5,7 @@ import { useScheduledActions } from "@/hooks/useScheduledActions";
 import { useTaskRuns } from "@/hooks/useTaskRuns";
 import TasksList from "./TasksList";
 import RecentRunsList from "./RecentRunsList";
+import RunAccountNotice from "./RunAccountNotice";
 import PulseHeader from "@/components/Pulse/PulseHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
@@ -25,6 +26,8 @@ const TasksTabs = () => {
     data: taskRuns,
     isLoading: isRunsLoading,
     isError: isRunsError,
+    scopeReady,
+    accountId,
   } = useTaskRuns({ accountIdOverride });
 
   const tasks = data ?? [];
@@ -44,11 +47,19 @@ const TasksTabs = () => {
 
       <TabsContent value="recents">
         <div className="mt-4">
-          <RecentRunsList
-            runs={runs}
-            isLoading={isRunsLoading}
-            isError={isRunsError}
+          <RunAccountNotice
+            scopeReady={scopeReady}
+            accountId={accountId}
+            explicit={accountIdOverride !== undefined}
           />
+          {scopeReady && (
+            <RecentRunsList
+              accountId={accountId}
+              runs={runs}
+              isLoading={isRunsLoading}
+              isError={isRunsError}
+            />
+          )}
         </div>
       </TabsContent>
 

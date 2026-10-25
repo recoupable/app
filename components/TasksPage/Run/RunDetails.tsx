@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useAccountOverride } from "@/providers/AccountOverrideProvider";
 import type { TaskRunStatus } from "@/lib/tasks/getTaskRunStatus";
 import { getTaskDisplayName } from "@/lib/tasks/getTaskDisplayName";
 import { getRunWorkflowLink } from "@/lib/tasks/getRunWorkflowLink";
@@ -15,6 +16,7 @@ import AccountIdDisplay from "@/components/ArtistSetting/AccountIdDisplay";
 interface RunDetailsProps {
   runId: string;
   data: TaskRunStatus;
+  accountId?: string;
 }
 
 const openChatClass =
@@ -25,9 +27,19 @@ const openChatClass =
  * work off; status and timeline come from the workflow run linked in its
  * metadata, and the transcript is the chat that run wrote to.
  */
-export default function RunDetails({ runId, data }: RunDetailsProps) {
+export default function RunDetails({
+  runId,
+  data,
+  accountId,
+}: RunDetailsProps) {
+  const selection = useAccountOverride();
+  const canOpenChat =
+    accountId === (selection.accountIdOverride ?? undefined) &&
+    (!selection.email || Boolean(selection.accountIdOverride));
   const link = getRunWorkflowLink(data.metadata);
-  const { data: workflow, isError } = useChatRunStatus(link?.workflowRunId);
+  const { data: workflow, isError } = useChatRunStatus(link?.workflowRunId, {
+    accountIdOverride: accountId,
+  });
   const state = getRunPageState({
     triggerRun: data,
     workflow,
@@ -67,6 +79,10 @@ export default function RunDetails({ runId, data }: RunDetailsProps) {
         <p className="text-sm text-muted-foreground" role="status">
           No chat recorded for this run. It fired before run pages linked to
           their chats, so only the schedule status is available.
+        </p>
+      ) : !canOpenChat ? (
+        <p role="status" className="text-sm text-muted-foreground">
+          Select the matching workspace account before opening this chat.
         </p>
       ) : (
         <Link href={state.chatHref} className={openChatClass}>

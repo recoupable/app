@@ -6,9 +6,15 @@ interface RecentRunsListProps {
   runs: TaskRunItem[];
   isLoading: boolean;
   isError: boolean;
+  accountId?: string;
 }
 
-const RecentRunsList: React.FC<RecentRunsListProps> = ({ runs, isLoading, isError }) => {
+const RecentRunsList: React.FC<RecentRunsListProps> = ({
+  runs,
+  isLoading,
+  isError,
+  accountId,
+}) => {
   if (isError) {
     return (
       <div className="text-sm text-red-600 dark:text-red-400">
@@ -42,7 +48,7 @@ const RecentRunsList: React.FC<RecentRunsListProps> = ({ runs, isLoading, isErro
           key={run.id}
           className={index !== runs.length - 1 ? "border-b border-border" : ""}
         >
-          <RunCard run={run} />
+          <RunCard run={run} accountId={accountId} />
         </div>
       ))}
     </div>
