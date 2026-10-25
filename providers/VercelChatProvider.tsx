@@ -26,6 +26,7 @@ interface VercelChatContextType {
   status: ChatStatus;
   isLoading: boolean;
   hasError: boolean;
+  retryHistory?: () => void;
   sendError?: string;
   sendErrorStatus?: number;
   failedDraftPreview?: string;
@@ -148,6 +149,7 @@ export function VercelChatProvider({
     status,
     isLoading,
     hasError,
+    retryHistory,
     sendError,
     sendErrorStatus,
     failedDraftPreview,
@@ -206,6 +208,7 @@ export function VercelChatProvider({
     status,
     isLoading,
     hasError,
+    retryHistory,
     sendError,
     sendErrorStatus,
     failedDraftPreview,

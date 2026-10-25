@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { UIMessage } from "ai";
 import { usePrivy } from "@privy-io/react-auth";
 import { getChatMessages } from "@/lib/messages/getChatMessages";
@@ -11,15 +11,23 @@ export function useMessageLoader(
   chatId: string | undefined,
   userId: string | undefined,
   setMessages: (messages: UIMessage[]) => void,
-  /** Opt-in coordinated resume: called only after a successful current load, including empty history. */
+  /** Coordinated resume: called only after a successful current load, including empty history. */
   onLoaded?: () => void,
 ) {
   const { getAccessToken } = usePrivy();
   const [isLoading, setIsLoading] = useState(!!chatId);
   const [error, setError] = useState<Error | null>(null);
 
+  const [attempt, setAttempt] = useState(0);
+  const retry = useCallback(() => {
+    setError(null);
+    setIsLoading(true);
+    setAttempt((previous) => previous + 1);
+  }, []);
+
   useEffect(() => {
     let active = true;
+    setError(null);
     if (!chatId || !sessionId) {
       setIsLoading(false);
       return;
@@ -36,29 +44,23 @@ export function useMessageLoader(
 
       try {
         const accessToken = await getAccessToken();
-        if (!accessToken) return;
+        if (!accessToken) throw new Error("Please sign in to load messages");
 
         const initialMessages = await getChatMessages(
           sessionId,
           chatId,
           accessToken,
-          onLoaded ? { requireSuccess: true } : undefined,
         );
-        // The coordinated path must never publish a superseded request. The
-        // default caller keeps its existing load/update behavior.
-        if (onLoaded && !active) return;
-        if (initialMessages.length > 0 || onLoaded) {
-          setMessages(initialMessages);
-        }
+        if (!active) return;
+        setMessages(initialMessages);
         onLoaded?.();
       } catch (err) {
-        if (onLoaded && !active) return;
-        console.error("Error loading messages:", err);
+        if (!active) return;
         setError(
           err instanceof Error ? err : new Error("Failed to load messages"),
         );
       } finally {
-        if (!onLoaded || active) setIsLoading(false);
+        if (active) setIsLoading(false);
       }
     };
 
@@ -66,11 +68,20 @@ export function useMessageLoader(
     return () => {
       active = false;
     };
-  }, [userId, sessionId, chatId, getAccessToken, setMessages, onLoaded]);
+  }, [
+    userId,
+    sessionId,
+    chatId,
+    getAccessToken,
+    setMessages,
+    onLoaded,
+    attempt,
+  ]);
 
   return {
     isLoading,
     error,
     hasError: !!error,
+    retry,
   };
 }

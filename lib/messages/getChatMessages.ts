@@ -11,7 +11,6 @@ export async function getChatMessages(
   sessionId: string,
   chatId: string,
   accessToken: string,
-  options?: { requireSuccess?: boolean },
 ): Promise<UIMessage[]> {
   const response = await fetch(
     `${getClientApiBaseUrl()}/api/sessions/${encodeURIComponent(sessionId)}/chats/${encodeURIComponent(chatId)}`,
@@ -21,11 +20,17 @@ export async function getChatMessages(
   );
 
   if (!response.ok) {
-    if (options?.requireSuccess)
-      throw new Error(`Failed to load messages: ${response.status}`);
-    return [];
+    throw new Error(`Failed to load messages: ${response.status}`);
   }
 
-  const data = (await response.json()) as { messages?: UIMessage[] };
-  return data.messages ?? [];
+  const data: unknown = await response.json();
+  if (
+    !data ||
+    typeof data !== "object" ||
+    !("messages" in data) ||
+    !Array.isArray(data.messages)
+  ) {
+    throw new Error("Failed to load messages: invalid history response");
+  }
+  return data.messages;
 }

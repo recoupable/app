@@ -1242,11 +1242,19 @@ it.each(["sessionId", "workflowChatId"] as const)(
     });
     await draft(h);
     const old = h.current();
+    const previousResumes = f.calls.filter((x) =>
+      x.url.pathname.endsWith("/stream"),
+    ).length;
     h.switchIdentity({
       sessionId: "session",
       workflowChatId: "chat",
       [field]: "replacement",
     });
+    await waitFor(() =>
+      expect(
+        f.calls.filter((x) => x.url.pathname.endsWith("/stream")),
+      ).toHaveLength(previousResumes + 1),
+    );
     await waitFor(() => expect(h.current().status).toBe("ready"));
     act(() => h.current().setInput("Replacement draft"));
     const calls = f.calls.length;
@@ -1265,6 +1273,11 @@ it("keeps retained retry, discard, edit, input and message setters from mutating
   await draft(h);
   const old = h.current();
   h.switch("next-chat");
+  await waitFor(() =>
+    expect(
+      f.calls.some((x) => x.url.pathname === "/api/chat/next-chat/stream"),
+    ).toBe(true),
+  );
   await waitFor(() => expect(h.current().status).toBe("ready"));
   act(() => h.current().setInput("New scope rejected draft"));
   await act(async () => {
@@ -1274,6 +1287,7 @@ it("keeps retained retry, discard, edit, input and message setters from mutating
   const calls = f.calls.length;
   const messages = h.current().messages;
   await act(async () => {
+    old.retryHistory?.();
     await old.retrySendMessage?.(event());
     old.discardFailedSubmission?.();
     old.editUnacceptedMessage?.(rejected.id, "Old editor content");
