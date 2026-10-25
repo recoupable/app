@@ -30,7 +30,10 @@ export function MessageEditor({ message, setMode }: EditingMessageProps) {
   const { getAccessToken } = usePrivy();
   const [editError, setEditError] = useState<string>();
   const [isCheckingHistory, setIsCheckingHistory] = useState(false);
-  const [historyToReview, setHistoryToReview] = useState<UIMessage[]>();
+  const [historyToReview, setHistoryToReview] = useState<{
+    messages: UIMessage[];
+    isCurrent: () => boolean;
+  }>();
   const originalHistory = useRef<UIMessage[]>([]);
   const pending = useRef(false);
   const mounted = useRef(true);
@@ -106,7 +109,7 @@ export function MessageEditor({ message, setMode }: EditingMessageProps) {
         setEditError(undefined);
         setHistoryToReview(undefined);
       } else {
-        setHistoryToReview(saved);
+        setHistoryToReview({ messages: saved, isCurrent: canPublish });
         setEditError(
           "Saved history changed. Your draft is kept here. Copy it before cancelling to review the saved conversation.",
         );
@@ -176,7 +179,8 @@ export function MessageEditor({ message, setMode }: EditingMessageProps) {
           size="sm"
           disabled={busy}
           onClick={() => {
-            if (historyToReview) setMessages(historyToReview);
+            if (historyToReview?.isCurrent())
+              setMessages(historyToReview.messages);
             setMode("view");
           }}
           className="rounded-xl"
