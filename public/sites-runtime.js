@@ -506,12 +506,20 @@
               ? "Finish connecting in the Spotify window."
               : "Allow popups to connect Spotify, then try again.",
           );
-          const fallback = document.createElement("a");
-          const fallbackUrl = new URL(authUrl.href);
-          fallbackUrl.searchParams.set("authorize", "tab");
-          fallback.href = fallbackUrl.href;
-          fallback.target = "_top";
-          fallback.textContent = "Continue in this tab";
+          const fallback = document.createElement("button");
+          fallback.type = "button";
+          fallback.className = "player-link";
+          fallback.textContent = "Open sign-in in a new tab";
+          fallback.onclick = () => {
+            // Keep the game loaded and retain the trusted callback source check.
+            authPopup = window.open(authUrl.href, "_blank");
+            say(
+              authPopup
+                ? "Finish connecting in the Spotify tab, then return here."
+                : "Allow popups and try again, or continue without music.",
+            );
+            if (status) status.appendChild(fallback);
+          };
           if (status) status.appendChild(fallback);
           return;
         }
