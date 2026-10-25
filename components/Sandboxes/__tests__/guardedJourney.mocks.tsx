@@ -22,6 +22,7 @@ vi.mock("@/hooks/useSandboxes", () => ({
       ? []
       : [{ name: "draft.txt", path: "notes/draft.txt", type: "file" }],
     isLoading: fixture.loading,
+    scopeReady: true,
     error: fixture.listingError,
     refetch: fixture.refetch,
   }),

@@ -83,7 +83,8 @@ export function AccountOverrideProvider({ children }: { children: ReactNode }) {
         getClientApiBaseUrl() === apiBaseUrl;
       if (!actor || !email || !isCurrent()) return null;
       const accessToken = await getAccessToken();
-      if (!accessToken || !isCurrent()) return null;
+      if (!isCurrent()) return null;
+      if (!accessToken) throw new Error("Please sign in to select an account.");
       const accountId = await fetchAccountIdByEmail(email, accessToken);
       if (!isCurrent()) return null;
       if (accountId) {

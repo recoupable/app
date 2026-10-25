@@ -17,7 +17,9 @@ const state = vi.hoisted(() => ({
   authenticated: true,
   origin: "https://api.example.test",
 }));
-const token = vi.hoisted(() => vi.fn(async () => "synthetic-token"));
+const token = vi.hoisted(() =>
+  vi.fn(async (): Promise<string | null> => "synthetic-token"),
+);
 const replace = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({
   useSearchParams: () =>
@@ -202,4 +204,64 @@ it("clears immediately and permits selecting the same email again later", async 
   await waitFor(() =>
     expect(result.current.accountIdOverride).toBe("account-b"),
   );
+});
+
+it("retries a transient missing token when the same email is explicitly reselected", async () => {
+  token.mockResolvedValue(null);
+  const { result, rerender } = renderHook(() => useAccountOverride(), {
+    wrapper,
+  });
+  await waitFor(() => expect(client.isFetching()).toBe(0));
+  expect(token).toHaveBeenCalledTimes(1);
+  expect(fetchAccountIdByEmail).not.toHaveBeenCalled();
+  expect(result.current.email).toBe("b@example.test");
+  expect(result.current.accountIdOverride).toBeNull();
+  act(() => result.current.clear());
+  state.email = null;
+  rerender();
+  token.mockResolvedValue("available-token");
+  state.email = "b@example.test";
+  rerender();
+  await waitFor(() =>
+    expect(result.current.accountIdOverride).toBe("account-b"),
+  );
+  expect(fetchAccountIdByEmail).toHaveBeenCalledWith(
+    "b@example.test",
+    "available-token",
+  );
+});
+
+it("does not infinitely cache a missing token across a provider remount", async () => {
+  token.mockResolvedValue(null);
+  const first = renderHook(() => useAccountOverride(), { wrapper });
+  await waitFor(() => expect(client.isFetching()).toBe(0));
+  expect(first.result.current.accountIdOverride).toBeNull();
+  expect(fetchAccountIdByEmail).not.toHaveBeenCalled();
+  first.unmount();
+  token.mockResolvedValue("available-token");
+  const second = renderHook(() => useAccountOverride(), { wrapper });
+  await waitFor(() =>
+    expect(second.result.current.accountIdOverride).toBe("account-b"),
+  );
+  expect(fetchAccountIdByEmail).toHaveBeenCalledWith(
+    "b@example.test",
+    "available-token",
+  );
+});
+
+it("discards an obsolete missing token after explicit clear", async () => {
+  let release!: (value: null) => void;
+  token.mockReturnValueOnce(
+    new Promise((resolve) => {
+      release = resolve;
+    }),
+  );
+  const { result } = renderHook(() => useAccountOverride(), { wrapper });
+  await waitFor(() => expect(token).toHaveBeenCalledTimes(1));
+  act(() => result.current.clear());
+  await act(async () => release(null));
+  expect(result.current.email).toBeNull();
+  expect(result.current.accountIdOverride).toBeNull();
+  expect(fetchAccountIdByEmail).not.toHaveBeenCalled();
+  expect(getStoredAccountOverride()).toEqual({ accountId: null, email: null });
 });

@@ -27,6 +27,14 @@ export default function SandboxFileWorkspace({
       <SandboxSelectedFilePreview fileContent={fileContent} />
     </>
   );
+  if (!listing.scopeReady)
+    return withPreview(
+      <p className="text-sm text-muted-foreground">
+        {readOnly
+          ? "The selected account is not ready. Clear the account selection using the badge above to return to your account."
+          : "Sign in to view files."}
+      </p>,
+    );
   if (listing.isLoading)
     return withPreview(
       <div className="flex items-center gap-2 text-muted-foreground">

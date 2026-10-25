@@ -12,6 +12,7 @@ interface UseSandboxesReturn {
   sandboxes: Sandbox[];
   filetree: FileNode[];
   isLoading: boolean;
+  scopeReady: boolean;
   error: Error | null;
   refetch: () => void;
 }
@@ -51,6 +52,7 @@ export default function useSandboxes(): UseSandboxesReturn {
     sandboxes: enabled && !query.error ? query.data?.sandboxes || [] : [],
     filetree,
     isLoading: query.isLoading,
+    scopeReady: enabled,
     error: query.error,
     refetch: query.refetch,
   };

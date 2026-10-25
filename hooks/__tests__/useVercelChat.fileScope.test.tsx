@@ -94,6 +94,7 @@ beforeEach(() => {
   ext.account = "selected-b";
   ext.email = "b@example.test";
   ext.origin = "https://api.example.test";
+  ext.files = [{ id: "draft.txt", path: "draft.txt", mime_type: "text/plain" }];
   ext.token.mockReset().mockResolvedValue("synthetic-token");
   ext.headers
     .mockReset()
@@ -214,4 +215,73 @@ it("keeps the deep-link send pending until the selected account resolves", async
   rerender();
   await waitFor(() => expect(ext.send).toHaveBeenCalledTimes(1));
   expect(ext.send.mock.calls[0][1].body.accountId).toBe("selected-b");
+});
+
+it("does not silently omit one unavailable file from a multi-file mention", async () => {
+  const { result, rerender } = mount();
+  await act(async () => {
+    result.current.setInput("Use @[Draft](draft.txt) and @[Notes](notes.txt)");
+  });
+  await act(async () => {
+    await result.current.handleSendMessage(submit);
+  });
+  expect(ext.send).not.toHaveBeenCalled();
+  expect(fetchMock).not.toHaveBeenCalled();
+  expect(result.current.input).toContain("@[Notes](notes.txt)");
+
+  ext.files = [
+    ...ext.files,
+    { id: "notes.txt", path: "notes.txt", mime_type: "text/plain" },
+  ];
+  rerender();
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  await waitFor(() => expect(result.current.isLoadingSignedUrls).toBe(false));
+  await act(async () => {
+    await result.current.handleSendMessage(submit);
+  });
+  expect(ext.send).toHaveBeenCalledTimes(1);
+  const submitted = JSON.stringify(ext.send.mock.calls[0][0]);
+  expect(submitted).toContain("[Mentioned File: draft.txt]");
+  expect(submitted).toContain("[Mentioned File: notes.txt]");
+});
+
+it("requires removing an unavailable mention before sending without that file", async () => {
+  ext.files = [];
+  const { result } = mount();
+  await act(async () => result.current.setInput("Use @[Missing](missing.txt)"));
+  await act(async () => {
+    await result.current.handleSendMessage(submit);
+  });
+  expect(ext.send).not.toHaveBeenCalled();
+  expect(result.current.sendError).toContain("remove the file mentions");
+  await act(async () => result.current.setInput("Use the text instead"));
+  await act(async () => {
+    await result.current.handleSendMessage(submit);
+  });
+  expect(ext.send).toHaveBeenCalledTimes(1);
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
+it("waits for deep-link mentioned files instead of sending without attachments", async () => {
+  ext.files = [];
+  const initialMessages = [
+    {
+      id: "query",
+      role: "user" as const,
+      parts: [{ type: "text" as const, text: "Use @[Draft](draft.txt)" }],
+    },
+  ];
+  const { result, rerender } = renderHook(() =>
+    useVercelChat({ id: "chat", sessionId: "session", initialMessages }),
+  );
+  await waitFor(() =>
+    expect(result.current.input).toBe("Use @[Draft](draft.txt)"),
+  );
+  expect(ext.send).not.toHaveBeenCalled();
+  ext.files = [{ id: "draft.txt", path: "draft.txt", mime_type: "text/plain" }];
+  rerender();
+  await waitFor(() => expect(ext.send).toHaveBeenCalledTimes(1));
+  expect(JSON.stringify(ext.send.mock.calls[0][0])).toContain(
+    "[Mentioned File: draft.txt]",
+  );
 });

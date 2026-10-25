@@ -428,7 +428,8 @@ export function useVercelChat({
 
       const idSet = new Set(selectedFileIds);
       const selected = allArtistFiles.filter((f) => idSet.has(f.id));
-      if (selected.length === 0) {
+      // Never silently omit an unavailable file from the selected mentions.
+      if (selected.length !== selectedFileIds.length) {
         if (!cancelled)
           setMentionAttachments((prev) => (prev.length ? [] : prev));
         if (!cancelled) setMentionTextContext((prev) => (prev ? "" : prev));
