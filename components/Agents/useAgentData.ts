@@ -6,7 +6,7 @@ import { useAgentTemplateScope } from "./useAgentTemplateScope";
 
 export type Agent = AgentTemplateRow;
 
-export function useAgentData() {
+export function useAgentData({ enabled = true }: { enabled?: boolean } = {}) {
   const scope = useAgentTemplateScope();
   const queryClient = useQueryClient();
   const [selectedTag, setSelectedTag] = useState("Recommended");
@@ -20,10 +20,12 @@ export function useAgentData() {
           fetchAgentTemplates(scope.apiBaseUrl, token, requestSignal),
         signal,
       ),
+    // Keep hover-prefetched data fresh when the page/form reader mounts.
+    staleTime: 5 * 60 * 1000,
     gcTime: 0,
     retry: false,
   };
-  const query = useQuery({ ...options, enabled: scope.ready });
+  const query = useQuery({ ...options, enabled: scope.ready && enabled });
   // Derive displayed data; never retain a second copy across authentication changes.
   const agents = scope.ready && !query.error ? (query.data ?? []) : [];
   const actionTags = [

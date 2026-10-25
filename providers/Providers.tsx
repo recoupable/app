@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import PrivyProvider from "./PrivyProvider";
+import { AgentTemplateProvider } from "./AgentTemplateProvider";
 import { UserProvider } from "./UserProvder";
 import { ArtistProvider } from "./ArtistProvider";
 import { ConversationsProvider } from "./ConversationsProvider";
@@ -66,20 +67,22 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
               <MiniKitProvider>
                 <MiniAppProvider>
                   <UserProvider>
-                    <OrganizationProvider>
-                      <ArtistProvider>
-                        <ConversationsProvider>
-                          <PaymentProvider>
-                            <CheckoutClaimSync />
-                            <UpgradePromptProvider>
-                              {children}
-                              <CreditsUpgradePrompt />
-                              <PlanLimitUpgradeModal />
-                            </UpgradePromptProvider>
-                          </PaymentProvider>
-                        </ConversationsProvider>
-                      </ArtistProvider>
-                    </OrganizationProvider>
+                    <AgentTemplateProvider>
+                      <OrganizationProvider>
+                        <ArtistProvider>
+                          <ConversationsProvider>
+                            <PaymentProvider>
+                              <CheckoutClaimSync />
+                              <UpgradePromptProvider>
+                                {children}
+                                <CreditsUpgradePrompt />
+                                <PlanLimitUpgradeModal />
+                              </UpgradePromptProvider>
+                            </PaymentProvider>
+                          </ConversationsProvider>
+                        </ArtistProvider>
+                      </OrganizationProvider>
+                    </AgentTemplateProvider>
                   </UserProvider>
                 </MiniAppProvider>
               </MiniKitProvider>

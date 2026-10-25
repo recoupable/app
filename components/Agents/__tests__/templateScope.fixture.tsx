@@ -1,4 +1,5 @@
 import React from "react";
+import { AgentTemplateProvider } from "@/providers/AgentTemplateProvider";
 import { cleanup } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, vi } from "vitest";
@@ -66,7 +67,9 @@ export const deferred = <T,>() => {
 };
 export let client: QueryClient;
 export const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <QueryClientProvider client={client}>{children}</QueryClientProvider>
+  <QueryClientProvider client={client}>
+    <AgentTemplateProvider>{children}</AgentTemplateProvider>
+  </QueryClientProvider>
 );
 beforeEach(() => {
   Object.assign(state, {
