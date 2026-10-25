@@ -12,7 +12,8 @@ before mount-time resume for every existing canonical chat, independent of the
 Intelligent UI flag. The existing committed account/workspace/session/chat guards
 and deliberate-send/Stop cancellation remain authoritative. New-chat bootstrap
 still skips history. The existing Workflow transport continues to own live IDs,
-authentication, reconnects, and terminal 204 handling.
+authentication and reconnects. The current API returns a terminal 200 finish
+stream when there is nothing to resume; acceptance fixtures use that contract.
 
 The error view offers **Retry loading messages**, which repeats the history read.
 It does not regenerate, submit, delete messages, or execute a provider. Successful

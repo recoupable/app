@@ -711,7 +711,7 @@ it.each(["development-default", "production-flag-true"])(
         return ++reads === 1
           ? history.promise
           : Response.json({ messages: [saved] });
-      if (url === streamUrl) return new Response(null, { status: 204 });
+      if (url === streamUrl) return workflowResponse([{ type: "finish" }]);
       throw new Error(`Unexpected URL: ${url}`);
     });
     vi.stubGlobal("fetch", fetch);
@@ -775,7 +775,7 @@ it("accepts successful empty history and resumes only afterward on the default p
   const history = pendingResponse();
   const fetch = vi.fn().mockImplementation(async (url) => {
     if (url === historyUrl) return history.promise;
-    if (url === streamUrl) return new Response(null, { status: 204 });
+    if (url === streamUrl) return workflowResponse([{ type: "finish" }]);
     throw new Error(`Unexpected URL: ${url}`);
   });
   vi.stubGlobal("fetch", fetch);
@@ -789,6 +789,7 @@ it("accepts successful empty history and resumes only afterward on the default p
   expect(harness.current().messages).toEqual([]);
   expect(harness.current().hasError).toBe(false);
   expect(harness.current().isLoading).toBe(false);
+  await waitFor(() => expect(harness.current().status).toBe("ready"));
 });
 
 it("ignores a superseded default history error after the selected workspace changes", async () => {
@@ -800,7 +801,7 @@ it("ignores a superseded default history error after the selected workspace chan
       return ++reads === 1
         ? previous.promise
         : Response.json({ messages: [saved] });
-    if (url === streamUrl) return new Response(null, { status: 204 });
+    if (url === streamUrl) return workflowResponse([{ type: "finish" }]);
     throw new Error(`Unexpected URL: ${url}`);
   });
   vi.stubGlobal("fetch", fetch);
