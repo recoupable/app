@@ -30,6 +30,7 @@ import { usePaymentProvider } from "@/providers/PaymentProvider";
 import useArtistFilesForMentions from "@/hooks/useArtistFilesForMentions";
 import { useChatTransport } from "./useChatTransport";
 import { usePrivy } from "@privy-io/react-auth";
+import { useSandboxAccountScope } from "./useSandboxAccountScope";
 import { TextAttachment } from "@/types/textAttachment";
 import { formatTextAttachments } from "@/lib/chat/formatTextAttachments";
 import { useDeleteTrailingMessages } from "./useDeleteTrailingMessages";
@@ -106,7 +107,15 @@ export function useVercelChat({
 
   const userId = userData?.account_id || userData?.id; // Use account_id if available, fallback to id
   const { accountIdOverride } = useAccountOverride();
-  const effectiveAccountId = accountIdOverride ?? userId;
+  const {
+    scopeKey: fileScopeKey,
+    apiBaseUrl: fileApiBaseUrl,
+    ready: fileScopeReady,
+    isCurrent: isFileScopeCurrent,
+  } = useSandboxAccountScope();
+  const effectiveAccountId = fileScopeReady
+    ? (accountIdOverride ?? userId)
+    : undefined;
   const catalogHost = getChatCatalogHost({
     catalogId,
     catalogQuery,
@@ -205,6 +214,9 @@ export function useVercelChat({
     isNewChatBootstrap,
     authenticatedUser?.id,
     effectiveAccountId,
+    fileScopeKey,
+    fileApiBaseUrl,
+    fileScopeReady,
     organizationId,
     artistId,
     catalogHost.kind === "catalog"
@@ -316,12 +328,16 @@ export function useVercelChat({
   );
   const coordinateHistory = isChatIntelligentUIEnabled();
   const captureSendIntent = useCallback(() => {
-    if (!isActionCurrent()) return () => false;
+    if (!isActionCurrent() || !fileScopeReady || !isFileScopeCurrent())
+      return () => false;
     const epoch = intentEpoch.current;
     const snapshotCurrent = snapshotConsumer.captureSendIntent();
     return () =>
-      isActionCurrent() && epoch === intentEpoch.current && snapshotCurrent();
-  }, [snapshotConsumer, isActionCurrent]);
+      isActionCurrent() &&
+      isFileScopeCurrent() &&
+      epoch === intentEpoch.current &&
+      snapshotCurrent();
+  }, [snapshotConsumer, isActionCurrent, fileScopeReady, isFileScopeCurrent]);
   const historyLoadScope = coordinateHistory
     ? JSON.stringify([
         authenticatedUser?.id,
@@ -386,10 +402,22 @@ export function useVercelChat({
   );
   const [mentionTextContext, setMentionTextContext] = useState("");
   const [isLoadingSignedUrls, setIsLoadingSignedUrls] = useState(false);
+  const mentionRequestScope = JSON.stringify([
+    fileScopeKey,
+    fileApiBaseUrl,
+    fileScopeReady,
+    selectedFileIds,
+    allArtistFiles.map((file) => [file.id, file.path]),
+  ]);
+  const [resolvedMentionScope, setResolvedMentionScope] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
+      setResolvedMentionScope(null);
+      if (!fileScopeReady || !isFileScopeCurrent()) return;
       if (!selectedFileIds.length) {
         if (!cancelled)
           setMentionAttachments((prev) => (prev.length ? [] : prev));
@@ -400,7 +428,8 @@ export function useVercelChat({
 
       const idSet = new Set(selectedFileIds);
       const selected = allArtistFiles.filter((f) => idSet.has(f.id));
-      if (selected.length === 0) {
+      // Never silently omit an unavailable file from the selected mentions.
+      if (selected.length !== selectedFileIds.length) {
         if (!cancelled)
           setMentionAttachments((prev) => (prev.length ? [] : prev));
         if (!cancelled) setMentionTextContext((prev) => (prev ? "" : prev));
@@ -412,13 +441,16 @@ export function useVercelChat({
         if (!cancelled) setIsLoadingSignedUrls(true);
 
         const accessToken = await getAccessToken();
+        if (cancelled || !isFileScopeCurrent()) return;
         if (!accessToken) {
           throw new Error("Please sign in to attach mentioned files");
         }
 
         const results = await Promise.all(
           selected.map(async (f) => {
-            const fileResult = await getFileContents(accessToken, f.path);
+            const fileResult = await getFileContents(accessToken, f.path, {
+              accountId: accountIdOverride,
+            });
             const mimeType = f.mime_type || getMimeFromPath(f.path);
             return {
               path: f.path,
@@ -428,6 +460,7 @@ export function useVercelChat({
             };
           }),
         );
+        if (cancelled || !isFileScopeCurrent()) return;
 
         const nextAttachments: FileUIPart[] = [];
         const textBlocks: string[] = [];
@@ -458,6 +491,7 @@ export function useVercelChat({
             textBlocks.length ? textBlocks.join("\n\n") : "",
           );
         if (!cancelled) setIsLoadingSignedUrls(false);
+        if (!cancelled) setResolvedMentionScope(mentionRequestScope);
       } catch (e) {
         console.error(e);
         if (!cancelled)
@@ -470,7 +504,15 @@ export function useVercelChat({
     return () => {
       cancelled = true;
     };
-  }, [selectedFileIds, allArtistFiles, getAccessToken]);
+  }, [
+    selectedFileIds,
+    allArtistFiles,
+    getAccessToken,
+    accountIdOverride,
+    fileScopeReady,
+    isFileScopeCurrent,
+    mentionRequestScope,
+  ]);
 
   const chatRequestBody = useMemo(
     () => ({
@@ -500,6 +542,7 @@ export function useVercelChat({
     // 401s/404s on every cold load and surfaces as an error toast
     // (chat#1949 F4a).
     resume:
+      fileScopeReady &&
       shouldResumeStream({ authenticated, routeChatId: chatId }) &&
       (!coordinateHistory ||
         (historyReadiness?.scopeKey === historyLoadScope &&
@@ -908,7 +951,7 @@ export function useVercelChat({
   // is already typing into while provisioning resolves.
   const { isLoading: isMessagesLoading, hasError } = useMessageLoader(
     sessionId,
-    chatId && (coordinateHistory || messages.length === 0)
+    fileScopeReady && chatId && (coordinateHistory || messages.length === 0)
       ? transportChatId
       : undefined,
     userId,
@@ -945,6 +988,24 @@ export function useVercelChat({
     retryDraft?: SubmittedChatDraft,
   ) => {
     event.preventDefault();
+    if (!fileScopeReady || !isFileScopeCurrent()) {
+      if (isActionCurrent())
+        setSendError(
+          "Wait for the selected account to resolve, or clear the account selection.",
+        );
+      return false;
+    }
+    if (
+      !retryDraft &&
+      selectedFileIds.length &&
+      resolvedMentionScope !== mentionRequestScope
+    ) {
+      if (isActionCurrent())
+        setSendError(
+          "Mentioned files are not ready for this account. Wait for them to load, or remove the file mentions.",
+        );
+      return false;
+    }
     if (
       (isGeneratingResponse && !retryDraft) ||
       preparing ||
@@ -1043,7 +1104,11 @@ export function useVercelChat({
   // lives entirely in this hook — extend it there, not here (chat#1847).
   useInitialMessageAutoSend({
     initialMessages,
-    autoSendCancelled: initialAutoSendCancelled,
+    autoSendCancelled:
+      initialAutoSendCancelled ||
+      !fileScopeReady ||
+      (selectedFileIds.length > 0 &&
+        resolvedMentionScope !== mentionRequestScope),
     status,
     messagesLength: messages.length,
     sessionId,

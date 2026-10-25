@@ -29,7 +29,7 @@ export default function useSandboxFileContent(
   const effectivePath = options?.path ?? selectedPath;
   const enabled = options?.enabled ?? true;
 
-  const { query, scopeKey, reopen } = useSandboxFileQuery(
+  const { query, scopeKey, reopen, ready } = useSandboxFileQuery(
     effectivePath,
     enabled,
     options?.includeRevision ?? false,
@@ -45,13 +45,15 @@ export default function useSandboxFileContent(
 
   return {
     selectedPath: effectivePath,
-    content: query.error ? null : (query.data?.content ?? null),
-    imageUrl: query.error ? null : (query.data?.imageUrl ?? null),
-    loading: query.isLoading || query.isFetching,
+    content: !ready || query.error ? null : (query.data?.content ?? null),
+    imageUrl: !ready || query.error ? null : (query.data?.imageUrl ?? null),
+    loading: ready && (query.isLoading || query.isFetching),
     error: query.error?.message ?? null,
     select,
     openedRevision:
-      query.error || query.isFetching ? undefined : query.data?.openedRevision,
+      !ready || query.error || query.isFetching
+        ? undefined
+        : query.data?.openedRevision,
     scopeKey,
     reopen: select,
   };
