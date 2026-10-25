@@ -82,6 +82,7 @@ export default function CatalogSongsResult({
       {isSuccess && (
         <div className="max-h-[60vh] overflow-y-auto">
           <InsertCatalogSongsList
+            key={JSON.stringify([catalogId, hideIncomplete])}
             songs={filteredSongs}
             unfilteredCount={displayResult.songs?.length}
           />
