@@ -52,6 +52,7 @@ import DeleteTaskSuccess from "./tools/tasks/DeleteTaskSuccess";
 import DeleteTaskSkeleton from "./tools/tasks/DeleteTaskSkeleton";
 import UpdateTaskSuccess from "./tools/tasks/UpdateTaskSuccess";
 
+import CatalogStreamComparison from "./tools/catalog/CatalogStreamComparison";
 import CatalogSongsSkeleton from "./tools/catalog/CatalogSongsSkeleton";
 import CatalogSongsResult, {
   CatalogSongsResult as CatalogSongsResultType,
@@ -434,6 +435,8 @@ export function getToolResultComponent(
         <CatalogSongsResult result={result as CatalogSongsResultType} />
       </div>
     );
+  } else if (toolName === "get_catalog_streams") {
+    return <CatalogStreamComparison key={toolCallId} result={result} />;
   } else if (toolName === "update_file") {
     return (
       <div key={toolCallId}>
