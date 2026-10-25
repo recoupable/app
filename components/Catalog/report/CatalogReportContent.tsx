@@ -84,7 +84,7 @@ const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
       />
       <CatalogReleasesTable releases={releases} />
       <CatalogReportInsights insights={insights} />
-      <CatalogReportCta />
+      <CatalogReportCta catalogId={catalogId} />
     </div>
   );
 };
