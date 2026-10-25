@@ -76,6 +76,7 @@ describe("CatalogsPageContent", () => {
 
     expect(screen.getByText("Collie Buddz")).toBeDefined();
     expect(screen.getByText("Kevin Gates")).toBeDefined();
+    expect(screen.queryByRole("link", { name: "Browse agents" })).toBeNull();
   });
 
   it("shows only the selected organization's catalogs", () => {
@@ -116,6 +117,7 @@ describe("CatalogsPageContent", () => {
 
     expect(screen.queryByText("Kevin Gates")).toBeNull();
     expect(screen.queryByText(/No catalogs/)).toBeNull();
+    expect(screen.queryByRole("link", { name: "Browse agents" })).toBeNull();
   });
 
   it("surfaces a load failure instead of an empty organization", () => {
@@ -125,6 +127,7 @@ describe("CatalogsPageContent", () => {
     render(<CatalogsPageContent />);
 
     expect(screen.getByText("Failed to fetch")).toBeDefined();
+    expect(screen.queryByRole("link", { name: "Browse agents" })).toBeNull();
     expect(screen.queryByText(/No catalogs in/)).toBeNull();
   });
 
@@ -137,8 +140,11 @@ describe("CatalogsPageContent", () => {
     state.catalogsOverride = [];
     render(<CatalogsPageContent />);
 
-    expect(screen.getByText("No catalogs found.")).toBeDefined();
+    expect(screen.getByText("No catalogs yet.")).toBeDefined();
     expect(screen.getByText("Run valuation")).toBeDefined();
+    expect(
+      screen.getByRole("link", { name: "Browse agents" }).getAttribute("href"),
+    ).toBe("/agents");
   });
 
   it("renders the run button on an organization-scoped empty state", () => {
@@ -148,5 +154,8 @@ describe("CatalogsPageContent", () => {
 
     expect(screen.getByText("No catalogs in Duetti yet.")).toBeDefined();
     expect(screen.getByText("Run valuation")).toBeDefined();
+    expect(
+      screen.getByRole("link", { name: "Browse agents" }).getAttribute("href"),
+    ).toBe("/agents");
   });
 });
