@@ -19,6 +19,7 @@ import {
 import { UIMessage } from "ai";
 import { useDropzone } from "@/hooks/useDropzone";
 import FileDragOverlay from "./FileDragOverlay";
+import { Button } from "@/components/ui/button";
 import { Loader } from "lucide-react";
 import { memo } from "react";
 import { useOrganization } from "@/providers/OrganizationProvider";
@@ -99,7 +100,8 @@ function ChatContentMemoized({
   sessionId?: string;
   onRetryWorkspace?: () => void;
 }) {
-  const { messages, status, isLoading, hasError } = useVercelChatContext();
+  const { messages, status, isLoading, hasError, retryHistory } =
+    useVercelChatContext();
   const { chatId: routeChatId } = useParams<{ chatId?: string }>();
   useArtistFromChat({ sessionId: routeChatId ? sessionId : undefined });
   const { getRootProps, isDragActive } = useDropzone();
@@ -121,9 +123,13 @@ function ChatContentMemoized({
 
   if (hasError) {
     return (
-      <div className="flex items-center justify-center h-dvh">
-        <div className="text-red-500 dark:text-red-400">
-          Failed to load messages. Please try again later.
+      <div className="flex h-full items-center justify-center p-6">
+        <div className="max-w-md space-y-3 text-center">
+          <p role="alert">
+            We couldn’t load this conversation. Its saved messages may still be
+            available.
+          </p>
+          <Button onClick={retryHistory}>Retry loading messages</Button>
         </div>
       </div>
     );

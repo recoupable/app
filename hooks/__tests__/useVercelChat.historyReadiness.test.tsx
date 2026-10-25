@@ -534,42 +534,53 @@ it("does not resume when history cannot acquire an access token", async () => {
   expect(harness.current().messages).toEqual([]);
 });
 
-it("ignores an old-scope history result before SDK state or readiness can publish", async () => {
-  const previous = pendingResponse();
-  const current = pendingResponse();
-  let requests = 0;
-  const fetch = vi.fn().mockImplementation(async (url) => {
-    if (url === historyUrl)
-      return ++requests === 1 ? previous.promise : current.promise;
-    if (url === streamUrl) return workflowResponse([{ type: "finish" }]);
-    throw new Error(`Unexpected synthetic URL: ${url}`);
-  });
-  vi.stubGlobal("fetch", fetch);
-  const harness = mount();
-  await waitFor(() => expect(requests).toBe(1));
-  external.organizationId = "another-workspace";
-  harness.rerenderScope();
-  await waitFor(() => expect(requests).toBe(2));
-  await act(async () => {
-    previous.resolve(Response.json({ messages: [saved] }));
-  });
-  expect(harness.current().messages).toEqual([]);
-  expect(harness.getMessages()).toEqual([]);
-  expect(fetch.mock.calls.filter(([url]) => url === streamUrl)).toHaveLength(0);
-  await act(async () => {
-    current.resolve(Response.json({ messages: [] }));
-  });
-  await waitFor(() =>
+it.each([true, false])(
+  "ignores an old-scope history result before SDK state or readiness can publish (UI=%s)",
+  async (enabled) => {
+    vi.stubEnv("NEXT_PUBLIC_RECOUP_INTELLIGENT_UI_CHAT", String(enabled));
+    const previous = pendingResponse();
+    const current = pendingResponse();
+    let requests = 0;
+    const fetch = vi.fn().mockImplementation(async (url) => {
+      if (url === historyUrl)
+        return ++requests === 1 ? previous.promise : current.promise;
+      if (url === streamUrl) return workflowResponse([{ type: "finish" }]);
+      throw new Error(`Unexpected synthetic URL: ${url}`);
+    });
+    vi.stubGlobal("fetch", fetch);
+    const harness = mount();
+    await waitFor(() => expect(requests).toBe(1));
+    external.organizationId = "another-workspace";
+    harness.rerenderScope();
+    await waitFor(() => expect(requests).toBe(2));
+    await act(async () => {
+      previous.resolve(Response.json({ messages: [saved] }));
+    });
+    expect(harness.current().messages).toEqual([]);
+    expect(harness.getMessages()).toEqual([]);
     expect(fetch.mock.calls.filter(([url]) => url === streamUrl)).toHaveLength(
-      1,
-    ),
-  );
-  expect(harness.current().messages).toEqual([]);
-});
+      0,
+    );
+    await act(async () => {
+      current.resolve(Response.json({ messages: [] }));
+    });
+    await waitFor(() =>
+      expect(
+        fetch.mock.calls.filter(([url]) => url === streamUrl),
+      ).toHaveLength(1),
+    );
+    expect(harness.current().messages).toEqual([]);
+  },
+);
 
-it.each(["stop", "unmount"])(
-  "cannot revive a pending initial resume after %s when history completes",
-  async (reason) => {
+it.each(
+  ["stop", "unmount"].flatMap((reason) =>
+    [true, false].map((enabled) => ({ reason, enabled })),
+  ),
+)(
+  "cannot revive a pending initial resume after $reason when history completes (UI=$enabled)",
+  async ({ reason, enabled }) => {
+    vi.stubEnv("NEXT_PUBLIC_RECOUP_INTELLIGENT_UI_CHAT", String(enabled));
     const history = pendingResponse();
     const fetch = vi.fn().mockImplementation(async (url) => {
       if (url === historyUrl) return history.promise;
@@ -601,9 +612,16 @@ it.each(["stop", "unmount"])(
   },
 );
 
-it.each(["send", "retry", "append"])(
-  "does not replace an intentional %s with history that was already pending",
-  async (action) => {
+it.each(
+  ["send", "retry", "append"].flatMap((action) =>
+    [true, false].flatMap((enabled) =>
+      [true, false].map((failed) => ({ action, enabled, failed })),
+    ),
+  ),
+)(
+  "does not replace an intentional $action with history that was already pending (UI=$enabled, failed=$failed)",
+  async ({ action, enabled, failed }) => {
+    vi.stubEnv("NEXT_PUBLIC_RECOUP_INTELLIGENT_UI_CHAT", String(enabled));
     const history = pendingResponse();
     const fetch = vi.fn().mockImplementation(async (url) => {
       if (url === historyUrl) return history.promise;
@@ -659,8 +677,13 @@ it.each(["send", "retry", "append"])(
     await waitFor(() => expect(harness.current().status).toBe("ready"));
     const newMessages = structuredClone(harness.current().messages);
     await act(async () => {
-      history.resolve(Response.json({ messages: [saved] }));
+      history.resolve(
+        failed
+          ? new Response(null, { status: 503 })
+          : Response.json({ messages: [saved] }),
+      );
     });
+    expect(harness.current().hasError).toBe(false);
     expect(harness.current().messages).toEqual(newMessages);
     expect(harness.getMessages()).toEqual(newMessages);
     expect(screen.getByText("New intentional response.")).toBeTruthy();
@@ -675,53 +698,119 @@ it.each(["send", "retry", "append"])(
 );
 
 it.each(["development-default", "production-flag-true"])(
-  "preserves existing eager auto-resume when the UI coordinator is disabled (%s)",
+  "orders default history before resume and recovers a failed read (%s)",
   async (environment) => {
     if (environment === "production-flag-true")
       vi.stubEnv("NODE_ENV", "production");
     else vi.stubEnv("NEXT_PUBLIC_RECOUP_INTELLIGENT_UI_CHAT", "false");
+    vi.spyOn(console, "error").mockImplementation(() => {});
     const history = pendingResponse();
+    let reads = 0;
     const fetch = vi.fn().mockImplementation(async (url) => {
-      if (url === historyUrl) return history.promise;
-      if (url === streamUrl)
-        return workflowResponse([
-          { type: "start", messageId: "ordinary-assistant" },
-          { type: "text-start", id: "text" },
-          { type: "text-delta", id: "text", delta: "Existing eager resume." },
-          { type: "text-end", id: "text" },
-          { type: "finish" },
-        ]);
-      throw new Error(`Unexpected synthetic URL: ${url}`);
+      if (url === historyUrl)
+        return ++reads === 1
+          ? history.promise
+          : Response.json({ messages: [saved] });
+      if (url === streamUrl) return workflowResponse([{ type: "finish" }]);
+      throw new Error(`Unexpected URL: ${url}`);
     });
     vi.stubGlobal("fetch", fetch);
     const harness = mount();
-    await screen.findByText("Existing eager resume.");
+    await waitFor(() => expect(reads).toBe(1));
     expect(fetch.mock.calls.filter(([url]) => url === streamUrl)).toHaveLength(
-      1,
+      0,
     );
+    await act(async () => {
+      history.resolve(new Response(null, { status: 503 }));
+    });
+    await waitFor(() => expect(harness.current().hasError).toBe(true));
+    expect(harness.current().messages).toEqual([]);
     expect(harness.current().intelligentUI).toBeUndefined();
     await act(async () => {
-      history.resolve(Response.json({ messages: [] }));
+      harness.current().retryHistory();
     });
+    await screen.findByText("Original canonical explanation.");
+    expect(harness.current().hasError).toBe(false);
+    expect(reads).toBe(2);
+    await waitFor(() =>
+      expect(
+        fetch.mock.calls.filter(([url]) => url === streamUrl),
+      ).toHaveLength(1),
+    );
+    expect(
+      fetch.mock.calls.every(
+        ([, init]) => !init?.method || init.method === "GET",
+      ),
+    ).toBe(true);
   },
 );
 
-it("preserves the default loader's HTTP-failure empty result without enabling the UI coordinator", async () => {
+it.each([401, 403, 500, "network", "malformed", "no-token"])(
+  "keeps default history failure distinct from empty (%s)",
+  async (failure) => {
+    vi.stubEnv("NEXT_PUBLIC_RECOUP_INTELLIGENT_UI_CHAT", "false");
+    if (failure === "no-token") external.getAccessToken.mockResolvedValue(null);
+    const fetch = vi.fn().mockImplementation(async (url) => {
+      if (url !== historyUrl) throw new Error("Unexpected resume");
+      if (failure === "network") throw new Error("Synthetic offline");
+      if (failure === "malformed") return Response.json({});
+      return new Response(null, {
+        status: typeof failure === "number" ? failure : 500,
+      });
+    });
+    vi.stubGlobal("fetch", fetch);
+    const harness = mount();
+    await waitFor(() => expect(harness.current().hasError).toBe(true));
+    expect(harness.current().isLoading).toBe(false);
+    expect(harness.current().messages).toEqual([]);
+    expect(fetch.mock.calls.filter(([url]) => url === streamUrl)).toHaveLength(
+      0,
+    );
+    if (failure === "no-token") expect(fetch).not.toHaveBeenCalled();
+  },
+);
+
+it("accepts successful empty history and resumes only afterward on the default path", async () => {
   vi.stubEnv("NEXT_PUBLIC_RECOUP_INTELLIGENT_UI_CHAT", "false");
+  const history = pendingResponse();
   const fetch = vi.fn().mockImplementation(async (url) => {
-    if (url === historyUrl) return new Response(null, { status: 500 });
+    if (url === historyUrl) return history.promise;
     if (url === streamUrl) return workflowResponse([{ type: "finish" }]);
-    throw new Error(`Unexpected synthetic URL: ${url}`);
+    throw new Error(`Unexpected URL: ${url}`);
   });
   vi.stubGlobal("fetch", fetch);
   const harness = mount();
-  await waitFor(() => expect(harness.current().isLoading).toBe(false));
-  await waitFor(() =>
-    expect(fetch.mock.calls.filter(([url]) => url === streamUrl)).toHaveLength(
-      1,
-    ),
-  );
-  expect(harness.current().hasError).toBe(false);
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+  expect(harness.current().isLoading).toBe(true);
+  await act(async () => {
+    history.resolve(Response.json({ messages: [] }));
+  });
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
   expect(harness.current().messages).toEqual([]);
-  expect(harness.current().intelligentUI).toBeUndefined();
+  expect(harness.current().hasError).toBe(false);
+  expect(harness.current().isLoading).toBe(false);
+  await waitFor(() => expect(harness.current().status).toBe("ready"));
+});
+
+it("ignores a superseded default history error after the selected workspace changes", async () => {
+  vi.stubEnv("NEXT_PUBLIC_RECOUP_INTELLIGENT_UI_CHAT", "false");
+  const previous = pendingResponse();
+  let reads = 0;
+  const fetch = vi.fn().mockImplementation(async (url) => {
+    if (url === historyUrl)
+      return ++reads === 1
+        ? previous.promise
+        : Response.json({ messages: [saved] });
+    if (url === streamUrl) return workflowResponse([{ type: "finish" }]);
+    throw new Error(`Unexpected URL: ${url}`);
+  });
+  vi.stubGlobal("fetch", fetch);
+  const harness = mount();
+  await waitFor(() => expect(reads).toBe(1));
+  external.organizationId = "another-workspace";
+  harness.rerenderScope();
+  await screen.findByText("Original canonical explanation.");
+  await act(async () => previous.resolve(new Response(null, { status: 403 })));
+  expect(harness.current().hasError).toBe(false);
+  expect(harness.current().messages[0].id).toBe("saved-assistant");
 });
