@@ -122,6 +122,10 @@ function fixture(part = chatSnapshotPart(1)) {
     message,
     reload,
     view,
+    setScope: (next: typeof hostScope) => {
+      scope = structuredClone(next);
+      binding.scopeKey = consumer.syncScope().key!;
+    },
     changeScope: () => {
       scope = { ...scope, subject: { ...scope.subject, id: "another-artist" } };
       consumer.syncScope();
@@ -411,4 +415,93 @@ it("renders safe text for a snapshot-only history answer evicted from the bounde
   render(view(loaded[0]));
   expect(screen.getByText("Saved answer 1")).toBeTruthy();
   expect(screen.queryByRole("article", { name: "Recoup response" })).toBeNull();
+});
+
+it("restores the same message selection after leaving and reauthorizing its host scope", async () => {
+  const { view, consumer, message, binding, setScope } = fixture(
+    timelinePart(1),
+  );
+  const { rerender } = render(view());
+  await screen.findByRole("button", { name: "Chorus, 0:28 to 0:40" });
+  fireEvent.click(screen.getByRole("button", { name: "Chorus, 0:28 to 0:40" }));
+  const originalBinding = binding.scopeKey;
+  const late = consumer.beginStream({ messageId: message.id });
+  setScope({ ...hostScope, accountId: "another-account" });
+  rerender(view());
+  expect(screen.queryByRole("group", { name: "Explore sections" })).toBeNull();
+  setScope(hostScope);
+  expect(binding.scopeKey).not.toBe(originalBinding);
+  expect(late(timelinePart(2))).toBeUndefined();
+  expect(
+    consumer.getSnapshot(message.id, timelinePart(1).id, originalBinding),
+  ).toBeUndefined();
+  // Local cache alone cannot restore protected content. A fresh authorized
+  // history response is still required before the renderer can use the position.
+  rerender(view());
+  expect(screen.queryByRole("group", { name: "Explore sections" })).toBeNull();
+  const [restored] = consumer.hydrate(
+    [structuredClone(message)],
+    binding.scopeKey,
+  );
+  rerender(view(restored));
+  expect(
+    (
+      await screen.findByRole("button", { name: "Chorus, 0:28 to 0:40" })
+    ).getAttribute("aria-current"),
+  ).toBe("true");
+});
+
+it.each([
+  ["actor", { actorId: "other-actor" }],
+  ["account", { accountId: "other-account" }],
+  ["workspace namespace", { workspaceKind: "other-kind" }],
+  ["reporting query", { queryKey: "other-query" }],
+  ["session", { sessionId: "other-session" }],
+  ["chat", { chatId: "other-chat" }],
+])(
+  "does not restore selection in a different %s after accepting its content",
+  async (_label, change) => {
+    const { view, consumer, message, binding, setScope } = fixture(
+      timelinePart(1),
+    );
+    const { rerender } = render(view());
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Chorus, 0:28 to 0:40" }),
+    );
+    setScope({ ...hostScope, ...change });
+    const [fresh] = consumer.hydrate(
+      [structuredClone(message)],
+      binding.scopeKey,
+    );
+    rerender(view(fresh));
+    expect(
+      (
+        await screen.findByRole("button", { name: "Intro, 0:00 to 0:08" })
+      ).getAttribute("aria-current"),
+    ).toBe("true");
+  },
+);
+
+it("restores after a new consumer loads authorized history regardless of its prior scope count", async () => {
+  const original = fixture(timelinePart(1));
+  original.setScope({ ...hostScope, accountId: "other-account" });
+  original.setScope(hostScope);
+  const [message] = original.consumer.hydrate(
+    [original.message],
+    original.binding.scopeKey,
+  );
+  const mounted = render(original.view(message));
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Chorus, 0:28 to 0:40" }),
+  );
+  mounted.unmount();
+  original.consumer.dispose();
+  const reopened = fixture(timelinePart(1));
+  expect(reopened.binding.scopeKey).not.toBe(original.binding.scopeKey);
+  render(reopened.view());
+  expect(
+    (
+      await screen.findByRole("button", { name: "Chorus, 0:28 to 0:40" })
+    ).getAttribute("aria-current"),
+  ).toBe("true");
 });

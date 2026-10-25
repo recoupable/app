@@ -198,7 +198,15 @@ page chrome. Compatible timelines retain their existing stable control keys and
 focus across unrelated prose/evidence changes; changed interval meaning resets
 them. Chat uses a host- and message-bound local-state key, so a second answer
 reusing the same Surface/component IDs starts independently; the lab's state-key semantics remain
-unchanged. Local section/source controls make no network request. This slice
+unchanged. The chat's local position cache uses the stable actor/account/workspace,
+session/chat, subject and query identity, plus message, surface and timeline
+meaning. Live rendering and callbacks continue to use the separate generation
+binding. Returning to a scope or reloading can restore its selection only after
+current-scope history or stream data has been accepted again; the position cache
+cannot restore content or authorize access. This is browser-local view state,
+not cross-device persistence or an accepted Context record. Older experimental
+keys containing generation suffixes are left untouched and are not migrated,
+since their scope cannot be safely inferred. Local section/source controls make no network request. This slice
 does not resolve audio assets, so notes remain usable without initiating media
 or provider requests.
 Completed ordinary prose retains its existing Retry action when the new UI is
