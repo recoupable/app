@@ -3,8 +3,8 @@ import { formatCompact } from "@/lib/valuation/formatCompact";
 interface CatalogReportStatsProps {
   totalStreams: number;
   measuredSongCount: number;
-  totalSongs: number;
-  releaseCount: number;
+  totalSongs?: number;
+  releaseCount?: number;
   catalogAgeYears: number;
 }
 
@@ -23,9 +23,15 @@ const CatalogReportStats = ({
     { label: "Lifetime streams", value: formatCompact(totalStreams) },
     {
       label: "Tracks measured",
-      value: `${measuredSongCount} of ${totalSongs}`,
+      value:
+        totalSongs === undefined
+          ? `${measuredSongCount} measured · total unknown`
+          : `${measuredSongCount} of ${totalSongs}`,
     },
-    { label: "Releases", value: `${releaseCount}` },
+    {
+      label: "Loaded releases",
+      value: releaseCount === undefined ? "Unknown" : `${releaseCount}`,
+    },
     { label: "Catalog age", value: `~${catalogAgeYears}y` },
   ];
 

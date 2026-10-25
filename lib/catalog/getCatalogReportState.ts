@@ -3,6 +3,7 @@ export type CatalogReportState =
   | "signed-out"
   | "measuring"
   | "other-account"
+  | "unavailable"
   | "error"
   | "ready";
 

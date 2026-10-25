@@ -25,6 +25,11 @@ export interface CatalogReportMeasuredScope {
 }
 
 const COPY: Record<CatalogReportEmptyState, CatalogReportEmptyCopy> = {
+  unavailable: {
+    title: "Catalog unavailable in this workspace",
+    body: "Choose a catalog available to your current account and workspace.",
+    cta: { label: "Go to your catalogs", href: "/catalogs" },
+  },
   "signed-out": {
     title: "Sign in to see this report",
     body: "Catalog measurements are tied to the account that ran them, so we need to know who you are before we can show this one.",
