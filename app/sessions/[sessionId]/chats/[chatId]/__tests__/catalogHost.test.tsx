@@ -698,7 +698,7 @@ it.each([
   },
 );
 
-it.each(["workspace", "personal-account", "signed-out"] as const)(
+it.each(["workspace", "personal-account"] as const)(
   "does not bind incomplete %s catalog context",
   async (incomplete) => {
     if (incomplete === "workspace")
@@ -707,7 +707,6 @@ it.each(["workspace", "personal-account", "signed-out"] as const)(
       external.organization = null;
       external.account = "account-label";
     }
-    if (incomplete === "signed-out") external.authenticated = false;
     const fetch = mockFetch();
     await mount();
     expect(current.intelligentUI).toBeUndefined();
@@ -720,6 +719,17 @@ it.each(["workspace", "personal-account", "signed-out"] as const)(
     expect(screen.queryByText("Catalog response.")).toBeNull();
   },
 );
+
+it("does not load, resume, or send catalog chat while signed out", async () => {
+  external.authenticated = false;
+  const fetch = mockFetch();
+  await mount();
+  expect(current.intelligentUI).toBeUndefined();
+  await send();
+  expect(external.getAccessToken).not.toHaveBeenCalled();
+  expect(fetch).not.toHaveBeenCalled();
+  expect(screen.queryByText("Catalog response.")).toBeNull();
+});
 
 it("replaces artist admission with an explicit catalog subject without inferring a relationship", async () => {
   external.artist = ids.artist;
