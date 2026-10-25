@@ -1,9 +1,18 @@
 import FirstTaskStep from "@/components/Onboarding/FirstTaskStep";
+import CatalogTaskSetup from "@/components/Onboarding/CatalogTaskSetup";
 
-/**
- * `/setup/tasks` — welcome email step 5 ("Automate with tasks"). Mounts the
- * self-contained first-task step.
- */
-const SetupTasksPage = () => <FirstTaskStep />;
+/** Explicit catalog requests must never mount the artist-based auto-run flow. */
+const SetupTasksPage = async ({
+  searchParams,
+}: {
+  searchParams: Promise<{ catalogId?: string | string[] }>;
+}) => {
+  const { catalogId } = await searchParams;
+  return catalogId === undefined ? (
+    <FirstTaskStep />
+  ) : (
+    <CatalogTaskSetup catalogId={catalogId} />
+  );
+};
 
 export default SetupTasksPage;
