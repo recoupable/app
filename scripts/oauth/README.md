@@ -41,3 +41,24 @@ Deploy the matching database migration and API with its registration flag disabl
 then enable this page on the configured consent origin. Enable API discovery last,
 after the account-holder verification page is reachable. Existing OAuth authorization
 and Connected Agents keep their current flags and behavior.
+
+## Connected Agents client-adapter acceptance
+
+`components/OAuth/__tests__/OAuthConnectionsClient.test.tsx` renders the actual
+Connected Agents component with its real `createConnectionsClient` adapter.
+Only first-party identity and HTTP responses are synthetic. It checks that a
+failed DELETE retains both clients, a successful DELETE removes only the
+selected client, refresh preserves the second client, and an empty list shows
+connection instructions rather than claiming an automatic reconnect. A newly
+approved grant appears only after a successful list readback.
+
+Run the focused checks with:
+
+```bash
+pnpm test -- components/OAuth/__tests__/OAuthConnectionsClient.test.tsx components/OAuth/__tests__/OAuthConnections.test.tsx lib/oauth/__tests__/createConnectionsClient.test.ts
+```
+
+These checks complement the API's disposable-PostgreSQL HTTP-controller tests.
+They do not verify real Privy login, production storage, an actual approval or a
+named agent host. Native component fixtures must retain those same boundaries;
+a narrow component container is not a mobile viewport test.
