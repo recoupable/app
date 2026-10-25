@@ -303,32 +303,35 @@ it("suppresses late history-check state after account intent changes", async () 
   expect(state.context.reload).not.toHaveBeenCalled();
 });
 
-it("does not apply checked history on Cancel after a newer chat intent", async () => {
-  fetchMock.mockImplementation(async (_url, init) =>
-    init?.method === "DELETE"
-      ? new Response(null, { status: 500 })
-      : Response.json({ messages: [] }),
-  );
-  const ui = mount();
-  fireEvent.change(ui.getByTestId("message-editor"), {
-    target: { value: "Changed" },
-  });
-  fireEvent.click(ui.getByTestId("message-editor-send-button"));
-  await waitFor(() => expect(ui.getByRole("alert")).toBeTruthy());
-  fireEvent.click(ui.getByText("Check saved history"));
-  await waitFor(() =>
-    expect(ui.getByRole("alert").textContent).toContain(
-      "Saved history changed",
-    ),
-  );
-  const newer: UIMessage = {
-    id: "newer",
-    role: "user",
-    parts: [{ type: "text", text: "Newer turn" }],
-  };
-  messages = [message, suffix, newer];
-  current = false;
-  fireEvent.click(ui.getByText("Cancel"));
-  expect(messages).toEqual([message, suffix, newer]);
-  expect(state.context.setMessages).not.toHaveBeenCalled();
-});
+it.each([true, false])(
+  "does not apply checked history after newer messages (intent valid: %s)",
+  async (intentValid) => {
+    fetchMock.mockImplementation(async (_url, init) =>
+      init?.method === "DELETE"
+        ? new Response(null, { status: 500 })
+        : Response.json({ messages: [] }),
+    );
+    const ui = mount();
+    fireEvent.change(ui.getByTestId("message-editor"), {
+      target: { value: "Changed" },
+    });
+    fireEvent.click(ui.getByTestId("message-editor-send-button"));
+    await waitFor(() => expect(ui.getByRole("alert")).toBeTruthy());
+    fireEvent.click(ui.getByText("Check saved history"));
+    await waitFor(() =>
+      expect(ui.getByRole("alert").textContent).toContain(
+        "Saved history changed",
+      ),
+    );
+    const newer: UIMessage = {
+      id: "newer",
+      role: "user",
+      parts: [{ type: "text", text: "Newer turn" }],
+    };
+    messages = [message, suffix, newer];
+    current = intentValid;
+    fireEvent.click(ui.getByText("Cancel"));
+    expect(messages).toEqual([message, suffix, newer]);
+    if (!intentValid) expect(state.context.setMessages).not.toHaveBeenCalled();
+  },
+);

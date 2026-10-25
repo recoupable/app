@@ -2336,3 +2336,30 @@ it.each([false, true])(
     expect(f.stops()).toHaveLength(1);
   },
 );
+
+it("resends the edited persisted question only after successful deletion through the actual SDK", async () => {
+  const f = fixture(() => response());
+  const h = await mount();
+  const saved = h.current().messages.find((m) => m.role === "user")!;
+  const ui = render(
+    <QueryClientProvider client={h.client}>
+      <VercelChatContext.Provider value={h.current()}>
+        <MessageEditor message={saved} setMode={vi.fn()} />
+      </VercelChatContext.Provider>
+    </QueryClientProvider>,
+  );
+  fireEvent.change(ui.getByTestId("message-editor"), {
+    target: { value: "Edited persisted question" },
+  });
+  fireEvent.click(ui.getByTestId("message-editor-send-button"));
+  await waitFor(() => expect(f.posts()).toHaveLength(1));
+  const deletion = f.calls.findIndex((x) => x.method === "DELETE");
+  const submission = f.calls.findIndex((x) => x.url.pathname === "/api/chat");
+  expect(deletion).toBeGreaterThanOrEqual(0);
+  expect(deletion).toBeLessThan(submission);
+  expect(f.posts()[0].body!.messages.at(-1)).toMatchObject({
+    id: saved.id,
+    role: "user",
+    parts: [{ type: "text", text: "Edited persisted question" }],
+  });
+});
