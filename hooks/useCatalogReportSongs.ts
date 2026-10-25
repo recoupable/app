@@ -4,6 +4,8 @@ import {
   CatalogSongsResponse,
 } from "@/lib/catalog/getCatalogSongs";
 import { usePrivy } from "@privy-io/react-auth";
+import { useUserProvider } from "@/providers/UserProvder";
+import { useOrganization } from "@/providers/OrganizationProvider";
 
 const REPORT_SONGS_PAGE_SIZE = 100;
 
@@ -14,11 +16,21 @@ const REPORT_SONGS_PAGE_SIZE = 100;
  */
 const useCatalogReportSongs = (
   catalogId: string,
+  enabled = true,
 ): UseQueryResult<CatalogSongsResponse> => {
-  const { getAccessToken } = usePrivy();
+  const { getAccessToken, ready, authenticated, user } = usePrivy();
+  const { userData } = useUserProvider();
+  const { selectedOrgId, isInitialized } = useOrganization();
+  const accountId = userData?.account_id;
 
   return useQuery({
-    queryKey: ["catalogReportSongs", catalogId],
+    queryKey: [
+      "catalogReportSongs",
+      user?.id,
+      accountId,
+      selectedOrgId,
+      catalogId,
+    ],
     queryFn: async () => {
       const accessToken = await getAccessToken();
       if (!accessToken) {
@@ -26,7 +38,13 @@ const useCatalogReportSongs = (
       }
       return getCatalogSongs(accessToken, catalogId, REPORT_SONGS_PAGE_SIZE, 1);
     },
-    enabled: !!catalogId,
+    enabled:
+      enabled &&
+      !!catalogId &&
+      ready &&
+      authenticated &&
+      !!accountId &&
+      isInitialized,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });

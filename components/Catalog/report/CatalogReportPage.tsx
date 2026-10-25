@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CatalogSongsPageContent from "@/components/Catalog/CatalogSongsPageContent";
 import CatalogReportContent from "./CatalogReportContent";
+import CatalogReportHeader from "./CatalogReportHeader";
 
 interface CatalogReportPageProps {
   catalogId: string;
@@ -34,9 +35,7 @@ const CatalogReportPage = ({
           Back to Catalogs
         </button>
       </div>
-      <h1 className="font-heading text-lg font-bold md:text-xl pb-4">
-        Catalog Report
-      </h1>
+      <CatalogReportHeader catalogId={catalogId} />
       <Tabs defaultValue={initialTab}>
         <TabsList>
           <TabsTrigger value="report">Report</TabsTrigger>

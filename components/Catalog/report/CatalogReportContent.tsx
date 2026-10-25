@@ -66,7 +66,7 @@ const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
   }
 
   const insights = buildReportInsights({
-    totalSongs: totalSongs ?? measuredSongCount,
+    totalSongs,
     measuredSongCount,
     releaseStreamShares:
       totalStreams > 0 ? releases.map((r) => r.streams / totalStreams) : [],
@@ -78,8 +78,8 @@ const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
       <CatalogReportStats
         totalStreams={totalStreams}
         measuredSongCount={measuredSongCount}
-        totalSongs={totalSongs ?? measuredSongCount}
-        releaseCount={releases.length}
+        totalSongs={totalSongs}
+        releaseCount={songs === undefined ? undefined : releases.length}
         catalogAgeYears={valuation.catalogAgeYears}
       />
       <CatalogReleasesTable releases={releases} />

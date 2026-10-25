@@ -17,7 +17,7 @@ const CONCENTRATION_THRESHOLD = 0.6;
  * @param params.releaseStreamShares - Each release's share (0-1) of total streams
  */
 export function buildReportInsights(params: {
-  totalSongs: number;
+  totalSongs?: number;
   measuredSongCount: number;
   releaseStreamShares: number[];
 }): ReportInsight[] {
@@ -32,8 +32,11 @@ export function buildReportInsights(params: {
     },
   ];
 
-  const unmeasured = params.totalSongs - params.measuredSongCount;
-  if (unmeasured > 0) {
+  const unmeasured =
+    params.totalSongs === undefined
+      ? undefined
+      : params.totalSongs - params.measuredSongCount;
+  if (unmeasured !== undefined && unmeasured > 0) {
     insights.push({
       section: "coverage",
       title: "Unmeasured tracks are suppressing this value",
