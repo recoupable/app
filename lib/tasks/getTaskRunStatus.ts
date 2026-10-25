@@ -1,4 +1,4 @@
-import { TASKS_API_URL } from "@/lib/consts";
+import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
 /**
  * Trigger.dev run metadata. For scheduled runs `api` writes the link to the
@@ -26,12 +26,22 @@ export interface TaskRunStatus {
 export async function getTaskRunStatus(
   runId: string,
   accessToken: string,
+  options: {
+    accountIdOverride?: string;
+    apiBaseUrl?: string;
+    signal?: AbortSignal;
+  } = {},
 ): Promise<TaskRunStatus> {
-  const url = new URL(`${TASKS_API_URL}/runs`);
+  const url = new URL(
+    `${options.apiBaseUrl ?? getClientApiBaseUrl()}/api/tasks/runs`,
+  );
   url.searchParams.set("runId", runId);
+  if (options.accountIdOverride)
+    url.searchParams.set("account_id", options.accountIdOverride);
 
   const response = await fetch(url.toString(), {
     method: "GET",
+    signal: options.signal,
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
