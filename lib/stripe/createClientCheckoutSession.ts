@@ -32,8 +32,8 @@ const createClientCheckoutSession = async (
       return { error: await readApiError(response) };
     }
 
-    const data: { url?: string } = await response.json();
-    if (!data.url) {
+    const data: { url?: unknown } = await response.json();
+    if (typeof data.url !== "string" || !data.url) {
       return { error: new Error("Checkout URL missing") };
     }
 
