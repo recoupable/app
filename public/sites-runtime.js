@@ -508,7 +508,7 @@
           );
           const fallback = document.createElement("button");
           fallback.type = "button";
-          fallback.className = "player-link";
+          fallback.className = "sign-button";
           fallback.textContent = "Open sign-in in a new tab";
           fallback.onclick = () => {
             // Keep the game loaded and retain the trusted callback source check.
