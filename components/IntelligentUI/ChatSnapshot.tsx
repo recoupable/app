@@ -8,11 +8,11 @@ import EvidenceDialog from "./EvidenceDialog";
 /** An inline response fragment, with no page/application chrome or provider actions. */
 export default function ChatSnapshot({
   surface,
-  scopeKey,
+  stateScope,
   messageId,
 }: {
   surface: Surface;
-  scopeKey: string;
+  stateScope: string;
   messageId: string;
 }) {
   const [evidenceId, setEvidenceId] = useState<string | null>(null);
@@ -21,7 +21,7 @@ export default function ChatSnapshot({
     <>
       <AnswerRenderer
         surface={surface}
-        stateScope={JSON.stringify([scopeKey, messageId, surface.id])}
+        stateScope={JSON.stringify([stateScope, messageId, surface.id])}
         onInspectEvidence={(id, element) => {
           setReturnFocus(element);
           setEvidenceId(id);

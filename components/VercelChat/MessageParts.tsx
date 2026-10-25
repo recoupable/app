@@ -128,7 +128,10 @@ export function MessageParts({
               >
                 <ChatSnapshot
                   surface={surface}
-                  scopeKey={binding.scopeKey}
+                  stateScope={
+                    binding.consumer.getStateScope(binding.scopeKey) ??
+                    binding.scopeKey
+                  }
                   messageId={message.id}
                 />
               </Suspense>
