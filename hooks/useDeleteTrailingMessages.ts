@@ -22,6 +22,7 @@ export function useDeleteTrailingMessages({
   const { getAccessToken } = usePrivy();
 
   const mutation = useMutation({
+    retry: false,
     mutationFn: async ({
       chatId,
       fromMessageId,
