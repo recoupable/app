@@ -320,6 +320,12 @@ export function createSnapshotConsumer(
 
   return {
     getBindingKey,
+    /** Stable local-view identity, available only for the current live binding.
+     * This is not a content cache or an authorization grant.
+     */
+    getStateScope(scopeKey: string) {
+      return isCurrentBinding(scopeKey) ? scopeIdentity : undefined;
+    },
     syncScope,
     /** Capture before hook preparation; an SDK start must not expire its own cleanup. */
     captureSendIntent() {
