@@ -1,7 +1,11 @@
 import Link from "next/link";
 
+interface CatalogReportCtaProps {
+  catalogId: string;
+}
+
 /** Preserve the viewed catalog while checking weekly-report availability; never start a run. */
-const CatalogReportCta = ({ catalogId }: { catalogId: string }) => {
+const CatalogReportCta = ({ catalogId }: CatalogReportCtaProps) => {
   return (
     <section
       aria-label="Next step"

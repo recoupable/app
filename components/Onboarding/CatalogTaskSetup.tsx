@@ -3,8 +3,12 @@
 import Link from "next/link";
 import { useCatalogTaskSetup } from "@/hooks/useCatalogTaskSetup";
 
+interface CatalogTaskSetupProps {
+  catalogId: string | string[];
+}
+
 /** Safe landing until the weekly executor supports the exact viewed catalog. */
-const CatalogTaskSetup = ({ catalogId }: { catalogId: string | string[] }) => {
+const CatalogTaskSetup = ({ catalogId }: CatalogTaskSetupProps) => {
   const { state, catalogName, retry } = useCatalogTaskSetup(catalogId);
   const copy = {
     invalid:
