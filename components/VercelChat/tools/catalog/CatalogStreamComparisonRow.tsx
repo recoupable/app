@@ -55,7 +55,7 @@ export default function CatalogStreamComparisonRow({
         <td colSpan={4} className="p-3 text-muted-foreground">
           Comparison unavailable: {reasons[row.state]}.
           {row.missing_days.length > 0 &&
-            ` ${row.missing_days.length} missing UTC dates; missing values are not zero.`}
+            ` ${row.missing_days.length} missing UTC ${row.missing_days.length === 1 ? "date" : "dates"}; missing values are not zero.`}
         </td>
       )}
     </tr>

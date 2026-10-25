@@ -114,7 +114,7 @@ it("discloses provenance, periods, page coverage and freshness without network a
     expect(
       screen.getByText(/2026-10-01 to 2026-10-02 \(end excluded\)/),
     ).toBeTruthy();
-    expect(screen.getByText(/1 days per period · UTC/)).toBeTruthy();
+    expect(screen.getByText(/1 day per period · UTC/)).toBeTruthy();
     expect(
       screen.getByText(/Page 1: 1 returned recordings of 100/),
     ).toBeTruthy();

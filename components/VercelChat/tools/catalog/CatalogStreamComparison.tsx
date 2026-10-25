@@ -40,7 +40,9 @@ export default function CatalogStreamComparison({
           </dd>
         </div>
       </dl>
-      <p>{periods.days} days per period · UTC</p>
+      <p>
+        {periods.days} {periods.days === 1 ? "day" : "days"} per period · UTC
+      </p>
       <p>
         Page {pagination.page}: {recordings.length} returned recordings of{" "}
         {pagination.total_count} current catalog recordings. Comparisons cover
