@@ -3,7 +3,7 @@ import { usdToCredits } from "@/lib/credits/usdToCredits";
 /**
  * Generation parameter defaults and ranges.
  *
- * These mirror the documented contract (recoupable/docs#308), which in turn
+ * These mirror the documented contract (recoupable/docs-legacy#308), which in turn
  * mirrors the fal minimax/music-3 form. The API clamps to the same bounds, so
  * these are for the UI's benefit, not the source of truth.
  */
