@@ -608,3 +608,127 @@ it("survives StrictMode effect replay without losing the initial list", async ()
     ),
   ).toBeNull();
 });
+
+it.each(["absent", "altered", "confirmed", "redacted", "auth-loss"])(
+  "handles an unconfirmed note that is %s on readback without auto-saving",
+  async (mode) => {
+    let submitted: ReturnType<typeof snapshot> | undefined;
+    let reads = 0;
+    const text = "Unconfirmed private review note";
+    const { bodies } = install((body) => {
+      if (body.action === "list_catalog_cases")
+        return { cases: [item()], has_more: false, next_id: null };
+      if (body.action === "save_catalog_case") {
+        submitted = body.snapshot as ReturnType<typeof snapshot>;
+        return new Response(null, { status: 409 });
+      }
+      if (++reads === 1) return receipt();
+      if (mode === "auth-loss") return new Response(null, { status: 403 });
+      if (mode === "redacted")
+        return {
+          ...receipt(2),
+          state: "partial",
+          snapshot_usable_for_save: false,
+          withheld_record_ids: [
+            "source:context",
+            "assessment:context",
+            "finding:retained",
+          ],
+          snapshot: {
+            ...snapshot(2),
+            sources: {
+              "source:context": {
+                id: "source:context",
+                version: versionId,
+                status: "withdrawn",
+                withheld: true,
+              },
+            },
+            assessments: {
+              "assessment:context": {
+                id: "assessment:context",
+                status: "partial",
+                stale: true,
+                withheld: true,
+              },
+            },
+            findings: {
+              "finding:retained": {
+                id: "finding:retained",
+                status: "open",
+                stale: true,
+                withheld: true,
+              },
+            },
+          },
+        };
+      if (mode === "altered")
+        return receipt(2, {
+          ...submitted!,
+          revision: 2,
+          assessments: Object.fromEntries(
+            Object.entries(submitted!.assessments).map(([id, entry]) => [
+              id,
+              id === "assessment:context"
+                ? entry
+                : { ...entry, summary: "A different saved note" },
+            ]),
+          ),
+        });
+      return mode === "confirmed"
+        ? receipt(2, { ...submitted!, revision: 2 })
+        : receipt(2);
+    });
+    render(<CatalogReviewsPage />);
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Audit dddddddd/ }),
+    );
+    await screen.findByText("Saved audit reopened.");
+    fireEvent.change(screen.getByLabelText("Add a review note"), {
+      target: { value: text },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save review note" }));
+    await screen.findByRole("button", { name: "Retry exact save" });
+    fireEvent.click(screen.getByRole("button", { name: "Reopen saved audit" }));
+    if (mode === "absent" || mode === "altered") {
+      await screen.findByText(
+        "A newer saved revision is open. Your unconfirmed note is restored below for review; it has not been saved to this revision. Check the latest evidence before saving it again.",
+      );
+      expect(
+        (screen.getByLabelText("Add a review note") as HTMLTextAreaElement)
+          .value,
+      ).toBe(text);
+      expect(
+        bodies.filter((body) => body.action === "save_catalog_case"),
+      ).toHaveLength(1);
+      fireEvent.click(screen.getByRole("button", { name: "Save review note" }));
+      await screen.findByRole("button", { name: "Retry exact save" });
+      const saves = bodies.filter(
+        (body) => body.action === "save_catalog_case",
+      );
+      expect(saves[1].expected_revision).toBe(2);
+      expect(saves[1].idempotency_key).not.toBe(saves[0].idempotency_key);
+    } else if (mode === "confirmed") {
+      await screen.findByText(
+        "Saved audit reopened. Your review note is confirmed in this revision.",
+      );
+      expect(screen.getByText(text)).toBeTruthy();
+      expect(
+        (screen.getByLabelText("Add a review note") as HTMLTextAreaElement)
+          .value,
+      ).toBe("");
+    } else {
+      await screen.findByText(
+        mode === "redacted"
+          ? "Some evidence is no longer available. Protected content is withheld and this audit is read-only."
+          : "This audit or its evidence is unavailable in this workspace.",
+      );
+      expect(screen.queryByLabelText("Add a review note")).toBeNull();
+      expect(screen.queryByText(text)).toBeNull();
+    }
+    if (mode !== "absent" && mode !== "altered")
+      expect(
+        bodies.filter((body) => body.action === "save_catalog_case"),
+      ).toHaveLength(1);
+  },
+);

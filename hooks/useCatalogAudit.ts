@@ -55,6 +55,7 @@ export function useCatalogAudit({
   const [uncertain, setUncertain] = useState(false);
   const [recoveryId, setRecoveryId] = useState<string | null>(null);
   const pending = useRef<SaveAttempt | null>(null);
+  const pendingNote = useRef<{ id: string; text: string } | null>(null);
   const inFlight = useRef(false);
   const active = useRef(false);
   const generation = useRef(0);
@@ -161,6 +162,7 @@ export function useCatalogAudit({
         );
       } else {
         pending.current = null;
+        pendingNote.current = null;
         setUncertain(false);
         if (status === 401 || status === 403) {
           setItems([]);
@@ -252,17 +254,36 @@ export function useCatalogAudit({
         );
         return;
       }
+      const canEdit =
+        result.snapshot_usable_for_save && canContinueAudit(result.snapshot);
+      const submittedNote = pendingNote.current;
+      const returnedNote = submittedNote
+        ? result.snapshot.assessments[submittedNote.id]
+        : undefined;
+      const noteConfirmed =
+        submittedNote &&
+        returnedNote &&
+        returnedNote.withheld !== true &&
+        "summary" in returnedNote &&
+        returnedNote.summary === submittedNote.text;
+      const restoreDraft = canEdit && submittedNote && !noteConfirmed;
       pending.current = null;
+      pendingNote.current = null;
       setUncertain(false);
-      setWritable(
-        result.snapshot_usable_for_save && canContinueAudit(result.snapshot),
-      );
+      setWritable(canEdit);
+      // A competing writer can advance the case without our note. Recover only
+      // the draft text for manual review; never silently rebase or save it.
+      if (restoreDraft) setNote(submittedNote.text);
       setNotice(
-        result.snapshot_usable_for_save
-          ? canContinueAudit(result.snapshot)
-            ? "Saved audit reopened."
-            : "This saved case uses a different review workflow. You can read it here, but notes are disabled."
-          : "Some evidence is no longer available. Protected content is withheld and this audit is read-only.",
+        !result.snapshot_usable_for_save
+          ? "Some evidence is no longer available. Protected content is withheld and this audit is read-only."
+          : !canEdit
+            ? "This saved case uses a different review workflow. You can read it here, but notes are disabled."
+            : restoreDraft
+              ? "A newer saved revision is open. Your unconfirmed note is restored below for review; it has not been saved to this revision. Check the latest evidence before saving it again."
+              : noteConfirmed
+                ? "Saved audit reopened. Your review note is confirmed in this revision."
+                : "Saved audit reopened.",
       );
     });
   };
@@ -281,6 +302,17 @@ export function useCatalogAudit({
         );
         return;
       }
+      const addedNote = saved
+        ? Object.values(next.assessments).find(
+            (entry) => !snapshot.assessments[entry.id],
+          )
+        : undefined;
+      pendingNote.current =
+        addedNote &&
+        "summary" in addedNote &&
+        typeof addedNote.summary === "string"
+          ? { id: addedNote.id, text: addedNote.summary }
+          : null;
       pending.current = {
         action: "save_catalog_case",
         case_id: next.case_id,
@@ -299,6 +331,7 @@ export function useCatalogAudit({
         attempt.expected_revision + 1,
       );
       pending.current = null;
+      pendingNote.current = null;
       setUncertain(false);
       setNote("");
       setSnapshot(result.snapshot);
