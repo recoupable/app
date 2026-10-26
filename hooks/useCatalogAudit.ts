@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import { canRestoreAuditNote } from "@/lib/catalogAudit/canRestoreAuditNote";
 import { canContinueAudit } from "@/lib/catalogAudit/canContinueAudit";
 import { appendAuditNote } from "@/lib/catalogAudit/appendAuditNote";
 import {
@@ -260,13 +261,23 @@ export function useCatalogAudit({
       const returnedNote = submittedNote
         ? result.snapshot.assessments[submittedNote.id]
         : undefined;
+      const draftEvidenceRetained =
+        submittedNote &&
+        pending.current &&
+        canRestoreAuditNote(
+          pending.current.snapshot,
+          result.snapshot,
+          submittedNote.id,
+        );
       const noteConfirmed =
+        draftEvidenceRetained &&
         submittedNote &&
         returnedNote &&
         returnedNote.withheld !== true &&
         "summary" in returnedNote &&
         returnedNote.summary === submittedNote.text;
-      const restoreDraft = canEdit && submittedNote && !noteConfirmed;
+      const restoreDraft =
+        canEdit && draftEvidenceRetained && submittedNote && !noteConfirmed;
       pending.current = null;
       pendingNote.current = null;
       setUncertain(false);
@@ -279,11 +290,13 @@ export function useCatalogAudit({
           ? "Some evidence is no longer available. Protected content is withheld and this audit is read-only."
           : !canEdit
             ? "This saved case uses a different review workflow. You can read it here, but notes are disabled."
-            : restoreDraft
-              ? "A newer saved revision is open. Your unconfirmed note is restored below for review; it has not been saved to this revision. Check the latest evidence before saving it again."
-              : noteConfirmed
-                ? "Saved audit reopened. Your review note is confirmed in this revision."
-                : "Saved audit reopened.",
+            : submittedNote && !draftEvidenceRetained
+              ? "The saved audit’s evidence changed. Your unconfirmed draft was discarded because its original evidence is no longer retained unchanged."
+              : restoreDraft
+                ? "A newer saved revision is open. Your unconfirmed note is restored below for review; it has not been saved to this revision. Check the latest evidence before saving it again."
+                : noteConfirmed
+                  ? "Saved audit reopened. Your review note is confirmed in this revision."
+                  : "Saved audit reopened.",
       );
     });
   };

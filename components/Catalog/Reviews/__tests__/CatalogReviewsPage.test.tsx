@@ -732,3 +732,69 @@ it.each(["absent", "altered", "confirmed", "redacted", "auth-loss"])(
       ).toHaveLength(1);
   },
 );
+
+it.each(["removed", "version", "fingerprint", "context-version", "assessment"])(
+  "discards private draft when a newer usable case changes its %s dependency",
+  async (change) => {
+    let reads = 0;
+    const privateText = "Private note derived from original evidence";
+    const { bodies } = install((body) => {
+      if (body.action === "list_catalog_cases")
+        return { cases: [item()], has_more: false, next_id: null };
+      if (body.action === "save_catalog_case")
+        return new Response(null, { status: 409 });
+      if (++reads === 1) return receipt();
+      const newer = snapshot(2);
+      if (change === "removed")
+        return receipt(2, {
+          ...newer,
+          sources: {},
+          findings: {},
+          assessments: {
+            "assessment:context": {
+              ...newer.assessments["assessment:context"],
+              source_refs: [],
+              evidence_gap: "Original source is no longer retained.",
+            },
+          },
+        });
+      if (change === "version") {
+        newer.sources["source:context"].version = secondId;
+        newer.assessments["assessment:context"].source_refs[0].version =
+          secondId;
+      }
+      if (change === "fingerprint")
+        newer.sources["source:context"].sha256 = "b".repeat(64);
+      if (change === "context-version")
+        newer.sources["source:context"].context_source_version_id = secondId;
+      if (change === "assessment")
+        newer.assessments["assessment:context"].summary =
+          "A replacement assessment";
+      return receipt(2, newer);
+    });
+    render(<CatalogReviewsPage />);
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Audit dddddddd/ }),
+    );
+    await screen.findByText("Saved audit reopened.");
+    fireEvent.change(screen.getByLabelText("Add a review note"), {
+      target: { value: privateText },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save review note" }));
+    await screen.findByRole("button", { name: "Retry exact save" });
+    fireEvent.click(screen.getByRole("button", { name: "Reopen saved audit" }));
+    await screen.findByText(
+      "The saved audit’s evidence changed. Your unconfirmed draft was discarded because its original evidence is no longer retained unchanged.",
+    );
+    expect(
+      (screen.getByLabelText("Add a review note") as HTMLTextAreaElement).value,
+    ).toBe("");
+    expect(screen.queryByText(privateText)).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Retry exact save" }),
+    ).toBeNull();
+    expect(
+      bodies.filter((body) => body.action === "save_catalog_case"),
+    ).toHaveLength(1);
+  },
+);
