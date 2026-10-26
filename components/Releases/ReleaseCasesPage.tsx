@@ -1,5 +1,5 @@
 "use client";
-import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import { useClientApiBaseUrl } from "@/hooks/useClientApiBaseUrl";
 import { usePrivy } from "@privy-io/react-auth";
 import { useUserProvider } from "@/providers/UserProvder";
 import { useOrganization } from "@/providers/OrganizationProvider";
@@ -12,6 +12,7 @@ import ReleaseIntakeForm from "./ReleaseIntakeForm";
 import CatalogReleaseStreams from "./CatalogReleaseStreams";
 export default function ReleaseCasesPage() {
   const { ready, authenticated, user, getAccessToken, login } = usePrivy();
+  const apiSelection = useClientApiBaseUrl();
   const { userData } = useUserProvider();
   const { selectedOrgId, isInitialized } = useOrganization();
   const accountId =
@@ -26,7 +27,7 @@ export default function ReleaseCasesPage() {
     user?.id,
     ready,
     authenticated,
-    getClientApiBaseUrl(),
+    apiSelection,
     accountId,
     selectedOrgId,
     current?.request_id,

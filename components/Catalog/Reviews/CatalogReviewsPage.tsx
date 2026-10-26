@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import { useOrganization } from "@/providers/OrganizationProvider";
 import { useUserProvider } from "@/providers/UserProvder";
-import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
+import { useClientApiBaseUrl } from "@/hooks/useClientApiBaseUrl";
 import { Button } from "@/components/ui/button";
 import CatalogAuditWorkspace from "./CatalogAuditWorkspace";
 
@@ -17,7 +17,7 @@ export default function CatalogReviewsPage() {
   const accountId = userData?.account_id;
   const briefId = query.get("assessment");
   const queryWorkspace = query.get("workspace");
-  const apiSelection = getClientApiBaseUrl();
+  const apiSelection = useClientApiBaseUrl();
   if (!ready)
     return (
       <p role="status" className="p-6">
