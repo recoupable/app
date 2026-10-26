@@ -61,9 +61,11 @@ const useArtists = () => {
 
   // Imperative refresh + optional select-by-id. Used after create/update.
   const getArtists = useCallback(
-    async (artistId?: string) => {
+    async (artistId?: string, isCurrent?: () => boolean) => {
       if (!userData?.id) return;
+      if (isCurrent && !isCurrent()) return;
       const fresh = await refetchArtists();
+      if (isCurrent && !isCurrent()) return;
       if (artistId) {
         const found = fresh.find((a) => a.account_id === artistId);
         if (found) setSelectedArtist(found);
@@ -74,14 +76,18 @@ const useArtists = () => {
 
   const saveSetting = async (
     overrideKnowledges?: Array<{ name: string; url: string; type: string }>,
+    isCurrent?: () => boolean,
   ) => {
-    setUpdating(true);
+    // Knowledge edits own a scoped busy state; a stale edit must not toggle a
+    // different artist's settings spinner after navigation.
+    if (!isCurrent) setUpdating(true);
     try {
       const accessToken = await getAccessToken();
       const artistId = artistSetting.editableArtist?.account_id;
 
+      if (isCurrent && !isCurrent()) return null;
       if (!accessToken || !artistId) {
-        setUpdating(false);
+        if (!isCurrent) setUpdating(false);
         return null;
       }
 
@@ -103,12 +109,14 @@ const useArtists = () => {
         label: artistSetting.label,
         knowledges: overrideKnowledges ?? artistSetting.bases,
       });
-      await getArtists(data.artist?.account_id);
-      setUpdating(false);
+      if (isCurrent && !isCurrent()) return null;
+      await getArtists(data.artist?.account_id, isCurrent);
+      if (isCurrent && !isCurrent()) return null;
+      if (!isCurrent) setUpdating(false);
       return data.artist;
     } catch (error) {
       console.error(error);
-      setUpdating(false);
+      if (!isCurrent) setUpdating(false);
       return null;
     }
   };

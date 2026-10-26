@@ -66,6 +66,7 @@ interface VercelChatContextType {
   addTextAttachment: (
     file: File,
     type: TextAttachment["type"],
+    isCurrent?: () => boolean,
   ) => Promise<void>;
   removeTextAttachment: (index: number) => void;
   model: string;

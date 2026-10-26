@@ -6,7 +6,8 @@ import { Download } from "lucide-react";
 
 export interface TxtFileGenerationResult {
   success: boolean;
-  arweaveUrl: string | null;
+  txtUrl?: string | null;
+  arweaveUrl?: string | null;
   smartAccountAddress?: string;
   transactionHash?: string | null;
   blockExplorerUrl?: string | null;
@@ -19,30 +20,39 @@ interface TxtFileResultProps {
 }
 
 export function TxtFileResult({ result }: TxtFileResultProps) {
-  const [fileContent, setFileContent] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
+  const fileUrl = result.txtUrl || result.arweaveUrl;
+  const [loaded, setLoaded] = useState<{
+    url: string;
+    content: string | null;
+    error: string | null;
+  } | null>(null);
+  const fileContent = loaded?.url === fileUrl ? loaded?.content : null;
+  const fetchError = loaded?.url === fileUrl ? loaded?.error : null;
+  const loading = Boolean(result.success && fileUrl && loaded?.url !== fileUrl);
 
   useEffect(() => {
-    if (result.arweaveUrl && !fileContent) {
-      setLoading(true);
-      setFetchError(null);
-      fetch(result.arweaveUrl)
+    const controller = new AbortController();
+    if (result.success && fileUrl) {
+      fetch(fileUrl, { signal: controller.signal })
         .then((res) => {
-          if (!res.ok) throw new Error("Failed to fetch file from Arweave");
+          if (!res.ok) throw new Error("Failed to fetch file");
           return res.text();
         })
-        .then((text) => {
-          setFileContent(text);
-          setLoading(false);
+        .then((content) => {
+          if (!controller.signal.aborted)
+            setLoaded({ url: fileUrl, content, error: null });
         })
         .catch((err) => {
-          setFetchError(err.message || "Error fetching file");
-          setLoading(false);
+          if (!controller.signal.aborted)
+            setLoaded({
+              url: fileUrl,
+              content: null,
+              error: err.message || "Error fetching file",
+            });
         });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [result.arweaveUrl]);
+    return () => controller.abort();
+  }, [fileUrl, result.success]);
 
   if (!result.success) {
     return (
@@ -60,13 +70,13 @@ export function TxtFileResult({ result }: TxtFileResultProps) {
   }
 
   const handleDownload = () => {
-    if (result.arweaveUrl) {
-      window.open(result.arweaveUrl, "_blank");
+    if (fileUrl) {
+      window.open(fileUrl, "_blank");
     }
   };
 
   let displayText: string | JSX.Element = "TXT file generated.";
-  if (result.arweaveUrl) {
+  if (fileUrl) {
     if (loading) {
       displayText = "Loading file contents...";
     } else if (fetchError) {
@@ -88,7 +98,7 @@ export function TxtFileResult({ result }: TxtFileResultProps) {
               variant="outline"
               size="sm"
               onClick={handleDownload}
-              disabled={!result.arweaveUrl}
+              disabled={!fileUrl}
               className="h-8 px-3 text-xs rounded-xl ml-auto"
             >
               <Download className="w-4 h-4" />{" "}
@@ -101,7 +111,7 @@ export function TxtFileResult({ result }: TxtFileResultProps) {
           <div
             className={cn(
               "mb-4 whitespace-pre-wrap font-mono text-sm p-3 bg-muted/50 rounded-md overflow-auto",
-              "max-h-[200px] md:max-h-[400px] scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
+              "max-h-[200px] md:max-h-[400px] scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600",
             )}
             style={{
               transition: "max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",

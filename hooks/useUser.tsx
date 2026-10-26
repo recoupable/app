@@ -3,9 +3,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { isPublicRoute } from "@/lib/routes/isPublicRoute";
 import { useEffect, useRef, useState } from "react";
 import { Address } from "viem";
-import { uploadFile } from "@/lib/arweave/uploadFile";
+import { usePublicUpload } from "./usePublicUpload";
 import { useAccount } from "wagmi";
-import { toast } from "sonner";
 import { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
 import { ensureAccount } from "@/lib/accounts/ensureAccount";
 import { updateAccountProfile } from "@/lib/accounts/updateAccountProfile";
@@ -24,7 +23,7 @@ const useUser = () => {
   const [jobTitle, setJobTitle] = useState("");
   const [roleType, setRoleType] = useState("");
   const [companyName, setCompanyName] = useState("");
-  const [imageUploading, setImageUploading] = useState(false);
+  const imageUpload = usePublicUpload(userData?.account_id ?? "profile");
   const imageRef = useRef<HTMLInputElement>(null);
   const [updating, setUpdating] = useState(false);
   const router = useRouter();
@@ -35,23 +34,21 @@ const useUser = () => {
   const handleImageSelected = async (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    setImageUploading(true);
     const file = e.target.files?.[0];
-    if (!file) {
-      setImageUploading(false);
-      return;
-    }
+    if (!file) return;
+    const operation = imageUpload.begin(true);
     try {
-      const { uri } = await uploadFile(file);
-      setImage(uri);
-    } catch {
-      toast.error("Failed to upload image. Please try again.");
+      const { url } = await operation.upload(file);
+      if (operation.isCurrent()) setImage(url);
+    } catch (error) {
+      operation.reportError(error);
     } finally {
-      setImageUploading(false);
+      operation.finish();
     }
   };
 
   const removeImage = () => {
+    imageUpload.cancel();
     setImage("");
     if (imageRef.current) {
       imageRef.current.value = "";
@@ -100,6 +97,7 @@ const useUser = () => {
   };
 
   const signOut = async () => {
+    imageUpload.cancel();
     setIsModalOpen(false);
     setUserData(null);
     setName("");
@@ -160,7 +158,7 @@ const useUser = () => {
     toggleModal,
     handleImageSelected,
     imageRef,
-    imageUploading,
+    imageUploading: imageUpload.isUploading,
     updating,
     save,
     organization,

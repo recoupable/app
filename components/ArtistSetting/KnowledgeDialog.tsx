@@ -39,7 +39,7 @@ const KnowledgeDialog = ({ name, url, type, children }: KnowledgeDialogProps) =>
   const { isEditing, setIsEditing, editedText, setEditedText, isOpen, handleOpenChange } =
     useKnowledgeEditor({ isText, textContent });
 
-  const { handleSave } = useSaveKnowledgeEdit({ name, url, editedText });
+  const { handleSave, isSaving } = useSaveKnowledgeEdit({ name, url, editedText });
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -68,7 +68,7 @@ const KnowledgeDialog = ({ name, url, type, children }: KnowledgeDialogProps) =>
                 <Button
                   size="sm"
                   className="h-8 px-2 text-xs sm:px-3"
-                  disabled={loading || knowledgeUploading}
+                  disabled={loading || knowledgeUploading || isSaving}
                   onClick={handleSave}
                 >
                   Save

@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { uploadFile } from "@/lib/arweave/uploadFile";
-import { getFileMimeType } from "@/utils/getFileMimeType";
+import { usePublicUpload } from "./usePublicUpload";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import useAccountOrganizations from "./useAccountOrganizations";
 import { usePrivy } from "@privy-io/react-auth";
@@ -32,8 +31,8 @@ const useOrgSettings = (orgId: string | null) => {
   const [knowledges, setKnowledges] = useState<KnowledgeItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [imageUploading, setImageUploading] = useState(false);
-  const [knowledgeUploading, setKnowledgeUploading] = useState(false);
+  const imageUpload = usePublicUpload(orgId ?? "no-organization");
+  const knowledgeUpload = usePublicUpload(orgId ?? "no-organization");
   const imageRef = useRef<HTMLInputElement>(null);
   const knowledgeRef = useRef<HTMLInputElement>(null);
 
@@ -50,7 +49,7 @@ const useOrgSettings = (orgId: string | null) => {
 
     // Find the organization from the list (same as button does)
     const selectedOrg = organizations.find(
-      (org) => org.organization_id === orgId
+      (org) => org.organization_id === orgId,
     );
 
     if (!selectedOrg) {
@@ -67,7 +66,7 @@ const useOrgSettings = (orgId: string | null) => {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `${getClientApiBaseUrl()}/api/accounts/${orgId}`
+          `${getClientApiBaseUrl()}/api/accounts/${orgId}`,
         );
         if (response.ok) {
           const data = await response.json();
@@ -92,47 +91,52 @@ const useOrgSettings = (orgId: string | null) => {
       const file = e.target.files?.[0];
       if (!file) return;
 
-      setImageUploading(true);
+      const operation = imageUpload.begin(true);
       try {
-        const { uri } = await uploadFile(file);
-        setImage(uri);
+        const { url } = await operation.upload(file);
+        if (operation.isCurrent()) setImage(url);
+      } catch (error) {
+        operation.reportError(error);
       } finally {
-        setImageUploading(false);
+        operation.finish();
       }
     },
-    []
+    [imageUpload],
   );
 
   const removeImage = useCallback(() => {
+    imageUpload.cancel();
     setImage("");
     if (imageRef.current) {
       imageRef.current.value = "";
     }
-  }, []);
+  }, [imageUpload]);
 
   const handleKnowledgesSelected = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
       if (!files) return;
 
-      setKnowledgeUploading(true);
+      const operation = knowledgeUpload.begin();
       const newKnowledges: KnowledgeItem[] = [];
       try {
         for (const file of files) {
           const name = file.name;
-          const type = getFileMimeType(file);
-          const { uri } = await uploadFile(file);
-          newKnowledges.push({ name, url: uri, type });
+          const { url, fileType } = await operation.upload(file);
+          newKnowledges.push({ name, url, type: fileType });
         }
-        setKnowledges((prev) => [...prev, ...newKnowledges]);
+        if (operation.isCurrent())
+          setKnowledges((prev) => [...prev, ...newKnowledges]);
+      } catch (error) {
+        operation.reportError(error);
       } finally {
-        setKnowledgeUploading(false);
-        if (knowledgeRef.current) {
+        if (operation.isCurrent() && knowledgeRef.current) {
           knowledgeRef.current.value = "";
         }
+        operation.finish();
       }
     },
-    []
+    [knowledgeUpload],
   );
 
   const handleDeleteKnowledge = useCallback((index: number) => {
@@ -158,12 +162,22 @@ const useOrgSettings = (orgId: string | null) => {
         knowledges,
       });
       setOrgData(data);
-      await queryClient.invalidateQueries({ queryKey: ["accountOrganizations"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["accountOrganizations"],
+      });
       return true;
     } finally {
       setIsSaving(false);
     }
-  }, [orgId, name, image, instruction, knowledges, queryClient, getAccessToken]);
+  }, [
+    orgId,
+    name,
+    image,
+    instruction,
+    knowledges,
+    queryClient,
+    getAccessToken,
+  ]);
 
   return {
     orgData,
@@ -177,8 +191,8 @@ const useOrgSettings = (orgId: string | null) => {
     setKnowledges,
     isLoading,
     isSaving,
-    imageUploading,
-    knowledgeUploading,
+    imageUploading: imageUpload.isUploading,
+    knowledgeUploading: knowledgeUpload.isUploading,
     imageRef,
     knowledgeRef,
     handleImageSelected,

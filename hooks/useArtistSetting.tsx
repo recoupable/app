@@ -1,7 +1,7 @@
-import { uploadFile } from "@/lib/arweave/uploadFile";
+import { usePublicUpload } from "./usePublicUpload";
 import { useEffect, useRef, useState } from "react";
 import { ArtistRecord } from "@/types/Artist";
-import { getFileMimeType } from "@/utils/getFileMimeType";
+import { useOrganization } from "@/providers/OrganizationProvider";
 
 const useArtistSetting = () => {
   const imageRef = useRef<HTMLInputElement>(null);
@@ -21,12 +21,17 @@ const useArtistSetting = () => {
   const [bases, setBases] = useState<
     Array<{ name: string; url: string; type: string }>
   >([]);
-  const [imageUploading, setImageUploading] = useState(false);
-  const [knowledgeUploading, setKnowledgeUploading] = useState(false);
   const [question, setQuestion] = useState("");
   const [editableArtist, setEditableArtist] = useState<ArtistRecord | null>(
-    null
+    null,
   );
+  const { selectedOrgId } = useOrganization();
+  const uploadTarget = JSON.stringify([
+    editableArtist?.account_id,
+    selectedOrgId,
+  ]);
+  const imageUpload = usePublicUpload(uploadTarget);
+  const knowledgeUpload = usePublicUpload(uploadTarget);
 
   const handleDeleteKnowledge = (index: number) => {
     const temp = [...bases];
@@ -35,50 +40,51 @@ const useArtistSetting = () => {
   };
 
   const handleImageSelected = async (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    setImageUploading(true);
     const file = e.target.files?.[0];
-    if (!file) {
-      setImageUploading(false);
-      return;
-    }
+    if (!file) return;
+    const operation = imageUpload.begin(true);
     try {
-      const { uri } = await uploadFile(file);
-      setImage(uri);
+      const { url } = await operation.upload(file);
+      if (operation.isCurrent()) setImage(url);
     } catch (error) {
-      console.error("Failed to upload image:", error);
+      operation.reportError(error);
+    } finally {
+      operation.finish();
     }
-    setImageUploading(false);
   };
 
   const handleKnowledgesSelected = async (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    setKnowledgeUploading(true);
     const files = e.target.files;
-    const temp = [];
+    if (!files?.length) return;
+    const operation = knowledgeUpload.begin();
+    const temp: Array<{ name: string; url: string; type: string }> = [];
     try {
       if (files) {
         for (const file of files) {
           const name = file.name;
-          const type = getFileMimeType(file);
-          const { uri } = await uploadFile(file);
+          const { url, fileType } = await operation.upload(file);
           temp.push({
             name,
-            url: uri,
-            type,
+            url,
+            type: fileType,
           });
         }
       }
-      setBases([...bases, ...temp]);
+      if (operation.isCurrent()) setBases((previous) => [...previous, ...temp]);
     } catch (error) {
-      console.error("Failed to upload knowledge files:", error);
+      operation.reportError(error);
+    } finally {
+      operation.finish();
     }
-    setKnowledgeUploading(false);
   };
 
   const clearParams = () => {
+    imageUpload.cancel();
+    knowledgeUpload.cancel();
     setName("");
     setImage("");
     setInstruction("");
@@ -114,7 +120,7 @@ const useArtistSetting = () => {
       };
       Object.entries(socialMediaTypes).forEach(([type, setter]) => {
         const link = editableArtist?.account_socials?.find(
-          (item) => item.type === type
+          (item) => item.type === type,
         )?.link;
         setter(link || "");
       });
@@ -152,15 +158,14 @@ const useArtistSetting = () => {
     setBases,
     imageRef,
     baseRef,
-    imageUploading,
+    imageUploading: imageUpload.isUploading,
     question,
     setQuestion,
     clearParams,
-    knowledgeUploading,
+    knowledgeUploading: knowledgeUpload.isUploading,
     handleDeleteKnowledge,
     editableArtist,
     setEditableArtist,
-    setKnowledgeUploading,
   };
 };
 
