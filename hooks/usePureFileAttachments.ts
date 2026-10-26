@@ -1,123 +1,123 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { FileUIPart } from "ai";
 import { useVercelChatContext } from "@/providers/VercelChatProvider";
+import { useArtistProvider } from "@/providers/ArtistProvider";
+import { useOrganization } from "@/providers/OrganizationProvider";
+import { useAccountOverride } from "@/providers/AccountOverrideProvider";
 import { CHAT_INPUT_SUPPORTED_FILE } from "@/lib/chat/config";
 import { isAllowedByExtension } from "@/lib/files/isAllowedByExtension";
 import { getFileExtension } from "@/lib/files/getFileExtension";
+import { preparePublicUpload } from "@/lib/files/preparePublicUpload";
+import { usePublicUpload } from "./usePublicUpload";
+import { toast } from "sonner";
 
 export function usePureFileAttachments() {
-  const { setAttachments, addTextAttachment } = useVercelChatContext();
+  const { id, sessionId, setAttachments, addTextAttachment } =
+    useVercelChatContext();
+  const { selectedArtist } = useArtistProvider();
+  const { selectedOrgId } = useOrganization();
+  const { email, accountIdOverride } = useAccountOverride();
+  const upload = usePublicUpload(
+    JSON.stringify([
+      id,
+      sessionId,
+      selectedArtist?.account_id,
+      selectedOrgId,
+      email,
+      accountIdOverride,
+    ]),
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const previews = useRef(new Set<string>());
   const MAX_FILES = 10;
   const allowedTypes = Object.keys(CHAT_INPUT_SUPPORTED_FILE);
 
-  const uploadFile = async (file: File) => {
-    // Accept by MIME type first, then fall back to extension for browsers that
-    // report empty or generic MIME types (common for .md files).
-    const isAllowedMimeType = allowedTypes.includes(file.type);
-    if (!isAllowedMimeType && !isAllowedByExtension(file)) {
-      console.error("File type not supported:", file.type);
-      return;
-    }
-
-    const ext = getFileExtension(file.name).toLowerCase();
-
-    // Handle CSV files
-    if (file.type === "text/csv" || ext === ".csv") {
-      await addTextAttachment(file, "csv");
-      return;
-    }
-
-    // Handle markdown files
-    const isMarkdown =
-      file.type === "text/markdown" ||
-      file.type === "text/x-markdown" ||
-      ext === ".md" ||
-      ext === ".markdown";
-
-    if (isMarkdown) {
-      await addTextAttachment(file, "md");
-      return;
-    }
-
-    // Create a pending attachment with temporary URL for immediate preview
-    const tempUrl = URL.createObjectURL(file);
-    const pendingAttachment: FileUIPart = {
-      type: "file",
-      filename: file.name,
-      mediaType: file.type,
-      url: tempUrl, // Temporary URL for initial preview
+  useEffect(() => {
+    const ownedPreviews = previews.current;
+    return () => {
+      const urls = new Set(ownedPreviews);
+      urls.forEach((url) => URL.revokeObjectURL(url));
+      ownedPreviews.clear();
+      if (urls.size)
+        setAttachments((previous) =>
+          previous.filter((part) => !urls.has(part.url)),
+        );
     };
+  }, [upload.scope, setAttachments]);
 
-    // Add the pending attachment to the state
-    setAttachments((prev: FileUIPart[]) => [...prev, pendingAttachment]);
-
+  const uploadFile = async (file: File) => {
+    const operation = upload.begin();
+    let tempUrl: string | undefined;
     try {
-      // Upload the file to Arweave
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to upload file");
+      if (!allowedTypes.includes(file.type) && !isAllowedByExtension(file)) {
+        throw new Error(
+          "This file type is not supported. Choose an image, PDF, CSV, Markdown, or supported audio file.",
+        );
       }
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || "Upload failed");
+      const ext = getFileExtension(file.name).toLowerCase();
+      // Text attachments stay local; they must not be copied to public storage.
+      if (file.type === "text/csv" || ext === ".csv") {
+        await addTextAttachment(file, "csv", operation.isCurrent);
+        return;
       }
-
-      // Update the attachment with the Arweave URL
-      setAttachments((prev: FileUIPart[]) =>
-        prev.map((attachment: FileUIPart) =>
-          // Compare by URL since object references won't match
-          attachment.url === tempUrl
-            ? ({
-                type: "file",
-                filename: data.fileName,
-                mediaType: data.fileType,
-                url: data.url,
-              } as FileUIPart)
-            : attachment
-        )
-      );
-
-      // Revoke the temporary object URL to avoid memory leaks
-      URL.revokeObjectURL(tempUrl);
+      if (
+        file.type === "text/markdown" ||
+        file.type === "text/x-markdown" ||
+        ext === ".md" ||
+        ext === ".markdown"
+      ) {
+        await addTextAttachment(file, "md", operation.isCurrent);
+        return;
+      }
+      const prepared = preparePublicUpload(file);
+      tempUrl = URL.createObjectURL(prepared);
+      previews.current.add(tempUrl);
+      const pending: FileUIPart = {
+        type: "file",
+        filename: file.name,
+        mediaType: prepared.type,
+        url: tempUrl,
+      };
+      setAttachments((previous) => [...previous, pending]);
+      const data = await operation.upload(prepared);
+      if (operation.isCurrent())
+        setAttachments((previous) =>
+          previous.map((attachment) =>
+            attachment.url === tempUrl
+              ? {
+                  type: "file",
+                  filename: data.fileName,
+                  mediaType: data.fileType,
+                  url: data.url,
+                }
+              : attachment,
+          ),
+        );
     } catch (error) {
-      console.error("Error uploading file:", error);
-      // Remove the failed attachment
-      setAttachments((prev: FileUIPart[]) =>
-        prev.filter((a: FileUIPart) => a.url !== tempUrl)
-      );
-      // Revoke the temporary object URL
-      URL.revokeObjectURL(tempUrl);
+      operation.reportError(error);
+    } finally {
+      if (tempUrl) {
+        // Retire our preview even if the API origin changed before a render.
+        // Matching the owned blob URL cannot remove the destination view's files.
+        setAttachments((previous) =>
+          previous.filter((part) => part.url !== tempUrl),
+        );
+        previews.current.delete(tempUrl);
+        URL.revokeObjectURL(tempUrl);
+      }
+      operation.finish();
     }
   };
 
   const handleFileChange = () => {
     const files = Array.from(fileInputRef.current?.files || []);
-
-    // Limit to MAX_FILES
-    const filesToUpload = files.slice(0, MAX_FILES) as File[];
-
-    if (files.length > MAX_FILES) {
-      console.warn(`Only the first ${MAX_FILES} files will be uploaded`);
-    }
-
-    filesToUpload.forEach(uploadFile);
-
-    // Reset the input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (files.length > MAX_FILES)
+      toast.error(
+        `Choose up to ${MAX_FILES} files at a time. Only the first ${MAX_FILES} will be attached.`,
+      );
+    files.slice(0, MAX_FILES).forEach(uploadFile);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
-
   return {
     fileInputRef,
     handleFileChange,

@@ -1,6 +1,7 @@
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import getMimeFromPath from "@/lib/files/getMimeFromPath";
-import { uploadFile } from "@/lib/arweave/uploadFile";
+import { usePublicUpload } from "./usePublicUpload";
+import { useOrganization } from "@/providers/OrganizationProvider";
 import { toast } from "react-toastify";
 
 type UseSaveKnowledgeEditArgs = {
@@ -14,13 +15,17 @@ export const useSaveKnowledgeEdit = ({
   url,
   editedText,
 }: UseSaveKnowledgeEditArgs) => {
-  const {
-    knowledgeUploading,
-    setKnowledgeUploading,
-    bases,
-    setBases,
-    saveSetting,
-  } = useArtistProvider();
+  const { editableArtist, bases, setBases, saveSetting } = useArtistProvider();
+  const { selectedOrgId } = useOrganization();
+  const upload = usePublicUpload(
+    JSON.stringify([
+      editableArtist?.account_id,
+      selectedOrgId,
+      name,
+      url,
+      bases,
+    ]),
+  );
 
   const handleSave = async () => {
     const mime = getMimeFromPath(name || url);
@@ -28,40 +33,42 @@ export const useSaveKnowledgeEdit = ({
       try {
         JSON.parse(editedText);
       } catch {
-        toast.warn("Invalid JSON; saving as-is");
+        toast.error("Invalid JSON. Correct the JSON before saving.");
+        return false;
       }
     }
+    const operation = upload.begin(true);
     try {
-      setKnowledgeUploading(true);
       const file = new File([editedText], name || "file.txt", { type: mime });
-      const { uri } = await uploadFile(file);
+      const { url: uploadedUrl } = await operation.upload(file);
+      if (!operation.isCurrent()) return false;
       const next = bases.map((b) => ({ ...b }));
       const idx = next.findIndex((b) => b.url === url && b.name === name);
-      if (idx >= 0) {
-        next[idx] = { name, url: uri, type: mime } as {
-          name: string;
-          url: string;
-          type: string;
-        };
-        setBases(next);
-      }
+      if (idx < 0)
+        throw new Error(
+          "This knowledge file changed. Reopen it before saving.",
+        );
+      next[idx] = { name, url: uploadedUrl, type: mime };
       try {
-        await saveSetting(next);
+        const saved = await saveSetting(next, operation.isCurrent);
+        if (!operation.isCurrent()) return false;
+        if (!saved) throw new Error("Failed to save changes");
+        setBases(next);
         toast.success("Saved");
         return true;
       } catch {
-        toast.error("Failed to save changes");
+        if (operation.isCurrent()) toast.error("Failed to save changes");
         return false;
       }
-    } catch {
-      toast.error("Upload failed");
+    } catch (error) {
+      operation.reportError(error);
       return false;
     } finally {
-      setKnowledgeUploading(false);
+      operation.finish();
     }
   };
 
-  return { handleSave, isSaving: knowledgeUploading };
+  return { handleSave, isSaving: upload.isUploading };
 };
 
 export default useSaveKnowledgeEdit;

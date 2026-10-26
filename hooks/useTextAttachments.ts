@@ -9,20 +9,25 @@ export function useTextAttachments() {
   const [textAttachments, setTextAttachments] = useState<TextAttachment[]>([]);
 
   const addTextAttachment = useCallback(
-    async (file: File, type: TextAttachment["type"]) => {
+    async (
+      file: File,
+      type: TextAttachment["type"],
+      isCurrent: () => boolean = () => true,
+    ) => {
       const content = await file.text();
+      if (!isCurrent()) return;
       const lineCount = content.split("\n").length;
       setTextAttachments((prev) => [
         ...prev,
         { filename: file.name, content, lineCount, type },
       ]);
     },
-    []
+    [],
   );
 
   const removeTextAttachment = useCallback((indexToRemove: number) => {
     setTextAttachments((prev) =>
-      prev.filter((_, index) => index !== indexToRemove)
+      prev.filter((_, index) => index !== indexToRemove),
     );
   }, []);
 
