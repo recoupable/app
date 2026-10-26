@@ -5,7 +5,7 @@ import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 /**
  * Wire shape of each row from recoup-api `GET /api/chats`, validated at
  * the boundary. Mirrors the `ChatRoom` schema in
- * recoupable/docs#227 — every chat is joined to its parent session, so
+ * recoupable/docs-legacy#227 — every chat is joined to its parent session, so
  * `sessionId` is always present and consumers can build the canonical
  * `/sessions/{sessionId}/chats/{id}` URL directly. `artistId` reflects
  * the session's artist linkage (null when the session was created

@@ -1,7 +1,7 @@
 export type MusicGenerationStatus = "pending" | "processing" | "completed" | "failed";
 
 /**
- * A music generation as the API returns it (recoupable/docs#308).
+ * A music generation as the API returns it (recoupable/docs-legacy#308).
  *
  * Ten fields, matching the shipped `music_generations` table. Anything another
  * system already knows is not stored and so is not returned: generation
