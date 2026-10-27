@@ -1,6 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import type { ObjectRef } from "@/lib/intelligent-ui/descriptors/schemas";
+import { indexDescriptors } from "@/lib/intelligent-ui/descriptors/indexDescriptors";
+import { resolveSelection } from "@/lib/intelligent-ui/descriptors/resolveSelection";
+import {
+  describeCatalogRecord,
+  catalogFixtureWorkspace,
+} from "@/lib/intelligent-ui/playground/catalog/describeCatalogRecord";
 import { createCatalogExplorerFixture } from "@/lib/intelligent-ui/playground/catalog/createCatalogExplorerFixture";
 import { getCatalogExplorerView } from "@/lib/intelligent-ui/playground/catalog/getCatalogExplorerView";
 import { compareCatalogSelection } from "@/lib/intelligent-ui/playground/catalog/compareCatalogSelection";
@@ -19,17 +26,33 @@ export default function CatalogExplorer() {
   const [cohort, setCohort] = useState("all");
   const [descending, setDescending] = useState(false);
   const [page, setPage] = useState(1);
-  const [selection, setSelection] = useState<string[]>([]);
+  const [selection, setSelection] = useState<ObjectRef[]>([]);
   const view = useMemo(
     () => getCatalogExplorerView(records, { query, cohort, descending, page }),
     [records, query, cohort, descending, page],
   );
   const byId = useMemo(() => new Map(records.map((r) => [r.id, r])), [records]);
-  const selected = selection.map((id) => byId.get(id)!);
+  const descriptors = useMemo(
+    () => indexDescriptors(records.map(describeCatalogRecord)),
+    [records],
+  );
+  const resolved = resolveSelection(
+    catalogFixtureWorkspace,
+    descriptors,
+    selection,
+  );
+  const selected =
+    resolved.state === "available"
+      ? resolved.items.map((item) => byId.get(item.ref.id)!)
+      : [];
+  const selectedIds = selection.map((ref) => ref.id);
   const comparison = compareCatalogSelection(selected);
   const visible = new Set(view.rows.map((r) => r.id));
-  const hidden = selection.filter((id) => !visible.has(id)).length;
-  const text = getCatalogExplorerText(view, selected);
+  const hidden = selectedIds.filter((id) => !visible.has(id)).length;
+  const text =
+    resolved.state === "unavailable"
+      ? `${selection.length} selected references are unavailable. Reset the local view to continue.`
+      : getCatalogExplorerText(view, selected);
   return (
     <section
       id="conversation"
@@ -142,16 +165,16 @@ export default function CatalogExplorer() {
                       type="checkbox"
                       className="size-5 accent-brand-link focus-visible:outline-2 focus-visible:outline-ring"
                       aria-label={`Select ${r.label}`}
-                      checked={selection.includes(r.id)}
+                      checked={selectedIds.includes(r.id)}
                       disabled={
-                        !selection.includes(r.id) && selection.length >= 8
+                        !selectedIds.includes(r.id) && selection.length >= 8
                       }
                       onChange={() =>
                         setSelection((current) =>
-                          current.includes(r.id)
-                            ? current.filter((id) => id !== r.id)
+                          current.some((ref) => ref.id === r.id)
+                            ? current.filter((ref) => ref.id !== r.id)
                             : current.length < 8
-                              ? [...current, r.id]
+                              ? [...current, describeCatalogRecord(r).ref]
                               : current,
                         )
                       }
@@ -240,7 +263,9 @@ export default function CatalogExplorer() {
               <button
                 className={control}
                 onClick={() =>
-                  setSelection((current) => current.filter((id) => id !== r.id))
+                  setSelection((current) =>
+                    current.filter((ref) => ref.id !== r.id),
+                  )
                 }
               >
                 Remove {r.label}
@@ -249,10 +274,12 @@ export default function CatalogExplorer() {
           ))}
         </ul>
         <p role="status" className="text-sm leading-6">
-          {comparison.reason ??
-            (comparison.distribution
-              ? "Same source, period, unit and cohort. Chart covers only this exact selection."
-              : "Compatible supplied currency values. No finance aggregation or projection.")}
+          {resolved.state === "unavailable"
+            ? `${selection.length} selected references are unavailable. Reset the local view to continue.`
+            : (comparison.reason ??
+              (comparison.distribution
+                ? "Same source, period, unit and cohort. Chart covers only this exact selection."
+                : "Compatible supplied currency values. No finance aggregation or projection."))}
         </p>
         {comparison.distribution && (
           <DistributionView component={comparison.distribution} />

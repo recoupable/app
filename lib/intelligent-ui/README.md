@@ -173,8 +173,10 @@ recipe maps page rows into the existing portable `collection` contract and
 compatible count selections into `distribution`, reusing `computeDistribution`,
 `DistributionView` and the representation text fallback. It does not widen the
 200-record portable limit or invent a shared Context/API descriptor contract.
-Recipe-local source/version, role, period, unit/currency, territory, cohort and
-missingness fields follow the collection/basis constraints in IUI-23 (#2222).
+The consumed [workspace-bound descriptor adapter](descriptors/README.md) projects
+fixture rows into schema-v1 collections and captures exact identity/source-version
+selections. Its local checks preserve role, period, unit/currency, territory,
+cohort and missingness; unavailable selections remain explicit in UI and text.
 Context remains owner of snapshots, persistence and authority.
 
 Observed-shaped fixture values and authored hypothetical values stay separate.

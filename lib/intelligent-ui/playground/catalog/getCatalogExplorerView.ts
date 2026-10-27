@@ -1,6 +1,10 @@
-import type { CollectionComponent } from "../../schema";
+import { toCollectionComponent } from "../../descriptors/toCollectionComponent";
+import type { CollectionResult } from "../../descriptors/collectionResult";
+import {
+  describeCatalogRecord,
+  catalogFixtureWorkspace,
+} from "./describeCatalogRecord";
 import type { CatalogExplorerRecord } from "./catalogExplorerTypes";
-import { formatCatalogSourceValue } from "./formatCatalogSourceValue";
 
 /** Local in-memory query; only the bounded page enters the portable collection. */
 export function getCatalogExplorerView(
@@ -34,25 +38,25 @@ export function getCatalogExplorerView(
     coverage[
       row.value.state === "not-applicable" ? "notApplicable" : row.value.state
     ]++;
-  const collection: CollectionComponent = {
-    type: "collection",
-    id: "synthetic-catalog-page",
-    title: "Synthetic recordings",
-    columns: [
-      { key: "value", label: "Source value" },
-      { key: "basis", label: "Source basis" },
-    ],
-    rows: rows.map((r) => ({
-      id: r.id,
-      label: r.label,
-      evidenceIds: [],
-      values: {
-        value: formatCatalogSourceValue(r),
-        basis: `${r.role} · ${r.metric} · ${r.periodStart ?? "period unknown"} to ${r.periodEnd ?? "unknown"} · ${r.territory}`,
-      },
-    })),
-    complete: rows.length === filtered.length,
-    totalCount: filtered.length,
+  const descriptors: CollectionResult = {
+    workspaceId: catalogFixtureWorkspace,
+    items: rows.map(describeCatalogRecord),
+    nextCursor: page < pages ? `fixture-page:${page + 1}` : null,
+    hasMore: page < pages,
+    knownTotal: filtered.length,
+    completeness: rows.length === filtered.length ? "complete" : "partial",
+    aggregationScope: "page",
+    population: "Synthetic recordings",
+    selection: [],
   };
-  return { rows, collection, coverage, page, pages, hasMore: page < pages };
+  const collection = toCollectionComponent(descriptors);
+  return {
+    rows,
+    collection,
+    descriptors,
+    coverage,
+    page,
+    pages,
+    hasMore: page < pages,
+  };
 }
