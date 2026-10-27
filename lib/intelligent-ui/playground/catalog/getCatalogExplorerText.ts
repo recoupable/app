@@ -31,7 +31,7 @@ export function getCatalogExplorerText(
     `Fixture: 10,000 supplied recordings. Filter matches: ${view.collection.totalCount}. Current page: ${view.page}/${view.pages}, ${view.rows.length} rows. Page is not a catalog total.`,
     `Filtered coverage: ${view.coverage.known} known, ${view.coverage.unknown} unknown, ${view.coverage.withheld} withheld, ${view.coverage.notApplicable} not applicable. Zero remains zero.`,
     "Fixed fixture reference: 2026-10-26T12:00:00Z; sources observed 2026-10-15T12:00:00Z (11 days old at reference). No freshness claim today.",
-    "Hypothetical values are authored examples, not calculated estimates. No scenario method, assumptions or valuation formula is adopted. No historical membership or period inference. Small selections do not establish statistical significance.",
+    "Hypothetical values are authored examples, not calculated estimates. These rows are not inputs to the separate annual Spotify scenario fixture. No historical membership or period inference. Small selections do not establish statistical significance.",
     "CURRENT PAGE",
     ...view.rows.map(line),
     "EXACT LOCAL SELECTION",

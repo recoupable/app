@@ -15,6 +15,7 @@ import { catalogCohorts } from "@/lib/intelligent-ui/playground/catalog/catalogE
 import { formatCatalogSourceValue } from "@/lib/intelligent-ui/playground/catalog/formatCatalogSourceValue";
 import { getCatalogExplorerText } from "@/lib/intelligent-ui/playground/catalog/getCatalogExplorerText";
 import DistributionView from "./DistributionView";
+import AnnualCatalogScenario from "./AnnualCatalogScenario";
 
 const control =
   "min-h-11 min-w-0 max-w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50";
@@ -22,6 +23,7 @@ const control =
 /** Development lab only. Local selection is not saved context or authority. */
 export default function CatalogExplorer() {
   const [records] = useState(createCatalogExplorerFixture);
+  const [showAnnualScenario, setShowAnnualScenario] = useState(false);
   const [query, setQuery] = useState("");
   const [cohort, setCohort] = useState("all");
   const [descending, setDescending] = useState(false);
@@ -297,11 +299,23 @@ export default function CatalogExplorer() {
           Reset local view
         </button>
       </section>
-      <p className="text-sm leading-6 text-muted-foreground">
-        Scenario calculations are unavailable: no approved method or assumptions
-        are supplied. Hypothetical fixture values never alter observations. No
-        additional data is fetched.
-      </p>
+      <div className="space-y-3">
+        <p className="text-sm leading-6 text-muted-foreground">
+          The rows above do not supply compatible annual scenario measurements.
+          Explore a separate annual Spotify fixture below; existing observations
+          and selections remain unchanged.
+        </p>
+        <button
+          className={control}
+          aria-expanded={showAnnualScenario}
+          onClick={() => setShowAnnualScenario((open) => !open)}
+        >
+          {showAnnualScenario
+            ? "Close annual scenario"
+            : "Explore separate annual scenario"}
+        </button>
+        {showAnnualScenario && <AnnualCatalogScenario />}
+      </div>
       <details className="text-sm">
         <summary className="min-h-11 cursor-pointer py-3">
           Text view / copy current page and selection

@@ -1,0 +1,2 @@
+# Canonical Catalog files must remain byte-identical; hash checked in tests.
+lib/intelligent-ui/playground/catalog/scenario/vendor/

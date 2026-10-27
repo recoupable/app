@@ -1,0 +1,12 @@
+{
+  "repository": "recoupable/skills",
+  "commit": "f9b56047655689b12fe7dbfe77b8e8ba6e989d45",
+  "path": "skills/recoup-catalog-estimate-value/",
+  "sha256": {
+    "scenario.mjs": "0cd92009fe39e237cafb44d033c4e1488b9811d783fdf000ec89b279893117ce",
+    "scenario-vectors.json": "1c5b9d8ef1d1822bd31574b13a99e5619981635822e3b9d02ca6d3a078b34702",
+    "scenario-method.json": "531ffd22b177305dbb4acc3ade7cdaf3250e57d78565d42dee6c7dc15a7e43d0",
+    "scenario-request.schema.json": "8d3a0bc0f12dbc22cac5ea776c21c07d424febe901676d53c11b1d77da913d55",
+    "browser-scenario.md": "93a9874173c8cb311f0fabce3b3aa52b7ce01a2d284f256fb261a19b34856f32"
+  }
+}

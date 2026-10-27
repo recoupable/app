@@ -184,9 +184,9 @@ Zero is retained; unknown, withheld and not applicable remain distinct. A missin
 period/unit/currency or incompatible basis refuses comparison. Cumulative Spotify
 observations are never relabeled as daily or period streams. Browser activity,
 Luminate counts, hypothetical value and cash are distinct cohorts. Compatible
-currency values are shown without finance aggregation. No growth, valuation,
-conversion, finance policy or scenario formula is added: Catalog owns those
-calculations, and an adopted method is a prerequisite to scenario controls.
+currency values are shown without finance aggregation. The separate annual scenario
+consumes the pinned Catalog-owned runtime described below; no formula is authored
+in App and none of these existing rows is relabeled as an annual measurement.
 
 Coverage describes the filtered supplied fixture; chart totals describe only the
 selected records. Neither becomes a catalog population claim. The fixed source
@@ -209,6 +209,45 @@ cohort changes with 10,000 inputs, while asserting at most 25 data rows plus the
 header. It reports environment, median/p95/max and mount time. These are descriptive
 local measurements, not browser-paint performance, an SLA or real catalog acceptance.
 There are no additional reads, provider/model calls, ingestion, durable saves or
-production activation. Authenticated evidence under #2177, approved scenario methods,
-durable selections and remaining #2211 dependencies/acceptance remain separate work;
+production activation. Authenticated evidence under #2177, durable selections and
+remaining #2211 dependencies/acceptance remain separate work;
 this slice does not complete the epic.
+
+### Separate annual Spotify scenario
+
+“Explore separate annual scenario” opens the Catalog-owned synthetic vector: one
+1,000-stream measurement and one unknown recording for January 1, 2025 to January
+1, 2026. It does not consume or modify the 10,000 explorer records. Annual refs use
+`synthetic:annual-scenario-workspace`, fixture authority, exact recording IDs and
+source version IDs, resolved with the merged Context adapter. The selection stays
+local and is cleared on closing the panel; resetting the rate retains selection.
+
+The sole lever is a nonnegative hypothetical USD/Spotify-stream rate. Reset passes
+null to restore the supplied baseline; fixed assumptions remain illustrative.
+Results display selected coverage and explicit unknowns. The JSON text receipt
+includes unchanged observations/hash, both complete assumption sets, all bands,
+limitations, exact selection refs, method, adapter, Python-reference provenance and
+consumer source pins. Superseded keyed requests are unmounted; their asynchronous
+results/errors are discarded. Loading, refusals and errors are announced, and no
+old receipt remains visible during changed-input calculation.
+
+`playground/catalog/scenario/vendor/scenario.mjs` is copied byte-for-byte from
+`recoupable/skills` commit `f9b56047655689b12fe7dbfe77b8e8ba6e989d45`, path
+`skills/recoup-catalog-estimate-value/scripts/scenario.mjs`, SHA-256
+`0cd92009fe39e237cafb44d033c4e1488b9811d783fdf000ec89b279893117ce`.
+The [pin manifest](playground/catalog/scenario/source-pin.json) also binds the
+canonical method, schema, vectors and browser-consumption guide. Hash conformance
+tests prevent drift; Prettier excludes canonical files to preserve their bytes.
+Change the owning Catalog runtime first, then explicitly update the pin and tests.
+The adjacent declaration supplies TypeScript types only; it contains no execution.
+
+Method `public-estimate-spotify-rate/1`, adapter `catalog-browser-scenario/1`, uses
+local Web Crypto in a secure context or localhost. Python is a conformance
+reference, not browser execution. No endpoint, storage, model or provider call is
+added. These invented observations and hypothetical money are not rights findings,
+receivables, reported royalties or realized cash. Physical-device, authenticated
+source and durable-follow-up acceptance remain separate.
+
+```sh
+pnpm exec vitest run lib/intelligent-ui/playground/catalog/scenario components/IntelligentUI/__tests__/AnnualCatalogScenario.test.tsx
+```
