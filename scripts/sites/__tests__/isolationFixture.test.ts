@@ -23,7 +23,23 @@ it("serves and hashes frozen bytes after the source tree changes", async () => {
       mkdirSync(dirname(join(dir, path)), { recursive: true });
       copyFileSync(path, join(dir, path));
     }
+    const runtimePath = join(dir, "public/sites-runtime.js");
+    writeFileSync(
+      runtimePath,
+      readFileSync(runtimePath).toString() + "\n// temporary-copy canary\n",
+    );
+    const expectedHashes = Object.fromEntries(
+      Object.keys(baseline.hashes).map((path) => [
+        path,
+        hash(readFileSync(join(dir, path))),
+      ]),
+    );
     const fixture = createIsolationFixture(dir);
+    expect(fixture.hashes).toEqual(expectedHashes);
+    expect(fixture.hashes["public/sites-runtime.js"]).not.toBe(
+      baseline.hashes["public/sites-runtime.js"],
+    );
+    const expectedResponses = { ...fixture.responseHashes };
     const request = (url: string) =>
       new Promise<Buffer>((resolve) => {
         const req = Object.assign(Readable.from([]), { url, method: "GET" });
@@ -35,6 +51,10 @@ it("serves and hashes frozen bytes after the source tree changes", async () => {
         fixture.server.emit("request", req, res);
       });
     const originalRuntime = readFileSync(join(dir, "public/sites-runtime.js"));
+    expect(await request("/sites-runtime.js")).toEqual(originalRuntime);
+    expect(hash(originalRuntime)).toBe(
+      expectedHashes["public/sites-runtime.js"],
+    );
     // Change every captured file, including both renderers and static player assets.
     for (const path of Object.keys(fixture.hashes))
       writeFileSync(join(dir, path), "changed after startup");
@@ -53,8 +73,8 @@ it("serves and hashes frozen bytes after the source tree changes", async () => {
       );
     }
     const evidence = JSON.parse((await request("/evidence")).toString());
-    expect(evidence.hashes).toEqual(baseline.hashes);
-    expect(evidence.responseHashes).toEqual(baseline.responseHashes);
+    expect(evidence.hashes).toEqual(expectedHashes);
+    expect(evidence.responseHashes).toEqual(expectedResponses);
     fixture.server.close();
   } finally {
     baseline.server.close();
