@@ -1,0 +1,120 @@
+{
+  "method_version": "public-estimate-spotify-rate/1",
+  "request": {
+    "method_version": "public-estimate-spotify-rate/1",
+    "observations": {
+      "basis": {
+        "cohort_id": "synthetic-recording-cohort-v1",
+        "period_start": "2025-01-01",
+        "period_end": "2026-01-01",
+        "currency": "USD",
+        "right_kind": "master",
+        "unit": "spotify_streams"
+      },
+      "population_complete": false,
+      "coverage_notes": [
+        "Synthetic supplied subset only; other platforms and collection lag unverified."
+      ],
+      "tracks": [
+        {
+          "id": "synthetic-a",
+          "title": "Synthetic A",
+          "sp_ttm": 1000,
+          "ttm_source": "measured_365d",
+          "basis": {
+            "cohort_id": "synthetic-recording-cohort-v1",
+            "period_start": "2025-01-01",
+            "period_end": "2026-01-01",
+            "currency": "USD",
+            "right_kind": "master",
+            "unit": "spotify_streams"
+          },
+          "source_ref": "synthetic-window-a",
+          "captured_at": "2026-01-02T00:00:00Z"
+        },
+        {
+          "id": "synthetic-unknown",
+          "title": "Unknown",
+          "sp_ttm": null,
+          "ttm_source": "none",
+          "basis": {
+            "cohort_id": "synthetic-recording-cohort-v1",
+            "period_start": "2025-01-01",
+            "period_end": "2026-01-01",
+            "currency": "USD",
+            "right_kind": "master",
+            "unit": "spotify_streams"
+          },
+          "source_ref": "synthetic-missing-window",
+          "captured_at": "2026-01-02T00:00:00Z"
+        }
+      ]
+    },
+    "assumptions": {
+      "currency": "USD",
+      "right_kind": "master",
+      "controlled_share": 0.5,
+      "assumption_status": "illustrative_unverified",
+      "assumption_sources": [
+        "Synthetic arithmetic fixture; these inputs are not a market rate card."
+      ],
+      "rates": {
+        "spotify": 0.004
+      },
+      "other_dsp_grossup": {
+        "low": 0.25,
+        "central": 0.25,
+        "high": 0.25
+      },
+      "nls_band": {
+        "low": 0.8,
+        "central": 0.8,
+        "high": 0.8
+      },
+      "multiple": {
+        "low": 10,
+        "central": 10,
+        "high": 10
+      },
+      "window_days": 365,
+      "min_delta_days": 28
+    },
+    "spotify_rate": 0.008
+  },
+  "expected": {
+    "baseline": {
+      "annual_gross": 5,
+      "annual_nls": 2,
+      "value": 20
+    },
+    "scenario": {
+      "annual_gross": 10,
+      "annual_nls": 4,
+      "value": 40
+    },
+    "status": "partial_subset",
+    "covered_tracks": 1,
+    "input_tracks": 2,
+    "coverage_share": 0.5
+  },
+  "variants": [
+    {
+      "spotify_rate": 0,
+      "annual_gross": 0,
+      "annual_nls": 0,
+      "value": 0
+    },
+    {
+      "spotify_rate": null,
+      "annual_gross": 5,
+      "annual_nls": 2,
+      "value": 20
+    },
+    {
+      "spotify_rate": 0.002,
+      "annual_gross": 2.5,
+      "annual_nls": 1,
+      "value": 10
+    }
+  ]
+}
