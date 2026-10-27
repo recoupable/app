@@ -47,6 +47,13 @@ it("previews, saves and reopens the same workspace-scoped assessment", async () 
   await screen.findByText(
     "Saved assessment: aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
   );
+  expect(
+    screen
+      .getByRole("link", { name: "Start catalog audit" })
+      .getAttribute("href"),
+  ).toBe(
+    "/catalogs/reviews?assessment=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa&workspace=org",
+  );
   fireEvent.click(
     screen.getByRole("button", { name: "Open saved assessment" }),
   );

@@ -9,6 +9,7 @@ export const DOCS_BASE_URL = "https://docs.recoupable.dev";
 export const VALUATION_URL = "https://recoupable.dev/valuation";
 export const API_PUBLIC_BASE_URL = "https://api.recoupable.dev";
 export const API_OVERRIDE_STORAGE_KEY = "recoup_api_override";
+export const API_OVERRIDE_CHANGE_EVENT = "recoup:api-override-change";
 export const ACCOUNT_OVERRIDE_STORAGE_KEY = "recoup_account_override";
 export const IN_PROCESS_PROTOCOL_ADDRESS = IS_PROD
   ? ("0x540C18B7f99b3b599c6FeB99964498931c211858" as Address)
