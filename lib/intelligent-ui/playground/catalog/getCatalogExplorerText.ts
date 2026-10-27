@@ -1,3 +1,9 @@
+import {
+  describeCatalogRecord,
+  catalogFixtureWorkspace,
+} from "./describeCatalogRecord";
+import { indexDescriptors } from "../../descriptors/indexDescriptors";
+import { resolveSelection } from "../../descriptors/resolveSelection";
 import { getRepresentationText } from "../../representations/getRepresentationText";
 import type { CatalogExplorerRecord } from "./catalogExplorerTypes";
 import { formatCatalogSourceValue } from "./formatCatalogSourceValue";
@@ -9,6 +15,14 @@ export function getCatalogExplorerText(
   view: ReturnType<typeof getCatalogExplorerView>,
   selected: readonly CatalogExplorerRecord[],
 ) {
+  const descriptors = selected.map(describeCatalogRecord);
+  const selection = descriptors.map((item) => item.ref);
+  const resolved = resolveSelection(
+    catalogFixtureWorkspace,
+    indexDescriptors(descriptors),
+    selection,
+  );
+  if (resolved.state === "unavailable") return "Selection unavailable.";
   const comparison = compareCatalogSelection(selected);
   const line = (r: CatalogExplorerRecord) =>
     `${r.id} | ${r.label} | ${formatCatalogSourceValue(r)} | ${r.role} | ${r.metric} | ${r.periodStart ?? "unknown"} to ${r.periodEnd ?? "unknown"} | ${r.territory} | ${r.sourceVersion} | observed ${r.observedAt}`;
@@ -21,6 +35,7 @@ export function getCatalogExplorerText(
     "CURRENT PAGE",
     ...view.rows.map(line),
     "EXACT LOCAL SELECTION",
+    JSON.stringify(selection),
     ...selected.map(line),
     comparison.reason ??
       (comparison.distribution

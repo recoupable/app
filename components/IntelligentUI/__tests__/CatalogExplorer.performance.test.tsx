@@ -38,6 +38,11 @@ it.skipIf(!process.env.CATALOG_EXPLORER_MEASUREMENT)(
     const mount = performance.now();
     render(<CatalogExplorer />);
     const jsdomMountMs = performance.now() - mount;
+    // Exercise the changed exact-reference resolution path at its selection cap.
+    screen
+      .getAllByRole("checkbox")
+      .slice(0, 8)
+      .forEach((box) => fireEvent.click(box));
     const interactions: number[] = [];
     let maximumDomRows = 0;
     for (let i = 0; i < 30; i++) {
