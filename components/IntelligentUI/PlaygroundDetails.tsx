@@ -37,10 +37,10 @@ export default function PlaygroundDetails({
         <p>
           This is a design prototype using fictional records and authored
           answers. Response parts combine ordinary Markdown, a static
-          distribution, or a linked section timeline and native audio player.
-          The audio is an original synthesized study; its section notes were
-          authored with it. No model analyzed a recording. Playback position
-          stays on this device.
+          distribution, a locally selectable table, or a linked section timeline
+          and native audio player. The audio is an original synthesized study;
+          its section notes were authored with it. No model analyzed a
+          recording. Playback position stays on this device.
         </p>
         <p>
           Replaying tests the update protocol, not AI generation. Incoming

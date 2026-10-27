@@ -18,7 +18,8 @@ export function selectPresentation(
     return { mode: "text", reason: "unsupported-intent" };
   if (
     intent.benefit !== "show-distribution" &&
-    intent.benefit !== "navigate-time"
+    intent.benefit !== "navigate-time" &&
+    intent.benefit !== "select-records"
   )
     return { mode: "text", reason: "benefit-mismatch" };
   const component = surface.components.find(
@@ -26,13 +27,16 @@ export function selectPresentation(
   );
   if (
     !component ||
-    (component.type !== "distribution" && component.type !== "timeline")
+    (component.type !== "distribution" &&
+      component.type !== "timeline" &&
+      component.type !== "collection")
   )
     return { mode: "text", reason: "representation-unavailable" };
   if (
     (intent.benefit === "show-distribution" &&
       component.type !== "distribution") ||
-    (intent.benefit === "navigate-time" && component.type !== "timeline")
+    (intent.benefit === "navigate-time" && component.type !== "timeline") ||
+    (intent.benefit === "select-records" && component.type !== "collection")
   )
     return { mode: "text", reason: "benefit-mismatch" };
   if (!host[component.type])
@@ -42,6 +46,8 @@ export function selectPresentation(
     computeDistribution(component).total === 0
   )
     return { mode: "text", reason: "zero-total" };
+  if (component.type === "collection")
+    return { mode: "visual", component, reason: "select-records" };
   return component.type === "distribution"
     ? { mode: "visual", component, reason: "show-distribution" }
     : { mode: "visual", component, reason: "navigate-time" };

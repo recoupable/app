@@ -1,3 +1,4 @@
+import { collectionScenario } from "./collectionScenario";
 import type { PlaygroundScenario } from "./scenarioTypes";
 import { getCompletedExample } from "./getCompletedExample";
 import { createSupplierScenario } from "./createSupplierScenario";
@@ -14,4 +15,5 @@ export const playgroundScenarios: PlaygroundScenario[] = [
   createSupplierScenario(getCompletedExample(sourcingProtocolScenario)),
   listeningScenario,
   songScenario,
+  collectionScenario,
 ];

@@ -52,8 +52,8 @@ Distribution data can describe another domain's quantities; interval data can
 stand alone without audio. A host resolves an asset ID to a trusted URL; the
 model/document never supplies an audio URL or arbitrary callback.
 
-Presentation benefits are curated recipe metadata (`show-distribution` and
-`navigate-time`) checked against a representation and host support. This is not
+Presentation benefits are curated recipe metadata (`show-distribution`,
+`navigate-time`, and `select-records`) checked against a representation and host support. This is not
 an AI trained to judge usefulness. It does not infer user benefit from row count,
 numeric variation, control count or a confidence score. A future model producer
 and its selection evaluations remain separate work.
@@ -251,3 +251,22 @@ source and durable-follow-up acceptance remain separate.
 ```sh
 pnpm exec vitest run lib/intelligent-ui/playground/catalog/scenario components/IntelligentUI/__tests__/AnnualCatalogScenario.test.tsx
 ```
+
+### Selectable collections in composed answers
+
+The registered `select-records` benefit renders an existing schema-v1 `collection`
+through `AnswerRenderer` when the host advertises `collection: true`. Hosts without
+that capability receive deterministic supplied-value text; Markdown-only supplier
+answers remain unchanged. Unknown benefits still fail strict parsing. The local
+consumer defaults to this capability; remote producers must agree on support before
+sending the new benefit to an older strict client. This does not add `fieldContext`
+or enable the retained-field branch.
+
+`CollectionView` renders at most 25 of the schema's 200 rows at once and holds up to
+eight local row IDs across pages. No ObjectRefs, authorized follow-up, persistence,
+model request or external action is created. Scope, table or evidence changes reset
+the mounted selection; identical content retains it. Copy disclosure includes the
+same static supplied-value text plus explicitly local selection IDs. Whole-answer
+copy/fallback remains the immutable source answer, without unsaved widget selection.
+The `Select records` lab example exercises this exact renderer with fictional data.
+Existing snapshot byte limits remain in force; collections do not raise them.
