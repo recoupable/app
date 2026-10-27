@@ -39,23 +39,23 @@ export default function CollectionView({
           aria-label={`${component.title} table, scroll horizontally if needed`}
           tabIndex={0}
         >
-          <table className="w-full text-left text-sm">
+          <table className="w-full min-w-[36rem] text-left text-sm">
             <caption className="sr-only">
               {component.title}. Page {page + 1} of {pages}.
             </caption>
             <thead>
               <tr>
-                <th scope="col" className="p-2">
+                <th scope="col" className="p-2 whitespace-nowrap">
                   Select
                 </th>
-                <th scope="col" className="p-2">
+                <th scope="col" className="p-2 whitespace-nowrap">
                   Record
                 </th>
                 {component.columns.map((column) => (
                   <th
                     scope="col"
                     key={column.key}
-                    className="p-2 [overflow-wrap:anywhere]"
+                    className="min-w-24 p-2 [overflow-wrap:anywhere]"
                   >
                     {column.label}
                   </th>
