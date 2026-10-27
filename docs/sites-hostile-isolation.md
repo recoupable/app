@@ -14,8 +14,12 @@ node scripts/sites/isolation-fixture.mjs
 
 Open `http://127.0.0.1:8848/` in the permitted browser. The listener binds only to
 loopback. Restart the process for a fresh sink; reload the page after changing
-fixture code. Runtime bytes are loaded at process startup, and `/evidence`
-reports their SHA-256 hashes. Keep the process running until the browser test
+fixture code. All renderer, runtime, stylesheet, playlist and static player asset bytes are read
+once at process startup. Compilation, hashing and serving use this frozen cache.
+`/evidence` reports source/asset hashes and separate hashes for the rendered shell,
+observer harness, final HTML and player response. A temporary-copy regression
+mutates every source file after fixture creation and verifies responses and hashes
+still match the captured bytes. Keep the process running until the browser test
 finishes. Do not navigate to or inspect a browser-generated blocked-frame error
 page. Stop on browser-policy denial; do not switch tools or browsers to bypass it.
 
@@ -101,3 +105,10 @@ Remaining #2110 gates include reviewed allowed permissions, independent hosting
 and registered origins, released shared Fans/Widgets, mobile/provider flows,
 server abuse/tenant boundaries, and authorized billing/award tests. This receipt
 neither approves policy nor establishes those outcomes.
+
+The final native sequence was repeated after the byte-cache repair. Full AX
+snapshots (rather than only diffs) and a fresh sink receipt were saved. Final
+fixture SHA-256: `34374d7cfbf05f8c9b14862f0019fafc531c99c113030f52932ffc0ded2ee2dd`;
+hostile-game SHA-256: `b1f80c0fc82157ad818456ffc104fee9ffd70836a1c5b775e7278929ec848c97`.
+Final HTML response: `b3317ed95490fbe71541e175eba517aeda576680f26f901ef937152e27f662dd`;
+player response: `1487b30398d62cb85ed990f8cb9ce17bbfc438788ee4404d97085ad8616c78f6`.

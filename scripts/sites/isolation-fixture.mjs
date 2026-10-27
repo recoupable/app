@@ -7,9 +7,9 @@ import ts from "typescript";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const origin = "http://127.0.0.1:8848";
-const read = (path) => readFileSync(resolve(root, path));
-const loadRenderer = (path, name) => {
-  const compiled = ts.transpileModule(read(path).toString(), {
+const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const loadRenderer = (bytes, name) => {
+  const compiled = ts.transpileModule(bytes.toString(), {
     compilerOptions: { module: ts.ModuleKind.CommonJS },
   }).outputText;
   const exports = {};
@@ -18,27 +18,33 @@ const loadRenderer = (path, name) => {
 };
 
 /** Credential-free loopback fixture; snapshots source bytes at startup. */
-export function createIsolationFixture() {
+export function createIsolationFixture(fixtureRoot = root) {
   const sources = [
     "lib/sites/renderExperience.ts",
     "lib/sites/renderSpotifyPlayer.ts",
     "public/sites-runtime.js",
     "public/sites-fan-runtime.js",
+    "public/sites-player.css",
+    "public/spotify-playlist.js",
+    "public/syncstream/spotify.svg",
+    "public/syncstream/fonts/Inter-Medium.ttf",
+    "public/syncstream/fonts/CircularStd-Medium.ttf",
     "scripts/sites/hostile-game.js",
     "scripts/sites/isolation-fixture.mjs",
   ];
+  const cache = new Map(
+    sources.map((path) => [path, readFileSync(resolve(fixtureRoot, path))]),
+  );
+  const read = (path) => cache.get(path);
   const hashes = Object.fromEntries(
-    sources.map((path) => [
-      path,
-      createHash("sha256").update(read(path)).digest("hex"),
-    ]),
+    sources.map((path) => [path, hash(read(path))]),
   );
   const render = loadRenderer(
-    "lib/sites/renderExperience.ts",
+    read("lib/sites/renderExperience.ts"),
     "renderExperience",
   );
   const player = loadRenderer(
-    "lib/sites/renderSpotifyPlayer.ts",
+    read("lib/sites/renderSpotifyPlayer.ts"),
     "renderSpotifyPlayer",
   );
   const site = {
@@ -87,6 +93,12 @@ export function createIsolationFixture() {
       "spotify-playlist.js",
     ].map((name) => ["/" + name, read("public/" + name)]),
   );
+  const responseHashes = {
+    shell: hash(shell),
+    harness: hash(harness),
+    "/": hash(html),
+    "/player": hash(playerHtml),
+  };
   const events = [];
   const escapes = [];
   const server = createServer(async (req, res) => {
@@ -114,7 +126,7 @@ export function createIsolationFixture() {
       escapes.push({ method: req.method, url: req.url });
     const json =
       path === "/evidence"
-        ? { events, escapes, hashes }
+        ? { events, escapes, hashes, responseHashes }
         : path === "/api/sites/spotify/config"
           ? { configured: false }
           : null;
@@ -151,7 +163,7 @@ export function createIsolationFixture() {
     }
     res.writeHead(404).end();
   });
-  return { server, hashes, html, shell };
+  return { server, hashes, responseHashes, html, shell };
 }
 if (
   process.argv[1] &&
@@ -160,7 +172,11 @@ if (
   const fixture = createIsolationFixture();
   fixture.server.listen(8848, "127.0.0.1", () =>
     process.stdout.write(
-      JSON.stringify({ origin, hashes: fixture.hashes }) + "\n",
+      JSON.stringify({
+        origin,
+        hashes: fixture.hashes,
+        responseHashes: fixture.responseHashes,
+      }) + "\n",
     ),
   );
 }
