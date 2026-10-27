@@ -11,6 +11,7 @@ import {
   client,
 } from "./taskRunScope.fixture";
 import { useTaskRuns } from "../useTaskRuns";
+import { useTaskRunScope } from "../useTaskRunScope";
 import { useTaskRunStatus } from "../useTaskRunStatus";
 import { useChatRunStatus } from "../useChatRunStatus";
 
@@ -134,14 +135,51 @@ for (const [name, useReader] of readers) {
         ),
       ).not.toContain("obsolete");
     });
-    it("rejects an origin change during token acquisition even without rerender", async () => {
+    it("rejects the old-origin token and recovers only after a fresh token", async () => {
+      vi.useFakeTimers();
+      const oldToken = deferred<string>();
+      const freshToken = deferred<string>();
+      token
+        .mockReturnValueOnce(oldToken.promise)
+        .mockReturnValue(freshToken.promise);
+      const { result } = renderHook(() => useReader(), { wrapper });
+      expect(token).toHaveBeenCalledTimes(1);
+      context.origin = "https://new.example.test";
+      await act(async () => oldToken.resolve("old-token"));
+      // Query notifications can rerender the hook and start the new scope.
+      // Keep that scope's token pending so it cannot mask an obsolete request.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(10);
+      });
+      expect(token).toHaveBeenCalledTimes(2);
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(result.current.data).toBeUndefined();
+      await act(async () => freshToken.resolve("new-origin-token"));
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(10);
+      });
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      const [url, init] = fetchMock.mock.calls[0];
+      expect(new URL(url).origin).toBe("https://new.example.test");
+      expect(init.headers.Authorization).toBe("Bearer new-origin-token");
+      expect(result.current.data).toBeDefined();
+    });
+    it("accepts a deferred token when the origin remains unchanged", async () => {
+      vi.useFakeTimers();
       const pending = deferred<string>();
       token.mockReturnValueOnce(pending.promise);
-      renderHook(() => useReader(), { wrapper });
-      await waitFor(() => expect(token).toHaveBeenCalledTimes(1));
-      context.origin = "https://new.example.test";
-      await act(async () => pending.resolve("old-token"));
+      const { result } = renderHook(() => useReader(), { wrapper });
+      expect(token).toHaveBeenCalledTimes(1);
       expect(fetchMock).not.toHaveBeenCalled();
+      await act(async () => pending.resolve("unchanged-origin-token"));
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(10);
+      });
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      const [url, init] = fetchMock.mock.calls[0];
+      expect(new URL(url).origin).toBe("https://api.example.test");
+      expect(init.headers.Authorization).toBe("Bearer unchanged-origin-token");
+      expect(result.current.data).toBeDefined();
     });
     it("rejects missing tokens without an empty bearer request, then recovers", async () => {
       token.mockResolvedValue(null);
@@ -198,3 +236,23 @@ for (const [name, useReader] of readers.filter(([name]) => name !== "list")) {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 }
+
+// Isolate the guard from React Query's automatic recovery rerender.
+it("scope rejects an origin change after token acquisition without rerender", async () => {
+  const pending = deferred<string>();
+  token.mockReturnValueOnce(pending.promise);
+  const { result } = renderHook(() => useTaskRunScope(), { wrapper });
+  const capturedScope = result.current;
+  const request = vi.fn().mockResolvedValue("should not be requested");
+  const read = capturedScope.read(new AbortController().signal, request);
+  expect(token).toHaveBeenCalledTimes(1);
+  context.origin = "https://new.example.test";
+  const rejected = expect(read).rejects.toThrow(
+    "The account or connection changed. Reload the runs.",
+  );
+  pending.resolve("old-token");
+  await rejected;
+  expect(result.current).toBe(capturedScope);
+  expect(request).not.toHaveBeenCalled();
+  expect(fetchMock).not.toHaveBeenCalled();
+});
