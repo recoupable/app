@@ -137,24 +137,26 @@ export default function CatalogExplorer() {
             {view.rows.map((r) => (
               <tr key={r.id} className="border-t border-border align-top">
                 <td className="p-3">
-                  <input
-                    type="checkbox"
-                    className="size-5 accent-brand-link focus-visible:outline-2 focus-visible:outline-ring"
-                    aria-label={`Select ${r.label}`}
-                    checked={selection.includes(r.id)}
-                    disabled={
-                      !selection.includes(r.id) && selection.length >= 8
-                    }
-                    onChange={() =>
-                      setSelection((current) =>
-                        current.includes(r.id)
-                          ? current.filter((id) => id !== r.id)
-                          : current.length < 8
-                            ? [...current, r.id]
-                            : current,
-                      )
-                    }
-                  />
+                  <label className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-md focus-within:ring-2 focus-within:ring-ring">
+                    <input
+                      type="checkbox"
+                      className="size-5 accent-brand-link focus-visible:outline-2 focus-visible:outline-ring"
+                      aria-label={`Select ${r.label}`}
+                      checked={selection.includes(r.id)}
+                      disabled={
+                        !selection.includes(r.id) && selection.length >= 8
+                      }
+                      onChange={() =>
+                        setSelection((current) =>
+                          current.includes(r.id)
+                            ? current.filter((id) => id !== r.id)
+                            : current.length < 8
+                              ? [...current, r.id]
+                              : current,
+                        )
+                      }
+                    />
+                  </label>
                 </td>
                 <th scope="row" className="p-3 font-normal">
                   <span className="font-medium">{r.label}</span>
@@ -165,7 +167,7 @@ export default function CatalogExplorer() {
                     {catalogCohorts[r.cohort as keyof typeof catalogCohorts]}
                   </span>
                   <details className="mt-1 text-xs">
-                    <summary className="min-h-6 cursor-pointer">
+                    <summary className="min-h-11 cursor-pointer py-3 focus-visible:outline-2 focus-visible:outline-ring">
                       Source basis
                     </summary>
                     <p>
