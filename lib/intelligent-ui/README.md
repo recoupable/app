@@ -157,3 +157,56 @@ This advances contracts, presentation, reusable patterns and media exploration.
 Live chat integration, model-generated answers, authorized customer-data adapters,
 server actions/receipts, cross-device state, a second host and a published SDK
 remain outside this slice. It does not complete the company-wide epic.
+
+## Development catalog explorer (#2211 source slice)
+
+The lab's **Catalog explorer** adds local search, source-cohort filtering, name
+sorting, 25-record pagination and an exact-ID selection capped at eight records.
+The selection survives local filtering/paging and resets on leaving the example;
+it is not durable Context state or a saved follow-up. The existing production gate
+and provider isolation are unchanged. Existing catalog-song paging and saved
+Luminate comparison renderers remain separate and unchanged.
+
+`playground/catalog/` generates exactly 10,000 invented recording descriptors.
+Recording identity is distinct from release/composition/rights identity. The
+recipe maps page rows into the existing portable `collection` contract and
+compatible count selections into `distribution`, reusing `computeDistribution`,
+`DistributionView` and the representation text fallback. It does not widen the
+200-record portable limit or invent a shared Context/API descriptor contract.
+Recipe-local source/version, role, period, unit/currency, territory, cohort and
+missingness fields follow the collection/basis constraints in IUI-23 (#2222).
+Context remains owner of snapshots, persistence and authority.
+
+Observed-shaped fixture values and authored hypothetical values stay separate.
+Zero is retained; unknown, withheld and not applicable remain distinct. A missing
+period/unit/currency or incompatible basis refuses comparison. Cumulative Spotify
+observations are never relabeled as daily or period streams. Browser activity,
+Luminate counts, hypothetical value and cash are distinct cohorts. Compatible
+currency values are shown without finance aggregation. No growth, valuation,
+conversion, finance policy or scenario formula is added: Catalog owns those
+calculations, and an adopted method is a prerequisite to scenario controls.
+
+Coverage describes the filtered supplied fixture; chart totals describe only the
+selected records. Neither becomes a catalog population claim. The fixed source
+age (11 days at the authored October26 reference), absence of historical membership,
+missing values and small-selection limits are visible. The copyable text view
+contains only the bounded current page plus exact selection, preserving values,
+basis, provenance, coverage and refusal reasons. It does not export unseen rows.
+Native selects, checkboxes, buttons and disclosure controls remain keyboard usable;
+the chart supplements textual values rather than replacing them.
+
+Focused verification:
+
+```sh
+pnpm exec vitest run lib/intelligent-ui/playground/catalog components/IntelligentUI/__tests__/CatalogExplorer.test.tsx components/IntelligentUI/__tests__/Playground.test.tsx app/labs/intelligent-ui/__tests__/page.test.tsx
+CATALOG_EXPLORER_MEASUREMENT=/tmp/catalog-explorer-measurement.json pnpm exec vitest run components/IntelligentUI/__tests__/CatalogExplorer.performance.test.tsx
+```
+
+The opt-in measurement records 100 warmed local query samples and 30 React/jsdom
+cohort changes with 10,000 inputs, while asserting at most 25 data rows plus the
+header. It reports environment, median/p95/max and mount time. These are descriptive
+local measurements, not browser-paint performance, an SLA or real catalog acceptance.
+There are no additional reads, provider/model calls, ingestion, durable saves or
+production activation. Authenticated evidence under #2177, approved scenario methods,
+durable selections and remaining #2211 dependencies/acceptance remain separate work;
+this slice does not complete the epic.
