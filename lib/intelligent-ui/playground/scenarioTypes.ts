@@ -5,7 +5,8 @@ export type ScenarioId =
   | "sourcing"
   | "supplier"
   | "listening"
-  | "song";
+  | "song"
+  | "collection";
 
 export type PlaygroundScenario = {
   id: ScenarioId;

@@ -1,3 +1,4 @@
+import { getCollectionText } from "../representations/getCollectionText";
 import type { Surface } from "../schema";
 import { describeConcentration } from "../representations/describeConcentration";
 import { getRepresentationText } from "../representations/getRepresentationText";
@@ -24,6 +25,7 @@ export function getAnswerText(surface: Surface): string {
         return component?.type === "distribution"
           ? describeConcentration(component, part.count)
           : "";
+      if (component?.type === "collection") return getCollectionText(component);
       return component &&
         (component.type === "distribution" || component.type === "timeline")
         ? getRepresentationText(component)
