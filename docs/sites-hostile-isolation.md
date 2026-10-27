@@ -86,10 +86,11 @@ Both resize bounds and the genuine versus forged music continuation distinction
 were observed. Native fixture observations and the focused VM regression are
 separate evidence; a VM pass is not browser sandbox proof.
 
-The real player's playlist helper logged a MutationObserver target error in
-this minimal unconfigured fixture. No playback claim is made; the actual
-no-music control still worked. Whether that error reproduces on hosted player
-routes is unverified and is not attributed to a production defect here.
+An unattributed browser console error reported a MutationObserver target that was
+not a Node. The captured entry contains only a message and timestamp, without a
+script URL or stack; its source is unverified. No fixture or production defect
+is inferred from that entry. The demonstrated no-music control and probe states
+remain the evidence for this bounded receipt; no playback claim is made.
 
 SHA-256 of tested production sources:
 
