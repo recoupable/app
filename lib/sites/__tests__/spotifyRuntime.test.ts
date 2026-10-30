@@ -169,8 +169,8 @@ it("accepts a connection only from the opened auth window on the player's origin
   await h.nodes["spotify-connect"].onclick!();
   expect(h.nodes["spotify-status"].appendChild).toHaveBeenCalledWith(
     expect.objectContaining({
-      target: "_top",
-      textContent: "Continue in this tab",
+      type: "button",
+      textContent: "Open sign-in in a new tab",
     }),
   );
   const handler = h.ctx.window.addEventListener.mock.calls
@@ -186,6 +186,151 @@ it("accepts a connection only from the opened auth window on the player's origin
   handler({ origin: "https://example.test", source: popup, data });
   expect(h.storage.has("recoup-sites-spotify")).toBe(true);
   expect(h.ctx.location.reload).toHaveBeenCalledOnce();
+});
+
+it("recovers blocked popups in a separate tab and accepts only that tab's session", async () => {
+  const h = harness(false);
+  h.ctx.document.body.dataset.playerParent = "https://example.test";
+  h.fetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({ configured: true }),
+  });
+  h.ctx.window.open.mockReturnValueOnce(null);
+  await h.run();
+  await h.nodes["spotify-connect"].onclick!();
+  const fallback = h.nodes["spotify-status"].appendChild!.mock.calls.at(-1)![0];
+  expect(fallback.type).toBe("button");
+  expect(fallback.target).toBeUndefined();
+  const tab = {};
+  h.ctx.window.open.mockReturnValueOnce(tab);
+  fallback.onclick();
+  expect(h.ctx.window.open).toHaveBeenLastCalledWith(
+    expect.stringContaining("authorize=1"),
+    "_blank",
+  );
+  expect(h.ctx.location.assign).not.toHaveBeenCalled();
+  expect(h.ctx.location.reload).not.toHaveBeenCalled();
+  const handler = h.ctx.window.addEventListener.mock.calls
+    .filter(([name]) => name === "message")
+    .at(-1)![1];
+  const data = {
+    type: "recoup-spotify-session",
+    session: { access_token: "token" },
+  };
+  handler({ origin: "https://example.test", source: {}, data });
+  handler({ origin: "https://evil.test", source: tab, data });
+  expect(h.storage.has("recoup-sites-spotify")).toBe(false);
+  handler({ origin: "https://example.test", source: tab, data });
+  expect(h.storage.has("recoup-sites-spotify")).toBe(true);
+  expect(h.ctx.location.reload).toHaveBeenCalledOnce();
+});
+
+it.each(["connected", "denied", "expired", "wrong-state"])(
+  "composes recovery authorization and the %s callback without navigating the embedded player",
+  async (outcome) => {
+    const embedded = harness(false);
+    embedded.ctx.document.body.dataset.playerParent = "https://example.test";
+    const config = {
+      configured: true,
+      clientId: "public-id",
+      redirectUri: "https://example.test/s/spotify/callback",
+    };
+    embedded.fetch.mockResolvedValue({ ok: true, json: async () => config });
+    embedded.ctx.window.open.mockReturnValueOnce(null);
+    await embedded.run();
+    await embedded.nodes["spotify-connect"].onclick!();
+    const recovery =
+      embedded.nodes["spotify-status"].appendChild!.mock.calls.at(-1)![0];
+    const recoveryWindow = {};
+    embedded.ctx.window.open.mockReturnValueOnce(recoveryWindow);
+    recovery.onclick();
+    const recoveryUrl = new URL(embedded.ctx.window.open.mock.calls.at(-1)![0]);
+    const authorization = harness(false, null, recoveryUrl.search);
+    authorization.ctx.location.pathname = recoveryUrl.pathname;
+    authorization.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => config,
+    });
+    await authorization.run();
+    const pending = JSON.parse(
+      authorization.storage.get("recoup-sites-spotify-pending")!,
+    );
+    expect(pending.popup).toBe(true);
+    expect(pending.verifier).toBeTruthy();
+    const providerUrl = new URL(
+      authorization.ctx.location.assign.mock.calls[0][0],
+    );
+    expect(providerUrl.searchParams.get("state")).toBe(pending.state);
+    expect(providerUrl.searchParams.get("code_challenge_method")).toBe("S256");
+    if (outcome === "expired") pending.created = Date.now() - 600001;
+    const query =
+      outcome === "denied"
+        ? "?error=access_denied"
+        : "?code=synthetic-code&state=" +
+          (outcome === "wrong-state" ? "wrong" : pending.state);
+    const callback = harness(true, pending, query);
+    const receive = embedded.ctx.window.addEventListener.mock.calls
+      .filter(([name]) => name === "message")
+      .at(-1)![1];
+    callback.ctx.window.opener = {
+      postMessage: vi.fn((data, origin) =>
+        receive({ data, origin, source: recoveryWindow }),
+      ),
+    };
+    callback.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ access_token: "synthetic-token", expires_in: 3600 }),
+    });
+    await callback.run();
+    expect(callback.storage.has("recoup-sites-spotify-pending")).toBe(false);
+    expect(callback.ctx.location.replace).not.toHaveBeenCalled();
+    expect(embedded.ctx.location.assign).not.toHaveBeenCalled();
+    expect(embedded.ctx.location.replace).not.toHaveBeenCalled();
+    if (outcome === "connected") {
+      expect(callback.fetch.mock.calls[0][1].body.get("code_verifier")).toBe(
+        pending.verifier,
+      );
+      expect(
+        JSON.parse(embedded.storage.get("recoup-sites-spotify")!).access_token,
+      ).toBe("synthetic-token");
+      expect(embedded.ctx.location.reload).toHaveBeenCalledOnce();
+      expect(callback.ctx.window.close).toHaveBeenCalledOnce();
+    } else {
+      expect(callback.fetch).not.toHaveBeenCalled();
+      expect(callback.ctx.window.opener.postMessage).not.toHaveBeenCalled();
+      expect(embedded.storage.has("recoup-sites-spotify")).toBe(false);
+      expect(embedded.ctx.location.reload).not.toHaveBeenCalled();
+    }
+  },
+);
+
+it("keeps retry and continuing without music available if the recovery tab is blocked", async () => {
+  const h = harness(false);
+  h.ctx.document.body.dataset.playerParent = "https://example.test";
+  const parent = { postMessage: vi.fn() };
+  Object.assign(h.ctx.window, { parent });
+  h.fetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({ configured: true }),
+  });
+  h.ctx.window.open.mockReturnValue(null);
+  await h.run();
+  await h.nodes["spotify-connect"].onclick!();
+  const fallback = h.nodes["spotify-status"].appendChild!.mock.calls.at(-1)![0];
+  fallback.onclick();
+  expect(h.nodes["spotify-status"].textContent).toContain(
+    "continue without music",
+  );
+  expect(h.nodes["spotify-status"].appendChild).toHaveBeenLastCalledWith(
+    fallback,
+  );
+  await h.nodes["spotify-skip"].onclick!();
+  expect(parent.postMessage).toHaveBeenCalledWith(
+    { type: "recoup-music-continue" },
+    "https://example.test",
+  );
+  expect(h.ctx.location.assign).not.toHaveBeenCalled();
+  expect(h.ctx.location.reload).not.toHaveBeenCalled();
 });
 
 it("lets visitors play immediately with optional music collapsed", async () => {
