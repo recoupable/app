@@ -223,9 +223,12 @@
           return;
         if (event.data?.type === "recoup-music-continue") enter();
         if (event.data?.type === "recoup-music-minimize") {
+          const restoreFocus = document.activeElement === frame;
           panel.classList.add("collapsed");
           toggle.hidden = false;
+          toggle.setAttribute("aria-label", "Open music player");
           toggle.setAttribute("aria-expanded", "false");
+          if (restoreFocus) toggle.focus();
         }
         if (
           event.data?.type === "recoup-music-resize" &&
