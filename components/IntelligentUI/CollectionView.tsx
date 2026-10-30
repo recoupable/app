@@ -1,5 +1,5 @@
 "use client";
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { CollectionComponent } from "@/lib/intelligent-ui/schema";
 import { getCollectionSummary } from "@/lib/intelligent-ui/representations/getCollectionSummary";
 import { getCollectionText } from "@/lib/intelligent-ui/representations/getCollectionText";
@@ -14,6 +14,14 @@ export default function CollectionView({
 }) {
   const id = useId();
   const [page, setPage] = useState(0);
+  const tableRegion = useRef<HTMLDivElement>(null);
+  const previousPage = useRef(page);
+  useEffect(() => {
+    if (previousPage.current !== page) {
+      previousPage.current = page;
+      tableRegion.current?.focus();
+    }
+  }, [page]);
   const [selected, setSelected] = useState<string[]>([]);
   const pages = Math.max(1, Math.ceil(component.rows.length / 25));
   const rows = component.rows.slice(page * 25, (page + 1) * 25);
@@ -35,7 +43,9 @@ export default function CollectionView({
       {rows.length ? (
         <div
           className="max-w-full overflow-x-auto rounded-lg border border-border focus-visible:outline-2 focus-visible:outline-ring"
+          ref={tableRegion}
           role="region"
+          aria-describedby={`${id}-status`}
           aria-label={`${component.title} table, scroll horizontally if needed`}
           tabIndex={0}
         >
@@ -128,7 +138,11 @@ export default function CollectionView({
           Next page
         </button>
       </div>
-      <p role="status" className="text-sm">
+      <p id={`${id}-status`} role="status" className="text-sm">
+        Page {page + 1} of {pages}.{" "}
+        {component.rows.length
+          ? `Records ${page * 25 + 1}–${Math.min((page + 1) * 25, component.rows.length)} of ${component.rows.length} supplied records. `
+          : "No supplied records. "}
         {selected.length} selected locally · not saved.
         {selected.length > 0 &&
           ` ${component.rows
