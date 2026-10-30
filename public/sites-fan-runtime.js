@@ -31,14 +31,25 @@
     }).catch(() => {});
   }
   track("visit");
+  let pendingHeight;
+  let resizeScheduled = false;
   window.addEventListener("message", (event) => {
     if (!frame || event.source !== frame.contentWindow) return;
     if (
       event.data?.type === "recoup:resize" &&
       Number.isFinite(event.data.height)
     ) {
-      frame.style.height =
+      pendingHeight =
         Math.min(12000, Math.max(480, Math.ceil(event.data.height))) + "px";
+      // A generated frame may flood measurements; apply only its latest height per paint.
+      if (!resizeScheduled && pendingHeight !== frame.style.height) {
+        resizeScheduled = true;
+        requestAnimationFrame(() => {
+          resizeScheduled = false;
+          if (frame.style.height !== pendingHeight)
+            frame.style.height = pendingHeight;
+        });
+      }
     }
     if (event.data?.type === "recoup:activity") track(event.data.event);
     if (event.data?.type === "recoup:join") {

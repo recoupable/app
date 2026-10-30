@@ -4,9 +4,22 @@ import { expect, it, vi } from "vitest";
 
 it("bounds a hostile frame flood and strips arbitrary activity fields", () => {
   const fetch = vi.fn().mockResolvedValue({});
+  let height = "480px";
+  let flushResize: (() => void) | undefined;
+  const requestAnimationFrame = vi.fn((callback: () => void) => {
+    flushResize = callback;
+    return 1;
+  });
   const frame = {
     contentWindow: { postMessage: vi.fn() },
-    style: { height: "480px" },
+    style: {
+      get height() {
+        return height;
+      },
+      set height(value: string) {
+        height = value;
+      },
+    },
   };
   const toggle = { getAttribute: () => "false", click: vi.fn() };
   let receive: (event: { source: unknown; data: unknown }) => void = () => {};
@@ -24,6 +37,7 @@ it("bounds a hostile frame flood and strips arbitrary activity fields", () => {
     sessionStorage: { getItem: () => null, setItem: vi.fn() },
     crypto: { randomUUID: () => "synthetic-id" },
     fetch,
+    requestAnimationFrame,
   });
   for (const data of [
     null,
@@ -65,10 +79,40 @@ it("bounds a hostile frame flood and strips arbitrary activity fields", () => {
     source: frame.contentWindow,
     data: { type: "recoup:resize", height: 1e9 },
   });
+  flushResize?.();
   expect(frame.style.height).toBe("12000px");
   receive({
     source: frame.contentWindow,
     data: { type: "recoup:resize", height: -1 },
   });
+  flushResize?.();
   expect(frame.style.height).toBe("480px");
+  const writeHeight = vi.spyOn(frame.style, "height", "set");
+  requestAnimationFrame.mockClear();
+  for (let i = 0; i < 1000; i++)
+    receive({
+      source: frame.contentWindow,
+      data: { type: "recoup:resize", height: 1000 + i },
+    });
+  receive({
+    source: frame.contentWindow,
+    data: { type: "recoup:resize", height: 1234.2 },
+  });
+  receive({ source: {}, data: { type: "recoup:resize", height: 9000 } });
+  receive({
+    source: frame.contentWindow,
+    data: { type: "recoup:resize", height: NaN },
+  });
+  expect(requestAnimationFrame).toHaveBeenCalledOnce();
+  expect(writeHeight).not.toHaveBeenCalled();
+  flushResize?.();
+  expect(frame.style.height).toBe("1235px");
+  expect(writeHeight).toHaveBeenCalledTimes(1);
+  requestAnimationFrame.mockClear();
+  receive({
+    source: frame.contentWindow,
+    data: { type: "recoup:resize", height: 1234.5 },
+  });
+  expect(requestAnimationFrame).not.toHaveBeenCalled();
+  expect(writeHeight).toHaveBeenCalledTimes(1);
 });

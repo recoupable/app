@@ -113,3 +113,24 @@ fixture SHA-256: `34374d7cfbf05f8c9b14862f0019fafc531c99c113030f52932ffc0ded2ee2
 hostile-game SHA-256: `b1f80c0fc82157ad818456ffc104fee9ffd70836a1c5b775e7278929ec848c97`.
 Final HTML response: `b3317ed95490fbe71541e175eba517aeda576680f26f901ef937152e27f662dd`;
 player response: `1487b30398d62cb85ed990f8cb9ce17bbfc438788ee4404d97085ad8616c78f6`.
+
+## October 30, 2026 resize-flood source repair
+
+The earlier runtime bounded resize values but wrote the iframe's style for every
+valid message. The source now retains only the latest valid height until the next
+animation frame, skips unchanged heights, and preserves the same source-window
+check and 480–12,000px bounds. Wrong-source and non-finite values cannot replace a
+queued valid height. A background tab may defer the animation-frame callback; the
+last valid measurement is applied when painting resumes.
+
+The focused VM regression sends 1,001 valid measurements before the next paint,
+then wrong-source and non-finite values. It verifies one scheduled callback, zero
+immediate style writes, one final rounded/clamped write, and no new callback for
+an unchanged height. Existing activity sanitization/count bounds and the frozen
+fixture source test still pass. This limits parent resize writes, not incoming
+message dispatch, generated-code CPU use or server-side abuse.
+
+This repair changes `sites-fan-runtime.js`; the October 26 native receipt and
+hashes above remain historical evidence for those original bytes. No native,
+provider or mobile qualification of this successor is claimed. Frame permissions,
+trusted controls and the separate #2345 browser hold are unchanged.
