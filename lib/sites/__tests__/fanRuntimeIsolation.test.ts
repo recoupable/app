@@ -115,4 +115,16 @@ it("bounds a hostile frame flood and strips arbitrary activity fields", () => {
   });
   expect(requestAnimationFrame).not.toHaveBeenCalled();
   expect(writeHeight).toHaveBeenCalledTimes(1);
+  receive({
+    source: frame.contentWindow,
+    data: { type: "recoup:resize", height: 5000 },
+  });
+  receive({
+    source: frame.contentWindow,
+    data: { type: "recoup:resize", height: 1235 },
+  });
+  expect(requestAnimationFrame).toHaveBeenCalledOnce();
+  flushResize?.();
+  expect(frame.style.height).toBe("1235px");
+  expect(writeHeight).toHaveBeenCalledTimes(1);
 });
