@@ -210,3 +210,31 @@ it("keeps the full snapshot byte limit when collection support is added", () => 
   ).toBeUndefined();
   vi.unstubAllEnvs();
 });
+
+it("returns paging focus to the updated table and announces the visible record range", () => {
+  const s = fixture();
+  const { rerender } = render(show(s));
+  const next = screen.getByRole("button", { name: "Next page" });
+  next.focus();
+  fireEvent.click(next);
+  const region = screen.getByRole("region", { name: /table, scroll/ });
+  expect(document.activeElement).toBe(region);
+  expect(screen.getByRole("status").textContent).toContain(
+    "Page 2 of 2. Records 26–30 of 30 supplied records.",
+  );
+  expect(region.getAttribute("aria-describedby")).toBe(
+    screen.getByRole("status").id,
+  );
+  const previous = screen.getByRole("button", { name: "Previous page" });
+  previous.focus();
+  fireEvent.click(previous);
+  expect(document.activeElement).toBe(region);
+  expect(screen.getByRole("status").textContent).toContain(
+    "Page 1 of 2. Records 1–25 of 30 supplied records.",
+  );
+  const checkbox = screen.getAllByRole("checkbox")[0];
+  checkbox.focus();
+  fireEvent.click(checkbox);
+  rerender(show(structuredClone(s)));
+  expect(document.activeElement).toBe(checkbox);
+});
