@@ -46,6 +46,42 @@ describe("development catalog explorer", () => {
       screen.queryByRole("button", { name: /Remove Recording/ }),
     ).toBeNull();
   });
+  it("returns paging focus to the table without stealing filter or selection focus", () => {
+    const { rerender } = render(<CatalogExplorer />);
+    const query = screen.getByRole("textbox", { name: "Find recording or ID" });
+    query.focus();
+    fireEvent.change(query, { target: { value: "Recording 000" } });
+    expect(document.activeElement).toBe(query);
+    const table = screen.getByRole("region", { name: /Recording table/ });
+    const next = screen.getByRole("button", { name: "Next page" });
+    const previous = screen.getByRole("button", { name: "Previous page" });
+    for (let page = 2; page <= 4; page += 1) {
+      next.focus();
+      fireEvent.click(next);
+      expect(document.activeElement).toBe(table);
+      const status = document.getElementById(
+        table.getAttribute("aria-describedby")!,
+      );
+      expect(status?.textContent).toContain(`Page ${page} of 4`);
+    }
+    expect((next as HTMLButtonElement).disabled).toBe(true);
+    const box = screen.getAllByRole("checkbox")[0];
+    box.focus();
+    fireEvent.click(box);
+    rerender(<CatalogExplorer />);
+    expect(document.activeElement).toBe(box);
+    for (let page = 3; page >= 1; page -= 1) {
+      previous.focus();
+      fireEvent.click(previous);
+      expect(document.activeElement).toBe(table);
+    }
+    expect((previous as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(next);
+    query.focus();
+    fireEvent.change(query, { target: { value: "not found" } });
+    expect(document.activeElement).toBe(query);
+    expect(screen.getByText(/No matching recordings/)).toBeTruthy();
+  });
   it("refuses mixed sources and retains unchanged values in text fallback", () => {
     render(<CatalogExplorer />);
     fireEvent.click(

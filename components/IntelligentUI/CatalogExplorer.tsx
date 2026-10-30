@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { ObjectRef } from "@/lib/intelligent-ui/descriptors/schemas";
 import { indexDescriptors } from "@/lib/intelligent-ui/descriptors/indexDescriptors";
 import { resolveSelection } from "@/lib/intelligent-ui/descriptors/resolveSelection";
@@ -28,11 +28,20 @@ export default function CatalogExplorer() {
   const [cohort, setCohort] = useState("all");
   const [descending, setDescending] = useState(false);
   const [page, setPage] = useState(1);
+  const tableRegion = useRef<HTMLDivElement>(null);
+  const pendingPageFocus = useRef(false);
+  const statusId = useId();
   const [selection, setSelection] = useState<ObjectRef[]>([]);
   const view = useMemo(
     () => getCatalogExplorerView(records, { query, cohort, descending, page }),
     [records, query, cohort, descending, page],
   );
+  useEffect(() => {
+    if (pendingPageFocus.current) {
+      pendingPageFocus.current = false;
+      tableRegion.current?.focus();
+    }
+  }, [view.page]);
   const byId = useMemo(() => new Map(records.map((r) => [r.id, r])), [records]);
   const descriptors = useMemo(
     () => indexDescriptors(records.map(describeCatalogRecord)),
@@ -124,7 +133,7 @@ export default function CatalogExplorer() {
         </label>
       </div>
       <div className="space-y-1 text-xs leading-5 text-muted-foreground">
-        <p role="status">
+        <p role="status" id={statusId}>
           {view.collection.totalCount} matches of 10,000 supplied. Page{" "}
           {view.page} of {view.pages} · {view.rows.length} shown.{" "}
           {selection.length} selected ({hidden} outside this page).
@@ -141,7 +150,9 @@ export default function CatalogExplorer() {
         </p>
       </div>
       <div
-        className="max-w-full overflow-x-auto rounded-xl border border-border"
+        ref={tableRegion}
+        aria-describedby={statusId}
+        className="max-w-full overflow-x-auto rounded-xl border border-border focus-visible:outline-2 focus-visible:outline-ring"
         tabIndex={0}
         role="region"
         aria-label="Recording table, scroll horizontally if needed"
@@ -229,7 +240,10 @@ export default function CatalogExplorer() {
         <button
           className={control}
           disabled={view.page === 1}
-          onClick={() => setPage(view.page - 1)}
+          onClick={() => {
+            pendingPageFocus.current = true;
+            setPage(view.page - 1);
+          }}
         >
           Previous page
         </button>
@@ -239,7 +253,10 @@ export default function CatalogExplorer() {
         <button
           className={control}
           disabled={!view.hasMore}
-          onClick={() => setPage(view.page + 1)}
+          onClick={() => {
+            pendingPageFocus.current = true;
+            setPage(view.page + 1);
+          }}
         >
           Next page
         </button>
