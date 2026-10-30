@@ -43,6 +43,7 @@ vi.mock("@/lib/oauth/createConnectionsClient", () => ({
 }));
 beforeEach(() => {
   vi.clearAllMocks();
+  auth.getAccessToken.mockResolvedValue("token");
   auth.authenticated = true;
   auth.user.id = "alice";
   load.mockResolvedValue({
@@ -167,3 +168,96 @@ it.each([
     expect(screen.queryByText("Full tool access") !== null).toBe(visible);
   },
 );
+
+it.each(["account", "issuer"])(
+  "keeps the new %s load usable when an old disconnect succeeds",
+  async (change) => {
+    const issuer = "https://api.example/api/oauth";
+    const view = render(<OAuthConnections issuer={issuer} />);
+    await screen.findByText("Test agent");
+    let finishRevoke!: () => void;
+    revoke.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finishRevoke = resolve;
+        }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Disconnect Test agent" }),
+    );
+    await waitFor(() => expect(revoke).toHaveBeenCalledTimes(1));
+    let finishLoad!: (value: unknown) => void;
+    load.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishLoad = resolve;
+        }),
+    );
+    if (change === "account") auth.user.id = "bob";
+    view.rerender(
+      <OAuthConnections
+        issuer={
+          change === "issuer" ? "https://other.example/api/oauth" : issuer
+        }
+      />,
+    );
+    await waitFor(() => expect(load).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      finishRevoke();
+    });
+    await act(async () => {
+      finishLoad({ connections: [], truncated: false });
+    });
+    expect(screen.queryByText("Loading connections…")).toBeNull();
+    expect(screen.getByText("No connected agents.")).toBeDefined();
+  },
+);
+
+it("does not show an old disconnect failure in a new account session", async () => {
+  const view = render(
+    <OAuthConnections issuer="https://api.example/api/oauth" />,
+  );
+  await screen.findByText("Test agent");
+  let failRevoke!: (error: Error) => void;
+  revoke.mockImplementationOnce(
+    () =>
+      new Promise((_, reject) => {
+        failRevoke = reject;
+      }),
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "Disconnect Test agent" }),
+  );
+  await waitFor(() => expect(revoke).toHaveBeenCalledTimes(1));
+  auth.user.id = "bob";
+  load.mockResolvedValue({ connections: [], truncated: false });
+  view.rerender(<OAuthConnections issuer="https://api.example/api/oauth" />);
+  await screen.findByText("No connected agents.");
+  await act(async () => {
+    failRevoke(new Error("Old session failure"));
+  });
+  expect(screen.queryByRole("alert")).toBeNull();
+});
+
+it("does not send a disconnect after its sign-in session ends while awaiting a token", async () => {
+  const view = render(
+    <OAuthConnections issuer="https://api.example/api/oauth" />,
+  );
+  await screen.findByText("Test agent");
+  let finishToken!: (token: string) => void;
+  auth.getAccessToken.mockImplementationOnce(
+    () =>
+      new Promise<string>((resolve) => {
+        finishToken = resolve;
+      }),
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "Disconnect Test agent" }),
+  );
+  auth.authenticated = false;
+  view.rerender(<OAuthConnections issuer="https://api.example/api/oauth" />);
+  await act(async () => {
+    finishToken("late-token");
+  });
+  expect(revoke).not.toHaveBeenCalled();
+});
