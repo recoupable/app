@@ -66,7 +66,7 @@ export default function CreativeComparisonView({
                   : `${asset.status} · simulated fixture state`}
               </p>
               <CreativeAssetPreview
-                key={`${key}:${asset.status}`}
+                key={`${signature}:${key}`}
                 asset={asset}
                 onReady={() =>
                   setInspected((previous) =>

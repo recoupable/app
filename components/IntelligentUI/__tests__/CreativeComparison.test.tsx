@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import CreativeComparison from "../CreativeComparison";
 import CreativeComparisonLab from "../CreativeComparisonLab";
+import Playground from "../Playground";
 import { creativeFixtures } from "@/lib/intelligent-ui/playground/creative/creativeFixtures";
 const first = creativeFixtures[0];
 const second = creativeFixtures[1];
@@ -170,4 +171,43 @@ it("requires fresh inspection after a revision becomes available again", () => {
   expect(reference()).toBeNull();
   inspect();
   expect(reference()).not.toBeNull();
+});
+
+it("can inspect an unchanged choice again after the other variant changes state", () => {
+  const view = render(
+    <CreativeComparison scope="one" assets={creativeFixtures} />,
+  );
+  inspect();
+  choose();
+  view.rerender(
+    <CreativeComparison
+      scope="one"
+      assets={[first, { ...second, status: "processing" }]}
+    />,
+  );
+  expect(reference()).toBeNull();
+  expect(screen.queryByRole("img")).toBeNull();
+  inspect();
+  expect(reference()).not.toBeNull();
+});
+
+it("exposes the authored entry only after the development opt-in", () => {
+  vi.stubEnv("NODE_ENV", "development");
+  vi.stubEnv("VERCEL_ENV", "development");
+  vi.stubEnv("NEXT_PUBLIC_VERCEL_ENV", "development");
+  vi.stubEnv("NEXT_PUBLIC_RECOUP_INTELLIGENT_UI_CHAT", "false");
+  const view = render(<Playground />);
+  expect(
+    screen.queryByRole("option", { name: "Creative comparison" }),
+  ).toBeNull();
+  vi.stubEnv("NEXT_PUBLIC_RECOUP_INTELLIGENT_UI_CHAT", "true");
+  view.rerender(<Playground />);
+  fireEvent.change(screen.getByRole("combobox", { name: "Example" }), {
+    target: { value: "creative-comparison" },
+  });
+  expect(
+    screen.getByRole("heading", {
+      name: "Compare two existing wordmark treatments",
+    }),
+  ).toBeTruthy();
 });
