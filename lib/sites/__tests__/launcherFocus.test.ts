@@ -20,18 +20,25 @@ function contrast(a: string, b: string) {
 it.each(["#FFFFFF", "#132B26"])(
   "keeps a focus-only indicator on the launcher surface with host %s",
   (background) => {
-    const html = renderExperience({
+    const site: SiteSnapshot = {
       name: "Focus fixture",
       releaseUrl: "",
       assets: [],
       design: {
+        headline: "Focus fixture",
+        eyebrow: "",
+        description: "",
+        buttonLabel: "",
+        signupHeading: "",
+        layout: "poster",
         background,
         foreground: "#152E37",
         accent: "#D6FF62",
         font: "sans",
-        experience: { html: "", css: "", javascript: "" },
+        experience: { html: "<h1>Focus fixture</h1>", css: "", javascript: "" },
       },
-    } as SiteSnapshot);
+    };
+    const html = renderExperience(site);
     const css = postcss.parse(html.match(/<style>([\s\S]*?)<\/style>/)![1]);
     const rules: Record<string, Record<string, string>> = {};
     css.walkRules((rule) => {
