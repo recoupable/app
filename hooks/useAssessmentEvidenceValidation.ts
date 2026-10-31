@@ -39,7 +39,11 @@ export function useAssessmentEvidenceValidation(
     setStatus({ state: "pending" });
     try {
       const response = await request(
-        { action: "read_brief", ...captured },
+        {
+          action: "read_brief",
+          ...captured,
+          explain_evidence_validation: true,
+        },
         revision,
       );
       if (revision !== getGeneration()) return;

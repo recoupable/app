@@ -68,6 +68,7 @@ it("sends only explicit read_brief with captured id, selection and current org",
   await screen.findByText(/Captured evidence was available/);
   expect(JSON.parse(fetcher.mock.calls[1][1].body)).toEqual({
     action: "read_brief",
+    explain_evidence_validation: true,
     brief_id: id(1),
     selected_evidence: [snapshot.brief!.input_manifest!.documents[0]],
     organization_id: id(998),
@@ -162,4 +163,106 @@ it("does not dispatch after a delayed token and selection change", async () => {
   fireEvent.click(screen.getAllByRole("checkbox")[1]);
   await act(async () => finish("token"));
   expect(fetcher).toHaveBeenCalledTimes(1);
+});
+
+const explanations = [
+  [
+    "saved_assessment_unavailable",
+    "The saved assessment could not be used for this check.",
+  ],
+  [
+    "selection_mismatch",
+    "The captured selection could not be matched to the saved assessment.",
+  ],
+  [
+    "current_evidence_unavailable",
+    "The selected evidence could not be matched to current evidence.",
+  ],
+  [
+    "identity_unconfirmed",
+    "The selected evidence identity could not be confirmed.",
+  ],
+  [
+    "validation_limit_exceeded",
+    "The evidence could not be checked within the validation limits.",
+  ],
+] as const;
+it.each(explanations)(
+  "explains %s without an automatic retry",
+  async (reason, message) => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json({ snapshot }))
+      .mockResolvedValueOnce(
+        Response.json({
+          snapshot,
+          evidence_validation: { state: "unavailable", reason },
+        }),
+      );
+    vi.stubGlobal("fetch", fetcher);
+    await setup();
+    expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({
+      action: "read_brief",
+      brief_id: id(1),
+      organization_id: id(998),
+    });
+    check();
+    await screen.findByText(message);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole("list", { name: "Checked evidence" })).toBeNull();
+  },
+);
+it("rejects an unknown reason instead of presenting it as authority", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi
+      .fn()
+      .mockResolvedValueOnce(Response.json({ snapshot }))
+      .mockResolvedValueOnce(
+        Response.json({
+          snapshot,
+          evidence_validation: { state: "unavailable", reason: "withdrawn" },
+        }),
+      ),
+  );
+  await setup();
+  check();
+  await screen.findByText(/Could not verify captured evidence/);
+  expect(screen.queryByText("withdrawn")).toBeNull();
+});
+it("discards a delayed explanation after recapture", async () => {
+  let finish!: (r: Response) => void;
+  vi.stubGlobal(
+    "fetch",
+    vi
+      .fn()
+      .mockResolvedValueOnce(Response.json({ snapshot }))
+      .mockImplementationOnce(
+        () =>
+          new Promise<Response>((resolve) => {
+            finish = resolve;
+          }),
+      ),
+  );
+  await setup();
+  check();
+  await waitFor(() => expect(finish).toBeTypeOf("function"));
+  fireEvent.click(
+    screen.getByRole("button", { name: "Capture selection locally" }),
+  );
+  await act(async () =>
+    finish(
+      Response.json({
+        snapshot,
+        evidence_validation: {
+          state: "unavailable",
+          reason: "identity_unconfirmed",
+        },
+      }),
+    ),
+  );
+  expect(screen.queryByText(explanations[3][1])).toBeNull();
+  expect(
+    screen.getByText("Captured evidence has not been checked."),
+  ).toBeTruthy();
 });
