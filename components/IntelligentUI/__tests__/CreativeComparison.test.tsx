@@ -211,3 +211,27 @@ it("exposes the authored entry only after the development opt-in", () => {
     }),
   ).toBeTruthy();
 });
+
+it("restores a stale stored choice as unavailable without attaching its note to current bytes", () => {
+  const stale = { ...first.ref, version: "c".repeat(64) };
+  localStorage.setItem(
+    "recoup:creative-fixture:v1:one",
+    JSON.stringify({
+      version: 1,
+      selection: stale,
+      notes: [{ ref: stale, text: "Old bytes only" }],
+    }),
+  );
+  render(<CreativeComparison scope="one" assets={creativeFixtures} />);
+  expect(notes().value).toBe("");
+  expect(reference()).toBeNull();
+  expect(
+    screen
+      .getAllByRole("status")
+      .some((el) => el.textContent?.includes("stored choice is unavailable")),
+  ).toBe(true);
+  inspect();
+  choose();
+  expect(JSON.parse(reference()!.value).selection).toEqual(first.ref);
+  expect(notes().value).toBe("");
+});
