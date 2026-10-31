@@ -20,7 +20,18 @@ export const selectedBriefEvidenceSchema = z
   .max(8)
   .refine(rows => new Set(rows.map(row => row.documentId)).size === rows.length);
 export const briefEvidenceValidationSchema = z.discriminatedUnion("state", [
-  z.strictObject({ state: z.literal("unavailable") }),
+  z.strictObject({
+    state: z.literal("unavailable"),
+    reason: z
+      .enum([
+        "saved_assessment_unavailable",
+        "selection_mismatch",
+        "current_evidence_unavailable",
+        "identity_unconfirmed",
+        "validation_limit_exceeded",
+      ])
+      .optional(),
+  }),
   z.strictObject({
     state: z.literal("available"),
     documents: z

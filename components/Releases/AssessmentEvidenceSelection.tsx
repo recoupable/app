@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { getEvidenceUnavailableMessage } from "@/lib/releases/assessmentEvidence/getEvidenceUnavailableMessage";
 import { useAssessmentEvidenceValidation } from "@/hooks/useAssessmentEvidenceValidation";
 import { Button } from "@/components/ui/button";
 import type { CompanyAssessmentSnapshot } from "@/lib/releases/assessmentTypes";
@@ -144,7 +145,7 @@ export default function AssessmentEvidenceSelection({
               : validation.status.state === "available"
                 ? "Captured evidence was available when checked. This does not confirm facts or grant permission to act."
                 : validation.status.state === "unavailable"
-                  ? "Captured evidence is unavailable. Review the saved assessment and select again."
+                  ? getEvidenceUnavailableMessage(validation.status)
                   : validation.status.state === "error"
                     ? "Could not verify captured evidence. Check your access and try again."
                     : "Captured evidence has not been checked."}

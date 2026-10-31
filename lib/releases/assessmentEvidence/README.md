@@ -35,16 +35,25 @@ is a point-in-time evidence read, not factual confirmation or permission to act.
 ## API-owned schema pin
 
 `vendor/source-pin.json` pins the two authoritative API schema sources at
-`1de332ebeae6b74c6f21866482175d33cd843009`. These are vendored source dependencies,
-not independently authored wire types. Only module paths change: `zod` becomes
-`zod/v4` (included by App's existing zod 3.25 dependency), and the target-schema alias
+`97eb158f7634a856adafdcf99a127421068d4799`. These are vendored source dependencies,
+not independently authored wire types. Local adaptations only change module paths:
+`zod` becomes `zod/v4` (included by App's existing zod 3.25 dependency), and the target-schema alias
 becomes a sibling relative import. Do not manually change their fields or constraints;
-refresh from an approved API commit and update hashes. Source formatting is retained.
+refresh from an approved API commit and update hashes. Approved API commits may change
+fields or constraints. Source formatting is retained.
 UI values/types are inferred from this schema. No imports cross runtime repositories.
-The unchanged source hashes were also verified against accepted API commit
-`9421ee392ad8da921f597526df0f3a2e25a4926f` (recorded in the pin).
-Merge/activation of this consumer requires the release coordinator’s exact API
-serving receipt; local synthetic acceptance does not establish deployed compatibility.
+Only the explicit Check button opts into `explain_evidence_validation: true`.
+Existing read/save/preview requests are unchanged. Opted-in unavailable responses
+may contain one of five coarse reasons: saved assessment unavailable, selection
+mismatch, current evidence unavailable, identity unconfirmed, or validation limit
+exceeded. Plain-language messages describe what the check could not verify; they
+never diagnose withdrawal, false facts, rights or permission. An omitted reason
+retains the legacy unavailable message. Unknown reasons fail strict parsing and
+show the existing error state. No automatic retry or repair action is added.
+
+Merge/activation requires the release coordinator’s exact API #1209 serving receipt.
+Local synthetic acceptance does not establish deployed compatibility or explain
+any existing customer's unavailable result.
 
 Malformed/out-of-bound or ambiguous manifests disable selection, while the existing
 saved-summary display/read flow remains available. Historical missing `superseded`
