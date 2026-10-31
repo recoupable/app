@@ -1,0 +1,22 @@
+{
+  "repository": "recoupable/api",
+  "commit": "1de332ebeae6b74c6f21866482175d33cd843009",
+  "adaptations": [
+    "zod -> zod/v4 (App zod 3.25 distribution includes v4)",
+    "alias import -> sibling relative import"
+  ],
+  "files": [
+    {
+      "source": "lib/context/selectedBriefEvidenceSchema.ts",
+      "sourceSha256": "d0e9e433033c29a2be5fbfc266ebed532c6077e49e28d413e69c855154dc982c",
+      "vendored": "selectedBriefEvidenceSchema.ts",
+      "vendoredSha256": "b1c80bdea226865cde02db4e2f0a5e65d32b5ec0552a524927c6dcb8eed0a64b"
+    },
+    {
+      "source": "lib/supabase/context_requests/contextRequestTargetSchema.ts",
+      "sourceSha256": "ea0dc58e915ff9a82d4b53f0f7c4ae41569ec2d63cdbd133aab6a1d61c5282ca",
+      "vendored": "contextRequestTargetSchema.ts",
+      "vendoredSha256": "adfc3eca91986574c82ed1b7812515e640dd5e964880f3457ceaa1158145293b"
+    }
+  ]
+}
