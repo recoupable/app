@@ -612,6 +612,7 @@
       return session.access_token;
     }
     const recoverSession = (message) => {
+      document.body.dataset.sessionRecovery = "true";
       // Keep independent artist audio and no-music controls available without
       // presenting the Spotify session as connected.
       if (activateSavedAudio()) showPlayer();
