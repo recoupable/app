@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAgentTemplateMutation } from "./useAgentTemplateMutation";
+import { usePrivy } from "@privy-io/react-auth";
 import { useUserProvider } from "@/providers/UserProvder";
 
 interface AgentDeleteButtonProps {
@@ -20,32 +21,28 @@ interface AgentDeleteButtonProps {
   creatorId?: string | null;
 }
 
-const AgentDeleteButton: React.FC<AgentDeleteButtonProps> = ({ id, creatorId }) => {
+const AgentDeleteButton: React.FC<AgentDeleteButtonProps> = ({
+  id,
+  creatorId,
+}) => {
   const { userData } = useUserProvider();
-  const queryClient = useQueryClient();
-  const isOwner = Boolean(userData?.id && userData.id === creatorId);
-
-  const del = useMutation({
-    mutationFn: async () => {
-      const res = await fetch("/api/agent-templates", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, userId: userData?.id }),
-      });
-      if (!res.ok) throw new Error("Failed to delete template");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["agent-templates"] });
-    },
-  });
+  const { authenticated } = usePrivy();
+  const isOwner = Boolean(
+    authenticated && userData?.account_id && userData.account_id === creatorId,
+  );
+  const del = useAgentTemplateMutation();
 
   if (!isOwner) return null;
 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-xl" aria-label="Delete">
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0 rounded-xl"
+          aria-label="Delete"
+        >
           <Trash2 className="h-4 w-4" />
         </Button>
       </AlertDialogTrigger>
@@ -53,12 +50,22 @@ const AgentDeleteButton: React.FC<AgentDeleteButtonProps> = ({ id, creatorId }) 
         <AlertDialogHeader>
           <AlertDialogTitle>Delete this template?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the agent template.
+            This action cannot be undone. This will permanently delete the agent
+            template.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={() => del.mutate()} disabled={del.isPending} className="bg-red-500 hover:bg-red-600 rounded-xl">
+          <AlertDialogAction
+            onClick={() =>
+              del.mutate({
+                path: `/${encodeURIComponent(id)}`,
+                method: "DELETE",
+              })
+            }
+            disabled={del.isPending}
+            className="bg-red-500 hover:bg-red-600 rounded-xl"
+          >
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -68,5 +75,3 @@ const AgentDeleteButton: React.FC<AgentDeleteButtonProps> = ({ id, creatorId }) 
 };
 
 export default AgentDeleteButton;
-
-

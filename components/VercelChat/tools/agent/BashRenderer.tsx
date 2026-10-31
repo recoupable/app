@@ -35,9 +35,10 @@ export function BashRenderer({ input, output, state }: BashRendererProps) {
   // A command that exits non-zero used to render a green check, because the
   // default result branch never read the output at all.
   const failed =
-    output?.success === false || (typeof exitCode === "number" && exitCode !== 0);
+    output?.success === false ||
+    (typeof exitCode === "number" && exitCode !== 0);
 
-  const combined = [stdout, stderr].filter(Boolean).join("\n").trim();
+  const combined = [stdout, stderr].filter(Boolean).join("\n");
   const mergedState: ToolRenderState =
     failed && !state.error
       ? { ...state, error: `Exit code ${exitCode ?? "unknown"}` }
@@ -51,7 +52,7 @@ export function BashRenderer({ input, output, state }: BashRendererProps) {
     <pre
       className={
         failed
-          ? "max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 font-mono text-xs leading-relaxed text-destructive"
+          ? "max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 font-mono text-xs leading-relaxed text-destructive-text"
           : "max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border bg-muted/50 p-3 font-mono text-xs leading-relaxed text-muted-foreground"
       }
     >
@@ -63,20 +64,20 @@ export function BashRenderer({ input, output, state }: BashRendererProps) {
   return (
     <>
       <ToolLayout
-      name="Bash"
-      summary={command || "…"}
-      icon={<Terminal className="h-3.5 w-3.5" />}
-      meta={
-        failed && exitCode !== undefined && exitCode !== null ? (
-          `exit ${exitCode}`
-        ) : input?.detached ? (
-          <span className="rounded-full bg-blue-500/12 px-2 py-0.5 text-[11px] font-medium text-blue-600 dark:text-blue-400">
-            detached
-          </span>
-        ) : undefined
-      }
-      state={mergedState}
-      expandedContent={expandedContent}
+        name="Bash"
+        summary={command || "…"}
+        icon={<Terminal className="h-3.5 w-3.5" />}
+        meta={
+          failed && exitCode !== undefined && exitCode !== null ? (
+            `exit ${exitCode}`
+          ) : input?.detached ? (
+            <span className="rounded-full bg-blue-500/12 px-2 py-0.5 text-[11px] font-medium text-blue-600 dark:text-blue-400">
+              detached
+            </span>
+          ) : undefined
+        }
+        state={mergedState}
+        expandedContent={expandedContent}
       />
       {media && (
         <div className="mt-2">

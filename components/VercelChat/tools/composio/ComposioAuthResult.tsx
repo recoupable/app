@@ -35,10 +35,6 @@ export function ComposioAuthResult({ result }: ComposioAuthResultProps) {
     return <ComposioConnectedState displayName={displayName} />;
   }
 
-  if (!authResult.redirect_url) {
-    return null;
-  }
-
   return (
     <ComposioConnectPrompt
       displayName={displayName}

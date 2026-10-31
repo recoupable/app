@@ -16,6 +16,10 @@ const Agents = () => {
     selectedTag,
     setSelectedTag,
     loading,
+    error,
+    refetch,
+    scopeKey,
+    ready,
     showAllTags,
     setShowAllTags,
     gridAgents,
@@ -39,9 +43,12 @@ const Agents = () => {
             <span className="text-sm text-muted-foreground dark:text-muted-foreground">
               {isPrivate ? "Private" : "Public"}
             </span>
-            <Switch checked={isPrivate} onCheckedChange={() => togglePrivate()} />
+            <Switch
+              checked={isPrivate}
+              onCheckedChange={() => togglePrivate()}
+            />
           </div>
-          <CreateAgentButton />
+          {ready && <CreateAgentButton key={scopeKey} />}
         </div>
       </div>
       <p className="text-lg text-muted-foreground text-left mb-4 font-light font-sans max-w-2xl">
@@ -65,7 +72,21 @@ const Agents = () => {
           <div className="absolute top-0 w-full h-8 z-30 pointer-events-none bg-gradient-to-b from-background/95 to-transparent"></div>
         </div>
         <div className="flex flex-col flex-1 overflow-y-auto pt-4 md:pt-8 pb-8 relative bg-background w-full">
-          {loading ? (
+          {!ready ? (
+            <div className="text-center text-muted-foreground py-12">
+              Sign in to view agents.
+            </div>
+          ) : error ? (
+            <div
+              role="alert"
+              className="text-center text-muted-foreground py-12"
+            >
+              Unable to load agents.{" "}
+              <button onClick={() => void refetch()} className="underline">
+                Try again
+              </button>
+            </div>
+          ) : loading ? (
             <AgentsSkeleton />
           ) : gridAgents.length === 0 ? (
             <div className="text-center text-muted-foreground py-12">
@@ -74,11 +95,13 @@ const Agents = () => {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 xl:gap-8 px-1 md:px-2">
               {gridAgents.map((agent) => (
-                <div key={agent.title} className="relative">
+                <div key={`${scopeKey}:${agent.id}`} className="relative">
                   <AgentCard
                     agent={agent}
                     onClick={() => handleAgentClick(agent)}
-                    onToggleFavorite={(id, next) => handleToggleFavorite(id, next)}
+                    onToggleFavorite={(id, next) =>
+                      handleToggleFavorite(id, next)
+                    }
                   />
                 </div>
               ))}

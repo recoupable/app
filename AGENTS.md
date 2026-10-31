@@ -89,6 +89,15 @@ Implement tool/business-logic changes in the owning API repository.
 Run `pnpm instructions:check` after changing the architecture sections. It checks
 only maintained paths in this file, not historical documents or example trees.
 
+## Upload storage policy
+
+New uploads use the authenticated central API and Supabase Storage, not Arweave
+or an App-local storage writer. Preserve legacy `ar://` and gateway URL reads.
+Keep existing public/private storage boundaries; a public bucket URL is not an
+access-control mechanism. Do not route private Files or release-pack audio
+through the public media uploader. Upload completion must remain bound to the
+actor, API origin and target view that started it.
+
 ## Constants (`lib/consts.ts`)
 
 Shared constants including:

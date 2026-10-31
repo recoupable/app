@@ -4,12 +4,23 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import RunPage from "@/components/TasksPage/Run/RunPage";
 
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 const runQuery: {
   data: { status: string } | undefined;
   isPending: boolean;
   isLoading: boolean;
   error: Error | null;
-} = { data: undefined, isPending: true, isLoading: false, error: null };
+  scopeReady: boolean;
+} = {
+  data: undefined,
+  isPending: true,
+  isLoading: false,
+  error: null,
+  scopeReady: true,
+};
 vi.mock("@/hooks/useTaskRunStatus", () => ({
   useTaskRunStatus: () => runQuery,
 }));
@@ -30,6 +41,7 @@ describe("RunPage", () => {
       isPending: true,
       isLoading: false,
       error: null,
+      scopeReady: true,
     });
   });
 

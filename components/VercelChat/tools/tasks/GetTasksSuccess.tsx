@@ -2,8 +2,6 @@ import React from "react";
 import { ListTodo, CheckCircle2 } from "lucide-react";
 import { ScheduledAction } from "@/components/VercelChat/types";
 import TaskCard from "./TaskCard";
-import Link from "next/link";
-import { getTaskHref } from "@/lib/tasks/getTaskHref";
 
 export interface GetTasksSuccessProps {
   result: ScheduledAction[];
@@ -31,11 +29,9 @@ const GetTasksSuccess: React.FC<GetTasksSuccessProps> = ({ result: tasks }) => {
             <p className="text-sm text-muted-foreground">No tasks found</p>
           </div>
         ) : (
-          <div className="space-y-3 max-h-80 overflow-y-auto">
+          <div className="-mx-4 space-y-3 max-h-80 overflow-y-auto px-4">
             {tasks.map((task) => (
-              <Link key={task.id} href={getTaskHref(task.id)} className="block">
-                <TaskCard task={task} />
-              </Link>
+              <TaskCard key={task.id} task={task} />
             ))}
           </div>
         )}

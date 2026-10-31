@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { getAccountScopedHref } from "@/lib/tasks/getAccountScopedHref";
 import useHomeTasksModuleState from "@/hooks/useHomeTasksModuleState";
 import HomeRunRow from "./HomeRunRow";
 import StarterTaskCard from "./StarterTaskCard";
@@ -28,7 +29,7 @@ const TasksModule = () => {
           Your label at work
         </h2>
         <Link
-          href="/tasks"
+          href={getAccountScopedHref("/tasks", state.accountId)}
           className="text-xs font-medium text-foreground hover:underline"
         >
           View all
@@ -37,7 +38,7 @@ const TasksModule = () => {
       {state.view === "runs" ? (
         <div className="flex flex-col">
           {state.runs.map((run) => (
-            <HomeRunRow key={run.id} run={run} />
+            <HomeRunRow key={run.id} run={run} accountId={state.accountId} />
           ))}
         </div>
       ) : state.view === "scheduled" ? (

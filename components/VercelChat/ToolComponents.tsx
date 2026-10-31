@@ -52,6 +52,7 @@ import DeleteTaskSuccess from "./tools/tasks/DeleteTaskSuccess";
 import DeleteTaskSkeleton from "./tools/tasks/DeleteTaskSkeleton";
 import UpdateTaskSuccess from "./tools/tasks/UpdateTaskSuccess";
 
+import CatalogStreamComparison from "./tools/catalog/CatalogStreamComparison";
 import CatalogSongsSkeleton from "./tools/catalog/CatalogSongsSkeleton";
 import CatalogSongsResult, {
   CatalogSongsResult as CatalogSongsResultType,
@@ -61,8 +62,9 @@ import {
   UpdateFileResultType,
 } from "./tools/files/UpdateFileResult";
 import ComposioAuthResult from "./tools/composio/ComposioAuthResult";
-import { TextContent } from "@modelcontextprotocol/sdk/types.js";
 import { extractToolRenderState } from "@/lib/chat/extractToolRenderState";
+import { parseMcpToolOutput } from "@/lib/chat/parseMcpToolOutput";
+import ToolTextFallback from "./tools/ToolTextFallback";
 import { BashRenderer, type BashOutput } from "./tools/agent/BashRenderer";
 import { SkillRenderer, type SkillOutput } from "./tools/agent/SkillRenderer";
 import { TodoRenderer } from "./tools/agent/TodoRenderer";
@@ -76,10 +78,6 @@ import GetChatsSkeleton from "./tools/chats/GetChatsSkeleton";
 import GetChatsResult, {
   GetChatsResultType,
 } from "./tools/chats/GetChatsResult";
-
-type CallToolResult = {
-  content: TextContent[];
-};
 
 export function getToolCallComponent(part: ToolUIPart, isStreaming = true) {
   const { toolCallId } = part as ToolUIPart;
@@ -292,9 +290,21 @@ export function getToolResultComponent(
   }
 
   const isMcp = type === "dynamic-tool";
-  const result = isMcp
-    ? JSON.parse((output as CallToolResult).content[0].text)
-    : output;
+  let result: unknown = output;
+  if (isMcp) {
+    const parsed = parseMcpToolOutput(output);
+    if (parsed.kind !== "data") {
+      return (
+        <ToolTextFallback
+          key={toolCallId}
+          name={toolNameEarly}
+          text={parsed.kind === "text" ? parsed.text : undefined}
+          error={parsed.kind === "error" ? parsed.text : undefined}
+        />
+      );
+    }
+    result = parsed.value;
+  }
   const toolName = getToolOrDynamicToolName(part);
   const isSearchWebTool = toolName === "search_web";
 
@@ -425,6 +435,8 @@ export function getToolResultComponent(
         <CatalogSongsResult result={result as CatalogSongsResultType} />
       </div>
     );
+  } else if (toolName === "get_catalog_streams") {
+    return <CatalogStreamComparison key={toolCallId} result={result} />;
   } else if (toolName === "update_file") {
     return (
       <div key={toolCallId}>
@@ -457,8 +469,12 @@ export function getToolResultComponent(
       key={toolCallId}
       name={toolName}
       message={
-        (result as { message?: string }).message ??
-        getToolInfo(toolName).message
+        result &&
+        typeof result === "object" &&
+        "message" in result &&
+        typeof result.message === "string"
+          ? result.message
+          : getToolInfo(toolName).message
       }
     />
   );

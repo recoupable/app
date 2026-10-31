@@ -11,14 +11,15 @@ import AccountIdDisplay from "@/components/ArtistSetting/AccountIdDisplay";
 
 interface RunCardProps {
   run: TaskRunItem;
+  accountId?: string;
 }
 
-const RunCard: React.FC<RunCardProps> = ({ run }) => {
+const RunCard: React.FC<RunCardProps> = ({ run, accountId }) => {
   const duration = formatDuration(run.durationMs);
 
   return (
     <Link
-      href={getRunHref(run.id)}
+      href={getRunHref(run.id, accountId)}
       className="group flex items-center justify-between py-4 px-4 hover:bg-muted dark:hover:bg-[#1a1a1a] transition-colors -mx-4 cursor-pointer"
     >
       <div className="flex items-center space-x-4">

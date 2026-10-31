@@ -14,18 +14,29 @@ export interface SearchApiResultType {
   formatted: string;
 }
 
-const SearchApiResult = ({ result }: { result: SearchApiResultType }) => {
-  if (!result) {
+export interface SearchApiErrorResult {
+  success: false;
+  message: string;
+}
+
+export interface SearchApiResultProps {
+  result: SearchApiResultType | SearchApiErrorResult;
+}
+
+const SearchApiResult = ({ result }: SearchApiResultProps) => {
+  if (!result || ("success" in result && result.success === false)) {
+    const message = result && "success" in result ? result.message : undefined;
     return (
       <div className="py-3 px-4 bg-destructive/10 border border-destructive/30 rounded-lg">
-        <p className="text-sm text-destructive font-medium">
-          Error retrieving search results
+        <p className="text-sm text-destructive-text font-medium">
+          {message?.trim() ? message : "Error retrieving search results"}
         </p>
       </div>
     );
   }
 
-  const searchResults: ParsedSearchResult[] = result.results;
+  const searchResults: ParsedSearchResult[] = (result as SearchApiResultType)
+    .results;
 
   if (searchResults.length === 0) {
     return (
@@ -40,7 +51,7 @@ const SearchApiResult = ({ result }: { result: SearchApiResultType }) => {
   return (
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground">
-        Reviewing sources · {searchResults.length}
+        Sources · {searchResults.length}
       </p>
 
       <div className="space-y-1">

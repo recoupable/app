@@ -4,6 +4,7 @@ import { Calendar, Clock, Music, ExternalLink } from "lucide-react";
 import { SpotifyAlbum } from "@/types/spotify";
 import { formatDuration } from "@/lib/spotify/formatDuration";
 import Link from "next/link";
+import { getSafeSpotifyUrl } from "@/lib/spotify/getSafeSpotifyUrl";
 
 interface SpotifyAlbumWithTracksMetaProps {
   result: SpotifyAlbum;
@@ -14,7 +15,7 @@ const SpotifyAlbumWithTracksMeta: React.FC<SpotifyAlbumWithTracksMetaProps> = ({
   result,
   totalDuration,
 }) => {
-  const spotifyUrl = result.external_urls?.spotify;
+  const spotifyUrl = getSafeSpotifyUrl(result.external_urls?.spotify);
 
   return (
     <div className="flex-1 text-white">
@@ -53,20 +54,20 @@ const SpotifyAlbumWithTracksMeta: React.FC<SpotifyAlbumWithTracksMetaProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-3 mt-4">
-        {spotifyUrl && (
+      {spotifyUrl && (
+        <div className="flex items-center gap-3 mt-4">
           <Link
             href={spotifyUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-[#1DB954] hover:bg-[#1ed760] text-black px-4 sm:px-6 py-2 rounded-full font-semibold flex items-center gap-2 transition-colors text-sm"
+            className="min-h-11 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background bg-[#1DB954] hover:bg-[#1ed760] text-black px-4 sm:px-6 py-2 rounded-full font-semibold flex items-center gap-2 transition-colors text-sm"
           >
             <ExternalLink className="w-4 h-4" />
             <span className="hidden sm:inline">Listen on Spotify</span>
             <span className="sm:hidden">Listen</span>
           </Link>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Label and Genres */}
       <div className="flex flex-wrap gap-1.5 mt-3">

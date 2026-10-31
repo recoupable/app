@@ -55,6 +55,7 @@ export default function NewChatBootstrap({
     <div className="relative flex size-full flex-col items-center">
       <Chat
         id={placeholderChatId}
+        isNewChatBootstrap
         sessionId={ids?.sessionId}
         workflowChatId={ids?.chatId}
         workspaceStatus={workspaceStatus}

@@ -6,6 +6,11 @@ it("tracks real frame messages once and ignores messages from other windows", ()
     .fn<typeof globalThis.fetch>()
     .mockResolvedValue(new Response(null, { status: 200 }));
   let receive: (event: unknown) => void = () => {};
+  let flushResize: (() => void) | undefined;
+  const requestAnimationFrame = vi.fn((callback: () => void) => {
+    flushResize = callback;
+    return 1;
+  });
   const frame = {
     contentWindow: { postMessage: vi.fn() },
     style: { height: "" },
@@ -24,6 +29,7 @@ it("tracks real frame messages once and ignores messages from other windows", ()
     sessionStorage: { getItem: () => null, setItem: vi.fn() },
     crypto: { randomUUID: () => "event-uuid" },
     fetch,
+    requestAnimationFrame,
   });
   expect(fetch).toHaveBeenCalledTimes(1);
   receive({
@@ -53,10 +59,12 @@ it("tracks real frame messages once and ignores messages from other windows", ()
     source: frame.contentWindow,
     data: { type: "recoup:resize", height: 900 },
   });
+  flushResize?.();
   expect(frame.style.height).toBe("900px");
   receive({
     source: frame.contentWindow,
     data: { type: "recoup:resize", height: 1000000 },
   });
+  flushResize?.();
   expect(frame.style.height).toBe("12000px");
 });

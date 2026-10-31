@@ -1,5 +1,7 @@
 "use client";
 
+import type { CatalogQueryInput } from "@/lib/intelligent-ui/chat/getChatCatalogHost";
+
 import ChatContextGuard from "./ChatContextGuard";
 import cn from "classnames";
 import { Messages } from "./messages";
@@ -17,6 +19,7 @@ import {
 import { UIMessage } from "ai";
 import { useDropzone } from "@/hooks/useDropzone";
 import FileDragOverlay from "./FileDragOverlay";
+import { Button } from "@/components/ui/button";
 import { Loader } from "lucide-react";
 import { memo } from "react";
 import { useOrganization } from "@/providers/OrganizationProvider";
@@ -24,6 +27,9 @@ import type { WorkspaceStatus } from "./WorkspaceStatusIndicator";
 
 interface ChatProps {
   id: string;
+  /** Explicit development-only catalog reference; validated by the owning hook. */
+  catalogId?: string | string[];
+  catalogQuery?: CatalogQueryInput;
   /**
    * Session id. Always present from the canonical session-scoped route;
    * absent on the new-chat bootstrap path until provisioning resolves
@@ -37,6 +43,8 @@ interface ChatProps {
    * resolves; falls back to `id` otherwise.
    */
   workflowChatId?: string;
+  /** `id` is a local placeholder until bootstrap supplies workflowChatId. */
+  isNewChatBootstrap?: boolean;
   /**
    * Workspace (session + sandbox) lifecycle; gates Send and drives the
    * status indicator. Defaults to `ready` for existing chats opened from
@@ -49,8 +57,11 @@ interface ChatProps {
 
 export function Chat({
   id,
+  catalogId,
+  catalogQuery,
   sessionId,
   workflowChatId,
+  isNewChatBootstrap,
   workspaceStatus,
   onRetryWorkspace,
   initialMessages,
@@ -62,8 +73,11 @@ export function Chat({
     <VercelChatProvider
       key={providerKey}
       chatId={id}
+      catalogId={catalogId}
+      catalogQuery={catalogQuery}
       sessionId={sessionId}
       workflowChatId={workflowChatId}
+      isNewChatBootstrap={isNewChatBootstrap}
       workspaceStatus={workspaceStatus}
       initialMessages={initialMessages}
     >
@@ -86,7 +100,8 @@ function ChatContentMemoized({
   sessionId?: string;
   onRetryWorkspace?: () => void;
 }) {
-  const { messages, status, isLoading, hasError } = useVercelChatContext();
+  const { messages, status, isLoading, hasError, retryHistory } =
+    useVercelChatContext();
   const { chatId: routeChatId } = useParams<{ chatId?: string }>();
   useArtistFromChat({ sessionId: routeChatId ? sessionId : undefined });
   const { getRootProps, isDragActive } = useDropzone();
@@ -108,9 +123,13 @@ function ChatContentMemoized({
 
   if (hasError) {
     return (
-      <div className="flex items-center justify-center h-dvh">
-        <div className="text-red-500 dark:text-red-400">
-          Failed to load messages. Please try again later.
+      <div className="flex h-full items-center justify-center p-6">
+        <div className="max-w-md space-y-3 text-center">
+          <p role="alert">
+            We couldn’t load this conversation. Its saved messages may still be
+            available.
+          </p>
+          <Button onClick={retryHistory}>Retry loading messages</Button>
         </div>
       </div>
     );

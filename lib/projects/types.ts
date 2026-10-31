@@ -1,6 +1,6 @@
 /**
  * The shapes `api.recoupable.dev` returns for a client project, as documented
- * in recoupable/docs#326. Declared here rather than derived from
+ * in recoupable/docs-legacy#326. Declared here rather than derived from
  * `database.types.ts` because the app only ever sees the API's response, never
  * the table — the same reason `lib/recoup/getArtistProfile.ts` declares its own.
  */

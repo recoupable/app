@@ -93,7 +93,7 @@ describe("getCatalogReportEmptyCopy", () => {
     ).toBeUndefined();
   });
 
-  // chat#1912 row 6 chain (recoupable/docs#282 -> recoupable/api#802): catalog
+  // chat#1912 row 6 chain (recoupable/docs-legacy#282 -> recoupable/api#802): catalog
   // songs become account-scoped, so a non-owner will no longer see the songs
   // tab either. Copy that points them at Manage songs would be promising a
   // tab that now fails.

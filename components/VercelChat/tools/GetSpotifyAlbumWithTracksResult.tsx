@@ -1,28 +1,55 @@
 import React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Play, ExternalLink } from "lucide-react";
 import { SpotifyAlbum } from "@/types/spotify";
-import { formatDuration } from "@/lib/spotify/formatDuration";
-import Link from "next/link";
+import SpotifyAlbumTrackRow from "./SpotifyAlbumTrackRow";
 import SpotifyAlbumWithTracksHero from "./SpotifyAlbumWithTracksHero";
+import ToolTextFallback from "./ToolTextFallback";
 
-interface GetSpotifyAlbumWithTracksResultProps {
-  result: SpotifyAlbum;
+export interface SpotifyAlbumErrorResult {
+  success: false;
+  message: string;
+}
+
+export interface GetSpotifyAlbumWithTracksResultProps {
+  result: SpotifyAlbum | SpotifyAlbumErrorResult;
 }
 
 const GetSpotifyAlbumWithTracksResult: React.FC<
   GetSpotifyAlbumWithTracksResultProps
 > = ({ result }) => {
-  const totalDuration = result.tracks.items.reduce(
+  if ("success" in result && result.success === false) {
+    return (
+      <ToolTextFallback
+        name="get_spotify_album"
+        error={
+          result.message?.trim()
+            ? result.message
+            : "Could not retrieve this Spotify album."
+        }
+      />
+    );
+  }
+
+  const album = result as SpotifyAlbum;
+  const tracks = album.tracks?.items ?? [];
+
+  if (tracks.length === 0) {
+    return (
+      <p className="break-words text-sm text-muted-foreground">
+        No tracks returned for {album.name || "this Spotify album"}.
+      </p>
+    );
+  }
+
+  const totalDuration = tracks.reduce(
     (acc, track) => acc + track.duration_ms,
-    0
+    0,
   );
 
   return (
     <div className="bg-gradient-to-b from-gray-900 to-black rounded-2xl overflow-hidden max-w-2xl w-full my-4">
       {/* Hero Section */}
       <SpotifyAlbumWithTracksHero
-        result={result}
+        result={album}
         totalDuration={totalDuration}
       />
 
@@ -30,57 +57,8 @@ const GetSpotifyAlbumWithTracksResult: React.FC<
       <div className="bg-black/40 backdrop-blur-sm rounded-b-2xl opacity-[0.999]">
         <div className="p-3 sm:p-4">
           <div className="space-y-0.5">
-            {result.tracks.items.map((track) => (
-              <Link
-                href={track.external_urls.spotify}
-                key={track.id}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-xl hover:bg-white/10 transition-colors group cursor-pointer">
-                  {/* Track Number */}
-                  <div className="w-4 sm:w-5 text-center">
-                    <span className="text-muted-foreground text-xs group-hover:hidden">
-                      {track.track_number}
-                    </span>
-                    <Play className="w-3 h-3 text-white hidden group-hover:block" />
-                  </div>
-
-                  {/* Track Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-white text-sm truncate">
-                        {track.name}
-                      </span>
-                      {track.explicit && (
-                        <Badge
-                          variant="secondary"
-                          className="bg-muted text-white text-xs px-1 py-0 hidden sm:inline-flex"
-                        >
-                          E
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="text-xs text-muted-foreground truncate">
-                      {track.artists.map((artist) => artist.name).join(", ")}
-                    </div>
-                  </div>
-
-                  {/* Track Duration */}
-                  <div className="text-xs text-muted-foreground min-w-0">
-                    {formatDuration(track.duration_ms)}
-                  </div>
-
-                  {/* Track Actions - Hidden on mobile */}
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">
-                    {track.external_urls?.spotify && (
-                      <p className="text-muted-foreground hover:text-white">
-                        <ExternalLink className="w-3 h-3" />
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </Link>
+            {tracks.map((track) => (
+              <SpotifyAlbumTrackRow key={track.id} track={track} />
             ))}
           </div>
         </div>

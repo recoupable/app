@@ -10,6 +10,8 @@ import { filterCatalogsByOrg } from "@/lib/catalog/filterCatalogsByOrg";
 import { getCatalogsEmptyCopy } from "@/lib/catalog/getCatalogsEmptyCopy";
 import { resolveSelectedOrgId } from "@/lib/catalog/resolveSelectedOrgId";
 import RunValuationButton from "@/components/Valuation/RunValuationButton";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const CatalogsPageContent = () => {
   const { data, isLoading, error } = useCatalogs();
@@ -56,14 +58,23 @@ const CatalogsPageContent = () => {
     )?.organization_name;
 
     return (
-      <div className="flex flex-col items-start gap-4">
-        <p className="text-sm text-muted-foreground">
+      <section className="flex max-w-xl flex-col items-start gap-4 rounded-xl border p-6">
+        <h2 className="font-heading text-lg font-semibold">
           {getCatalogsEmptyCopy(orgId, orgName)}
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Run a valuation to measure an artist’s released music. Or browse
+          agents and preview their prompts before choosing one.
         </p>
         {/* Org-scoped runs land the catalog on the selected organization:
             useRunValuation passes the selected org to POST /api/valuation. */}
         <RunValuationButton />
-      </div>
+        <Button asChild variant="outline">
+          <Link href="/agents" prefetch={false}>
+            Browse agents
+          </Link>
+        </Button>
+      </section>
     );
   }
 

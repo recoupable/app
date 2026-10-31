@@ -1,5 +1,6 @@
 import { z } from "zod";
 export const professionalSchema = z.object({
+  artist_id: z.string().uuid(),
   id: z.string().uuid(),
   organization_id: z.string().uuid(),
   name: z.string(),

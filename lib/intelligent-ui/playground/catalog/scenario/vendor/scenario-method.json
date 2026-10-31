@@ -1,0 +1,41 @@
+{
+  "method_id": "public-estimate-spotify-rate",
+  "version": 1,
+  "status": "development_only_hypothetical",
+  "source_method": "scripts/estimate.py:model_tracks",
+  "source_schema": "public-estimate/2",
+  "source_sha256": "4f16497387a73eaca0f900a9a4136443ef84ef174894772655b51c6a8ebda055",
+  "source_revision": "df1f1dbcd81858f64d8984772606795a4075754d",
+  "request_schema": "scenario-request.schema.json",
+  "vectors": "fixtures/scenario-vectors.json",
+  "entrypoint": "scripts/scenario.py:run_scenario",
+  "lever": {
+    "field": "spotify_rate",
+    "units": "basis.currency per Spotify stream",
+    "reset": null,
+    "meaning": "Hypothetical assumed master rate; never a claimed provider payout rate"
+  },
+  "steps": [
+    "accepted annual streams \u00d7 assumed Spotify rate",
+    "modeled Spotify gross \u00d7 (1 + other-platform gross-up)",
+    "modeled annual gross \u00d7 net factor \u00d7 controlled-share assumption",
+    "modeled annual net interest \u00d7 multiple"
+  ],
+  "numeric_policy": "Existing estimate binary64 arithmetic; no interim rounding; parity tolerance relative1e-12/absolute1e-9",
+  "comparison_gate": "Exact same cohort,365-day period,currency,master rights,Spotify-stream unit for every included record. Only measured_365d or explicitly unknown records; no conversion from cumulative or run-rate data in v1.",
+  "coverage": "Retain original observations,source references,capture dates,coverage notes and null unknowns; subset status never expands to whole catalog.",
+  "ui_contract": [
+    "Consume the canonical scripts/scenario.mjs module with an exact commit and byte hash; do not copy finance formulas into App. Python remains the conformance reference.",
+    "Persist/export full observations,baseline and scenario assumptions,method revision/hash and coverage. Context selection descriptors remain separately owned.",
+    "Reset uses null override to restore original baseline config; never writes modeled values into observations.",
+    "Label every monetary output hypothetical and distinguish source Spotify observations,other-platform assumptions and realized cash.",
+    "Missing compatible annual data means refusal or unknown; never repurpose daily or cumulative explorer fixtures."
+  ],
+  "remaining_integration": "Catalog browser adapter is available; shared App and Context integration remain separately owned and reviewed. No model call, network endpoint, paid read, provider operation or new ingestion is implemented.",
+  "browser_adapter": {
+    "entrypoint": "scripts/scenario.mjs:runScenario",
+    "version": "catalog-browser-scenario/1",
+    "requirements": "ES modules, TextEncoder and Web Crypto in a secure context or localhost",
+    "consumption": "Pin exact Skills commit and module SHA-256; vendor byte-identically and check drift; see browser-scenario.md"
+  }
+}

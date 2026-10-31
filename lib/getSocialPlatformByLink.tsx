@@ -1,15 +1,35 @@
+const SOCIAL_DOMAINS = [
+  ["x.com", "TWITTER"],
+  ["twitter.com", "TWITTER"],
+  ["instagram.com", "INSTAGRAM"],
+  ["spotify.com", "SPOTIFY"],
+  ["tiktok.com", "TIKTOK"],
+  // Stored-record matching still uses this legacy key; API callers normalize it.
+  ["apple.com", "APPPLE"],
+  ["youtube.com", "YOUTUBE"],
+  ["youtu.be", "YOUTUBE"],
+  ["facebook.com", "FACEBOOK"],
+  ["threads.net", "THREADS"],
+  ["threads.com", "THREADS"],
+] as const;
+
 const getSocialPlatformByLink = (link: string) => {
   if (!link) return "NONE";
-  if (link.includes("x.com") || link.includes("twitter.com")) return "TWITTER";
-  if (link.includes("instagram.com")) return "INSTAGRAM";
-  if (link.includes("spotify.com")) return "SPOTIFY";
-  if (link.includes("tiktok.com")) return "TIKTOK";
-  if (link.includes("apple.com")) return "APPPLE";
-  if (link.includes("youtube.")) return "YOUTUBE";
-  if (link.includes("facebook.com")) return "FACEBOOK";
-  if (link.includes("threads.net") || link.includes("threads.com")) return "THREADS";
+  const value = link.trim();
+  let hostname: string;
+  try {
+    hostname = new URL(
+      /^[a-z][a-z\d+.-]*:\/\//i.test(value) ? value : `https://${value}`,
+    ).hostname.toLowerCase();
+  } catch {
+    return "NONE";
+  }
 
-  return "NONE";
+  return (
+    SOCIAL_DOMAINS.find(
+      ([domain]) => hostname === domain || hostname.endsWith(`.${domain}`),
+    )?.[1] ?? "NONE"
+  );
 };
 
 export default getSocialPlatformByLink;

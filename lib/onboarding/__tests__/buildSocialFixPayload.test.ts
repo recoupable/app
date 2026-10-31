@@ -37,6 +37,22 @@ describe("buildSocialFixPayload", () => {
     expect(buildSocialFixPayload("https://example.com/artist")).toBeNull();
   });
 
+  it.each([
+    "https://instagram.com.example.test/artist",
+    "https://example.test/?profile=https://instagram.com/artist",
+    "https://box.com/artist",
+  ])("does not create a repair payload for an unrelated host %s", (url) => {
+    expect(buildSocialFixPayload(url)).toBeNull();
+  });
+
+  it("preserves a bare profile URL with an absolute URL in its query", () => {
+    const url = "instagram.com/artist?redirect=https://example.test";
+    expect(buildSocialFixPayload(url)).toEqual({
+      platform: "INSTAGRAM",
+      profileUrls: { INSTAGRAM: url },
+    });
+  });
+
   it("returns null for empty input", () => {
     expect(buildSocialFixPayload("   ")).toBeNull();
   });

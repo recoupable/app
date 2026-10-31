@@ -1,3 +1,4 @@
+import type { CatalogQueryInput } from "@/lib/intelligent-ui/chat/getChatCatalogHost";
 import React, {
   createContext,
   useContext,
@@ -14,6 +15,7 @@ import { useArtistProvider } from "./ArtistProvider";
 import { GatewayLanguageModelEntry } from "@ai-sdk/gateway";
 import { TextAttachment } from "@/types/textAttachment";
 import type { WorkspaceStatus } from "@/components/VercelChat/WorkspaceStatusIndicator";
+import type { ChatSnapshotBinding } from "@/lib/intelligent-ui/chat/createSnapshotConsumer";
 
 // Interface for the context data
 interface VercelChatContextType {
@@ -24,6 +26,20 @@ interface VercelChatContextType {
   status: ChatStatus;
   isLoading: boolean;
   hasError: boolean;
+  retryHistory?: () => void;
+  sendError?: string;
+  sendErrorStatus?: number;
+  failedDraftPreview?: string;
+  hasFailedSubmission?: boolean;
+  retrySendMessage?: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  discardFailedSubmission?: () => void;
+  stopState?: {
+    status: "idle" | "stopping" | "stopped" | "inactive" | "error";
+    message?: string;
+    httpStatus?: number;
+  };
+  editUnacceptedMessage?: (messageId: string, text: string) => boolean;
+  isMessagePendingAdmission?: (messageId: string) => boolean;
   isGeneratingResponse: boolean;
   isLoadingSignedUrls: boolean;
   handleSendMessage: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
@@ -31,7 +47,7 @@ interface VercelChatContextType {
   setInput: (input: string) => void;
   input: string;
   setMessages: UseChatHelpers<UIMessage>["setMessages"];
-  reload: () => void;
+  reload: (editedMessage?: UIMessage) => void;
   append: (message: UIMessage) => void;
   attachments: FileUIPart[];
   pendingAttachments: FileUIPart[];
@@ -50,12 +66,15 @@ interface VercelChatContextType {
   addTextAttachment: (
     file: File,
     type: TextAttachment["type"],
+    isCurrent?: () => boolean,
   ) => Promise<void>;
   removeTextAttachment: (index: number) => void;
   model: string;
   setModel: (model: string) => void;
   /** Workspace (session + sandbox) lifecycle; gates Send + drives the status dot. */
   workspaceStatus: WorkspaceStatus;
+  intelligentUI?: ChatSnapshotBinding;
+  captureSendIntent?: () => () => boolean;
 }
 
 // Create the context. Exported so presentational components (e.g. Message /
@@ -69,6 +88,8 @@ export const VercelChatContext = createContext<
 interface VercelChatProviderProps {
   children: ReactNode;
   chatId: string;
+  catalogId?: string | string[];
+  catalogQuery?: CatalogQueryInput;
   /**
    * Session id for recoup-api `/api/chat`. Absent only on the
    * new-chat bootstrap path until provisioning resolves; the transport holds
@@ -77,6 +98,8 @@ interface VercelChatProviderProps {
   sessionId?: string;
   /** Api-minted chat id from bootstrap when `chatId` is a placeholder. */
   workflowChatId?: string;
+  /** Distinguishes a bootstrap placeholder from a routable canonical chatId. */
+  isNewChatBootstrap?: boolean;
   /** Workspace (session + sandbox) lifecycle; gates Send + drives the status dot. */
   workspaceStatus?: WorkspaceStatus;
   initialMessages?: UIMessage[];
@@ -88,8 +111,11 @@ interface VercelChatProviderProps {
 export function VercelChatProvider({
   children,
   chatId,
+  catalogId,
+  catalogQuery,
   sessionId,
   workflowChatId,
+  isNewChatBootstrap,
   workspaceStatus = "ready",
   initialMessages,
 }: VercelChatProviderProps) {
@@ -124,6 +150,16 @@ export function VercelChatProvider({
     status,
     isLoading,
     hasError,
+    retryHistory,
+    sendError,
+    sendErrorStatus,
+    failedDraftPreview,
+    hasFailedSubmission,
+    retrySendMessage,
+    discardFailedSubmission,
+    stopState,
+    editUnacceptedMessage,
+    isMessagePendingAdmission,
     isGeneratingResponse,
     isLoadingSignedUrls,
     handleSendMessage,
@@ -136,29 +172,35 @@ export function VercelChatProvider({
     model,
     setModel,
     availableModels,
+    intelligentUI,
+    captureSendIntent,
   } = useVercelChat({
     id: chatId,
+    catalogId,
+    catalogQuery,
     sessionId,
     workflowChatId,
+    isNewChatBootstrap,
     initialMessages,
     attachments,
     textAttachments,
     workspaceStatus,
+    onDraftAccepted: () => {
+      setAttachments((previous) =>
+        previous.filter((part) => !attachments.includes(part)),
+      );
+      setTextAttachments((previous) =>
+        previous.filter((part) => !textAttachments.includes(part)),
+      );
+    },
   });
 
-  const reload = useCallback(() => {
-    return originalReload();
-  }, [originalReload]);
-
-  // When a message is sent successfully, clear the attachments
-  const handleSendMessageWithClear = async (
-    event: React.FormEvent<HTMLFormElement>,
-  ) => {
-    await handleSendMessage(event);
-
-    // Clear attachments after sending
-    clearAttachments();
-  };
+  const reload = useCallback(
+    (editedMessage?: UIMessage) => {
+      return originalReload(editedMessage);
+    },
+    [originalReload],
+  );
 
   // Create the context value object
   const contextValue: VercelChatContextType = {
@@ -170,9 +212,21 @@ export function VercelChatProvider({
     status,
     isLoading,
     hasError,
+    retryHistory,
+    sendError,
+    sendErrorStatus,
+    failedDraftPreview,
+    hasFailedSubmission,
+    retrySendMessage,
+    discardFailedSubmission,
+    stopState,
+    editUnacceptedMessage,
+    isMessagePendingAdmission,
     isGeneratingResponse,
     isLoadingSignedUrls,
-    handleSendMessage: handleSendMessageWithClear,
+    handleSendMessage: async (event) => {
+      await handleSendMessage(event);
+    },
     stop,
     setInput,
     input,
@@ -191,6 +245,8 @@ export function VercelChatProvider({
     addTextAttachment,
     removeTextAttachment,
     workspaceStatus,
+    intelligentUI,
+    captureSendIntent,
   };
 
   // Send chat status and messages to ArtistProvider

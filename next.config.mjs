@@ -58,8 +58,8 @@ const nextConfig = {
   images: {
     // `images.domains` was deprecated in Next 16 in favour of `remotePatterns`,
     // which scopes each host by protocol and path instead of trusting it over
-    // any scheme. Every former `domains` entry is listed here; the set of hosts
-    // we will load images from is unchanged.
+    // any scheme. Legacy hosts remain readable; new Supabase images are
+    // restricted to the public-uploads bucket.
     remotePatterns: [
       {
         protocol: 'https',
@@ -78,6 +78,13 @@ const nextConfig = {
         hostname: 'arweave.net',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/public-uploads/**',
+        search: '',
       },
       // Migrated from `images.domains`.
       { protocol: 'https', hostname: 'i.imgur.com', port: '', pathname: '/**' },

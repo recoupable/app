@@ -8,6 +8,7 @@ interface GetFileContentsResponse {
   encoding?: "base64";
   error?: string;
   sha?: string;
+  account_id?: string;
 }
 
 interface FileContentsResult {
@@ -24,8 +25,10 @@ interface FileContentsResult {
 export async function getFileContents(
   accessToken: string,
   path: string,
-  options?: { includeRevision?: boolean },
+  options?: { includeRevision?: boolean; accountId?: string | null },
 ): Promise<FileContentsResult> {
+  if (options?.includeRevision && options.accountId)
+    throw new Error("Files for a selected account are read-only.");
   const apiBaseUrl = options?.includeRevision
     ? getGuardedGitApiBaseUrl()
     : getClientApiBaseUrl();
@@ -33,16 +36,18 @@ export async function getFileContents(
     throw new Error(
       "Protected replacement is not enabled for this connection.",
     );
-  const response = await fetch(
-    `${apiBaseUrl}/api/sandboxes/file?path=${encodeURIComponent(path)}${options?.includeRevision ? "&include_revision=true" : ""}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      cache: "no-store",
+  const url = new URL(`${apiBaseUrl}/api/sandboxes/file`);
+  url.searchParams.set("path", path);
+  if (options?.includeRevision)
+    url.searchParams.set("include_revision", "true");
+  if (options?.accountId) url.searchParams.set("account_id", options.accountId);
+  const response = await fetch(url.toString(), {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
-  );
+    cache: "no-store",
+  });
 
   const data: GetFileContentsResponse = await response.json();
 
@@ -58,6 +63,10 @@ export async function getFileContents(
       "This connection did not return an opened file revision. Replacement is blocked.",
     );
   }
+  if (options?.accountId && data.account_id !== options.accountId)
+    throw new Error(
+      "This connection did not confirm the selected account. Files are unavailable.",
+    );
   const revision = options?.includeRevision ? { sha: data.sha } : {};
 
   if (data.encoding === "base64") {

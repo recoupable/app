@@ -5,6 +5,9 @@ import Link from "next/link";
 import LogoIcon from "@/components/Logo/LogoIcon";
 import { conversationExamples } from "@/lib/intelligent-ui/playground/conversationExamples";
 import { playgroundScenarios } from "@/lib/intelligent-ui/playground/scenarios";
+import SelectionContinuityLab from "./SelectionContinuityLab";
+import { isChatIntelligentUIEnabled } from "@/lib/intelligent-ui/chat/isChatIntelligentUIEnabled";
+import CatalogExplorer from "./CatalogExplorer";
 import PlaygroundWorkspace from "./PlaygroundWorkspace";
 import PlaygroundThemeToggle from "./PlaygroundThemeToggle";
 
@@ -49,10 +52,16 @@ export default function Playground() {
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             Example
             <select
-              value={example.id}
+              value={exampleId}
               onChange={(event) => setExampleId(event.target.value)}
               className="min-h-11 max-w-full cursor-pointer rounded-xl bg-muted/50 px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
+              {isChatIntelligentUIEnabled() && (
+                <option value="selection-continuity">
+                  Selection continuity
+                </option>
+              )}
+              <option value="catalog-explorer">Catalog explorer</option>
               {conversationExamples.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.label}
@@ -61,11 +70,18 @@ export default function Playground() {
             </select>
           </label>
         </div>
-        <PlaygroundWorkspace
-          key={example.id}
-          scenario={scenario}
-          example={example}
-        />
+        {exampleId === "selection-continuity" &&
+        isChatIntelligentUIEnabled() ? (
+          <SelectionContinuityLab />
+        ) : exampleId === "catalog-explorer" ? (
+          <CatalogExplorer />
+        ) : (
+          <PlaygroundWorkspace
+            key={example.id}
+            scenario={scenario}
+            example={example}
+          />
+        )}
       </main>
     </div>
   );

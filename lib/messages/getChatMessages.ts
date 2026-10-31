@@ -19,8 +19,18 @@ export async function getChatMessages(
     },
   );
 
-  if (!response.ok) return [];
+  if (!response.ok) {
+    throw new Error(`Failed to load messages: ${response.status}`);
+  }
 
-  const data = (await response.json()) as { messages?: UIMessage[] };
-  return data.messages ?? [];
+  const data: unknown = await response.json();
+  if (
+    !data ||
+    typeof data !== "object" ||
+    !("messages" in data) ||
+    !Array.isArray(data.messages)
+  ) {
+    throw new Error("Failed to load messages: invalid history response");
+  }
+  return data.messages;
 }

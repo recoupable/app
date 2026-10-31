@@ -52,3 +52,15 @@ notification rendering remain separately evidenced acceptance under #2166.
 The existing first-artist hook can initiate valuation; this test is not approval
 to perform that side effect or any hosted onboarding write. Keep those operations
 unapproved until the owning authorized journey is explicitly defined.
+
+## Songwriter/producer artist accounts
+
+The manual form now requires the API's `professional.artist_id` and invalidates
+both the professional-role query and the organization's artist query after saving.
+The browser test in `manualProfessional.browser.tsx` uses the real form, response
+parser, `useArtistsRoster`, and `WorkspaceContextBar`. A synthetic successful POST
+makes the account available on GET /api/artists; the picker refreshes without a
+page reload and selection receives the account ID, not the professional-record ID.
+
+Deploy after the database account-link migration and API response schema. The
+browser suite uses synthetic auth and HTTP; it does not establish hosted deployment.

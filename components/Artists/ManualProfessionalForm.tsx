@@ -89,9 +89,14 @@ export default function ManualProfessionalForm({
         );
       sessionStorage.removeItem(storageKey);
       setPending(null);
-      await queryClient.invalidateQueries({
-        queryKey: ["professional-roster", actorId, organizationId],
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["professional-roster", actorId, organizationId],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["artists", actorId, organizationId],
+        }),
+      ]);
       if (mounted.current) onSaved();
     } catch (error) {
       if (

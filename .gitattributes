@@ -1,0 +1,2 @@
+# Preserve captured bytes, including the final SSE record delimiter.
+lib/intelligent-ui/transport/__fixtures__/api-6.0.190/stream.sse -text whitespace=-blank-at-eof

@@ -3,7 +3,11 @@ import { cleanup } from "@testing-library/react";
 import { beforeEach, afterEach, vi } from "vitest";
 import { fixture, file, opened } from "./guardedJourney.data";
 vi.mock("@privy-io/react-auth", () => ({
-  usePrivy: () => ({ getAccessToken: async () => "synthetic-token" }),
+  usePrivy: () => ({
+    getAccessToken: async () => "synthetic-token",
+    authenticated: true,
+    user: { id: fixture.actor },
+  }),
 }));
 vi.mock("@/lib/sandboxes/uploadSandboxFiles", () => ({
   uploadSandboxFiles: vi.fn(),
@@ -18,6 +22,7 @@ vi.mock("@/hooks/useSandboxes", () => ({
       ? []
       : [{ name: "draft.txt", path: "notes/draft.txt", type: "file" }],
     isLoading: fixture.loading,
+    scopeReady: true,
     error: fixture.listingError,
     refetch: fixture.refetch,
   }),

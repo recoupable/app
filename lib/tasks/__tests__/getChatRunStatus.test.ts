@@ -25,6 +25,7 @@ describe("getChatRunStatus", () => {
       "https://api.test/api/chat/runs/wrun_abc",
       {
         method: "GET",
+        signal: undefined,
         headers: { Authorization: "Bearer privy-token" },
       },
     );

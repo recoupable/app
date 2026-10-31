@@ -1,12 +1,17 @@
 import type { AgentTemplateRow } from "@/types/AgentTemplates";
-import type { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
+import { requestAgentTemplates } from "./requestAgentTemplates";
 
-const fetchAgentTemplates = async (
-  userData: AccountWithDetails
-): Promise<AgentTemplateRow[]> => {
-  const res = await fetch(`/api/agent-templates?userId=${userData?.id}`);
-  if (!res.ok) throw new Error("Failed to fetch agent templates");
-  return (await res.json()) as AgentTemplateRow[];
-};
-
-export default fetchAgentTemplates;
+export default async function fetchAgentTemplates(
+  apiBaseUrl: string,
+  token: string,
+  signal: AbortSignal,
+): Promise<AgentTemplateRow[]> {
+  const data = await requestAgentTemplates<{ templates: AgentTemplateRow[] }>(
+    apiBaseUrl,
+    token,
+    signal,
+  );
+  if (!Array.isArray(data.templates))
+    throw new Error("Unable to load agents. Please try again.");
+  return data.templates;
+}

@@ -17,6 +17,8 @@ export function useCompanyAssessment(
   );
   const [retrySave, setRetrySave] = useState(false);
   const inFlight = useRef(false);
+  const acceptedSnapshot = useRef<CompanyAssessmentSnapshot | null>(null);
+  const [operationRevision, setOperationRevision] = useState(0);
   const [savedId, setSavedId] = useState("");
   const [openId, setOpenId] = useState("");
   const [busy, setBusy] = useState(false);
@@ -32,13 +34,16 @@ export function useCompanyAssessment(
   useEffect(
     () => () => {
       generation.current++;
+      acceptedSnapshot.current = null;
     },
     [],
   );
   const run = async (action: "brief" | "save_brief" | "read_brief") => {
     if (inFlight.current) return;
     inFlight.current = true;
-    const revision = generation.current;
+    const revision = ++generation.current;
+    acceptedSnapshot.current = null;
+    setOperationRevision(revision);
     setBusy(true);
     setNotice("");
     try {
@@ -87,6 +92,7 @@ export function useCompanyAssessment(
             "This saved assessment is unavailable. Check current access and evidence.",
           );
         } else {
+          acceptedSnapshot.current = result.snapshot;
           setSnapshot(result.snapshot);
           setBrief(result.snapshot.brief);
           setSavedId(result.snapshot.id);
@@ -125,7 +131,11 @@ export function useCompanyAssessment(
       }
     }
   };
+  const isCurrentSnapshot = (candidate: CompanyAssessmentSnapshot) =>
+    !inFlight.current && acceptedSnapshot.current === candidate;
   return {
+    operationRevision,
+    isCurrentSnapshot,
     brief,
     snapshot,
     retrySave,

@@ -4,6 +4,7 @@ import { type ReactNode, useState } from "react";
 import { CircleX, Loader2, Minus, OctagonPause, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ToolRenderState } from "@/lib/chat/extractToolRenderState";
+import { ToolErrorDetails } from "./ToolErrorDetails";
 
 export interface ToolLayoutProps {
   /** Tool label, e.g. "Bash". */
@@ -39,7 +40,7 @@ export function ToolLayout({
   const hasError = Boolean(state.error);
   const canExpand = Boolean(expandedContent) || hasError;
   const tone = hasError
-    ? "text-destructive"
+    ? "text-destructive-text"
     : state.interrupted
       ? "text-amber-600 dark:text-amber-500"
       : "text-foreground";
@@ -47,11 +48,13 @@ export function ToolLayout({
   const leading = state.running ? (
     <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
   ) : hasError ? (
-    <CircleX className="h-3.5 w-3.5 text-destructive" />
+    <CircleX className="h-3.5 w-3.5 text-destructive-text" />
   ) : state.interrupted ? (
     <OctagonPause className="h-3.5 w-3.5 text-amber-600 dark:text-amber-500" />
   ) : (
-    (icon ?? <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />)
+    (icon ?? (
+      <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+    ))
   );
 
   return (
@@ -89,7 +92,9 @@ export function ToolLayout({
           )}
         </span>
 
-        <span className={cn("shrink-0 font-medium leading-none", tone)}>{name}</span>
+        <span className={cn("shrink-0 font-medium leading-none", tone)}>
+          {name}
+        </span>
 
         {summary != null && (
           <span className="min-w-0 flex-1 truncate font-mono text-[13px] leading-none text-muted-foreground">
@@ -106,10 +111,8 @@ export function ToolLayout({
 
       {isExpanded && canExpand && (
         <div className="mt-1.5 space-y-2 pb-1">
-          {hasError && !expandedContent && (
-            <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 font-mono text-xs leading-relaxed text-destructive">
-              {state.error}
-            </pre>
+          {state.error && !expandedContent && (
+            <ToolErrorDetails error={state.error} />
           )}
           {expandedContent}
         </div>

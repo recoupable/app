@@ -1,23 +1,26 @@
 import { useQuery } from "@tanstack/react-query";
-import { usePrivy } from "@privy-io/react-auth";
-import { getTaskRuns, type TaskRunItem } from "@/lib/tasks/getTaskRuns";
+import { getTaskRuns } from "@/lib/tasks/getTaskRuns";
+import { useTaskRunScope, type TaskRunScopeOptions } from "./useTaskRunScope";
 
-interface UseTaskRunsParams {
-  accountIdOverride?: string;
-}
-
-export function useTaskRuns({ accountIdOverride }: UseTaskRunsParams = {}) {
-  const { getAccessToken, authenticated } = usePrivy();
-
-  return useQuery<TaskRunItem[]>({
-    queryKey: ["task-runs", { accountIdOverride }],
-    queryFn: async () => {
-      const accessToken = await getAccessToken();
-      if (!accessToken) {
-        throw new Error("Please sign in to view task runs");
-      }
-      return getTaskRuns(accessToken, { accountIdOverride });
-    },
-    enabled: authenticated,
+export function useTaskRuns(options: TaskRunScopeOptions = {}) {
+  const scope = useTaskRunScope(options);
+  const query = useQuery({
+    queryKey: ["task-runs", scope.scopeKey],
+    queryFn: ({ signal }) =>
+      scope.read(signal, (token) =>
+        getTaskRuns(token, {
+          accountIdOverride: scope.accountId,
+          apiBaseUrl: scope.apiBaseUrl,
+          signal,
+        }),
+      ),
+    enabled: scope.ready,
+    gcTime: 0,
   });
+  return {
+    ...query,
+    data: scope.ready && !query.error ? query.data : undefined,
+    scopeReady: scope.ready,
+    accountId: scope.accountId,
+  };
 }

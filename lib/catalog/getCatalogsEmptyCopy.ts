@@ -13,7 +13,7 @@ export function getCatalogsEmptyCopy(
   selectedOrgId: string | null,
   orgName?: string,
 ): string {
-  if (!selectedOrgId) return "No catalogs found.";
+  if (!selectedOrgId) return "No catalogs yet.";
 
   return orgName
     ? `No catalogs in ${orgName} yet.`

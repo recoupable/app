@@ -43,7 +43,17 @@ export default function PulseToolResult({
   return (
     <div className="bg-card border border-border rounded-xl p-4 max-w-sm shadow-sm">
       <div className="flex items-start space-x-3 mb-3">
-        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+        {active && !isInitialLoading && !isToggling ? (
+          <CheckCircle
+            className="h-5 w-5 text-green-500 flex-shrink-0"
+            aria-hidden="true"
+          />
+        ) : (
+          <Activity
+            className="h-5 w-5 text-muted-foreground flex-shrink-0"
+            aria-hidden="true"
+          />
+        )}
         <div className="flex-1">
           <a
             href="/tasks?tab=pulses"
@@ -58,7 +68,9 @@ export default function PulseToolResult({
       </div>
 
       <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-        <span className="text-sm text-muted-foreground">Daily notifications</span>
+        <span className="text-sm text-muted-foreground">
+          Daily notifications
+        </span>
         {isInitialLoading ? (
           <PulseToggleSkeleton />
         ) : (

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import ArtistHeroSection from "./ArtistHeroSection";
 import KnowledgeBaseSection from "./KnowledgeBaseSection";
-import { Knowledge } from "@/types/knowledge";
+import { isKnowledge } from "@/lib/knowledge/isKnowledge";
 import { CheckCircle, FileText } from "lucide-react";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import { ArtistProfile } from "@/lib/supabase/artist/updateArtistProfile";
@@ -16,7 +16,7 @@ export interface UpdateAccountInfoResult {
   error?: string;
 }
 
-interface UpdateArtistInfoSuccessProps {
+export interface UpdateArtistInfoSuccessProps {
   result: UpdateAccountInfoResult;
 }
 
@@ -30,6 +30,14 @@ const UpdateArtistInfoSuccess: React.FC<UpdateArtistInfoSuccessProps> = ({
     getArtists();
   }, []);
 
+  if (result.success === false) {
+    return (
+      <p className="my-2 text-sm text-destructive-text">
+        {message?.trim() ? message : "Failed to update artist info."}
+      </p>
+    );
+  }
+
   if (!artistProfile) {
     return (
       <div className="bg-gradient-to-b from-gray-900 to-black rounded-2xl overflow-hidden max-w-2xl w-full my-4 p-6">
@@ -41,13 +49,14 @@ const UpdateArtistInfoSuccess: React.FC<UpdateArtistInfoSuccessProps> = ({
     );
   }
 
-  // Type guard for knowledges
-  const knowledges = Array.isArray(artistProfile.knowledges)
-    ? (artistProfile.knowledges as unknown as Knowledge[])
+  const knowledgeEntries = Array.isArray(artistProfile.knowledges)
+    ? artistProfile.knowledges
     : [];
+  const knowledges = knowledgeEntries.filter(isKnowledge);
+  const unreadableCount = knowledgeEntries.length - knowledges.length;
 
   return (
-    <div className="bg-gradient-to-b from-gray-900 to-black rounded-2xl overflow-hidden max-w-2xl w-full my-4">
+    <div className="dark [--color-card:var(--card)] [--color-muted-foreground:var(--muted-foreground)] [--color-border:var(--border)] bg-gradient-to-b from-gray-900 to-black rounded-2xl overflow-hidden max-w-2xl w-full my-4">
       <ArtistHeroSection artistProfile={artistProfile} />
 
       <div className="bg-black/40 backdrop-blur-sm rounded-b-xl overflow-hidden">
@@ -69,6 +78,13 @@ const UpdateArtistInfoSuccess: React.FC<UpdateArtistInfoSuccessProps> = ({
           {/* Knowledge base */}
           {knowledges.length > 0 && (
             <KnowledgeBaseSection knowledges={knowledges} />
+          )}
+          {unreadableCount > 0 && (
+            <p className="text-sm text-muted-foreground">
+              {unreadableCount} knowledge{" "}
+              {unreadableCount === 1 ? "entry" : "entries"} could not be
+              displayed.
+            </p>
           )}
 
           {/* Organization */}

@@ -1,4 +1,5 @@
 import useModalAnimation from "@/hooks/useModalAnimation";
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { type ReactNode, type MouseEvent, type KeyboardEvent } from "react";
 
@@ -42,12 +43,15 @@ const SideModal = ({
         tabIndex={0}
         aria-label="Close modal"
       />
-      
+
       {/* Modal */}
       <div
-        className={`fixed right-0 top-0 z-[200] flex h-screen w-screen overflow-hidden ${
-          isVisible ? "block" : "hidden"
-        } ${containerClasses}`}
+        className={cn(
+          "fixed top-0 z-[200] h-screen w-screen overflow-hidden",
+          direction === "left" ? "left-0" : "right-0",
+          isVisible ? "flex" : "hidden",
+          containerClasses,
+        )}
         onClick={(e: MouseEvent<HTMLDivElement>) => {
           if (e.target === e.currentTarget) handleClose();
         }}
@@ -56,7 +60,11 @@ const SideModal = ({
         aria-modal="true"
       >
         <motion.div
-          className={`ml-auto flex h-full w-full flex-col bg-card max-w-[300px] px-4 py-4 md:py-8 ${className}`}
+          className={cn(
+            "flex h-full w-full flex-col bg-card max-w-[300px] px-4 py-4 md:py-8",
+            direction === "left" ? "mr-auto" : "ml-auto",
+            className,
+          )}
           animate={animate}
           initial={initial}
           transition={{ duration: 0.2 }}

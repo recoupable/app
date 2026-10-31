@@ -3,6 +3,7 @@ import ArtistHeroSection from "./ArtistHeroSection";
 import { ArtistProfile } from "@/lib/supabase/artist/updateArtistProfile";
 import { AccountSocialWithSocial } from "@/lib/supabase/account_socials/getAccountSocials";
 import Link from "next/link";
+import { getSocialProfileHref } from "@/lib/socials/getSocialProfileHref";
 import { ExternalLink, Globe } from "lucide-react";
 import getSocialPlatformByLink from "@/lib/getSocialPlatformByLink";
 import { useEffect } from "react";
@@ -27,22 +28,27 @@ const UpdateArtistSocialsSuccess: React.FC<UpdateArtistSocialsSuccessProps> = ({
     getArtists();
   }, []);
 
+  const message =
+    result.message ||
+    (result.success
+      ? "Artist socials updated successfully."
+      : "Failed to update artist socials.");
+
   return (
     <div className="bg-gradient-to-b from-gray-900 to-black rounded-2xl overflow-hidden max-w-2xl w-full my-4">
-      <ArtistHeroSection
-        artistProfile={selectedArtist as ArtistProfile}
-        message={result.message || "Artist socials updated successfully."}
-      />
+      {result.success && selectedArtist ? (
+        <ArtistHeroSection
+          artistProfile={selectedArtist as ArtistProfile}
+          message={message}
+        />
+      ) : (
+        <p className="p-6 sm:p-8 text-sm text-white break-words">{message}</p>
+      )}
       <div className="bg-black/40 backdrop-blur-sm rounded-b-xl overflow-hidden">
         <div className="p-4 sm:p-6 space-y-2">
           {result.socials?.map((social) => (
             <Link
-              href={
-                social.social.profile_url.startsWith("http://") ||
-                social.social.profile_url.startsWith("https://")
-                  ? social.social.profile_url
-                  : `https://${social.social.profile_url}`
-              }
+              href={getSocialProfileHref(social.social.profile_url)}
               key={social.social.id}
               target="_blank"
               rel="noopener noreferrer"
@@ -59,7 +65,7 @@ const UpdateArtistSocialsSuccess: React.FC<UpdateArtistSocialsSuccessProps> = ({
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {getSocialPlatformByLink(
-                      social.social.profile_url
+                      social.social.profile_url,
                     ).toLowerCase() || "Social Link"}
                   </div>
                 </div>

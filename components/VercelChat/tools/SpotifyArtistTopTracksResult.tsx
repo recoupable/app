@@ -3,16 +3,22 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import SpotifyTrackCard from "./SpotifyTrackCard";
 
+interface SpotifyArtistTopTracksResultProps {
+  result: SpotifyArtistTopTracksResultType;
+}
+
 const SpotifyArtistTopTracksResult = ({
   result,
-}: {
-  result: SpotifyArtistTopTracksResultType;
-}) => {
-  if (result.tracks.length === 0) {
-    return <div>Failed to get Spotify artist top tracks</div>;
-  }
+}: SpotifyArtistTopTracksResultProps) => {
+  const tracks = result.tracks ?? [];
 
-  const tracks = result.tracks;
+  if (tracks.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No Spotify top tracks returned.
+      </p>
+    );
+  }
 
   return (
     <div className="w-full my-4">

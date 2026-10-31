@@ -1,8 +1,10 @@
 import { FileSpreadsheet, HardDrive, FileText, Link2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { getHttpsRedirectUrl } from "@/lib/composio/getHttpsRedirectUrl";
 
 interface ComposioConnectPromptProps {
   displayName: string;
-  redirectUrl: string;
+  redirectUrl: unknown;
   connector: string;
 }
 
@@ -14,6 +16,7 @@ export function ComposioConnectPrompt({
   redirectUrl,
   connector,
 }: ComposioConnectPromptProps) {
+  const safeRedirect = getHttpsRedirectUrl(redirectUrl);
   const getIcon = (className = "h-5 w-5") => {
     const key = connector.toLowerCase();
     if (key.includes("sheet")) {
@@ -41,18 +44,24 @@ export function ComposioConnectPrompt({
         Connect your {displayName} account to enable this connector.
       </p>
 
-      <a
-        href={redirectUrl}
-        className="w-full inline-flex items-center justify-center bg-green-600 hover:bg-green-700 text-white rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer"
-      >
-        {getIcon("h-4 w-4")}
-        <span className="ml-2">Connect {displayName}</span>
-      </a>
-
-      <p className="text-xs text-muted-foreground text-center">
-        You&apos;ll be redirected to authorize access. Link expires in 10
-        minutes.
-      </p>
+      {safeRedirect ? (
+        <>
+          <Button asChild className="w-full">
+            <a href={safeRedirect} target="_blank" rel="noopener noreferrer">
+              {getIcon("h-4 w-4")}
+              <span>Connect {displayName}</span>
+            </a>
+          </Button>
+          <p className="text-xs text-muted-foreground text-center">
+            You&apos;ll be redirected to authorize access. Link expires in 10
+            minutes.
+          </p>
+        </>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          This connection link is unavailable. Ask for a new link.
+        </p>
+      )}
     </div>
   );
 }

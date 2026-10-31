@@ -7,7 +7,7 @@ import {
   UITools,
   ChatStatus,
 } from "ai";
-import { Dispatch, SetStateAction, useContext } from "react";
+import { Dispatch, SetStateAction, useContext, lazy, Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { collapseTodoParts } from "@/lib/chat/collapseTodoParts";
 import ViewingMessage from "./ViewingMessage";
@@ -20,6 +20,26 @@ import { RefreshCcwIcon, Pencil } from "lucide-react";
 import { ModelRoutingStatus } from "./ModelRoutingStatus";
 import CopyButton from "@/components/CopyButton";
 import { VercelChatContext } from "@/providers/VercelChatProvider";
+import SnapshotRenderBoundary from "@/components/IntelligentUI/SnapshotRenderBoundary";
+import { getAnswerText } from "@/lib/intelligent-ui/presentation/getAnswerText";
+import { isChatIntelligentUIEnabled } from "@/lib/intelligent-ui/chat/isChatIntelligentUIEnabled";
+
+const ChatSnapshot = lazy(
+  () => import("@/components/IntelligentUI/ChatSnapshot"),
+);
+
+const actionsClassName =
+  "mt-0.5 items-start gap-0.5 has-[details[open]]:opacity-100 has-[details[open]]:pointer-events-auto opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto transition-opacity";
+const copyButtonProps = {
+  label: "response",
+  tooltip: "Copy response to clipboard",
+  variant: "ghost" as const,
+  silent: true,
+  iconClassName: "!w-3 !h-3",
+  // Match the Action treatment used by Retry and Edit beside it.
+  className:
+    "size-8 p-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors",
+};
 
 interface MessagePartsProps {
   message: UIMessage;
@@ -50,11 +70,81 @@ export function MessageParts({
     (!messages || messages[messages.length - 1]?.id === message.id);
   const parts = collapseTodoParts(message.parts ?? []);
   const lastTextIndex = parts.findLastIndex((part) => part.type === "text");
+  const binding =
+    message.role === "assistant" && isChatIntelligentUIEnabled()
+      ? ctx?.intelligentUI
+      : undefined;
+  // Resolve once so rendering and copying use the same accepted revision.
+  const snapshots = binding
+    ? parts.map((part) => {
+        if (
+          part.type !== "data-intelligent-ui-snapshot" ||
+          !("id" in part) ||
+          typeof part.id !== "string"
+        )
+          return undefined;
+        const surface = binding.consumer.getSnapshot(
+          message.id,
+          part.id,
+          binding.scopeKey,
+        );
+        const text = surface
+          ? getAnswerText(surface)
+          : binding.consumer.getFallback(message.id, part, binding.scopeKey);
+        return text === undefined ? undefined : { surface, text };
+      })
+    : [];
+  const hasAcceptedUI = snapshots.some(Boolean);
+  const responseText = hasAcceptedUI
+    ? parts
+        .map((part, index) =>
+          part.type === "text" ? part.text : snapshots[index]?.text,
+        )
+        .filter(Boolean)
+        .join("\n\n")
+    : undefined;
   return (
     <div className={cn("flex flex-col gap-4 w-full group")}>
       {parts.map((part: UIMessagePart<UIDataTypes, UITools>, partIndex) => {
         const { type } = part;
         const key = `message-${message.id}-part-${partIndex}`;
+
+        if (type === "data-intelligent-ui-snapshot") {
+          const snapshot = snapshots[partIndex];
+          if (!binding || !snapshot) return null;
+          const { surface, text } = snapshot;
+          return surface ? (
+            <SnapshotRenderBoundary
+              key={`${message.id}:${binding.scopeKey}:${surface.id}`}
+              revision={surface.revision}
+              fallback={text}
+            >
+              <Suspense
+                fallback={
+                  <p className="whitespace-pre-wrap text-base leading-7 [overflow-wrap:anywhere]">
+                    {text}
+                  </p>
+                }
+              >
+                <ChatSnapshot
+                  surface={surface}
+                  stateScope={
+                    binding.consumer.getStateScope(binding.scopeKey) ??
+                    binding.scopeKey
+                  }
+                  messageId={message.id}
+                />
+              </Suspense>
+            </SnapshotRenderBoundary>
+          ) : (
+            <p
+              key={`${message.id}:${binding.scopeKey}:${partIndex}`}
+              className="whitespace-pre-wrap text-base leading-7 [overflow-wrap:anywhere]"
+            >
+              {text}
+            </p>
+          );
+        }
 
         if (type === "reasoning") {
           return (
@@ -78,20 +168,23 @@ export function MessageParts({
           const isLastMessage =
             message.role === "assistant" &&
             status !== "streaming" &&
-            partIndex === parts.length - 1;
+            partIndex === lastTextIndex &&
+            parts
+              .slice(partIndex + 1)
+              .every(
+                (remaining) =>
+                  remaining.type === "data-intelligent-ui-snapshot",
+              );
 
           if (mode === "view") {
             return (
               <div key={key}>
                 <ViewingMessage message={message} partText={part?.text || ""} />
                 <Actions
-                  className={cn(
-                    "mt-0.5 items-start gap-0.5 has-[details[open]]:opacity-100 has-[details[open]]:pointer-events-auto opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto transition-opacity",
-                    {
-                      "justify-start": message.role === "assistant",
-                      "justify-end": message.role === "user",
-                    },
-                  )}
+                  className={cn(actionsClassName, {
+                    "justify-start": message.role === "assistant",
+                    "justify-end": message.role === "user",
+                  })}
                 >
                   {message.role === "user" && (
                     <Action
@@ -111,17 +204,12 @@ export function MessageParts({
                       <RefreshCcwIcon className="!w-3 !h-3" />
                     </Action>
                   )}
-                  <CopyButton
-                    text={part?.text || ""}
-                    label="response"
-                    tooltip="Copy response to clipboard"
-                    variant="ghost"
-                    silent
-                    iconClassName="!w-3 !h-3"
-                    /* Matches the Action treatment used by Retry and Edit
-                         beside it; see components/actions.tsx. */
-                    className="size-8 p-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors"
-                  />
+                  {(!hasAcceptedUI || partIndex === lastTextIndex) && (
+                    <CopyButton
+                      {...copyButtonProps}
+                      text={responseText ?? part.text}
+                    />
+                  )}
                   {message.role === "assistant" &&
                     partIndex === lastTextIndex && (
                       <ModelRoutingStatus metadata={message.metadata} />
@@ -150,6 +238,22 @@ export function MessageParts({
             : getToolCallComponent(part as ToolUIPart, isOwnStream);
         }
       })}
+      {responseText !== undefined &&
+        lastTextIndex === -1 &&
+        mode === "view" && (
+          <Actions className={cn(actionsClassName, "justify-start")}>
+            {(status === "ready" || status === "error") && (
+              <Action
+                onClick={() => reload()}
+                label="Retry"
+                tooltip="Regenerate this response"
+              >
+                <RefreshCcwIcon className="!w-3 !h-3" />
+              </Action>
+            )}
+            <CopyButton {...copyButtonProps} text={responseText} />
+          </Actions>
+        )}
       {message.role === "assistant" && lastTextIndex === -1 && (
         <ModelRoutingStatus metadata={message.metadata} />
       )}

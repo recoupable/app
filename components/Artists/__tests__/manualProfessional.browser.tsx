@@ -5,8 +5,14 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import ManualProfessionalForm from "../ManualProfessionalForm";
 import ProfessionalRosterSection from "../ProfessionalRosterSection";
+import WorkspaceContextBar from "@/components/Chat/WorkspaceContextBar";
+import { useArtistsRoster } from "@/hooks/artists/useArtistsRoster";
 import "@/app/globals.css";
-const fixture = vi.hoisted(() => ({ fetch: vi.fn(), authenticated: true }));
+const fixture = vi.hoisted(() => ({
+  fetch: vi.fn(),
+  authenticated: true,
+  select: vi.fn(),
+}));
 const actor = "10000000-0000-4000-8000-000000000001";
 const org = "10000000-0000-4000-8000-000000000002";
 const other = "10000000-0000-4000-8000-000000000004";
@@ -20,6 +26,7 @@ vi.mock("@privy-io/react-auth", () => ({
 vi.mock("@/providers/OrganizationProvider", () => ({
   useOrganization: () => ({
     selectedOrgId: "10000000-0000-4000-8000-000000000002",
+    isInitialized: true,
   }),
 }));
 vi.mock("@/providers/UserProvder", () => ({
@@ -27,11 +34,24 @@ vi.mock("@/providers/UserProvder", () => ({
     userData: { account_id: "10000000-0000-4000-8000-000000000001" },
   }),
 }));
+vi.mock("@/hooks/useAccountOrganizations", () => ({
+  default: () => ({
+    data: [{ organization_id: org, organization_name: "Fixture organization" }],
+  }),
+}));
+vi.mock("@/providers/ArtistProvider", () => ({
+  useArtistProvider: () => ({
+    ...useArtistsRoster({ userId: actor, orgId: org }),
+    selectedArtist: null,
+    setSelectedArtist: fixture.select,
+  }),
+}));
 vi.mock("@/lib/api/getClientApiBaseUrl", () => ({
   getClientApiBaseUrl: () => "http://fixture.invalid",
 }));
 const professional = {
   id,
+  artist_id: "10000000-0000-4000-8000-000000000005",
   organization_id: org,
   name: "Test Writer",
   roles: ["producer", "songwriter"],
@@ -62,6 +82,7 @@ beforeEach(() => {
   saved = vi.fn();
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   fixture.fetch.mockReset();
+  fixture.select.mockReset();
   vi.stubGlobal("fetch", fixture.fetch);
   fixture.fetch.mockImplementation(
     async (_url: string, options: RequestInit) =>
@@ -396,4 +417,69 @@ it("can explicitly add a distinct new person despite a same-name candidate", asy
   );
   expect(body.mode).toBe("new");
   expect(body.professional_id).toBeUndefined();
+});
+
+it("refreshes the artist picker query after saving a professional account", async () => {
+  const key = ["artists", actor, org];
+  client.setQueryData(key, []);
+  render(form());
+  await enter();
+  await userEvent.click(
+    screen.getByRole("button", { name: "Confirm roster addition" }),
+  );
+  await waitFor(() => expect(saved).toHaveBeenCalledOnce());
+  expect(client.getQueryState(key)?.isInvalidated).toBe(true);
+});
+
+it("a saved songwriter becomes selectable in the real roster picker without reloading", async () => {
+  let committed = false;
+  const artist = {
+    id: professional.artist_id,
+    account_id: professional.artist_id,
+    name: professional.name,
+    account_socials: [],
+  };
+  fixture.fetch.mockImplementation(
+    async (url: string, options: RequestInit) => {
+      if (String(url).includes("/api/artists?")) {
+        return response({
+          status: "success",
+          artists: committed ? [artist] : [],
+        });
+      }
+      if (options.method === "POST") {
+        committed = true;
+        return response({ professional, created: true }, 201);
+      }
+      return response({
+        professionals: committed ? [professional] : [],
+        next_cursor: null,
+      });
+    },
+  );
+  render(
+    <>
+      {form()}
+      <QueryClientProvider client={client}>
+        <WorkspaceContextBar />
+      </QueryClientProvider>
+    </>,
+  );
+  await waitFor(() =>
+    expect(
+      screen.getByRole("button", { name: "Roster: Roster is empty" }),
+    ).toBeTruthy(),
+  );
+  await enter();
+  await userEvent.click(
+    screen.getByRole("button", { name: "Confirm roster addition" }),
+  );
+  await waitFor(() => expect(saved).toHaveBeenCalledOnce());
+  await userEvent.click(
+    screen.getByRole("button", { name: "Roster: Entire roster" }),
+  );
+  await userEvent.click(screen.getByRole("button", { name: /Test Writer/ }));
+  expect(fixture.select).toHaveBeenCalledWith(
+    expect.objectContaining({ account_id: professional.artist_id }),
+  );
 });

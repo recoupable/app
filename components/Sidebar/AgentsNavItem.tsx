@@ -11,7 +11,7 @@ const AgentsNavItem = ({
   isExpanded?: boolean;
   onClick: () => void;
 }) => {
-  const { prefetchAgents } = useAgentData();
+  const { prefetchAgents } = useAgentData({ enabled: false });
 
   return (
     <NavButton

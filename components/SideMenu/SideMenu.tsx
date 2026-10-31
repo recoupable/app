@@ -59,7 +59,7 @@ const SideMenu = ({
   };
 
   return (
-    <SideModal isVisible={isVisible} toggleModal={toggleModal}>
+    <SideModal isVisible={isVisible} toggleModal={toggleModal} direction="left">
       <Link
         href="/"
         className="mt-0 shrink-0 hover:opacity-80 transition-opacity duration-200 w-fit"

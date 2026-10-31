@@ -8,6 +8,7 @@ import { buildReportInsights } from "@/lib/valuation/buildReportInsights";
 import CatalogValuationCard from "./CatalogValuationCard";
 import CatalogReportStats from "./CatalogReportStats";
 import CatalogReleasesTable from "./CatalogReleasesTable";
+import CatalogTracksTable from "./CatalogTracksTable";
 import CatalogReportInsights from "./CatalogReportInsights";
 import CatalogReportCta from "./CatalogReportCta";
 import CatalogReportSkeleton from "./CatalogReportSkeleton";
@@ -57,16 +58,23 @@ const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
   // Measured with zero plays (chat#1969): a $0 valuation card is not a report.
   if (measuredSongCount > 0 && totalStreams === 0) {
     return (
-      <CatalogReportEmptyState
-        state="no_streams"
-        hasOwnCatalogs={hasOwnCatalogs}
-        measuredSongCount={measuredSongCount}
-      />
+      <div className="flex flex-col gap-4 max-w-3xl">
+        <CatalogReportEmptyState
+          state="no_streams"
+          hasOwnCatalogs={hasOwnCatalogs}
+          measuredSongCount={measuredSongCount}
+        />
+        <CatalogTracksTable
+          key={catalogId}
+          measurements={measurements.measurements}
+          songs={songs}
+        />
+      </div>
     );
   }
 
   const insights = buildReportInsights({
-    totalSongs: totalSongs ?? measuredSongCount,
+    totalSongs,
     measuredSongCount,
     releaseStreamShares:
       totalStreams > 0 ? releases.map((r) => r.streams / totalStreams) : [],
@@ -78,13 +86,18 @@ const CatalogReportContent = ({ catalogId }: CatalogReportContentProps) => {
       <CatalogReportStats
         totalStreams={totalStreams}
         measuredSongCount={measuredSongCount}
-        totalSongs={totalSongs ?? measuredSongCount}
-        releaseCount={releases.length}
+        totalSongs={totalSongs}
+        releaseCount={songs === undefined ? undefined : releases.length}
         catalogAgeYears={valuation.catalogAgeYears}
       />
       <CatalogReleasesTable releases={releases} />
+      <CatalogTracksTable
+        key={catalogId}
+        measurements={measurements.measurements}
+        songs={songs}
+      />
       <CatalogReportInsights insights={insights} />
-      <CatalogReportCta />
+      <CatalogReportCta catalogId={catalogId} />
     </div>
   );
 };

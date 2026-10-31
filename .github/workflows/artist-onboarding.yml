@@ -11,16 +11,31 @@ permissions:
 jobs:
   onboarding-browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Step budgets total 26 minutes; reserve four more for post-job cleanup.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        timeout-minutes: 1
       - uses: pnpm/action-setup@v4
+        timeout-minutes: 1
         with:
           version: 9
       - uses: actions/setup-node@v4
+        timeout-minutes: 2
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium --only-shell
-      - run: pnpm exec vitest run --config vitest.onboarding.config.ts
+      - name: Install project dependencies
+        timeout-minutes: 5
+        run: pnpm install --frozen-lockfile
+      # A recorded Ubuntu package download took 8m40s; browser downloads took 2.5s.
+      # Keep OS setup independent of browser installation and the test budget.
+      - name: Install Chromium system dependencies
+        timeout-minutes: 12
+        run: pnpm exec playwright install-deps chromium
+      - name: Install Chromium headless shell
+        timeout-minutes: 2
+        run: pnpm exec playwright install chromium --only-shell
+      - name: Run onboarding browser tests
+        timeout-minutes: 3
+        run: pnpm exec vitest run --config vitest.onboarding.config.ts

@@ -21,6 +21,8 @@ interface TaskRunListResponse {
 
 interface GetTaskRunsOptions {
   accountIdOverride?: string;
+  apiBaseUrl?: string;
+  signal?: AbortSignal;
 }
 
 /**
@@ -34,7 +36,9 @@ export async function getTaskRuns(
   accessToken: string,
   options: GetTaskRunsOptions = {},
 ): Promise<TaskRunItem[]> {
-  const url = new URL(`${getClientApiBaseUrl()}/api/tasks/runs`);
+  const url = new URL(
+    `${options.apiBaseUrl ?? getClientApiBaseUrl()}/api/tasks/runs`,
+  );
   url.searchParams.set("limit", "20");
 
   if (options.accountIdOverride) {
@@ -43,6 +47,7 @@ export async function getTaskRuns(
 
   const response = await fetch(url.toString(), {
     method: "GET",
+    signal: options.signal,
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import type { ToolRenderState } from "@/lib/chat/extractToolRenderState";
 import { summarizeTodos, type Todo } from "@/lib/chat/summarizeTodos";
 import { ToolLayout } from "./ToolLayout";
+import { ToolErrorDetails } from "./ToolErrorDetails";
 
 export interface TodoRendererProps {
   input?: { todos?: Todo[] };
@@ -83,7 +84,7 @@ function StatusIcon({ status }: { status?: string }) {
  * Ported from `open-agents` (`renderers/todo-renderer.tsx`).
  */
 export function TodoRenderer({ input, state }: TodoRendererProps) {
-  const todos = input?.todos ?? [];
+  const todos = (input?.todos ?? []).filter((todo) => todo != null);
   const { completed, total, current } = summarizeTodos(todos);
 
   return (
@@ -95,33 +96,36 @@ export function TodoRenderer({ input, state }: TodoRendererProps) {
       state={state}
       expandedContent={
         todos.length > 0 ? (
-          <ul className="ml-1.5 flex flex-col gap-0.5">
-            {todos.map((todo, i) => (
-              <li
-                key={`${i}-${todo.content ?? ""}`}
-                className={cn(
-                  "flex items-start gap-2 py-0.5 text-[13px] leading-snug",
-                  todo.status === "completed" &&
-                    "text-muted-foreground line-through",
-                  todo.status === "in_progress" &&
-                    "font-medium text-foreground",
-                  todo.status !== "completed" &&
-                    todo.status !== "in_progress" &&
-                    "text-muted-foreground",
-                )}
-              >
-                <span className="mt-0.5">
-                  <StatusIcon status={todo.status} />
-                </span>
-                <span>
-                  {/* The icon, colour and strike-through carry the status for
+          <>
+            {state.error && <ToolErrorDetails error={state.error} />}
+            <ul className="ml-1.5 flex flex-col gap-0.5">
+              {todos.map((todo, i) => (
+                <li
+                  key={`${i}-${todo.content ?? ""}`}
+                  className={cn(
+                    "flex items-start gap-2 py-0.5 text-[13px] leading-snug",
+                    todo.status === "completed" &&
+                      "text-muted-foreground line-through",
+                    todo.status === "in_progress" &&
+                      "font-medium text-foreground",
+                    todo.status !== "completed" &&
+                      todo.status !== "in_progress" &&
+                      "text-muted-foreground",
+                  )}
+                >
+                  <span className="mt-0.5">
+                    <StatusIcon status={todo.status} />
+                  </span>
+                  <span>
+                    {/* The icon, colour and strike-through carry the status for
                       sighted readers only. */}
-                  <span className="sr-only">{`${STATUS_LABEL[todo.status ?? ""] ?? "Pending"}: `}</span>
-                  {todo.content}
-                </span>
-              </li>
-            ))}
-          </ul>
+                    <span className="sr-only">{`${STATUS_LABEL[todo.status ?? ""] ?? "Pending"}: `}</span>
+                    {todo.content}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
         ) : undefined
       }
     />

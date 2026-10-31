@@ -19,7 +19,7 @@ const SearchResultItem: React.FC<SearchResultItemProps> = ({ result }) => {
       href={result.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg hover:bg-muted dark:hover:bg-zinc-900 transition-colors group"
+      className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg hover:bg-muted dark:hover:bg-zinc-900 transition-colors group focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
     >
       <div className="flex items-center gap-2 min-w-0 flex-1">
         <img

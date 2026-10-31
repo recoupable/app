@@ -1,5 +1,6 @@
 import React from "react";
-import { CheckCircle, Calendar } from "lucide-react";
+import { CheckCircle, Calendar, User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDate } from "date-fns";
 import { ArtistProfile } from "@/lib/supabase/artist/updateArtistProfile";
 
@@ -27,12 +28,26 @@ const ArtistHeroSection = ({
         <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 sm:gap-6">
           {artistProfile.image && (
             <div className="flex-shrink-0">
-              {/* eslint-disable */}
-              <img
-                src={artistProfile.image}
-                alt={artistProfile.name || "Artist"}
-                className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg object-cover shadow-2xl"
-              />
+              <Avatar
+                key={artistProfile.image}
+                className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg shadow-2xl"
+              >
+                <AvatarImage
+                  src={artistProfile.image}
+                  alt={artistProfile.name || "Artist"}
+                  className="object-cover"
+                />
+                <AvatarFallback
+                  className="rounded-lg bg-[var(--muted)]"
+                  role="img"
+                  aria-label={artistProfile.name || "Artist"}
+                >
+                  <User
+                    className="h-8 w-8 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                </AvatarFallback>
+              </Avatar>
             </div>
           )}
 
@@ -62,7 +77,7 @@ const ArtistHeroSection = ({
                   Updated{" "}
                   {formatDate(
                     new Date(artistProfile.updated_at),
-                    "MMM d, yyyy, h:mm a"
+                    "MMM d, yyyy, h:mm a",
                   )}
                 </span>
               </div>

@@ -31,6 +31,10 @@ export default function ReleaseCaseTracks({
             return (
               <tr key={track.slot_index}>
                 <td className="p-2">
+                  {current.release_format?.multi_disc &&
+                  track.disc_number !== null
+                    ? `Disc ${track.disc_number} · `
+                    : ""}
                   {track.track_number ?? track.slot_index + 1}.{" "}
                   {track.title ?? "Title unavailable"}
                 </td>

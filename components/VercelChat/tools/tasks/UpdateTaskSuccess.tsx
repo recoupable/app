@@ -1,8 +1,6 @@
 import React from "react";
 import TaskCard from "./TaskCard";
 import { CheckCircle, Calendar } from "lucide-react";
-import Link from "next/link";
-import { getTaskHref } from "@/lib/tasks/getTaskHref";
 import { ScheduledAction } from "@/components/VercelChat/types";
 import TaskError from "./TaskError";
 
@@ -35,9 +33,7 @@ const UpdateTaskSuccess = ({ result: task }: { result: ScheduledAction }) => {
       {/* Task Card */}
       {task && task.id && (
         <div className="space-y-3">
-          <Link href={getTaskHref(task.id)} className="block">
-            <TaskCard task={task} />
-          </Link>
+          <TaskCard task={task} />
         </div>
       )}
 

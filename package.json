@@ -65,7 +65,6 @@
     "@workflow/ai": "4.2.0",
     "ai": "6.0.241",
     "apify-client": "^2.9.7",
-    "arweave": "^1.15.7",
     "class-variance-authority": "^0.7.1",
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",

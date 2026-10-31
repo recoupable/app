@@ -1,8 +1,6 @@
 import { Task } from "@/lib/tasks/getTasks";
 import TaskCard from "@/components/VercelChat/tools/tasks/TaskCard";
 import TaskSkeleton from "./TaskSkeleton";
-import Link from "next/link";
-import { getTaskHref } from "@/lib/tasks/getTaskHref";
 import { useUserProvider } from "@/providers/UserProvder";
 
 interface TasksListProps {
@@ -45,9 +43,8 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError }) => {
   return (
     <div className="mt-4">
       {tasks.map((task: Task, index) => (
-        <Link
+        <div
           key={task.id}
-          href={getTaskHref(task.id)}
           className={
             index !== tasks.length - 1
               ? "block border-b border-border"
@@ -59,7 +56,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, isLoading, isError }) => {
             ownerEmail={task.owner_email ?? undefined}
             artistName={task.artist_name}
           />
-        </Link>
+        </div>
       ))}
     </div>
   );

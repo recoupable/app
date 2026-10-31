@@ -26,7 +26,7 @@ export interface GetTasksResponse {
 
 /**
  * Fetches tasks from the Recoup API
- * @see https://docs.recoupable.dev/tasks/get
+ * @see https://docs.recoupable.dev/api-reference/tasks/get
  */
 export async function getTasks(
   accessToken: string,

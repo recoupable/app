@@ -26,6 +26,9 @@ vi.mock("@/providers/PrivyProvider", () => ({
 vi.mock("@/providers/UserProvder", () => ({
   UserProvider: state.wrap("user"),
 }));
+vi.mock("@/providers/AgentTemplateProvider", () => ({
+  AgentTemplateProvider: state.wrap("agent-templates"),
+}));
 vi.mock("@/providers/ArtistProvider", () => ({
   ArtistProvider: state.wrap("artist"),
 }));
@@ -94,6 +97,7 @@ describe("synthetic playground providers", () => {
     for (const name of [
       "privy",
       "user",
+      "agent-templates",
       "account-override",
       "api-override",
       "payment",

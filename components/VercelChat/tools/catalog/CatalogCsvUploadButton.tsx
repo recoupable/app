@@ -1,3 +1,4 @@
+import { useId, useRef } from "react";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -15,28 +16,34 @@ export default function CatalogCsvUploadButton({
   onFileSelect,
   hasCatalogId = true,
 }: CatalogCsvUploadButtonProps) {
+  const inputId = useId();
+  const triggerId = `${inputId}-trigger`;
+  const inputRef = useRef<HTMLInputElement>(null);
+
   return (
     <div className="mt-2 pt-3 border-t">
-      <label htmlFor="csv-upload">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={!hasCatalogId}
-          className="w-full"
-          onClick={() => document.getElementById("csv-upload")?.click()}
-        >
-          <Upload className="h-4 w-4 mr-2" />
-          Upload CSV File
-        </Button>
-        <input
-          id="csv-upload"
-          type="file"
-          accept=".csv"
-          onChange={onFileSelect}
-          className="hidden"
-        />
-      </label>
+      <Button
+        id={triggerId}
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={!hasCatalogId}
+        className="w-full"
+        aria-controls={inputId}
+        onClick={() => inputRef.current?.click()}
+      >
+        <Upload className="h-4 w-4 mr-2" />
+        Upload CSV File
+      </Button>
+      <input
+        id={inputId}
+        ref={inputRef}
+        type="file"
+        accept=".csv"
+        aria-labelledby={triggerId}
+        onChange={onFileSelect}
+        className="hidden"
+      />
       <p className="text-xs text-muted-foreground mt-1.5 px-1">
         {hasCatalogId ? (
           <>

@@ -53,7 +53,7 @@ it.each([1, 2, 3])(
       snapshotPart(2, "Resumed version"),
     ]);
     expect(fetch.mock.calls[1][0]).toBe(
-      `https://recoup.invalid/api/chat/synthetic-chat/stream?startIndex=${cut}`,
+      `https://recoup.invalid/api/chat/synthetic-chat/stream?startIndex=${cut}&streamLifecycle=explicit-stop-v1`,
     );
     expect(fetch.mock.calls[1][1].headers.Authorization).toBe(
       "Bearer synthetic-token",
@@ -101,7 +101,7 @@ it("reloads a serialized SDK message and replaces its stable data ID after a rep
     snapshotPart(5, "Recovered version"),
   ]);
   expect(fetch.mock.calls[0][0]).toBe(
-    "https://recoup.invalid/api/chat/synthetic-chat/stream?startIndex=0",
+    "https://recoup.invalid/api/chat/synthetic-chat/stream?startIndex=0&streamLifecycle=explicit-stop-v1",
   );
   expect(fetch).toHaveBeenCalledTimes(1);
 });

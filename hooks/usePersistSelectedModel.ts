@@ -29,24 +29,31 @@ export function usePersistSelectedModel({
   chatId,
   model,
   getAccessToken,
-}: UsePersistSelectedModelInput): () => Promise<void> {
+}: UsePersistSelectedModelInput): (isCurrent?: () => boolean) => Promise<void> {
   // The {chatId, model} we last wrote, so we only PATCH when the selection
   // actually changes for the active chat.
   const lastPersistedModelRef = useRef<PersistedChatModel>(null);
 
-  return useCallback(async () => {
-    if (!sessionId || !chatId) return;
-    if (!shouldPersistChatModel(lastPersistedModelRef.current, chatId, model)) {
-      return;
-    }
+  return useCallback(
+    async (isCurrent?: () => boolean) => {
+      if (isCurrent?.() === false) return;
+      if (!sessionId || !chatId) return;
+      if (
+        !shouldPersistChatModel(lastPersistedModelRef.current, chatId, model)
+      ) {
+        return;
+      }
 
-    try {
-      const accessToken = await getAccessToken();
-      if (!accessToken) return;
-      await updateChat({ accessToken, sessionId, chatId, modelId: model });
-      lastPersistedModelRef.current = { chatId, model };
-    } catch (error) {
-      console.error("Failed to persist selected model before send:", error);
-    }
-  }, [sessionId, chatId, model, getAccessToken]);
+      try {
+        const accessToken = await getAccessToken();
+        if (!accessToken || isCurrent?.() === false) return;
+        await updateChat({ accessToken, sessionId, chatId, modelId: model });
+        if (isCurrent?.() === false) return;
+        lastPersistedModelRef.current = { chatId, model };
+      } catch (error) {
+        console.error("Failed to persist selected model before send:", error);
+      }
+    },
+    [sessionId, chatId, model, getAccessToken],
+  );
 }

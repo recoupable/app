@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "kind": "offline-sdk-serializer-capture",
+  "producerSource": {
+    "repository": "recoupable/api",
+    "commit": "2dbf74288d9bc5a205632c1fc52fc4a18855c3ff",
+    "tree": "063a57232e58ce7ec5116b3568201246bd311151",
+    "declaredAiVersion": "6.0.190",
+    "execution": "Installed SDK serializer only; API application not executed."
+  },
+  "serializer": {
+    "package": "ai",
+    "version": "6.0.190",
+    "export": "createUIMessageStreamResponse",
+    "packageJson": {
+      "path": "package.json",
+      "sha256": "24d5988d689a1becea98cc9f09ffb5356afdfae92c70aec880bd64ae94b8689c"
+    },
+    "entry": {
+      "path": "dist/index.mjs",
+      "sha256": "95a79e9ceea0e012c13a925e650d1ec72e50e41ba642553e3f7a2a3bf0ad3f7d"
+    }
+  },
+  "consumerSource": {
+    "repository": "recoupable/app",
+    "baseCommit": "e47ea721aefe8f404402f39c8407dc0fd075cacb",
+    "declaredVersions": {
+      "ai": "6.0.241",
+      "@ai-sdk/react": "3.0.243",
+      "@workflow/ai": "4.2.0"
+    }
+  },
+  "input": {
+    "path": "input.json",
+    "bytes": 21302,
+    "sha256": "96294106c95ca722cc655e05cd07ce964fd039dfb36968d7a41ee2cca32cf697",
+    "chunkCount": 24
+  },
+  "stream": {
+    "path": "stream.sse",
+    "bytes": 12175,
+    "sha256": "18a13fdf53bbea9db1ed72ffc1de4dbdb24b428502d89be643940ef52d920ec4",
+    "recordCount": 25,
+    "recordEndOffsets": [
+      50, 92, 163, 244, 284, 332, 432, 478, 569, 685, 791, 868, 2423, 3978,
+      5533, 7088, 8643, 10198, 10389, 11949, 11992, 12073, 12114, 12161, 12175
+    ],
+    "terminalRecord": "data: [DONE]\n\n"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "cache-control": "no-cache",
+      "connection": "keep-alive",
+      "content-type": "text/event-stream",
+      "x-accel-buffering": "no",
+      "x-vercel-ai-ui-message-stream": "v1",
+      "x-workflow-run-id": "synthetic-api-wire-run"
+    }
+  }
+}

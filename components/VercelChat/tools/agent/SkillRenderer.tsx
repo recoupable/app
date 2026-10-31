@@ -3,6 +3,7 @@
 import { Zap } from "lucide-react";
 import type { ToolRenderState } from "@/lib/chat/extractToolRenderState";
 import { ToolLayout } from "./ToolLayout";
+import { ToolErrorDetails } from "./ToolErrorDetails";
 
 export interface SkillOutput {
   success?: boolean;
@@ -46,9 +47,7 @@ export function SkillRenderer({ input, output, state }: SkillRendererProps) {
         args ? (
           <>
             {mergedState.error && (
-              <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 font-mono text-xs leading-relaxed text-destructive">
-                {mergedState.error}
-              </pre>
+              <ToolErrorDetails error={mergedState.error} />
             )}
             <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md border border-border bg-muted/50 p-3 font-mono text-xs leading-relaxed text-muted-foreground">
               {args}

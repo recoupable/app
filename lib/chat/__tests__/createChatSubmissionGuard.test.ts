@@ -32,3 +32,35 @@ describe("createChatSubmissionGuard", () => {
     expect(retry).toHaveBeenCalledOnce();
   });
 });
+
+it("lets a current scope replace an obsolete wait without the old finally releasing its lock", async () => {
+  const submit = createChatSubmissionGuard();
+  let current = true;
+  let releaseOld!: () => void;
+  let releaseNew!: () => void;
+  const old = submit(
+    () =>
+      new Promise<void>((resolve) => {
+        releaseOld = resolve;
+      }),
+    () => current,
+  );
+  current = false;
+  const next = vi.fn(
+    () =>
+      new Promise<void>((resolve) => {
+        releaseNew = resolve;
+      }),
+  );
+  const newer = submit(next, () => true);
+  expect(next).toHaveBeenCalledOnce();
+  releaseOld();
+  await old;
+  const duplicate = vi.fn(async () => {});
+  await submit(duplicate);
+  expect(duplicate).not.toHaveBeenCalled();
+  releaseNew();
+  await newer;
+  await submit(duplicate);
+  expect(duplicate).toHaveBeenCalledOnce();
+});
