@@ -611,22 +611,19 @@
       }
       return session.access_token;
     }
-    // A missing profile can leave eligibility unknown; an unusable session
-    // must not be presented or announced as a successful connection.
+    const recoverSession = (message) => {
+      // Keep independent artist audio and no-music controls available without
+      // presenting the Spotify session as connected.
+      if (activateSavedAudio()) showPlayer();
+      say(message);
+    };
     let accessToken;
     try {
       accessToken = await getToken();
     } catch (error) {
-      say(error.message);
+      recoverSession(error.message);
       return;
     }
-    if (continueButton && parentOrigin) continueButton.hidden = false;
-    if (!parentOrigin) showPlayer();
-    document.body.dataset.connected = "true";
-    if (intro) intro.textContent = "Spotify connected. You’re ready to go.";
-    connect.hidden = true;
-    play.hidden = false;
-    play.disabled = true;
     const notifyPlayback = (event) => {
       if (playerConfig && parentOrigin)
         window.parent.postMessage(
@@ -634,12 +631,11 @@
           parentOrigin,
         );
     };
-    if (playerConfig)
-      notifyPlayback(session.fanCapture ? "fan_captured" : "capture_failed");
     let lastPlayback = "";
     let product = "unknown";
+    let profileResponse;
     try {
-      const profileResponse = await fetch("https://api.spotify.com/v1/me", {
+      profileResponse = await fetch("https://api.spotify.com/v1/me", {
         headers: { Authorization: "Bearer " + accessToken },
       });
       if (profileResponse.ok) {
@@ -650,6 +646,21 @@
     } catch {
       /* An unavailable profile is unknown, never evidence of a free account. */
     }
+    if (profileResponse?.status === 401) {
+      recoverSession(
+        "Your Spotify session is no longer valid. Disconnect and reconnect.",
+      );
+      return;
+    }
+    if (continueButton && parentOrigin) continueButton.hidden = false;
+    if (!parentOrigin) showPlayer();
+    document.body.dataset.connected = "true";
+    if (intro) intro.textContent = "Spotify connected. You’re ready to go.";
+    connect.hidden = true;
+    play.hidden = false;
+    play.disabled = true;
+    if (playerConfig)
+      notifyPlayback(session.fanCapture ? "fan_captured" : "capture_failed");
     document.body.dataset.spotifyProduct = product;
     const accountLabel = document.getElementById("spotify-account");
     if (accountLabel) {

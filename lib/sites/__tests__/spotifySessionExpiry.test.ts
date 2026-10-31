@@ -28,7 +28,7 @@ function sessionHarness(expired = true, refresh = false) {
   Object.assign(h.ctx.document, { head });
   for (const id of ["spotify-play", "spotify-continue", "spotify-disconnect"])
     Object.assign(h.ctx.document.getElementById(id), { hidden: true });
-  h.fetch.mockResolvedValue({ ok: false });
+  h.fetch.mockResolvedValue({ ok: false, status: 503 });
   return { ...h, parent, events, head };
 }
 
@@ -95,4 +95,117 @@ it("refreshes successfully before reporting connection", async () => {
     "Bearer renewed-synthetic",
   );
   expect(h.events.event).toHaveBeenCalledWith("connected");
+});
+
+function addAudio(h: ReturnType<typeof sessionHarness>) {
+  const audio = {
+    src: "https://audio.test/synthetic.wav",
+    duration: 10,
+    currentTime: 0,
+    paused: true,
+    volume: 0,
+    addEventListener: vi.fn(),
+    play: vi.fn(async () => {
+      audio.paused = false;
+    }),
+    pause: vi.fn(),
+  };
+  Object.assign(h.nodes, { "site-audio": audio });
+  Object.assign(h.nodes["spotify-play"], {
+    dataset: {},
+    setAttribute: vi.fn(),
+  });
+  Object.assign(h.ctx.document.getElementById("spotify-previous"), {
+    setAttribute: vi.fn(),
+  });
+  return audio;
+}
+
+it.each([false, true])(
+  "preserves permitted audio and no-music recovery after token failure (refresh=%s)",
+  async (refresh) => {
+    const h = sessionHarness(true, refresh);
+    const audio = addAudio(h);
+    await h.run();
+    expect(h.ctx.document.body.dataset).toMatchObject({
+      playbackSource: "audio",
+      playerVisible: "true",
+    });
+    expect(h.ctx.document.body.dataset).not.toHaveProperty("connected", "true");
+    expect(h.nodes["spotify-status"]).toMatchObject({ hidden: false });
+    expect(h.nodes["spotify-status"].textContent).toMatch(/reconnect/i);
+    expect(h.nodes["spotify-skip"]).toMatchObject({ hidden: false });
+    expect(h.nodes["spotify-play"]).toMatchObject({
+      hidden: false,
+      disabled: false,
+    });
+    expect(h.events.event).not.toHaveBeenCalledWith("connected");
+    expect(h.head.appendChild).not.toHaveBeenCalled();
+    await h.nodes["spotify-play"].onclick!();
+    expect(audio.play).toHaveBeenCalledOnce();
+  },
+);
+
+it("treats an explicit profile401 as recovery rather than a connected unknown subscription", async () => {
+  const h = sessionHarness(false);
+  h.fetch.mockResolvedValue({ ok: false, status: 401 });
+  await h.run();
+  expect(h.ctx.document.body.dataset).not.toHaveProperty("connected", "true");
+  expect(h.nodes["spotify-status"]).toMatchObject({ hidden: false });
+  expect(h.nodes["spotify-status"].textContent).toMatch(/reconnect/i);
+  expect(h.events.event).not.toHaveBeenCalledWith("connected");
+  expect(h.parent.postMessage).not.toHaveBeenCalled();
+  expect(h.nodes["spotify-skip"]).toMatchObject({ hidden: false });
+  expect(h.nodes["spotify-disconnect"]).toMatchObject({ hidden: false });
+  expect(h.head.appendChild).not.toHaveBeenCalled();
+  expect(h.fetch).toHaveBeenCalledTimes(1);
+});
+
+it("keeps profile network failure unknown for an otherwise valid session", async () => {
+  const h = sessionHarness(false);
+  h.fetch.mockRejectedValue(new TypeError("Failed to fetch"));
+  await h.run();
+  expect(h.ctx.document.body.dataset).toMatchObject({
+    connected: "true",
+    spotifyProduct: "unknown",
+  });
+  expect(h.events.event).toHaveBeenCalledWith("connected");
+});
+
+it("preserves permitted audio after a profile401 without announcing Spotify connection", async () => {
+  const h = sessionHarness(false);
+  const audio = addAudio(h);
+  h.fetch.mockResolvedValue({ ok: false, status: 401 });
+  await h.run();
+  expect(h.ctx.document.body.dataset).toMatchObject({
+    playbackSource: "audio",
+  });
+  expect(h.ctx.document.body.dataset).not.toHaveProperty("connected", "true");
+  expect(h.nodes["spotify-status"].textContent).toContain("no longer valid");
+  expect(h.nodes["spotify-skip"]).toMatchObject({ hidden: false });
+  expect(h.events.event).not.toHaveBeenCalledWith("connected");
+  await h.nodes["spotify-play"].onclick!();
+  expect(audio.play).toHaveBeenCalledOnce();
+});
+
+it("does not grant listening-only audio eligibility from an expired session", async () => {
+  const h = sessionHarness();
+  Object.assign(h.ctx.document.body.dataset, {
+    listeningOnly: "true",
+    playerConfig: JSON.stringify({
+      playerId: "release",
+      sessionId: "session",
+      spotify: { configured: true },
+      freePlayback: "audio",
+    }),
+  });
+  const audio = addAudio(h);
+  await h.run();
+  expect(h.ctx.document.body.dataset).not.toHaveProperty(
+    "playbackSource",
+    "audio",
+  );
+  expect(h.nodes["spotify-play"]).toMatchObject({ hidden: true });
+  expect(audio.play).not.toHaveBeenCalled();
+  expect(h.nodes["spotify-status"].textContent).toContain("expired");
 });
