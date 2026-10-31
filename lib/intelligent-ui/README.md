@@ -65,6 +65,10 @@ infers missing values nor treats an incomplete supplied subset as the whole
 collection. Any positive total remains eligible for the declared chart benefit;
 there is no minimum-value heuristic.
 
+Chart values and their text alternatives share English number formatting without
+a fixed fractional-digit cutoff. Canonical scientific notation keeps very small
+measurements compact. Calculations retain the existing JavaScript number arithmetic.
+
 ## Coherent responses and replay
 
 An optional `answer` travels inside the validated surface. Its ordered parts are
