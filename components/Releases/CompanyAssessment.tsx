@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import AssessmentProvenance from "./AssessmentProvenance";
+import AssessmentEvidenceSelection from "./AssessmentEvidenceSelection";
 import { Input } from "@/components/ui/input";
 import { useCompanyAssessment } from "@/hooks/useCompanyAssessment";
 interface Props {
@@ -8,7 +9,16 @@ interface Props {
   organizationId: string | null;
   getAccessToken: () => Promise<string | null>;
 }
-export default function CompanyAssessment({
+export default function CompanyAssessment(props: Props) {
+  return (
+    <CompanyAssessmentSession
+      key={JSON.stringify([props.requestId, props.organizationId])}
+      {...props}
+    />
+  );
+}
+
+function CompanyAssessmentSession({
   requestId,
   organizationId,
   getAccessToken,
@@ -89,6 +99,12 @@ export default function CompanyAssessment({
           />
         </div>
       )}
+      <AssessmentEvidenceSelection
+        key={assessment.operationRevision}
+        snapshot={assessment.snapshot}
+        busy={assessment.busy}
+        isCurrentSnapshot={assessment.isCurrentSnapshot}
+      />
       <details className="rounded-xl bg-muted/30 px-4 py-3">
         <summary className="cursor-pointer text-sm font-medium">
           Open a saved assessment
