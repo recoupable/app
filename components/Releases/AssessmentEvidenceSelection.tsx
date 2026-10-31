@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useAssessmentEvidenceValidation } from "@/hooks/useAssessmentEvidenceValidation";
 import { Button } from "@/components/ui/button";
 import type { CompanyAssessmentSnapshot } from "@/lib/releases/assessmentTypes";
 import { getAssessmentEvidenceChoices } from "@/lib/releases/assessmentEvidence/getAssessmentEvidenceChoices";
@@ -9,7 +10,11 @@ export default function AssessmentEvidenceSelection({
   snapshot,
   busy,
   isCurrentSnapshot,
+  organizationId,
+  getAccessToken,
 }: {
+  organizationId: string | null;
+  getAccessToken: () => Promise<string | null>;
   snapshot: CompanyAssessmentSnapshot | null;
   busy: boolean;
   isCurrentSnapshot: (snapshot: CompanyAssessmentSnapshot) => boolean;
@@ -18,9 +23,15 @@ export default function AssessmentEvidenceSelection({
   const [captured, setCaptured] =
     useState<ReturnType<typeof captureAssessmentEvidence>>(null);
   const [unavailable, setUnavailable] = useState(false);
+  const validation = useAssessmentEvidenceValidation(
+    organizationId,
+    getAccessToken,
+    () => !!snapshot && !busy && isCurrentSnapshot(snapshot),
+  );
   const choices = getAssessmentEvidenceChoices(snapshot);
   const disabled = busy || !choices;
   const capture = () => {
+    validation.invalidate();
     if (!snapshot || busy || !isCurrentSnapshot(snapshot)) {
       setCaptured(null);
       setUnavailable(true);
@@ -37,8 +48,8 @@ export default function AssessmentEvidenceSelection({
     >
       <h3 className="font-medium">Select evidence for a follow-up</h3>
       <p className="text-muted-foreground">
-        This selection stays on this page. It is not saved, validated with the
-        server, or sent to chat.
+        Capture a selection locally, then check its saved evidence with the
+        server. Checking does not save changes or send anything to chat.
       </p>
       {!choices ? (
         <p>
@@ -62,6 +73,7 @@ export default function AssessmentEvidenceSelection({
                   disabled={!checked && selectedIds.length >= 8}
                   onChange={() => {
                     if (!snapshot || !isCurrentSnapshot(snapshot)) return;
+                    validation.invalidate();
                     setSelectedIds(
                       checked
                         ? selectedIds.filter((id) => id !== row.documentId)
@@ -98,6 +110,7 @@ export default function AssessmentEvidenceSelection({
           className="min-h-11"
           disabled={busy || !selectedIds.length}
           onClick={() => {
+            validation.invalidate();
             setSelectedIds([]);
             setCaptured(null);
             setUnavailable(false);
@@ -112,9 +125,41 @@ export default function AssessmentEvidenceSelection({
           : unavailable
             ? "Selection unavailable. Review the current assessment and select again."
             : captured
-              ? `${captured.selected_evidence.length} evidence ${captured.selected_evidence.length === 1 ? "document" : "documents"} captured locally. Not saved or sent.`
+              ? `${captured.selected_evidence.length} evidence ${captured.selected_evidence.length === 1 ? "document" : "documents"} captured locally. Not saved or sent to chat.`
               : `${selectedIds.length} documents selected locally.`}
       </p>
+      {captured && !busy && (
+        <div className="space-y-2">
+          <Button
+            variant="outline"
+            className="min-h-11"
+            disabled={validation.status.state === "pending"}
+            onClick={() => void validation.validate(captured)}
+          >
+            Check captured evidence
+          </Button>
+          <p role="status">
+            {validation.status.state === "pending"
+              ? "Checking captured evidence…"
+              : validation.status.state === "available"
+                ? "Captured evidence was available when checked. This does not confirm facts or grant permission to act."
+                : validation.status.state === "unavailable"
+                  ? "Captured evidence is unavailable. Review the saved assessment and select again."
+                  : validation.status.state === "error"
+                    ? "Could not verify captured evidence. Check your access and try again."
+                    : "Captured evidence has not been checked."}
+          </p>
+          {validation.status.state === "available" && (
+            <ul aria-label="Checked evidence">
+              {validation.status.documents.map((document) => (
+                <li key={document.documentId} className="break-all">
+                  {document.kind} · {document.documentId}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
       {captured && !busy && (
         <label className="block">
           Captured evidence references

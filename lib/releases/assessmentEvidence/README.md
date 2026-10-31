@@ -14,12 +14,23 @@ that resets selection state. The event-time identity guard covers the interval b
 React renders pending state. Scope changes, replacement, errors and unmount do not
 restore old captures. This operation key is not a server or surface revision.
 
-No validation request is sent. The captured envelope remains local, unsaved, and not
-sent to chat. Existing preview/save/read operations retain their original request
-bodies. A saved evidence origin does not make a new follow-up saved or authorized.
-Future backend validation must be explicit and separately activated, preserve the
-captured scope/snapshot binding through the asynchronous response, and fail closed
-when it changes. Do not infer target kinds or ObjectRefs from topics, labels or IDs.
+“Check captured evidence” explicitly sends a read-only `read_brief` request through
+`/api/context`, with the captured brief ID and selection plus current organization.
+Capture itself sends no request. Existing preview/save/read operations retain their
+original bodies. Checking does not save a follow-up or send anything to chat.
+
+Validation uses a separate generation guard. Edits, clear and recapture invalidate
+it synchronously; assessment operations revoke the accepted snapshot before token
+acquisition. Delayed tokens cannot dispatch after invalidation, and delayed responses
+cannot restore checked status. Scope leave-return creates a fresh session.
+
+The response must pass the API-owned runtime schema and match the captured snapshot
+ID. Available requires a saved, explicitly non-superseded snapshot, the exact ordered
+document/subject pairs, and complete source-version sets with no missing, extra or
+duplicate authority rows. Source ordering is immaterial. The UI retains the server's
+actual kind; it never infers ObjectRefs, target kinds or accepted view revisions.
+Unavailable, malformed/error and available are distinct states. A successful check
+is a point-in-time evidence read, not factual confirmation or permission to act.
 
 ## API-owned schema pin
 
@@ -30,10 +41,12 @@ not independently authored wire types. Only module paths change: `zod` becomes
 becomes a sibling relative import. Do not manually change their fields or constraints;
 refresh from an approved API commit and update hashes. Source formatting is retained.
 UI values/types are inferred from this schema. No imports cross runtime repositories.
-The validation response schema is retained with its owning source but no network
-consumer is activated in this slice.
+The unchanged source hashes were also verified against accepted API commit
+`9421ee392ad8da921f597526df0f3a2e25a4926f` (recorded in the pin).
+Merge/activation of this consumer requires the release coordinator’s exact API
+serving receipt; local synthetic acceptance does not establish deployed compatibility.
 
 Malformed/out-of-bound or ambiguous manifests disable selection, while the existing
 saved-summary display/read flow remains available. Historical missing `superseded`
 metadata is not treated as explicit false. Current authorization and confirmed target
-kinds are determined by the future API consumer, not by local schema validation.
+kinds are determined by the API read, not by local capture validation.
