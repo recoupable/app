@@ -242,6 +242,15 @@ export function MessageParts({
         lastTextIndex === -1 &&
         mode === "view" && (
           <Actions className={cn(actionsClassName, "justify-start")}>
+            {(status === "ready" || status === "error") && (
+              <Action
+                onClick={() => reload()}
+                label="Retry"
+                tooltip="Regenerate this response"
+              >
+                <RefreshCcwIcon className="!w-3 !h-3" />
+              </Action>
+            )}
             <CopyButton {...copyButtonProps} text={responseText} />
           </Actions>
         )}
