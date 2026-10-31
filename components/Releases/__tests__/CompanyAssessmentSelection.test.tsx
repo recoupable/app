@@ -56,7 +56,7 @@ it("captures the accepted brief, not edited input or current request, without di
   expect(fetcher).toHaveBeenCalledTimes(1);
   expect(
     screen.getByText(
-      "1 evidence document captured locally. Not saved or sent.",
+      "1 evidence document captured locally. Not saved or sent to chat.",
     ),
   ).toBeTruthy();
 });

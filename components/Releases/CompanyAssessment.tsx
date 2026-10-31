@@ -101,6 +101,8 @@ function CompanyAssessmentSession({
       )}
       <AssessmentEvidenceSelection
         key={assessment.operationRevision}
+        organizationId={organizationId}
+        getAccessToken={getAccessToken}
         snapshot={assessment.snapshot}
         busy={assessment.busy}
         isCurrentSnapshot={assessment.isCurrentSnapshot}

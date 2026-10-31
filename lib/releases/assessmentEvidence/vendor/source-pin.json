@@ -18,5 +18,6 @@
       "vendored": "contextRequestTargetSchema.ts",
       "vendoredSha256": "adfc3eca91986574c82ed1b7812515e640dd5e964880f3457ceaa1158145293b"
     }
-  ]
+  ],
+  "verifiedCompatibleCommit": "9421ee392ad8da921f597526df0f3a2e25a4926f"
 }
