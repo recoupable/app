@@ -36,10 +36,11 @@ is a point-in-time evidence read, not factual confirmation or permission to act.
 
 `vendor/source-pin.json` pins the two authoritative API schema sources at
 `97eb158f7634a856adafdcf99a127421068d4799`. These are vendored source dependencies,
-not independently authored wire types. Only module paths change: `zod` becomes
-`zod/v4` (included by App's existing zod 3.25 dependency), and the target-schema alias
+not independently authored wire types. Local adaptations only change module paths:
+`zod` becomes `zod/v4` (included by App's existing zod 3.25 dependency), and the target-schema alias
 becomes a sibling relative import. Do not manually change their fields or constraints;
-refresh from an approved API commit and update hashes. Source formatting is retained.
+refresh from an approved API commit and update hashes. Approved API commits may change
+fields or constraints. Source formatting is retained.
 UI values/types are inferred from this schema. No imports cross runtime repositories.
 Only the explicit Check button opts into `explain_evidence_validation: true`.
 Existing read/save/preview requests are unchanged. Opted-in unavailable responses
