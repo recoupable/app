@@ -2,8 +2,11 @@
 
 `projectSubjectContext(proposed, current)` is a pure adapter for an explicitly
 selected follow-up. It returns `{ state: "available", context: SubjectContext }`
-or `{ state: "unavailable" }`. This module is the UI handoff seam; no production
-send, persistence or snapshot-consumer wiring is included in this PR.
+or `{ state: "unavailable" }`. The development playground's **Selection continuity**
+example consumes this adapter through `SelectionReview`, using the actual snapshot
+consumer's accepted revision and lifecycle binding. See
+[the host contract](../playground/selection/README.md). No production send or
+persistence is included.
 
 ## Input and output
 
@@ -46,9 +49,9 @@ An empty selection remains empty; available rows are never implicitly selected.
 
 ## Integration and acceptance boundaries
 
-UI owns capture and consumption of this adapter; it must retain exact refs alongside
-local row selections and show unavailable/conflict outcomes without silently replacing
-selected subjects or versions. A historical projection cannot be submitted as current
+The consumed development host retains exact refs in shared inline/expanded selection
+and shows unavailable outcomes without silently replacing selected subjects or versions.
+Other UI integrations must preserve the same contract. A historical projection cannot be submitted as current
 merely by updating its revision: fresh current descriptors and a matching binding are
 required. This is local consistency, not backend authority. The server must separately
 resolve and authorize any future follow-up against its owning services.
