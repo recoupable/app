@@ -584,14 +584,6 @@
       showSavedAudio();
       return;
     }
-    if (continueButton && parentOrigin) continueButton.hidden = false;
-    if (!parentOrigin) showPlayer();
-
-    document.body.dataset.connected = "true";
-    if (intro) intro.textContent = "Spotify connected. You’re ready to go.";
-    connect.hidden = true;
-    play.hidden = false;
-    play.disabled = true;
     disconnect.hidden = false;
     disconnect.onclick = () => {
       if (player) player.disconnect();
@@ -619,6 +611,22 @@
       }
       return session.access_token;
     }
+    // A missing profile can leave eligibility unknown; an unusable session
+    // must not be presented or announced as a successful connection.
+    let accessToken;
+    try {
+      accessToken = await getToken();
+    } catch (error) {
+      say(error.message);
+      return;
+    }
+    if (continueButton && parentOrigin) continueButton.hidden = false;
+    if (!parentOrigin) showPlayer();
+    document.body.dataset.connected = "true";
+    if (intro) intro.textContent = "Spotify connected. You’re ready to go.";
+    connect.hidden = true;
+    play.hidden = false;
+    play.disabled = true;
     const notifyPlayback = (event) => {
       if (playerConfig && parentOrigin)
         window.parent.postMessage(
@@ -632,7 +640,7 @@
     let product = "unknown";
     try {
       const profileResponse = await fetch("https://api.spotify.com/v1/me", {
-        headers: { Authorization: "Bearer " + (await getToken()) },
+        headers: { Authorization: "Bearer " + accessToken },
       });
       if (profileResponse.ok) {
         const profile = await profileResponse.json();
