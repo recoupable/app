@@ -7,7 +7,7 @@ import {
   screen,
   within,
 } from "@testing-library/react";
-import type { UIMessage } from "ai";
+import type { ChatStatus, UIMessage } from "ai";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { MessageParts } from "../MessageParts";
 import { VercelChatContext } from "@/providers/VercelChatProvider";
@@ -102,12 +102,16 @@ function fixture(part = chatSnapshotPart(1)) {
   };
   const reload = vi.fn();
   const binding = { consumer, scopeKey };
-  const view = (current = message, mode: "view" | "edit" = "view") => (
+  const view = (
+    current = message,
+    mode: "view" | "edit" = "view",
+    status: ChatStatus = "ready",
+  ) => (
     <VercelChatContext.Provider
       value={
         {
           messages: [current],
-          status: "ready",
+          status,
           reload,
           intelligentUI: binding,
         } as unknown as React.ContextType<typeof VercelChatContext>
@@ -504,4 +508,63 @@ it("restores after a new consumer loads authorized history regardless of its pri
       await screen.findByRole("button", { name: "Chorus, 0:28 to 0:40" })
     ).getAttribute("aria-current"),
   ).toBe("true");
+});
+
+it.each(["ready", "error"] as const)(
+  "offers one working Retry for a snapshot-only answer when %s",
+  async (status) => {
+    const { view, message, reload, consumer } = fixture();
+    consumer.cancel(); // Stop preserves the accepted answer.
+    render(view({ ...message, parts: [message.parts[1]] }, "view", status));
+    await screen.findByRole("article", { name: "Recoup response" });
+    expect(screen.getAllByRole("button", { name: "Retry" })).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(reload).toHaveBeenCalledOnce();
+  },
+);
+
+it.each(["submitted", "streaming"] as const)(
+  "does not offer snapshot-only Retry while chat is %s",
+  (status) => {
+    const { view, message, reload } = fixture();
+    render(view({ ...message, parts: [message.parts[1]] }, "view", status));
+    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+    expect(reload).not.toHaveBeenCalled();
+  },
+);
+
+it("keeps snapshot-only Retry usable when the renderer fails", async () => {
+  const part = chatSnapshotPart(1, "Retry the safe fallback");
+  part.data.title = "Synthetic renderer failure";
+  vi.spyOn(console, "error").mockImplementation(() => {});
+  const { view, message, reload } = fixture(part);
+  render(view({ ...message, parts: [message.parts[1]] }));
+  await screen.findByText("Retry the safe fallback");
+  fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+  expect(reload).toHaveBeenCalledOnce();
+});
+
+it("offers Retry for validated snapshot-only history after visual eviction", () => {
+  const { consumer, binding, view, reload } = fixture();
+  const history: UIMessage[] = Array.from({ length: 20 }, (_, index) => ({
+    id: `retry-history-${index}`,
+    role: "assistant",
+    parts: [chatSnapshotPart(index + 1, `Saved answer ${index + 1}`)],
+  }));
+  const loaded = consumer.hydrate(history, binding.scopeKey);
+  render(view(loaded[0]));
+  expect(screen.getByText("Saved answer 1")).toBeTruthy();
+  expect(screen.queryByRole("article", { name: "Recoup response" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+  expect(reload).toHaveBeenCalledOnce();
+});
+
+it("removes snapshot-only actions when their accepted scope is invalidated", () => {
+  const { view, message, changeScope } = fixture();
+  const { rerender } = render(view({ ...message, parts: [message.parts[1]] }));
+  expect(screen.getByRole("button", { name: "Retry" })).toBeTruthy();
+  changeScope();
+  rerender(view({ ...message, parts: [message.parts[1]] }));
+  expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Copy response" })).toBeNull();
 });
