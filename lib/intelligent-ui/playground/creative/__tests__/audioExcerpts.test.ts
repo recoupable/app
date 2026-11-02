@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { createSectionStudyAudio } from "../../createSectionStudyAudio";
@@ -39,12 +40,15 @@ it("preserves exact original PCM slices with truthful WAV durations and hashes",
     const bytes = createAudioExcerpt(name);
     const view = new DataView(bytes.buffer);
     expect(hash(bytes)).toBe(spec.version);
-    expect(bytes.subarray(44)).toEqual(
-      full.subarray(
-        44 + spec.startSeconds * 44100,
-        44 + spec.endSeconds * 44100,
+    // Native equality checks every PCM byte without deep assertion traversal.
+    expect(
+      Buffer.from(bytes.subarray(44)).equals(
+        full.subarray(
+          44 + spec.startSeconds * 44100,
+          44 + spec.endSeconds * 44100,
+        ),
       ),
-    );
+    ).toBe(true);
     expect(view.getUint32(4, true)).toBe(bytes.length - 8);
     expect(view.getUint32(40, true) / view.getUint32(28, true)).toBe(
       spec.endSeconds - spec.startSeconds,
