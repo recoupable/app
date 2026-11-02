@@ -274,3 +274,12 @@ same static supplied-value text plus explicitly local selection IDs. Whole-answe
 copy/fallback remains the immutable source answer, without unsaved widget selection.
 The `Select records` lab example exercises this exact renderer with fictional data.
 Existing snapshot byte limits remain in force; collections do not raise them.
+
+### Development-only local release plan
+
+The separately opted-in **Release plan** example edits dates and bounded task rules
+for the existing synthetic Night Swimming identity. It requires review before an
+explicit tab-local versioned save, preserves manual dates, exposes conflicts and
+provides readable working-copy text. The static readiness scenario, core Surface
+schema and Context authority are unchanged. See [the scope, calendar semantics,
+storage boundaries and pending native acceptance](playground/release-plan/README.md).
