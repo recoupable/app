@@ -5,6 +5,7 @@ import Link from "next/link";
 import LogoIcon from "@/components/Logo/LogoIcon";
 import { conversationExamples } from "@/lib/intelligent-ui/playground/conversationExamples";
 import { playgroundScenarios } from "@/lib/intelligent-ui/playground/scenarios";
+import AudioComparisonLab from "./AudioComparisonLab";
 import CreativeComparisonLab from "./CreativeComparisonLab";
 import SelectionContinuityLab from "./SelectionContinuityLab";
 import { isChatIntelligentUIEnabled } from "@/lib/intelligent-ui/chat/isChatIntelligentUIEnabled";
@@ -59,6 +60,7 @@ export default function Playground() {
             >
               {isChatIntelligentUIEnabled() && (
                 <>
+                  <option value="audio-comparison">Audio comparison</option>
                   <option value="creative-comparison">
                     Creative comparison
                   </option>
@@ -76,7 +78,10 @@ export default function Playground() {
             </select>
           </label>
         </div>
-        {exampleId === "creative-comparison" && isChatIntelligentUIEnabled() ? (
+        {exampleId === "audio-comparison" && isChatIntelligentUIEnabled() ? (
+          <AudioComparisonLab />
+        ) : exampleId === "creative-comparison" &&
+          isChatIntelligentUIEnabled() ? (
           <CreativeComparisonLab />
         ) : exampleId === "selection-continuity" &&
           isChatIntelligentUIEnabled() ? (

@@ -44,15 +44,33 @@ export default function CreativeAssetPreview({
               : "rounded-xl bg-white p-4"
           }
         >
-          <ImageResult
-            url={url}
-            alt={asset.label}
-            onLoad={onReady}
-            onError={() => {
-              setFailed(true);
-              onFailure();
-            }}
-          />
+          {asset.preview === "study-intro" ||
+          asset.preview === "study-chorus" ? (
+            <audio
+              controls
+              preload="metadata"
+              aria-label={asset.label}
+              src={url}
+              className="w-full"
+              onCanPlay={onReady}
+              onError={() => {
+                setFailed(true);
+                onFailure();
+              }}
+            >
+              Your browser does not support audio playback.
+            </audio>
+          ) : (
+            <ImageResult
+              url={url}
+              alt={asset.label}
+              onLoad={onReady}
+              onError={() => {
+                setFailed(true);
+                onFailure();
+              }}
+            />
+          )}
           <figcaption
             className={
               asset.preview === "dark-wordmark"

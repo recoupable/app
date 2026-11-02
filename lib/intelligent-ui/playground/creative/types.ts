@@ -15,7 +15,7 @@ export type CreativeAsset = {
   caption: string;
   provenance: string;
   status: "available" | "processing" | "unavailable" | "withdrawn";
-  preview: "light-wordmark" | "dark-wordmark";
+  preview: "light-wordmark" | "dark-wordmark" | "study-intro" | "study-chorus";
 };
 export const creativeDraftSchema = z
   .object({
