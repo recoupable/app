@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { ImageResult } from "@/components/VercelChat/tools/agent/media/ImageResult";
 import type { CreativeAsset } from "@/lib/intelligent-ui/playground/creative/types";
 import { resolveCreativeAsset } from "@/lib/intelligent-ui/playground/creative/resolveCreativeAsset";
@@ -13,6 +13,7 @@ export default function CreativeAssetPreview({
   onReady: () => void;
   onFailure: () => void;
 }) {
+  const descriptionId = useId();
   const [opened, setOpened] = useState(false);
   const [failed, setFailed] = useState(false);
   const url = resolveCreativeAsset(asset);
@@ -60,6 +61,26 @@ export default function CreativeAssetPreview({
             >
               Your browser does not support audio playback.
             </audio>
+          ) : asset.preview === "motion-square" ||
+            asset.preview === "motion-circle" ? (
+            <video
+              controls
+              playsInline
+              preload="metadata"
+              aria-label={asset.label}
+              aria-describedby={descriptionId}
+              src={url}
+              width={320}
+              height={180}
+              className="h-auto w-full"
+              onCanPlay={onReady}
+              onError={() => {
+                setFailed(true);
+                onFailure();
+              }}
+            >
+              Your browser does not support video playback.
+            </video>
           ) : (
             <ImageResult
               url={url}
@@ -72,6 +93,7 @@ export default function CreativeAssetPreview({
             />
           )}
           <figcaption
+            id={descriptionId}
             className={
               asset.preview === "dark-wordmark"
                 ? "mt-3 text-sm text-white"

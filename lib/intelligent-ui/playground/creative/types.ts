@@ -15,7 +15,13 @@ export type CreativeAsset = {
   caption: string;
   provenance: string;
   status: "available" | "processing" | "unavailable" | "withdrawn";
-  preview: "light-wordmark" | "dark-wordmark" | "study-intro" | "study-chorus";
+  preview:
+    | "light-wordmark"
+    | "dark-wordmark"
+    | "study-intro"
+    | "study-chorus"
+    | "motion-square"
+    | "motion-circle";
 };
 export const creativeDraftSchema = z
   .object({

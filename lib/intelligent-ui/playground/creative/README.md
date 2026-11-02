@@ -36,11 +36,11 @@ actions. Public sharing and approval controls are deliberately absent.
 Run:
 
 ```sh
-pnpm exec vitest run components/IntelligentUI/__tests__/AudioComparison.test.tsx components/IntelligentUI/__tests__/CreativeComparison.test.tsx lib/intelligent-ui/playground/creative components/IntelligentUI/__tests__/Playground.test.tsx
+pnpm exec vitest run components/IntelligentUI/__tests__/VideoComparison.test.tsx components/IntelligentUI/__tests__/AudioComparison.test.tsx components/IntelligentUI/__tests__/CreativeComparison.test.tsx lib/intelligent-ui/playground/creative components/IntelligentUI/__tests__/Playground.test.tsx
 ```
 
-The image and audio comparisons are bounded authored slices of #2213. Video comparison,
-signed URL expiry, real generation/access services, accepted variants in an owning
+The image, audio and video comparisons are bounded authored slices of #2213.
+Signed URL expiry, real generation/access services, accepted variants in an owning
 backend and actual follow-up submission remain outside it. Native image inspection,
 keyboard/responsive and slow-network acceptance remain pending a browser lease;
 source tests do not prove these. No claim is made for native playback, physical
@@ -84,3 +84,38 @@ Pending native acceptance: audible intro/chorus inspection, keyboard and screen-
 control names/actions, no autoplay, narrow layouts, loading/failure/recovery, seeking
 with complete WAV responses, browser reload/storage and production gate behavior.
 DOM events and direct route tests do not prove browser playback or human approval.
+
+## Video successor (depends on App #2389)
+
+The separate **Video comparison** development-only entry uses the unchanged v1
+local draft schema with its own `original-motion-study-comparison` scope. Existing
+image/audio scopes, assets and route behavior are unchanged. No Context/ObjectRef,
+live API authority, provider job, upload, account or production activation is added.
+
+Two original silent geometric studies have fixed encoded revisions: a blue square
+moving horizontally and a dark-green circle moving vertically. The recipe, codec
+and offline verification are documented in [the fixture provenance](fixtures/video/README.md).
+They are not customer variants or creative-quality evidence. The descriptions are
+text alternatives for the motion, not fabricated speech captions.
+
+`/api/intelligent-ui/playground/video-clips/[revision]` requires the existing local
+chat opt-in and refuses production before reading files. Unknown revisions return
+empty404. The reader resolves only fixed filenames outside `public/`, checks exact
+file size before a read bounded to expected size plus one byte (under64KiB), then
+checks MP4 signature and complete SHA-256. Missing/changed files return empty503.
+Successful responses are no-store/nosniff video/mp4 with actual Content-Length.
+These small clips use full200 responses even for Range requests, no Accept-Ranges
+or Content-Range claim; native seeking remains unverified.
+
+Only Inspect mounts the labeled native video element. It has controls and playsInline,
+no autoplay/loop, and a programmatically associated truthful silent-motion description.
+Canplay enables a separate explicit Choose action; metadata, loading and playing
+never choose or approve. The shared editor continues exact-hash notes/choice,
+remount/reinspection, stale revisions and simulated access/processing/error invalidation.
+The local follow-up remains read-only fixture identity and scope only.
+
+Pending: actual native video playback, keyboard/screen-reader controls, responsive
+layout, caption/text-alternative accessibility review, media failure/delay/recovery,
+seeking and real browser storage/reinspection. No browser or listener was used for
+this source slice. Offline decoded frames and synthetic DOM events do not replace
+native acceptance; the Docs exclusive lease remains separate.
