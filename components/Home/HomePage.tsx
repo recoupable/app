@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import NewChatBootstrap from "../VercelChat/NewChatBootstrap";
 import OnboardingChecklist from "@/components/Onboarding/OnboardingChecklist";
 import { useOnboardingGate } from "@/hooks/useOnboardingGate";
+import useCheckoutIntent from "@/hooks/useCheckoutIntent";
 import { useEffect } from "react";
 import { UIMessage } from "ai";
 
@@ -12,6 +13,7 @@ const HomePage = ({ initialMessages }: { initialMessages?: UIMessage[] }) => {
   const { setFrameReady, isFrameReady } = useMiniKit();
   const router = useRouter();
   const onboarding = useOnboardingGate();
+  useCheckoutIntent();
 
   useEffect(() => {
     if (!isFrameReady) {
