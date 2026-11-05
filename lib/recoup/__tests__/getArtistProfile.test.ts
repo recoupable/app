@@ -59,6 +59,21 @@ describe("getArtistProfile", () => {
     expect(init).toEqual({ cache: "no-store" });
   });
 
+  it("uses the server API override to verify coordinated preview deployments", async () => {
+    vi.stubEnv("RECOUP_API_BASE_URL", "https://api-preview.example");
+    vi.mocked(global.fetch).mockResolvedValue(
+      new Response(JSON.stringify(profile)),
+    );
+    try {
+      await getArtistProfile(ARTIST);
+      expect(vi.mocked(global.fetch).mock.calls[0][0]).toBe(
+        `https://api-preview.example/api/artists/${ARTIST}/profile`,
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it("is wrapped in React cache() so generateMetadata and the page share one fetch per request", () => {
     expect(cacheMock).toHaveBeenCalledTimes(1);
     expect(cacheMock.mock.calls[0][0]).toBeInstanceOf(Function);

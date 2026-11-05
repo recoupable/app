@@ -36,6 +36,8 @@ export interface ArtistProfile {
   image: string | null;
   socials: ArtistProfileSocial[];
   catalogs: ArtistProfileCatalog[];
+  songs: ArtistProfileSong[];
+  song_count: number;
   valuation: ArtistProfileValuation | null;
 }
 
@@ -51,8 +53,10 @@ export interface ArtistProfile {
  */
 const getArtistProfile = cache(
   async (artistId: string): Promise<ArtistProfile | null> => {
+    // Pair app/API preview deployments without changing the production default.
+    const apiBaseUrl = process.env.RECOUP_API_BASE_URL || NEW_API_BASE_URL;
     const response = await fetch(
-      `${NEW_API_BASE_URL}/api/artists/${artistId}/profile`,
+      `${apiBaseUrl}/api/artists/${artistId}/profile`,
       {
         cache: "no-store",
       },
