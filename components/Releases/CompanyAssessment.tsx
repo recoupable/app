@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import AssessmentProvenance from "./AssessmentProvenance";
 import AssessmentEvidenceSelection from "./AssessmentEvidenceSelection";
@@ -59,6 +60,15 @@ function CompanyAssessmentSession({
             : "Save assessment snapshot"}
         </Button>
       </div>
+      {assessment.savedId && assessment.snapshot?.state === "saved" && (
+        <Button asChild variant="outline">
+          <Link
+            href={`/catalogs/reviews?${new URLSearchParams({ assessment: assessment.savedId, workspace: organizationId ?? "personal" })}`}
+          >
+            Start catalog audit
+          </Link>
+        </Button>
+      )}
       {assessment.brief && (
         <div className="space-y-3">
           <div className="rounded-xl bg-muted/50 p-4">

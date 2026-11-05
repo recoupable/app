@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import type {
   CompanyAssessmentBrief,
   CompanyAssessmentSnapshot,
@@ -31,7 +31,7 @@ export function useCompanyAssessment(
     getAccessToken,
     getGeneration,
   );
-  useEffect(
+  useLayoutEffect(
     () => () => {
       generation.current++;
       acceptedSnapshot.current = null;
