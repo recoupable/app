@@ -10,7 +10,8 @@ permissions:
 
 jobs:
   onboarding-browser:
-    runs-on: ubuntu-latest
+    # ubuntu-latest moved to 26.04, which Playwright's Chromium install does not support yet.
+    runs-on: ubuntu-24.04
     # Step budgets total 26 minutes; reserve four more for post-job cleanup.
     timeout-minutes: 30
     steps:
