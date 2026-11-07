@@ -5,8 +5,8 @@ import { useCreateStarterTask } from "@/hooks/useCreateStarterTask";
 
 /**
  * Empty-state suggestion for the homepage tasks module: one click
- * schedules the weekly report for the selected artist, Mondays at 9am,
- * via the existing task-creation path (recoupable/chat#1850). The copy is
+ * schedules the monthly report for the selected artist, on the date and
+ * time of the click (recoupable/app#1941), via the existing task-creation path (recoupable/chat#1850). The copy is
  * the card's own and describes the report it actually schedules
  * (chat#2006).
  */
@@ -19,7 +19,7 @@ const StarterTaskCard = () => {
   if (isScheduled) {
     return (
       <p className="text-sm text-muted-foreground" role="status">
-        Scheduled: Weekly Catalog Report for {artistName}, Mondays at 9am.
+        Scheduled: Monthly Catalog Report for {artistName}.
       </p>
     );
   }
@@ -28,11 +28,11 @@ const StarterTaskCard = () => {
     <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
       <div>
         <p className="text-sm font-medium text-foreground">
-          Weekly Catalog Report for {artistName}, Mondays
+          Monthly Catalog Report for {artistName}
         </p>
         <p className="text-xs text-muted-foreground">
-          Streams, week-over-week changes and top social posts, emailed to you
-          every Monday at 9am.
+          Streams gained, month over month, and top social posts, emailed to you
+          once a month, starting a month from today.
         </p>
       </div>
       <button

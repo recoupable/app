@@ -8,11 +8,17 @@ import type { Task } from "@/lib/tasks/getTasks";
  * a duplicate run and ended up with a second schedule. When an enabled task
  * already exists, setup should show it instead.
  *
- * Only enabled tasks count: a paused schedule is not an active report, so the
- * step should still offer to set one up.
+ * An enabled task wins. Setup passes `includePaused`, since "Turn off" pauses
+ * the auto-created report (recoupable/app#1941) and setup must not create it
+ * again; the home module leaves it off, as it shows running reports.
  */
 export function findExistingWeeklyReportTask(
   tasks: Task[] | undefined,
+  { includePaused = false }: { includePaused?: boolean } = {},
 ): Task | null {
-  return tasks?.find((task) => task.enabled === true) ?? null;
+  return (
+    tasks?.find((task) => task.enabled === true) ??
+    (includePaused ? tasks?.find((task) => task.enabled === false) : null) ??
+    null
+  );
 }

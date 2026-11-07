@@ -24,12 +24,24 @@ describe("getOnboardingStep edge cases", () => {
     ).toBe("socials");
   });
 
-  it("ignores disabled and paused (null-enabled) tasks", () => {
+  // Turning the auto-created report off pauses it (recoupable/app#1941); that
+  // is a decision, so the gate must not reopen setup and create it again.
+  it("treats a paused task as the task step done", () => {
     expect(
       getOnboardingStep({
         artists: [{ account_socials: [{ id: "s1" }] }],
         catalogs: [{ id: "c1" }],
-        tasks: [{ enabled: false }, { enabled: null }],
+        tasks: [{ enabled: false }],
+      }),
+    ).toBe("complete");
+  });
+
+  it("does not count a task with no on/off state", () => {
+    expect(
+      getOnboardingStep({
+        artists: [{ account_socials: [{ id: "s1" }] }],
+        catalogs: [{ id: "c1" }],
+        tasks: [{ enabled: null }],
       }),
     ).toBe("task");
   });

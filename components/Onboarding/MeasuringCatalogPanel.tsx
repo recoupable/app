@@ -17,12 +17,14 @@ import RunValuationButton from "@/components/Valuation/RunValuationButton";
  */
 const MeasuringCatalogPanel = () => (
   <section className="mx-auto flex w-full max-w-xl flex-col items-center gap-4 px-6 py-8 text-center">
-    <h1 className="text-2xl font-semibold text-foreground">{MEASURING_TITLE}</h1>
+    <h1 className="text-2xl font-semibold text-foreground">
+      {MEASURING_TITLE}
+    </h1>
     <p className="text-sm text-muted-foreground">
       {MEASURING_BODY} Your baseline value appears here as soon as it is ready.
     </p>
     <Link href="/setup/tasks" className={cn(buttonVariants(), "min-w-[200px]")}>
-      Set up your weekly report
+      Set up your monthly report
     </Link>
     <div className="mt-2 flex flex-col items-center gap-2">
       <p className="text-xs text-muted-foreground">Been waiting a while?</p>

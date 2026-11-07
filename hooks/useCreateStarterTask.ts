@@ -9,7 +9,7 @@ import { getWeeklyReportErrorMessage } from "@/lib/onboarding/getWeeklyReportErr
 import { useWeeklyReportTaskInput } from "@/hooks/useWeeklyReportTaskInput";
 
 /**
- * One-click creation of the homepage starter task: the same weekly report
+ * One-click creation of the homepage starter task: the same monthly report
  * onboarding schedules, through the existing `POST /api/tasks` path which
  * also mints the schedule (recoupable/chat#1850, chat#2006).
  */
@@ -37,7 +37,7 @@ export function useCreateStarterTask() {
       });
       // The created task's own page (chat#2006 item 3): the id comes from
       // the API response, never a guessed path.
-      toast.success("Task scheduled for Mondays at 9am", {
+      toast.success("Monthly report scheduled", {
         action: {
           label: "View task",
           onClick: () => router.push(`/tasks/${task.id}`),
