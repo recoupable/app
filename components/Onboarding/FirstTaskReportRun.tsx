@@ -12,9 +12,9 @@ interface FirstTaskReportRunProps {
 }
 
 /**
- * Streams the pre-run weekly report through the normal chat pipeline
- * and, only once it has finished, asks the one confirm question
- * (chat#1867 — show finished work before asking anything).
+ * Streams the pre-run monthly report through the normal chat pipeline
+ * and, only once it has finished, schedules it (chat#1867 — show finished
+ * work before anything else; recoupable/app#1941 — no click to schedule).
  */
 const FirstTaskReportRun = ({
   sessionId,
@@ -38,7 +38,7 @@ const FirstTaskReportRun = ({
   return (
     <div className="flex w-full flex-col gap-4">
       <section
-        aria-label="Your first weekly report"
+        aria-label="Your first monthly report"
         className="w-full rounded-xl bg-card p-6 shadow-[0px_0px_0px_1px_var(--border),0px_2px_4px_rgba(0,0,0,0.04)] dark:shadow-[0px_0px_0px_1px_var(--border),0px_2px_4px_rgba(0,0,0,0.2)]"
       >
         {phase === "generating" && (
@@ -46,7 +46,7 @@ const FirstTaskReportRun = ({
             className="mb-3 animate-pulse text-xs uppercase tracking-[0.05em] text-muted-foreground"
             role="status"
           >
-            Generating this week&apos;s report...
+            Generating your report...
           </p>
         )}
         {phase === "error" ? (

@@ -26,7 +26,7 @@ export type HomeTasksModuleState =
  * never blocks on this module (recoupable/chat#1850, chat#2006).
  *
  * The starter is gated on tasks, not runs: a user who just finished
- * `/setup` has a task and zero runs until Monday, and offering the starter
+ * `/setup` has a task and zero runs until its first scheduled run, and offering the starter
  * again would schedule a duplicate. An unknown task list hides it too.
  */
 export function getHomeTasksModuleState({

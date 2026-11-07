@@ -5,7 +5,7 @@ import { getTaskNextRun } from "@/lib/tasks/getTaskNextRun";
 import { formatScheduledActionDate } from "@/lib/utils/formatScheduledActionDate";
 
 /**
- * Homepage tasks module state for an account whose weekly report is
+ * Homepage tasks module state for an account whose monthly report is
  * scheduled but has not run yet (chat#2006): names the task and its next
  * run instead of offering the starter card again, which would schedule a
  * duplicate. Mirrors the confirm state of the onboarding first task.

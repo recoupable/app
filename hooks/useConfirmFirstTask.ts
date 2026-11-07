@@ -6,6 +6,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { toast } from "sonner";
 import type { Task } from "@/lib/tasks/getTasks";
 import { createWeeklyReportTask } from "@/lib/onboarding/createWeeklyReportTask";
+import { deleteTask } from "@/lib/tasks/deleteTask";
 import { getWeeklyReportErrorMessage } from "@/lib/onboarding/getWeeklyReportErrorMessage";
 import {
   getFirstTaskConfirmPhase,
@@ -19,16 +20,23 @@ interface UseConfirmFirstTaskInput {
 }
 
 /**
- * Confirm/decline for the onboarding first task (chat#1867). Confirm
- * schedules the weekly report through the existing `POST /api/tasks`
- * path (which also mints the schedule — same as useCreateStarterTask);
- * decline creates nothing. Auth + artist come from providers.
+ * The onboarding first task (chat#1867). `confirm` schedules the monthly
+ * report through the existing `POST /api/tasks` path (which also mints the
+ * schedule — same as useCreateStarterTask); FirstTaskConfirm calls it on its
+ * own once the first report finishes (recoupable/app#1941). `turnOff` deletes
+ * the created task. Auth + artist come from providers.
  */
 export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
   const { getAccessToken } = usePrivy();
   const { resolve } = useWeeklyReportTaskInput();
   const queryClient = useQueryClient();
   const [decision, setDecision] = useState<FirstTaskDecision>("pending");
+
+  const invalidateTasks = () =>
+    queryClient.invalidateQueries({
+      queryKey: ["scheduled-actions"],
+      exact: false,
+    });
 
   const {
     mutate,
@@ -41,20 +49,28 @@ export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
       if (!accessToken) throw new Error("AUTH_REQUIRED");
       return createWeeklyReportTask(accessToken, { ...input, catalogName });
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["scheduled-actions"],
-        exact: false,
-      });
-    },
+    onSuccess: invalidateTasks,
     onError: (error) => toast.error(getWeeklyReportErrorMessage(error)),
+  });
+
+  const { mutate: remove, isPending: isTurningOff } = useMutation({
+    mutationFn: async () => {
+      if (!task) return;
+      await deleteTask(await getAccessToken(), { id: task.id });
+    },
+    onSuccess: async () => {
+      setDecision("declined");
+      await invalidateTasks();
+    },
+    onError: () =>
+      toast.error("Couldn't turn off the monthly report. Please try again."),
   });
 
   const confirm = () => {
     setDecision("confirmed");
     mutate();
   };
-  const decline = () => setDecision("declined");
+  const turnOff = () => remove();
 
   const phase: FirstTaskConfirmPhase = getFirstTaskConfirmPhase({
     decision,
@@ -62,5 +78,12 @@ export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
     hasTask: Boolean(task),
   });
 
-  return { confirm, decline, phase, task };
+  return {
+    confirm,
+    turnOff,
+    phase,
+    task,
+    hasStarted: decision !== "pending",
+    isTurningOff,
+  };
 }

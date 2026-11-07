@@ -34,14 +34,17 @@ const SetupValuation = () => {
   if (status === "no_streams") {
     return (
       <ZeroStreamsPanel
-        measuredTrackCount={!valuation.show ? valuation.noStreams?.measuredTrackCount : undefined}
+        measuredTrackCount={
+          !valuation.show ? valuation.noStreams?.measuredTrackCount : undefined
+        }
       />
     );
   }
 
   // A catalog exists but has no valuation yet: routine while a seeded
   // valuation is still measuring (chat#1889 row 8). The hook polls it out.
-  if (status === "measuring" || !valuation.show) return <MeasuringCatalogPanel />;
+  if (status === "measuring" || !valuation.show)
+    return <MeasuringCatalogPanel />;
 
   return (
     <section className="mx-auto flex w-full max-w-xl flex-col items-center gap-4 px-6 py-8">
@@ -52,14 +55,14 @@ const SetupValuation = () => {
         measuredTrackCount={valuation.measuredTrackCount}
       />
       <p className="text-center text-sm text-muted-foreground">
-        This estimate goes stale the day you close the tab. A weekly report
+        This estimate goes stale the day you close the tab. A monthly report
         re-measures your catalog and emails you the trend.
       </p>
       <Link
         href="/setup/tasks"
         className={cn(buttonVariants(), "min-w-[200px]")}
       >
-        Set up your weekly report
+        Set up your monthly report
       </Link>
     </section>
   );

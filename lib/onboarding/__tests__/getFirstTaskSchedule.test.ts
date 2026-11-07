@@ -2,13 +2,35 @@ import { describe, expect, it } from "vitest";
 import { getFirstTaskSchedule } from "@/lib/onboarding/getFirstTaskSchedule";
 import { getCronHumanPreview } from "@/lib/tasks/getCronHumanPreview";
 
+// Monthly, anchored to the moment the task is created (recoupable/app#1941,
+// Sweets 2026-08-06): created the 14th at 15:20 → runs the 14th at 15:20.
 describe("getFirstTaskSchedule", () => {
-  it("returns the Monday 9am weekly cron", () => {
-    expect(getFirstTaskSchedule()).toBe("0 9 * * 1");
+  it("runs monthly on the creation date and time", () => {
+    expect(getFirstTaskSchedule(new Date(2026, 7, 14, 15, 20))).toBe(
+      "20 15 14 * *",
+    );
+  });
+
+  it("moves the 29th-31st to the 28th so the report runs every month", () => {
+    expect(getFirstTaskSchedule(new Date(2026, 0, 31, 9, 5))).toBe(
+      "5 9 28 * *",
+    );
+    expect(getFirstTaskSchedule(new Date(2026, 3, 29, 0, 0))).toBe(
+      "0 0 28 * *",
+    );
+  });
+
+  it("defaults to now", () => {
+    const now = new Date();
+    expect(getFirstTaskSchedule()).toMatch(
+      new RegExp(`^\\d+ \\d+ ${Math.min(now.getDate(), 28)} \\* \\*$`),
+    );
   });
 
   it("is a valid cron the existing human-preview helper can describe", () => {
-    const preview = getCronHumanPreview(getFirstTaskSchedule());
-    expect(preview).toContain("Monday");
+    const preview = getCronHumanPreview(
+      getFirstTaskSchedule(new Date(2026, 7, 14, 15, 20)),
+    );
+    expect(preview).toBe("At 03:20 PM, on day 14 of the month");
   });
 });

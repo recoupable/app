@@ -8,11 +8,26 @@ const base = {
 };
 
 describe("buildFirstTaskPrompt", () => {
-  it("names the artist and reads as a weekly streaming report brief", () => {
+  it("names the artist and reads as a monthly streaming report brief", () => {
     const prompt = buildFirstTaskPrompt(base);
     expect(prompt).toContain("Luh Tyler");
-    expect(prompt.toLowerCase()).toContain("weekly");
+    expect(prompt.toLowerCase()).toContain("monthly");
     expect(prompt.toLowerCase()).toContain("report");
+  });
+
+  // The schedule is monthly (recoupable/app#1941), so no weekly framing may remain.
+  it("never frames the report as weekly", () => {
+    const prompt = buildFirstTaskPrompt(base);
+    expect(prompt).not.toMatch(/weekly|this week|week-over-week|last 7 days/i);
+    expect(prompt).toContain("Luh Tyler - Monthly Report");
+  });
+
+  // Captures can be more frequent than the report (re-runs, other tasks), so
+  // the most recent earlier capture could be a day old; anchor to ~30 days.
+  it("measures stream gains against the capture closest to 30 days earlier", () => {
+    const prompt = buildFirstTaskPrompt(base);
+    expect(prompt).toContain("closest to 30 days before it");
+    expect(prompt).toContain("at least 28 days earlier");
   });
 
   it("embeds the recipient email so the scheduled agent knows where to send", () => {

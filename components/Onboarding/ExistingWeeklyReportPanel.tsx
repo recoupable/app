@@ -21,7 +21,7 @@ const ExistingWeeklyReportPanel = ({ task }: { task: Task }) => {
       <CalendarClock className="size-10 text-muted-foreground" />
       <div>
         <h1 className="text-2xl font-semibold text-foreground">
-          Your weekly report is already set up
+          Your report is already set up
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {nextRun
@@ -32,10 +32,7 @@ const ExistingWeeklyReportPanel = ({ task }: { task: Task }) => {
             : " No runs yet."}
         </p>
       </div>
-      <Link
-        href="/tasks"
-        className={cn(buttonVariants(), "min-w-[200px]")}
-      >
+      <Link href="/tasks" className={cn(buttonVariants(), "min-w-[200px]")}>
         View your reports
       </Link>
     </section>

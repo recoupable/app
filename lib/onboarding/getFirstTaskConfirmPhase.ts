@@ -1,9 +1,9 @@
 export type FirstTaskDecision = "pending" | "confirmed" | "declined";
 
 export type FirstTaskConfirmPhase =
-  | "asking"
   | "creating"
   | "scheduled"
+  | "failed"
   | "declined";
 
 export interface GetFirstTaskConfirmPhaseInput {
@@ -13,9 +13,10 @@ export interface GetFirstTaskConfirmPhaseInput {
 }
 
 /**
- * Confirm-step phase for the onboarding first task (chat#1867). Pure so
- * the decline-never-creates and failed-create-returns-to-asking rules
- * are unit-testable without mounting the mutation hook.
+ * Phase of the onboarding first task (chat#1867). The task is created
+ * automatically once the first report finishes (recoupable/app#1941), so
+ * "pending" already reads as creating; "declined" means the user turned the
+ * created task off. Pure so the rules are testable without the mutation hook.
  */
 export function getFirstTaskConfirmPhase({
   decision,
@@ -24,6 +25,6 @@ export function getFirstTaskConfirmPhase({
 }: GetFirstTaskConfirmPhaseInput): FirstTaskConfirmPhase {
   if (decision === "declined") return "declined";
   if (hasTask) return "scheduled";
-  if (isCreating) return "creating";
-  return "asking";
+  if (isCreating || decision === "pending") return "creating";
+  return "failed";
 }

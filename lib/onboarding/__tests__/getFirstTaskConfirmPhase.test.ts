@@ -1,15 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { getFirstTaskConfirmPhase } from "@/lib/onboarding/getFirstTaskConfirmPhase";
 
+// The task is created automatically once the first report finishes
+// (recoupable/app#1941); the user can turn it off, not opt in.
 describe("getFirstTaskConfirmPhase", () => {
-  it("asks the one question by default", () => {
+  it("is creating before the automatic create has started", () => {
     expect(
       getFirstTaskConfirmPhase({
         decision: "pending",
         isCreating: false,
         hasTask: false,
       }),
-    ).toBe("asking");
+    ).toBe("creating");
   });
 
   it("is creating while the POST /api/tasks mutation is in flight", () => {
@@ -32,7 +34,7 @@ describe("getFirstTaskConfirmPhase", () => {
     ).toBe("scheduled");
   });
 
-  it("is declined when the user says no — decline never creates a task", () => {
+  it("is turned off once the user removes the created task", () => {
     expect(
       getFirstTaskConfirmPhase({
         decision: "declined",
@@ -42,13 +44,13 @@ describe("getFirstTaskConfirmPhase", () => {
     ).toBe("declined");
   });
 
-  it("returns to asking after a failed create (confirmed but no task, not in flight)", () => {
+  it("is failed after a create that produced no task, so the user can retry", () => {
     expect(
       getFirstTaskConfirmPhase({
         decision: "confirmed",
         isCreating: false,
         hasTask: false,
       }),
-    ).toBe("asking");
+    ).toBe("failed");
   });
 });
