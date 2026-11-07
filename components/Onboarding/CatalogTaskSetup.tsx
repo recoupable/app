@@ -19,13 +19,13 @@ const CatalogTaskSetup = ({ catalogId }: CatalogTaskSetupProps) => {
     missing: "This catalog is no longer available to this account.",
     workspace:
       "This catalog isn't available in the selected workspace. Switch to its workspace and try again.",
-    unsupported: `Monthly reports for “${catalogName}” aren't available yet. The current monthly report follows one artist's discography and can't preserve this catalog's exact scope.`,
+    unsupported: `Weekly reports for “${catalogName}” aren't available yet. The current monthly report follows one artist's discography and can't preserve this catalog's exact scope.`,
   }[state];
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-8">
       <section className="rounded-2xl bg-card p-6 sm:p-8 shadow-[0_0_0_1px_var(--border),0_2px_4px_rgba(0,0,0,0.04)]">
         <h1 className="text-xl font-semibold text-foreground">
-          Monthly catalog report
+          Weekly catalog report
         </h1>
         <p
           className="mt-2 text-sm text-muted-foreground"
