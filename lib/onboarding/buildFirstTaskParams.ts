@@ -37,7 +37,7 @@ export function buildFirstTaskParams({
       recipientEmail,
       catalogName,
     }),
-    schedule: getFirstTaskSchedule(now),
+    schedule: getFirstTaskSchedule(now, { utc: !timezone }),
     artist_account_id: artistAccountId,
     ...(timezone ? { timezone } : {}),
   };

@@ -20,6 +20,15 @@ describe("getFirstTaskSchedule", () => {
     );
   });
 
+  // With no browser timezone the API reads the cron in UTC, so build it in UTC.
+  it("uses UTC fields when asked", () => {
+    expect(
+      getFirstTaskSchedule(new Date(Date.UTC(2026, 7, 31, 23, 45)), {
+        utc: true,
+      }),
+    ).toBe("45 23 28 * *");
+  });
+
   it("defaults to now", () => {
     const now = new Date();
     expect(getFirstTaskSchedule()).toMatch(

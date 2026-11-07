@@ -22,7 +22,9 @@ describe("buildFirstTaskParams", () => {
         recipientEmail: "manager@example.com",
         catalogName: "Debut",
       }),
-      schedule: getFirstTaskSchedule(new Date(2026, 7, 14, 15, 20)),
+      schedule: getFirstTaskSchedule(new Date(2026, 7, 14, 15, 20), {
+        utc: true,
+      }),
       artist_account_id: "artist-123",
     });
   });
@@ -47,8 +49,11 @@ describe("buildFirstTaskParams timezone", () => {
     expect(params.timezone).toBe("America/Los_Angeles");
   });
 
-  it("omits timezone when none is known (API default zone)", () => {
+  it("omits timezone when none is known, and builds the cron in UTC to match", () => {
     const params = buildFirstTaskParams(input);
     expect(params).not.toHaveProperty("timezone");
+    expect(params.schedule).toBe(
+      getFirstTaskSchedule(input.now, { utc: true }),
+    );
   });
 });

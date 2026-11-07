@@ -6,7 +6,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { toast } from "sonner";
 import type { Task } from "@/lib/tasks/getTasks";
 import { createWeeklyReportTask } from "@/lib/onboarding/createWeeklyReportTask";
-import { deleteTask } from "@/lib/tasks/deleteTask";
+import { updateTask } from "@/lib/tasks/updateTask";
 import { getWeeklyReportErrorMessage } from "@/lib/onboarding/getWeeklyReportErrorMessage";
 import {
   getFirstTaskConfirmPhase,
@@ -17,16 +17,23 @@ import { useWeeklyReportTaskInput } from "@/hooks/useWeeklyReportTaskInput";
 
 interface UseConfirmFirstTaskInput {
   catalogName?: string;
+  /** False when the account already has an active task (see FirstTaskStep). */
+  autoCreate?: boolean;
 }
 
 /**
  * The onboarding first task (chat#1867). `confirm` schedules the monthly
  * report through the existing `POST /api/tasks` path (which also mints the
  * schedule — same as useCreateStarterTask); FirstTaskConfirm calls it on its
- * own once the first report finishes (recoupable/app#1941). `turnOff` deletes
- * the created task. Auth + artist come from providers.
+ * own once the first report finishes (recoupable/app#1941). `turnOff` pauses
+ * the created task rather than deleting it: a paused task still completes the
+ * onboarding task checkpoint, so the home gate does not send the account back
+ * into setup to create it again. Auth + artist come from providers.
  */
-export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
+export function useConfirmFirstTask({
+  catalogName,
+  autoCreate = true,
+}: UseConfirmFirstTaskInput) {
   const { getAccessToken } = usePrivy();
   const { resolve } = useWeeklyReportTaskInput();
   const queryClient = useQueryClient();
@@ -53,10 +60,12 @@ export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
     onError: (error) => toast.error(getWeeklyReportErrorMessage(error)),
   });
 
-  const { mutate: remove, isPending: isTurningOff } = useMutation({
+  const { mutate: pause, isPending: isTurningOff } = useMutation({
     mutationFn: async () => {
       if (!task) return;
-      await deleteTask(await getAccessToken(), { id: task.id });
+      const accessToken = await getAccessToken();
+      if (!accessToken) throw new Error("AUTH_REQUIRED");
+      await updateTask(accessToken, { id: task.id, enabled: false });
     },
     onSuccess: async () => {
       setDecision("declined");
@@ -70,12 +79,13 @@ export function useConfirmFirstTask({ catalogName }: UseConfirmFirstTaskInput) {
     setDecision("confirmed");
     mutate();
   };
-  const turnOff = () => remove();
+  const turnOff = () => pause();
 
   const phase: FirstTaskConfirmPhase = getFirstTaskConfirmPhase({
     decision,
     isCreating: isPending,
     hasTask: Boolean(task),
+    autoCreate,
   });
 
   return {

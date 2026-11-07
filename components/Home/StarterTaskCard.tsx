@@ -32,7 +32,7 @@ const StarterTaskCard = () => {
         </p>
         <p className="text-xs text-muted-foreground">
           Streams gained, month over month, and top social posts, emailed to you
-          once a month starting today.
+          once a month, starting a month from today.
         </p>
       </div>
       <button

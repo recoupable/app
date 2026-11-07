@@ -24,10 +24,12 @@ describe("buildFirstTaskPrompt", () => {
 
   // Captures can be more frequent than the report (re-runs, other tasks), so
   // the most recent earlier capture could be a day old; anchor to ~30 days.
-  it("measures stream gains against the capture closest to 30 days earlier", () => {
+  // February-to-March runs are 28 days apart (less across a DST change), so
+  // the floor sits well below a month.
+  it("measures stream gains against a capture about a month earlier", () => {
     const prompt = buildFirstTaskPrompt(base);
-    expect(prompt).toContain("closest to 30 days before it");
-    expect(prompt).toContain("at least 28 days earlier");
+    expect(prompt).toContain("at least 21 days earlier");
+    expect(prompt).toContain("closest to 30 days");
   });
 
   it("embeds the recipient email so the scheduled agent knows where to send", () => {

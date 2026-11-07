@@ -10,25 +10,31 @@ import { formatScheduledActionDate } from "@/lib/utils/formatScheduledActionDate
 
 interface FirstTaskConfirmProps {
   catalogName?: string;
+  /** False when the account already has an active task: ask, don't create. */
+  autoCreate: boolean;
 }
 
 /**
  * Shown once the pre-run report finishes (chat#1867). The monthly task is
  * created without a click — an account counts as onboarded only with a
  * recurring task (recoupable/app#1941) — and the old "get this every
- * Monday?" question becomes a way to turn it off.
+ * Monday?" question becomes a way to turn it off. A second report in the
+ * same visit (another artist) asks instead of creating.
  */
-const FirstTaskConfirm = ({ catalogName }: FirstTaskConfirmProps) => {
+const FirstTaskConfirm = ({
+  catalogName,
+  autoCreate,
+}: FirstTaskConfirmProps) => {
   const { confirm, turnOff, phase, task, hasStarted, isTurningOff } =
-    useConfirmFirstTask({ catalogName });
+    useConfirmFirstTask({ catalogName, autoCreate });
 
   // Strict Mode runs effects twice; the ref keeps it to one create.
   const startedRef = useRef(false);
   useEffect(() => {
-    if (hasStarted || startedRef.current) return;
+    if (!autoCreate || hasStarted || startedRef.current) return;
     startedRef.current = true;
     confirm();
-  }, [hasStarted, confirm]);
+  }, [autoCreate, hasStarted, confirm]);
 
   if (phase === "declined") {
     return (
@@ -39,6 +45,23 @@ const FirstTaskConfirm = ({ catalogName }: FirstTaskConfirmProps) => {
         </Link>
         .
       </p>
+    );
+  }
+
+  if (phase === "offer") {
+    return (
+      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+        <p className="text-sm font-medium text-foreground">
+          Get this report every month too?
+        </p>
+        <button
+          type="button"
+          onClick={confirm}
+          className="shrink-0 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:opacity-90"
+        >
+          Yes, monthly
+        </button>
+      </div>
     );
   }
 

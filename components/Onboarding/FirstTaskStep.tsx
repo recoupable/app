@@ -47,11 +47,29 @@ const FirstTaskStep = () => {
   // the pre-run isn't kicked off while tasks are still loading. Decide once, on
   // arrival: the task this step creates itself must not swap the finished
   // report for the "already set up" panel when the tasks list refetches.
+  // Only a successful read counts: before sign-in resolves the query is
+  // disabled (not loading, no data), and deciding then would miss a schedule.
   const [entryTask, setEntryTask] = useState<Task | null | undefined>();
-  if (entryTask === undefined && !tasksQuery.isLoading) {
+  if (entryTask === undefined && tasksQuery.isSuccess) {
     setEntryTask(findExistingWeeklyReportTask(tasksQuery.data));
   }
   const existingTask = entryTask ?? null;
+  if (entryTask === undefined && tasksQuery.isError) {
+    return (
+      <div className="mx-auto flex w-full max-w-3xl flex-col items-start gap-3 px-4 py-8">
+        <p className="text-sm text-destructive" role="alert">
+          We couldn&apos;t check your reports.
+        </p>
+        <button
+          type="button"
+          onClick={() => tasksQuery.refetch()}
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:opacity-90"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
   if (entryTask === undefined) {
     return (
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-8">
@@ -123,6 +141,9 @@ const FirstTaskStep = () => {
             catalogName,
           })}
           catalogName={catalogName}
+          // One automatic schedule per account: once any report is active
+          // (say, created a moment ago for another artist), ask instead.
+          autoCreate={!tasksQuery.data?.some((task) => task.enabled === true)}
         />
       )}
       <SetupSkipLink />

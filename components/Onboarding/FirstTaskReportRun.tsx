@@ -9,6 +9,8 @@ interface FirstTaskReportRunProps {
   chatId: string;
   prompt: string;
   catalogName?: string;
+  /** False when the account already has an active task. */
+  autoCreate: boolean;
 }
 
 /**
@@ -21,6 +23,7 @@ const FirstTaskReportRun = ({
   chatId,
   prompt,
   catalogName,
+  autoCreate,
 }: FirstTaskReportRunProps) => {
   const { messages, status, phase } = useFirstTaskReport({
     sessionId,
@@ -63,7 +66,7 @@ const FirstTaskReportRun = ({
       </section>
       {phase === "ready" && (
         <section className="w-full rounded-xl bg-card p-6 shadow-[0px_0px_0px_1px_var(--border),0px_2px_4px_rgba(0,0,0,0.04)] dark:shadow-[0px_0px_0px_1px_var(--border),0px_2px_4px_rgba(0,0,0,0.2)]">
-          <FirstTaskConfirm catalogName={catalogName} />
+          <FirstTaskConfirm catalogName={catalogName} autoCreate={autoCreate} />
         </section>
       )}
     </div>

@@ -1,6 +1,7 @@
 export type FirstTaskDecision = "pending" | "confirmed" | "declined";
 
 export type FirstTaskConfirmPhase =
+  | "offer"
   | "creating"
   | "scheduled"
   | "failed"
@@ -10,6 +11,8 @@ export interface GetFirstTaskConfirmPhaseInput {
   decision: FirstTaskDecision;
   isCreating: boolean;
   hasTask: boolean;
+  /** False when the account already has an active task: offer, don't create. */
+  autoCreate: boolean;
 }
 
 /**
@@ -22,9 +25,11 @@ export function getFirstTaskConfirmPhase({
   decision,
   isCreating,
   hasTask,
+  autoCreate,
 }: GetFirstTaskConfirmPhaseInput): FirstTaskConfirmPhase {
   if (decision === "declined") return "declined";
   if (hasTask) return "scheduled";
+  if (decision === "pending" && !autoCreate) return "offer";
   if (isCreating || decision === "pending") return "creating";
   return "failed";
 }

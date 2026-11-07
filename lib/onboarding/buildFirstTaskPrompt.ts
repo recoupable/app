@@ -12,8 +12,9 @@ export interface BuildFirstTaskPromptInput {
  * scheduled task, and the homepage starter card (chat#1867, chat#2006) — one
  * string so the report the user previews is exactly what the monthly run
  * emails, and so both entry points schedule the same report. Monthly since
- * recoupable/app#1941; deltas compare against the capture closest to 30 days
- * earlier, because captures can be more frequent than the report.
+ * recoupable/app#1941; deltas compare against a capture about a month earlier
+ * (at least 21 days, so February and DST months still qualify), because
+ * captures can be more frequent than the report.
  *
  * Generalized from the proven LA EQUIS weekly report (scheduled_action
  * 39fb5f68…, running week over week): capture current Spotify play
@@ -55,7 +56,7 @@ Part 1 - Take today's catalog measurement (Spotify play counts per track):
 
 Part 2 - Month-over-month stream deltas per track (the core of the report):
 5. Build the focus set of tracks (roughly 20-30): every track on the most recent album, every single released in the last 12 months, and the top 10 catalog tracks by total play count. Get each track's ISRC, spotify_track_id, and total play count from GET /api/research/playcounts?spotify_album_id={id} for the relevant albums from step 1.
-6. For each focus track: GET /api/research/tracks/{ISRC}/measurements - the full dated series of every past capture. Compute the change between the latest capture (today's) and the earlier capture closest to 30 days before it - use one at least 28 days earlier when one exists, otherwise the oldest capture from a previous day; never compare against a capture taken the same day as the latest (retries or ad-hoc snapshots make same-day windows meaninglessly short) - and report the actual time span it covers (e.g. "+23,741 plays over 31 days"). Never report a zero delta just because a chosen window excluded older captures; if a track truly has only one capture ever, label it "first measurement" instead of zero.
+6. For each focus track: GET /api/research/tracks/{ISRC}/measurements - the full dated series of every past capture. Compute the change between the latest capture (today's) and an earlier capture about a month before it: of the captures at least 21 days earlier, use the one closest to 30 days; if none is that old, use the oldest capture from a previous day; never compare against a capture taken the same day as the latest (retries or ad-hoc snapshots make same-day windows meaninglessly short) - and report the actual time span it covers (e.g. "+23,741 plays over 31 days"). Never report a zero delta just because a chosen window excluded older captures; if a track truly has only one capture ever, label it "first measurement" instead of zero.
 7. Aggregate per-track deltas by album/project and rank tracks by streams gained. Treat a play count of 0 as missing data (not captured), never as a real zero.
 
 Part 3 - Context metrics (use the artist name "${artistName}" as the artist parameter; the artist UUID and Songstats IDs are not accepted):

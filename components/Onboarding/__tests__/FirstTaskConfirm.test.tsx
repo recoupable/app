@@ -39,23 +39,31 @@ describe("FirstTaskConfirm", () => {
   });
 
   it("creates the monthly task on its own, exactly once", () => {
-    const { rerender } = render(<FirstTaskConfirm />);
-    rerender(<FirstTaskConfirm />);
+    const { rerender } = render(<FirstTaskConfirm autoCreate />);
+    rerender(<FirstTaskConfirm autoCreate />);
     expect(confirm).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole("button", { name: /yes/i })).toBeNull();
   });
 
   it("does not create again once a create has started", () => {
     hasStarted = true;
-    render(<FirstTaskConfirm />);
+    render(<FirstTaskConfirm autoCreate />);
     expect(confirm).not.toHaveBeenCalled();
+  });
+
+  it("asks instead of creating when the account already has an active task", () => {
+    phase = "offer";
+    render(<FirstTaskConfirm autoCreate={false} />);
+    expect(confirm).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: /yes, monthly/i }));
+    expect(confirm).toHaveBeenCalledTimes(1);
   });
 
   it("confirms the monthly schedule and offers to turn it off", () => {
     phase = "scheduled";
     hasStarted = true;
     task = { id: "task-1" };
-    render(<FirstTaskConfirm />);
+    render(<FirstTaskConfirm autoCreate />);
     expect(screen.getByText(/monthly report is set up/i)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /turn off/i }));
     expect(turnOff).toHaveBeenCalledTimes(1);
@@ -64,7 +72,7 @@ describe("FirstTaskConfirm", () => {
   it("offers a retry when the automatic create failed", () => {
     phase = "failed";
     hasStarted = true;
-    render(<FirstTaskConfirm />);
+    render(<FirstTaskConfirm autoCreate />);
     fireEvent.click(screen.getByRole("button", { name: /try again/i }));
     expect(confirm).toHaveBeenCalledTimes(1);
   });
@@ -72,7 +80,7 @@ describe("FirstTaskConfirm", () => {
   it("says where to set the report up again after turning it off", () => {
     phase = "declined";
     hasStarted = true;
-    render(<FirstTaskConfirm />);
+    render(<FirstTaskConfirm autoCreate />);
     expect(screen.getByText(/turned off/i)).toBeTruthy();
     expect(screen.getByRole("link", { name: /tasks/i })).toBeTruthy();
   });

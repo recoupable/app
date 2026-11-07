@@ -10,8 +10,21 @@ describe("getFirstTaskConfirmPhase", () => {
         decision: "pending",
         isCreating: false,
         hasTask: false,
+        autoCreate: true,
       }),
     ).toBe("creating");
+  });
+
+  // A second report in the same visit (another artist) offers, never auto-creates.
+  it("offers instead when the account already has an active task", () => {
+    expect(
+      getFirstTaskConfirmPhase({
+        decision: "pending",
+        isCreating: false,
+        hasTask: false,
+        autoCreate: false,
+      }),
+    ).toBe("offer");
   });
 
   it("is creating while the POST /api/tasks mutation is in flight", () => {
@@ -20,6 +33,7 @@ describe("getFirstTaskConfirmPhase", () => {
         decision: "confirmed",
         isCreating: true,
         hasTask: false,
+        autoCreate: true,
       }),
     ).toBe("creating");
   });
@@ -30,6 +44,7 @@ describe("getFirstTaskConfirmPhase", () => {
         decision: "confirmed",
         isCreating: false,
         hasTask: true,
+        autoCreate: true,
       }),
     ).toBe("scheduled");
   });
@@ -40,6 +55,7 @@ describe("getFirstTaskConfirmPhase", () => {
         decision: "declined",
         isCreating: false,
         hasTask: false,
+        autoCreate: true,
       }),
     ).toBe("declined");
   });
@@ -50,6 +66,7 @@ describe("getFirstTaskConfirmPhase", () => {
         decision: "confirmed",
         isCreating: false,
         hasTask: false,
+        autoCreate: true,
       }),
     ).toBe("failed");
   });
