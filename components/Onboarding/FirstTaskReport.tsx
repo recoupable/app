@@ -10,9 +10,8 @@ import FirstTaskReportRun from "./FirstTaskReportRun";
 import SetupSkipLink from "./SetupSkipLink";
 
 /**
- * The first monthly report, once FirstTaskStep has ruled out an existing
- * schedule: provisions a chat session, pre-runs the report and hands the
- * per-run `autoCreate` decision to the schedule step (recoupable/app#1941).
+ * The first monthly report, once FirstTaskStep has ruled out a schedule:
+ * pre-runs it in a fresh chat session (recoupable/app#1941).
  */
 const FirstTaskReport = ({ autoCreate }: { autoCreate: boolean }) => {
   const { selectedArtist, isLoading: isArtistsLoading } = useArtistProvider();
@@ -89,7 +88,8 @@ const FirstTaskReport = ({ autoCreate }: { autoCreate: boolean }) => {
             catalogName,
           })}
           catalogName={catalogName}
-          autoCreate={willSchedule}
+          autoCreate={autoCreate}
+          willSchedule={willSchedule}
         />
       )}
       <SetupSkipLink />

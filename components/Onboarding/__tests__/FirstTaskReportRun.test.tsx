@@ -18,13 +18,15 @@ vi.mock("@/components/Onboarding/FirstTaskConfirm", () => ({
 
 afterEach(() => cleanup());
 
-const renderRun = (autoCreate: boolean) =>
+// The label follows the run's own decision, not the live value.
+const renderRun = (willSchedule: boolean) =>
   render(
     <FirstTaskReportRun
       sessionId="s-1"
       chatId="c-1"
       prompt="p"
-      autoCreate={autoCreate}
+      willSchedule={willSchedule}
+      autoCreate={!willSchedule}
     />,
   );
 

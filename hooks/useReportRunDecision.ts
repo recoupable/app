@@ -4,7 +4,8 @@ import { useState } from "react";
  * Whether a first-report run will schedule its report, decided once per run
  * (recoupable/app#1941). The automatic create refetches tasks and flips the
  * live `autoCreate`, which must not rewrite the report on screen; a new run
- * (another artist mints a new chat) decides again.
+ * (another artist mints a new chat) decides again. Until the run has a key
+ * there is nothing to pin to, so the live value passes through.
  *
  * @param runKey - Identifies the run, e.g. its chat id; undefined until known.
  * @param autoCreate - The live decision from the setup step.
@@ -15,6 +16,7 @@ export function useReportRunDecision(
   autoCreate: boolean,
 ): boolean {
   const [run, setRun] = useState({ runKey, autoCreate });
+  if (runKey === undefined) return autoCreate;
   if (run.runKey !== runKey) {
     setRun({ runKey, autoCreate });
     return autoCreate;
