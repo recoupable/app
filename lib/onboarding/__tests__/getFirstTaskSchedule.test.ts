@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { getFirstTaskSchedule } from "@/lib/onboarding/getFirstTaskSchedule";
 import { getCronHumanPreview } from "@/lib/tasks/getCronHumanPreview";
 
@@ -30,10 +30,10 @@ describe("getFirstTaskSchedule", () => {
   });
 
   it("defaults to now", () => {
-    const now = new Date();
-    expect(getFirstTaskSchedule()).toMatch(
-      new RegExp(`^\\d+ \\d+ ${Math.min(now.getDate(), 28)} \\* \\*$`),
-    );
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 10, 7, 8, 30));
+    expect(getFirstTaskSchedule()).toBe("30 8 7 * *");
+    vi.useRealTimers();
   });
 
   it("is a valid cron the existing human-preview helper can describe", () => {

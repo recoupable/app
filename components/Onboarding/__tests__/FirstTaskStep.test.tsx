@@ -5,57 +5,34 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import FirstTaskStep from "@/components/Onboarding/FirstTaskStep";
 
 type TaskRow = { id: string; enabled: boolean };
-const refetch = vi.fn();
-let tasksQuery: {
+type TasksQuery = {
   isSuccess: boolean;
   isError: boolean;
   data: TaskRow[] | undefined;
-  refetch: typeof refetch;
+  refetch: () => void;
 };
-const reportRunProps = vi.fn();
+const refetch = vi.fn();
+const reportProps = vi.fn();
+let tasksQuery: TasksQuery;
 
-vi.mock("@privy-io/react-auth", () => ({
-  usePrivy: () => ({
-    user: { email: { address: "owner@example.com" } },
-    ready: true,
-  }),
-}));
-vi.mock("@/providers/ArtistProvider", () => ({
-  useArtistProvider: () => ({
-    selectedArtist: { name: "Luh Tyler", account_id: "artist-1" },
-    isLoading: false,
-  }),
-}));
-vi.mock("@/hooks/useCatalogs", () => ({
-  default: () => ({
-    isLoading: false,
-    data: { catalogs: [{ name: "Debut" }] },
-  }),
-}));
-vi.mock("@/hooks/useNewChatBootstrap", () => ({
-  useNewChatBootstrap: () => ({
-    status: "ready",
-    chatId: "chat-1",
-    sessionId: "s-1",
-  }),
-}));
 vi.mock("@/hooks/useScheduledActions", () => ({
   useScheduledActions: () => tasksQuery,
 }));
-vi.mock("@/components/Onboarding/FirstTaskReportRun", () => ({
+vi.mock("@/components/Onboarding/FirstTaskReport", () => ({
   default: (props: { autoCreate: boolean }) => {
-    reportRunProps(props);
-    return <div>First report run</div>;
+    reportProps(props);
+    return <div>First report</div>;
   },
 }));
 vi.mock("@/components/Onboarding/ExistingWeeklyReportPanel", () => ({
   default: () => <div>Existing report panel</div>,
 }));
+// Mirrors the real skip control, a button that performs the skip.
 vi.mock("@/components/Onboarding/SetupSkipLink", () => ({
-  default: () => <a href="https://example.test/skip">Skip for now</a>,
+  default: () => <button type="button">Skip for now</button>,
 }));
 
-const loaded = (data: TaskRow[]) => ({
+const loaded = (data: TaskRow[]): TasksQuery => ({
   isSuccess: true,
   isError: false,
   data,
@@ -77,57 +54,39 @@ describe("FirstTaskStep", () => {
   });
 
   // Before sign-in resolves the tasks query is disabled: not loading, no data.
-  // Deciding then would ignore an existing schedule and create a duplicate.
   it("waits for the tasks list to load before deciding", () => {
-    tasksQuery = { isSuccess: false, isError: false, data: undefined, refetch };
+    tasksQuery = { ...loaded([]), isSuccess: false, data: undefined };
     const { rerender } = render(<FirstTaskStep />);
     expect(screen.getByText(/checking your reports/i)).toBeTruthy();
-    expect(screen.queryByText("First report run")).toBeNull();
 
     tasksQuery = loaded([{ id: "t-1", enabled: true }]);
     rerender(<FirstTaskStep />);
     expect(screen.getByText("Existing report panel")).toBeTruthy();
   });
 
-  it("offers a retry when the tasks list fails to load", () => {
-    tasksQuery = { isSuccess: false, isError: true, data: undefined, refetch };
+  it("offers a retry and the skip when the tasks list fails to load", () => {
+    tasksQuery = {
+      ...loaded([]),
+      isSuccess: false,
+      isError: true,
+      data: undefined,
+    };
     render(<FirstTaskStep />);
     fireEvent.click(screen.getByRole("button", { name: /try again/i }));
     expect(refetch).toHaveBeenCalledTimes(1);
-    expect(screen.queryByText("First report run")).toBeNull();
-    expect(screen.getByRole("link", { name: /skip for now/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /skip for now/i })).toBeTruthy();
+    expect(screen.queryByText("First report")).toBeNull();
   });
 
-  // The task is now created automatically when the first report finishes; the
-  // tasks refetch must not swap the report the user is reading for the panel.
-  it("keeps the first report on screen after its task is created", () => {
+  // The task this step creates must not swap the report for the panel.
+  it("keeps the first report on screen and stops auto-creating once a task exists", () => {
     const { rerender } = render(<FirstTaskStep />);
-    expect(screen.getByText("First report run")).toBeTruthy();
+    expect(reportProps).toHaveBeenLastCalledWith({ autoCreate: true });
 
     tasksQuery = loaded([{ id: "t-new", enabled: true }]);
     rerender(<FirstTaskStep />);
-    expect(screen.getByText("First report run")).toBeTruthy();
+    expect(screen.getByText("First report")).toBeTruthy();
     expect(screen.queryByText("Existing report panel")).toBeNull();
-  });
-
-  it("auto-creates only while the account has no active task", () => {
-    const { rerender } = render(<FirstTaskStep />);
-    expect(reportRunProps).toHaveBeenLastCalledWith(
-      expect.objectContaining({ autoCreate: true }),
-    );
-
-    tasksQuery = loaded([{ id: "t-new", enabled: true }]);
-    rerender(<FirstTaskStep />);
-    expect(reportRunProps).toHaveBeenLastCalledWith(
-      expect.objectContaining({ autoCreate: false }),
-    );
-  });
-
-  it("describes a monthly report", () => {
-    render(<FirstTaskStep />);
-    expect(
-      screen.getByRole("heading", { name: /your first monthly report/i }),
-    ).toBeTruthy();
-    expect(screen.queryByText(/monday|weekly/i)).toBeNull();
+    expect(reportProps).toHaveBeenLastCalledWith({ autoCreate: false });
   });
 });

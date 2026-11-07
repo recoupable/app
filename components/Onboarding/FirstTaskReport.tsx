@@ -35,13 +35,18 @@ const FirstTaskReport = ({ autoCreate }: { autoCreate: boolean }) => {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-8">
       <header>
         <h1 className="text-xl font-semibold text-foreground">
-          Your first monthly report
+          {autoCreate
+            ? "Your first monthly report"
+            : `Catalog report for ${artistName ?? "your artist"}`}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          {artistName
-            ? `Your catalog report for ${artistName}. Recoup will email you an update like this every month.`
-            : "Recoup will email you an update like this every month."}
-        </p>
+        {/* Only promise a schedule this step is about to create. */}
+        {autoCreate && (
+          <p className="text-sm text-muted-foreground">
+            {artistName
+              ? `Your catalog report for ${artistName}. Recoup will email you an update like this every month.`
+              : "Recoup will email you an update like this every month."}
+          </p>
+        )}
       </header>
       {!isArtistsLoading && !artistName ? (
         <p className="text-sm text-muted-foreground" role="status">
