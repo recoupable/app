@@ -41,7 +41,7 @@ const FirstTaskReportRun = ({
   return (
     <div className="flex w-full flex-col gap-4">
       <section
-        aria-label="Your first monthly report"
+        aria-label={autoCreate ? "Your first monthly report" : "Catalog report"}
         className="w-full rounded-xl bg-card p-6 shadow-[0px_0px_0px_1px_var(--border),0px_2px_4px_rgba(0,0,0,0.04)] dark:shadow-[0px_0px_0px_1px_var(--border),0px_2px_4px_rgba(0,0,0,0.2)]"
       >
         {phase === "generating" && (

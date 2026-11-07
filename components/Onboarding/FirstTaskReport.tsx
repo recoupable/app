@@ -4,15 +4,15 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useArtistProvider } from "@/providers/ArtistProvider";
 import useCatalogs from "@/hooks/useCatalogs";
 import { useNewChatBootstrap } from "@/hooks/useNewChatBootstrap";
+import { useReportRunDecision } from "@/hooks/useReportRunDecision";
 import { buildFirstTaskPrompt } from "@/lib/onboarding/buildFirstTaskPrompt";
 import FirstTaskReportRun from "./FirstTaskReportRun";
 import SetupSkipLink from "./SetupSkipLink";
 
 /**
- * The first monthly report itself, once FirstTaskStep has ruled out an
- * existing schedule: provisions a chat session (the same infrastructure a
- * normal send uses), pre-runs the report and hands `autoCreate` to the
- * schedule step (recoupable/app#1941).
+ * The first monthly report, once FirstTaskStep has ruled out an existing
+ * schedule: provisions a chat session, pre-runs the report and hands the
+ * per-run `autoCreate` decision to the schedule step (recoupable/app#1941).
  */
 const FirstTaskReport = ({ autoCreate }: { autoCreate: boolean }) => {
   const { selectedArtist, isLoading: isArtistsLoading } = useArtistProvider();
@@ -21,26 +21,28 @@ const FirstTaskReport = ({ autoCreate }: { autoCreate: boolean }) => {
   const { user, ready } = usePrivy();
   const artistName = selectedArtist?.name;
   const artistAccountId = selectedArtist?.account_id;
-  // The monthly report is emailed to the account holder — same address the
-  // scheduled task uses (useConfirmFirstTask), so the preview matches the send.
+  // Same address the scheduled task emails, so the preview matches the send.
   const recipientEmail = user?.email?.address;
 
-  // Wait for catalogs so the pre-run prompt names the claimed catalog —
-  // and therefore matches the scheduled task's prompt byte-for-byte.
+  // Wait for catalogs so the pre-run prompt matches the scheduled task's.
   const isPreparing =
     isArtistsLoading || catalogsQuery.isLoading || bootstrap.status !== "ready";
   const catalogName = catalogsQuery.data?.catalogs?.[0]?.name;
+  const willSchedule = useReportRunDecision(
+    bootstrap.status === "ready" ? bootstrap.chatId : undefined,
+    autoCreate,
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-8">
       <header>
         <h1 className="text-xl font-semibold text-foreground">
-          {autoCreate
+          {willSchedule
             ? "Your first monthly report"
             : `Catalog report for ${artistName ?? "your artist"}`}
         </h1>
         {/* Only promise a schedule this step is about to create. */}
-        {autoCreate && (
+        {willSchedule && (
           <p className="text-sm text-muted-foreground">
             {artistName
               ? `Your catalog report for ${artistName}. Recoup will email you an update like this every month.`
@@ -87,7 +89,7 @@ const FirstTaskReport = ({ autoCreate }: { autoCreate: boolean }) => {
             catalogName,
           })}
           catalogName={catalogName}
-          autoCreate={autoCreate}
+          autoCreate={willSchedule}
         />
       )}
       <SetupSkipLink />
