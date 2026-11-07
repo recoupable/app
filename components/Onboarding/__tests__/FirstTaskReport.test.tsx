@@ -29,7 +29,7 @@ vi.mock("@/hooks/useNewChatBootstrap", () => ({
   useNewChatBootstrap: () => ({ status: "ready", chatId, sessionId: "s-1" }),
 }));
 vi.mock("@/components/Onboarding/FirstTaskReportRun", () => ({
-  default: (props: { autoCreate: boolean }) => {
+  default: (props: { autoCreate: boolean; willSchedule: boolean }) => {
     runProps(props);
     return <div>First report run</div>;
   },
@@ -69,8 +69,10 @@ describe("FirstTaskReport", () => {
     const { rerender } = render(<FirstTaskReport autoCreate />);
     rerender(<FirstTaskReport autoCreate={false} />);
     expect(heading(/your first monthly report/i)).toBeTruthy();
+    // The label keeps the run's decision; the schedule step gets the live
+    // value and fixes its own choice when it appears.
     expect(runProps).toHaveBeenLastCalledWith(
-      expect.objectContaining({ autoCreate: true }),
+      expect.objectContaining({ willSchedule: true, autoCreate: false }),
     );
   });
 
@@ -80,7 +82,7 @@ describe("FirstTaskReport", () => {
     rerender(<FirstTaskReport autoCreate={false} />);
     expect(heading(/catalog report for luh tyler/i)).toBeTruthy();
     expect(runProps).toHaveBeenLastCalledWith(
-      expect.objectContaining({ autoCreate: false }),
+      expect.objectContaining({ willSchedule: false, autoCreate: false }),
     );
   });
 });
