@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useConfirmFirstTask } from "@/hooks/useConfirmFirstTask";
-import { getFirstTaskSchedule } from "@/lib/onboarding/getFirstTaskSchedule";
-import { getCronHumanPreview } from "@/lib/tasks/getCronHumanPreview";
-import { getTaskNextRun } from "@/lib/tasks/getTaskNextRun";
-import { formatScheduledActionDate } from "@/lib/utils/formatScheduledActionDate";
+import FirstTaskOffer from "./FirstTaskOffer";
+import FirstTaskScheduled from "./FirstTaskScheduled";
 
 interface FirstTaskConfirmProps {
   catalogName?: string;
@@ -19,22 +17,24 @@ interface FirstTaskConfirmProps {
  * created without a click — an account counts as onboarded only with a
  * recurring task (recoupable/app#1941) — and the old "get this every
  * Monday?" question becomes a way to turn it off. A second report in the
- * same visit (another artist) asks instead of creating.
+ * same visit (another artist) asks instead of creating. `autoCreate` is read
+ * once, on mount, so a tasks refetch can never turn the question into a create.
  */
 const FirstTaskConfirm = ({
   catalogName,
   autoCreate,
 }: FirstTaskConfirmProps) => {
+  const [autoCreateOnMount] = useState(autoCreate);
   const { confirm, turnOff, phase, task, hasStarted, isTurningOff } =
-    useConfirmFirstTask({ catalogName, autoCreate });
+    useConfirmFirstTask({ catalogName, autoCreate: autoCreateOnMount });
 
   // Strict Mode runs effects twice; the ref keeps it to one create.
   const startedRef = useRef(false);
   useEffect(() => {
-    if (!autoCreate || hasStarted || startedRef.current) return;
+    if (!autoCreateOnMount || hasStarted || startedRef.current) return;
     startedRef.current = true;
     confirm();
-  }, [autoCreate, hasStarted, confirm]);
+  }, [autoCreateOnMount, hasStarted, confirm]);
 
   if (phase === "declined") {
     return (
@@ -48,22 +48,7 @@ const FirstTaskConfirm = ({
     );
   }
 
-  if (phase === "offer") {
-    return (
-      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-        <p className="text-sm font-medium text-foreground">
-          Get this report every month too?
-        </p>
-        <button
-          type="button"
-          onClick={confirm}
-          className="shrink-0 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:opacity-90"
-        >
-          Yes, monthly
-        </button>
-      </div>
-    );
-  }
+  if (phase === "offer") return <FirstTaskOffer onAccept={confirm} />;
 
   if (phase === "failed") {
     return (
@@ -83,32 +68,12 @@ const FirstTaskConfirm = ({
   }
 
   if (phase === "scheduled") {
-    const nextRunAt = task ? getTaskNextRun(task) : null;
-    const nextRun = nextRunAt
-      ? formatScheduledActionDate(nextRunAt)
-      : getCronHumanPreview(getFirstTaskSchedule());
     return (
-      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-        <div role="status">
-          <p className="text-sm font-medium text-foreground">
-            Your monthly report is set up.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            We&apos;ll email it to you once a month. Next run: {nextRun}.{" "}
-            <Link href="/tasks" className="underline hover:text-foreground">
-              View your tasks
-            </Link>
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={turnOff}
-          disabled={isTurningOff}
-          className="shrink-0 rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isTurningOff ? "Turning off..." : "Turn off"}
-        </button>
-      </div>
+      <FirstTaskScheduled
+        task={task}
+        onTurnOff={turnOff}
+        isTurningOff={isTurningOff}
+      />
     );
   }
 

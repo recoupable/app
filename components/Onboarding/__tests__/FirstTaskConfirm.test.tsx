@@ -51,6 +51,24 @@ describe("FirstTaskConfirm", () => {
     expect(confirm).not.toHaveBeenCalled();
   });
 
+  // The choice is fixed on mount: a tasks refetch must never turn an offer
+  // into a create the user did not confirm.
+  it("never auto-creates when autoCreate turns on after mount", () => {
+    phase = "offer";
+    const { rerender } = render(<FirstTaskConfirm autoCreate={false} />);
+    rerender(<FirstTaskConfirm autoCreate />);
+    expect(confirm).not.toHaveBeenCalled();
+  });
+
+  it("lets the user decline the offer without creating anything", () => {
+    phase = "offer";
+    render(<FirstTaskConfirm autoCreate={false} />);
+    fireEvent.click(screen.getByRole("button", { name: /not now/i }));
+    expect(confirm).not.toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: /yes, monthly/i })).toBeNull();
+    expect(screen.getByText(/no monthly report/i)).toBeTruthy();
+  });
+
   it("asks instead of creating when the account already has an active task", () => {
     phase = "offer";
     render(<FirstTaskConfirm autoCreate={false} />);

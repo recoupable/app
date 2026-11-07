@@ -30,7 +30,9 @@ export function getOnboardingCheckpoints(
     { id: "catalog", complete: state.catalogs.length > 0 },
     {
       id: "task",
-      complete: state.tasks.length > 0,
+      complete: state.tasks.some(
+        (task) => task.enabled === true || task.enabled === false,
+      ),
     },
   ];
 }

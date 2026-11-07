@@ -35,4 +35,14 @@ describe("getOnboardingStep edge cases", () => {
       }),
     ).toBe("complete");
   });
+
+  it("does not count a task with no on/off state", () => {
+    expect(
+      getOnboardingStep({
+        artists: [{ account_socials: [{ id: "s1" }] }],
+        catalogs: [{ id: "c1" }],
+        tasks: [{ enabled: null }],
+      }),
+    ).toBe("task");
+  });
 });

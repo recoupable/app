@@ -52,7 +52,7 @@ vi.mock("@/components/Onboarding/ExistingWeeklyReportPanel", () => ({
   default: () => <div>Existing report panel</div>,
 }));
 vi.mock("@/components/Onboarding/SetupSkipLink", () => ({
-  default: () => null,
+  default: () => <a href="https://example.test/skip">Skip for now</a>,
 }));
 
 const loaded = (data: TaskRow[]) => ({
@@ -95,6 +95,7 @@ describe("FirstTaskStep", () => {
     fireEvent.click(screen.getByRole("button", { name: /try again/i }));
     expect(refetch).toHaveBeenCalledTimes(1);
     expect(screen.queryByText("First report run")).toBeNull();
+    expect(screen.getByRole("link", { name: /skip for now/i })).toBeTruthy();
   });
 
   // The task is now created automatically when the first report finishes; the

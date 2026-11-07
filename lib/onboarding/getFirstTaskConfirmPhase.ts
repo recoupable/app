@@ -18,8 +18,8 @@ export interface GetFirstTaskConfirmPhaseInput {
 /**
  * Phase of the onboarding first task (chat#1867). The task is created
  * automatically once the first report finishes (recoupable/app#1941), so
- * "pending" already reads as creating; "declined" means the user turned the
- * created task off. Pure so the rules are testable without the mutation hook.
+ * "pending" reads as creating when `autoCreate` is on and as an offer when it
+ * is off; "declined" means the user turned the created task off. Pure so the rules are testable without the mutation hook.
  */
 export function getFirstTaskConfirmPhase({
   decision,
