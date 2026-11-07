@@ -25,7 +25,7 @@ const FirstTaskScheduled = ({
   const nextRunAt = task ? getTaskNextRun(task) : null;
   const nextRun = nextRunAt
     ? formatScheduledActionDate(nextRunAt)
-    : getCronHumanPreview(getFirstTaskSchedule());
+    : getCronHumanPreview(task?.schedule ?? getFirstTaskSchedule());
 
   return (
     <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
