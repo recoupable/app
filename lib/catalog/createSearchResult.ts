@@ -1,4 +1,4 @@
-import { CatalogSongsResult } from "@/components/VercelChat/tools/catalog/CatalogSongsResult";
+import type { CatalogSongsResult } from "@/lib/catalog/CatalogSongsResult";
 import { SongsByIsrcResponse } from "./getSongsByIsrc";
 
 /**

@@ -43,7 +43,8 @@ pnpm instructions:check # Check maintained architecture paths in this file
 - `lib/` - Core business logic organized by domain:
   - `lib/ai/` - AI helper utilities and model presentation
   - `lib/api/` - Client API origin and response helpers
-  - `lib/chat/` - Workflow chat transport and message helpers
+  - `lib/chat/` - Workflow chat transport and message helpers; `WorkspaceStatus.ts` owns the shared lifecycle type
+  - Domain data contracts (`lib/catalog/CatalogSongsResult.ts`, `lib/composio/ConnectorInfo.ts`, `lib/organizations/AccountOrganization.ts`) are imported directly by hooks and UI; do not define shared API shapes in components or hooks
   - `lib/supabase/` - Database operations
   - `lib/stripe/` - Payment processing
 - `providers/` - React context providers

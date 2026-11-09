@@ -1,4 +1,4 @@
-import type { AccountOrganization } from "@/hooks/useAccountOrganizations";
+import type { AccountOrganization } from "@/lib/organizations/AccountOrganization";
 
 /**
  * The organization `/catalogs` should actually scope to, given the sidebar

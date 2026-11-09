@@ -1,6 +1,6 @@
 "use client";
 
-import { CatalogSongsResponse } from "@/lib/catalog/getCatalogSongs";
+import type { CatalogSongsResult } from "@/lib/catalog/CatalogSongsResult";
 import { useCatalogSongsFileSelect } from "@/hooks/useCatalogSongsFileSelect";
 import { Progress } from "@/components/ui/progress";
 import HideMissingItemsToggle from "./HideMissingItemsToggle";
@@ -10,15 +10,6 @@ import InsertCatalogSongsSummary from "./InsertCatalogSongsSummary";
 import InsertCatalogSongsStatus from "./InsertCatalogSongsStatus";
 import { useMemo, useState } from "react";
 import { isCompleteSong } from "@/lib/catalog/isCompleteSong";
-
-export interface CatalogSongsResult {
-  success: boolean;
-  songs?: CatalogSongsResponse["songs"];
-  pagination?: CatalogSongsResponse["pagination"];
-  total_added?: number;
-  message?: string;
-  error?: string;
-}
 
 interface CatalogSongsResultProps {
   result: CatalogSongsResult;
