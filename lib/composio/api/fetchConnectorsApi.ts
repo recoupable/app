@@ -1,5 +1,5 @@
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
-import type { ConnectorInfo } from "@/hooks/useConnectors";
+import type { ConnectorInfo } from "@/lib/composio/ConnectorInfo";
 
 /**
  * Fetch connectors from the API.

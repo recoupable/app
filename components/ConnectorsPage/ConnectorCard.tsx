@@ -1,6 +1,6 @@
 "use client";
 
-import { ConnectorInfo } from "@/hooks/useConnectors";
+import type { ConnectorInfo } from "@/lib/composio/ConnectorInfo";
 import { useConnectorHandlers } from "@/hooks/useConnectorHandlers";
 import { getConnectorMeta } from "@/lib/composio/connectorMetadata";
 import { formatConnectorName } from "@/lib/composio/formatConnectorName";

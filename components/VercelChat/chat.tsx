@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Loader } from "lucide-react";
 import { memo } from "react";
 import { useOrganization } from "@/providers/OrganizationProvider";
-import type { WorkspaceStatus } from "./WorkspaceStatusIndicator";
+import type { WorkspaceStatus } from "@/lib/chat/WorkspaceStatus";
 
 interface ChatProps {
   id: string;

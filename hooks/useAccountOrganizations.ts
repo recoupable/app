@@ -3,12 +3,7 @@ import { useUserProvider } from "@/providers/UserProvder";
 import { usePrivy } from "@privy-io/react-auth";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 
-export interface AccountOrganization {
-  id: string;
-  organization_id: string;
-  organization_name?: string;
-  organization_image?: string;
-}
+import type { AccountOrganization } from "@/lib/organizations/AccountOrganization";
 
 interface OrganizationsResponse {
   organizations: AccountOrganization[];
