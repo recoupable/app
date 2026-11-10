@@ -7,12 +7,24 @@ import { mediaDownloadFilename } from "@/lib/chat/mediaDownloadFilename";
  *
  * @param url - Absolute image URL from the tool result's stdout.
  */
-export function ImageResult({ url }: { url: string }) {
+export function ImageResult({
+  url,
+  alt,
+  onLoad,
+  onError,
+}: {
+  url: string;
+  alt?: string;
+  onLoad?: () => void;
+  onError?: () => void;
+}) {
   return (
     // eslint-disable-next-line @next/next/no-img-element -- generated asset on an external origin
     <img
       src={url}
-      alt={mediaDownloadFilename(url)}
+      alt={alt ?? mediaDownloadFilename(url)}
+      onLoad={onLoad}
+      onError={onError}
       className="max-h-[70vh] w-auto max-w-full rounded-lg border border-border"
     />
   );
