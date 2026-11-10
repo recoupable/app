@@ -5,6 +5,7 @@ import Link from "next/link";
 import LogoIcon from "@/components/Logo/LogoIcon";
 import { conversationExamples } from "@/lib/intelligent-ui/playground/conversationExamples";
 import { playgroundScenarios } from "@/lib/intelligent-ui/playground/scenarios";
+import CreativeComparisonLab from "./CreativeComparisonLab";
 import SelectionContinuityLab from "./SelectionContinuityLab";
 import { isChatIntelligentUIEnabled } from "@/lib/intelligent-ui/chat/isChatIntelligentUIEnabled";
 import CatalogExplorer from "./CatalogExplorer";
@@ -57,9 +58,14 @@ export default function Playground() {
               className="min-h-11 max-w-full cursor-pointer rounded-xl bg-muted/50 px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {isChatIntelligentUIEnabled() && (
-                <option value="selection-continuity">
-                  Selection continuity
-                </option>
+                <>
+                  <option value="creative-comparison">
+                    Creative comparison
+                  </option>
+                  <option value="selection-continuity">
+                    Selection continuity
+                  </option>
+                </>
               )}
               <option value="catalog-explorer">Catalog explorer</option>
               {conversationExamples.map((item) => (
@@ -70,8 +76,10 @@ export default function Playground() {
             </select>
           </label>
         </div>
-        {exampleId === "selection-continuity" &&
-        isChatIntelligentUIEnabled() ? (
+        {exampleId === "creative-comparison" && isChatIntelligentUIEnabled() ? (
+          <CreativeComparisonLab />
+        ) : exampleId === "selection-continuity" &&
+          isChatIntelligentUIEnabled() ? (
           <SelectionContinuityLab />
         ) : exampleId === "catalog-explorer" ? (
           <CatalogExplorer />
