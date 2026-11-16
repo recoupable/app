@@ -69,9 +69,11 @@ export function useReleasePlan(fixture: ReleasePlanFixture) {
         edits: proposed.edits,
         changes: getReleasePlanDiff(base.edits, proposed.edits),
       });
-      setMessage(
-        "Review the proposed local version below. Nothing has been saved yet.",
-      );
+      if (canSave) {
+        setMessage(
+          "Review the proposed local version below. Nothing has been saved yet.",
+        );
+      }
     },
     save() {
       if (!ready || !canSave || !review) return;

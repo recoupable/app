@@ -198,35 +198,64 @@ describe("local release plan editor", () => {
       "Other saved goal",
     );
   });
-  it("preserves invalid storage and allows text-only planning when storage is unavailable", () => {
-    const fixture = createReleasePlanFixture();
-    sessionStorage.setItem(getReleasePlanKey(fixture.scope), "{bad");
-    const view = render(<ReleasePlanLab />);
-    expect(screen.getByRole("status").textContent).toContain(
-      "unavailable or invalid",
-    );
-    change("Goal", "Still editable");
-    review();
-    expect(
-      (
+  it.each(["invalid", "unavailable"])(
+    "keeps the %s storage explanation after review and recovers after reload",
+    (condition) => {
+      const fixture = createReleasePlanFixture();
+      const key = getReleasePlanKey(fixture.scope);
+      sessionStorage.setItem(key, "{bad");
+      const readFailure =
+        condition === "unavailable"
+          ? vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+              throw Error("denied");
+            })
+          : undefined;
+      render(<ReleasePlanLab />);
+      const explanation = screen.getByRole("status").textContent;
+      expect(explanation).toContain("unavailable or invalid");
+      expect(explanation).toContain("Keep editing and use the readable plan");
+      change("Goal", "Still editable while storage is blocked");
+      review();
+      expect(screen.getByRole("status").textContent).toBe(explanation);
+      expect(
+        (
+          screen.getByRole("button", {
+            name: "Save local version",
+          }) as HTMLButtonElement
+        ).disabled,
+      ).toBe(true);
+      expect((screen.getByLabelText("Goal") as HTMLInputElement).value).toBe(
+        "Still editable while storage is blocked",
+      );
+      expect(
+        screen.getByText(/Goal: Still editable while storage is blocked/),
+      ).toBeTruthy();
+      readFailure?.mockRestore();
+      expect(sessionStorage.getItem(key)).toBe("{bad");
+      // Simulate the external problem being resolved; recovery stays explicit.
+      sessionStorage.removeItem(key);
+      fireEvent.click(
         screen.getByRole("button", {
-          name: "Save local version",
-        }) as HTMLButtonElement
-      ).disabled,
-    ).toBe(true);
-    expect(sessionStorage.getItem(getReleasePlanKey(fixture.scope))).toBe(
-      "{bad",
-    );
-    view.unmount();
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
-      throw Error("denied");
-    });
-    render(<ReleasePlanLab />);
-    change("Release date", "2026-12-25");
-    expect(
-      screen.getByText(/Release date: 2026-12-25; timezone:/),
-    ).toBeTruthy();
-  });
+          name: "Reload saved version (discard working edits)",
+        }),
+      );
+      review();
+      expect(screen.getByRole("status").textContent).toBe(
+        "Review the proposed local version below. Nothing has been saved yet.",
+      );
+      expect(
+        (
+          screen.getByRole("button", {
+            name: "Save local version",
+          }) as HTMLButtonElement
+        ).disabled,
+      ).toBe(false);
+      save();
+      expect(screen.getByRole("status").textContent).toContain(
+        "Saved local version 1",
+      );
+    },
+  );
   it("keeps edits after a write failure and does not announce a saved version", () => {
     render(<ReleasePlanLab />);
     vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
