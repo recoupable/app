@@ -22,6 +22,7 @@ export function parsePrepared(
     result.snapshot.revision !== 0 ||
     !initial ||
     initial.withheld === true ||
+    initial.stale === true ||
     initial.stage !== "audit" ||
     initial.status !== "partial" ||
     initial.rule_version !== "context-catalog-audit-v1" ||

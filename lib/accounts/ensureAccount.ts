@@ -2,6 +2,7 @@ import { fetchOrCreateAccount } from "@/lib/accounts/fetchOrCreateAccount";
 import type { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
 
 interface EnsureAccountParams {
+  actorId?: string;
   email?: string;
   wallet?: string;
   accessToken?: string | null;
@@ -24,7 +25,11 @@ let chain: Promise<unknown> = Promise.resolve();
 export function ensureAccount(
   params: EnsureAccountParams,
 ): Promise<AccountWithDetails> {
-  const key = `${params.email ?? ""}|${params.wallet ?? ""}`;
+  const key = JSON.stringify([
+    params.actorId ?? null,
+    params.email ?? "",
+    params.wallet ?? "",
+  ]);
   if (inFlight?.key === key) return inFlight.promise;
 
   const promise = chain.then(() => fetchOrCreateAccount(params));

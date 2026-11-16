@@ -28,3 +28,17 @@ it("keeps non-partial assessments read-only", () => {
   snapshot.assessments["assessment:context"].status = "complete";
   expect(canContinueAudit(snapshot)).toBe(false);
 });
+
+it("rejects a stale initial assessment before the preparation can become writable", () => {
+  const response = structuredClone(fixture.prepare.response);
+  Object.assign(response.snapshot.assessments["assessment:context"], {
+    stale: true,
+  });
+  expect(() =>
+    parsePrepared(
+      response,
+      response.snapshot.workspace_id,
+      fixture.prepare.request.brief_id,
+    ),
+  ).toThrow("Invalid prepared audit");
+});

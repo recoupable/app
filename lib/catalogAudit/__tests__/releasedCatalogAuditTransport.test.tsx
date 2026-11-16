@@ -20,6 +20,7 @@ const actor = "00000000-0000-4000-8000-000000000001";
 const briefId = fixture.prepare.request.brief_id;
 const emptyPage = { cases: [], has_more: false, next_id: null };
 type Body = Record<string, unknown>;
+const assertionErrors: unknown[] = [];
 function receipt(snapshot: AuditSnapshot) {
   return {
     case_id: snapshot.case_id,
@@ -35,10 +36,6 @@ function receipt(snapshot: AuditSnapshot) {
 }
 function install(upstream: (body: Body) => unknown | Promise<unknown>) {
   const payloads: string[] = [];
-  const assertionErrors: unknown[] = [];
-  afterEach(() => {
-    if (assertionErrors.length) throw assertionErrors[0];
-  });
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string, init: RequestInit) => {
@@ -88,11 +85,16 @@ function mount() {
     }),
   );
 }
-beforeEach(() => vi.stubEnv("CONTEXT_API_URL", api));
+beforeEach(() => {
+  assertionErrors.length = 0;
+  vi.stubEnv("CONTEXT_API_URL", api);
+});
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
+  const errors = assertionErrors.splice(0);
+  if (errors.length) throw errors[0];
 });
 
 it("preserves the released schema-v1 preparation through explicit save, reopen and note continuation", async () => {
