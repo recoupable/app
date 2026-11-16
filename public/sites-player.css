@@ -317,6 +317,13 @@ body[data-player-visible] #audio-fallback {
 body:not([data-player-visible]) .player-link {
   display: none;
 }
+body[data-session-recovery] #spotify-disconnect {
+  display: inline-block;
+}
+body[data-session-recovery] footer {
+  gap: 16px;
+  flex-wrap: wrap;
+}
 body:not([data-player-visible]) footer {
   justify-content: center;
   padding-bottom: 22px;

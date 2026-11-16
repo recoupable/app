@@ -7,7 +7,7 @@ import {
 import { DEFAULT_MODEL } from "@/lib/consts";
 
 /**
- * Schedules the weekly report through `POST /api/tasks` (which also mints
+ * Schedules the monthly report through `POST /api/tasks` (which also mints
  * the Trigger schedule). The one creator behind both entry points, the
  * onboarding confirm and the homepage starter card, so they produce the
  * same task (chat#1867, chat#2006).

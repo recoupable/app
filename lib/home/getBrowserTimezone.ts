@@ -1,6 +1,6 @@
 /**
- * The browser's IANA timezone, so a "Mondays at 9am" schedule means the
- * user's 9am rather than the API's default zone (chat#2006). Undefined when
+ * The browser's IANA timezone, so a scheduled report's run time means the
+ * user's local time rather than the API's default zone (chat#2006). Undefined when
  * the runtime can't resolve one; `createTask` then omits `timezone`.
  */
 export function getBrowserTimezone(): string | undefined {

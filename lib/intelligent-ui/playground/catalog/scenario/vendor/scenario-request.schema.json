@@ -1,0 +1,283 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Catalog dev Spotify-rate scenario v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "method_version",
+    "observations",
+    "assumptions",
+    "spotify_rate"
+  ],
+  "properties": {
+    "method_version": {
+      "const": "public-estimate-spotify-rate/1"
+    },
+    "observations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "basis",
+        "population_complete",
+        "coverage_notes",
+        "tracks"
+      ],
+      "properties": {
+        "basis": {
+          "$ref": "#/$defs/basis"
+        },
+        "population_complete": {
+          "type": "boolean"
+        },
+        "coverage_notes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "tracks": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "title",
+              "sp_ttm",
+              "ttm_source",
+              "basis",
+              "source_ref",
+              "captured_at"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "title": {
+                "type": "string"
+              },
+              "sp_ttm": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "ttm_source": {
+                "enum": [
+                  "measured_365d",
+                  "none"
+                ]
+              },
+              "basis": {
+                "$ref": "#/$defs/basis"
+              },
+              "source_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "captured_at": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "assumptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currency",
+        "right_kind",
+        "controlled_share",
+        "assumption_status",
+        "assumption_sources",
+        "rates",
+        "other_dsp_grossup",
+        "nls_band",
+        "multiple",
+        "window_days",
+        "min_delta_days"
+      ],
+      "properties": {
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "right_kind": {
+          "const": "master"
+        },
+        "controlled_share": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "assumption_status": {
+          "const": "illustrative_unverified"
+        },
+        "assumption_sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "rates": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "spotify"
+          ],
+          "properties": {
+            "spotify": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "other_dsp_grossup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "low",
+            "central",
+            "high"
+          ],
+          "properties": {
+            "low": {
+              "type": "number",
+              "minimum": 0
+            },
+            "central": {
+              "type": "number",
+              "minimum": 0
+            },
+            "high": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "nls_band": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "low",
+            "central",
+            "high"
+          ],
+          "properties": {
+            "low": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "central": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "high": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "multiple": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "low",
+            "central",
+            "high"
+          ],
+          "properties": {
+            "low": {
+              "type": "number",
+              "minimum": 0
+            },
+            "central": {
+              "type": "number",
+              "minimum": 0
+            },
+            "high": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "window_days": {
+          "const": 365
+        },
+        "min_delta_days": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "spotify_rate": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "basis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cohort_id",
+        "period_start",
+        "period_end",
+        "currency",
+        "right_kind",
+        "unit"
+      ],
+      "properties": {
+        "cohort_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "period_start": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "period_end": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "right_kind": {
+          "const": "master"
+        },
+        "unit": {
+          "const": "spotify_streams"
+        }
+      }
+    }
+  },
+  "description": "Shape only. scenario.py additionally enforces identical bases, actual365-day dates, unique recording IDs, safe total count, finite arithmetic, unknown/null pairing, and ordered bands. No Context descriptor contract."
+}

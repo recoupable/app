@@ -217,7 +217,11 @@ For a gated assistant answer with an accepted snapshot or validated historical
 text fallback, `MessageParts` provides one existing Copy response action. It
 copies ordinary prose and deterministic accepted answer text in their displayed
 order, including complete representation values and composed source citations.
-Snapshot-only answers also have that action. Copy resolves the same accepted
+Snapshot-only answers also have that action and the existing Retry action when
+chat is ready or has failed, including deterministic loading/error/history fallback.
+Retry is absent while a new request is submitted or streaming. It uses the existing
+chat reload handler and does not recover unaccepted or scope-invalid content.
+Copy resolves the same accepted
 revision as rendering; rejected raw parts cannot replace its payload. Loading or
 renderer failure does not remove it, and a scope change removes the old UI text
 from both display and copy. The payload describes the complete answer, including

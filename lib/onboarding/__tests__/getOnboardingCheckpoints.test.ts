@@ -39,4 +39,15 @@ describe("getOnboardingCheckpoints", () => {
     });
     expect(checkpoints.find((c) => c.id === "socials")?.complete).toBe(false);
   });
+
+  // Turning the auto-created report off pauses it; the home gate must not
+  // send the account back into setup, where it would be created again.
+  it("counts a paused task as the task step done", () => {
+    const checkpoints = getOnboardingCheckpoints({
+      artists: [],
+      catalogs: [],
+      tasks: [{ enabled: false }],
+    } as unknown as Parameters<typeof getOnboardingCheckpoints>[0]);
+    expect(checkpoints.find((c) => c.id === "task")?.complete).toBe(true);
+  });
 });

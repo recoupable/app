@@ -1,3 +1,4 @@
+import type { CollectionComponent } from "../schema";
 import type {
   DistributionComponent,
   TimelineComponent,
@@ -8,10 +9,11 @@ export type PresentationIntent =
   | {
       kind: "representation";
       componentId: string;
-      benefit: "show-distribution" | "navigate-time";
+      benefit: "show-distribution" | "navigate-time" | "select-records";
     };
 
 export type PresentationDecision =
+  | { mode: "visual"; component: CollectionComponent; reason: "select-records" }
   | {
       mode: "text";
       reason:
@@ -34,6 +36,7 @@ export type PresentationDecision =
     };
 
 export type RepresentationCapabilities = {
+  collection?: boolean;
   distribution: boolean;
   timeline: boolean;
 };

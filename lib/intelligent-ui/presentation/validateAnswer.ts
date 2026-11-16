@@ -54,7 +54,9 @@ export function validateAnswer(
     );
     if (
       !component ||
-      (component.type !== "distribution" && component.type !== "timeline")
+      (component.type !== "distribution" &&
+        component.type !== "timeline" &&
+        component.type !== "collection")
     ) {
       ctx.addIssue({
         code: "custom",
@@ -76,7 +78,8 @@ export function validateAnswer(
       part.type === "representation" &&
       ((part.benefit === "show-distribution" &&
         component.type !== "distribution") ||
-        (part.benefit === "navigate-time" && component.type !== "timeline"))
+        (part.benefit === "navigate-time" && component.type !== "timeline") ||
+        (part.benefit === "select-records" && component.type !== "collection"))
     )
       ctx.addIssue({
         code: "custom",

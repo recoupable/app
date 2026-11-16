@@ -62,7 +62,7 @@ describe("getHomeTasksModuleState", () => {
   });
 
   it("shows the existing schedule instead of the starter when a task is already enabled", () => {
-    // A user who just finished /setup has a task but no runs until Monday;
+    // A user who just finished /setup has a task but no runs until its first run;
     // offering the starter again would schedule a duplicate (chat#2006).
     expect(getHomeTasksModuleState({ ...fresh, existingTask })).toEqual({
       view: "scheduled",

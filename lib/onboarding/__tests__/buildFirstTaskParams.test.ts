@@ -8,20 +8,23 @@ const input = {
   artistAccountId: "artist-123",
   recipientEmail: "manager@example.com",
   catalogName: "Debut",
+  now: new Date(2026, 7, 14, 15, 20),
 };
 
 describe("buildFirstTaskParams", () => {
   it("builds POST /api/tasks params with a personalized title", () => {
     const params = buildFirstTaskParams(input);
     expect(params).toEqual({
-      title: "Weekly Catalog Report: Luh Tyler",
+      title: "Monthly Catalog Report: Luh Tyler",
       prompt: buildFirstTaskPrompt({
         artistName: "Luh Tyler",
         artistAccountId: "artist-123",
         recipientEmail: "manager@example.com",
         catalogName: "Debut",
       }),
-      schedule: getFirstTaskSchedule(),
+      schedule: getFirstTaskSchedule(new Date(2026, 7, 14, 15, 20), {
+        utc: true,
+      }),
       artist_account_id: "artist-123",
     });
   });
@@ -31,14 +34,14 @@ describe("buildFirstTaskParams", () => {
     expect(params.prompt).toBe(buildFirstTaskPrompt(input));
   });
 
-  it("threads the recipient email into the scheduled prompt so the weekly report is emailed", () => {
+  it("threads the recipient email into the scheduled prompt so the monthly report is emailed", () => {
     const params = buildFirstTaskParams(input);
     expect(params.prompt).toContain("manager@example.com");
   });
 });
 
 describe("buildFirstTaskParams timezone", () => {
-  it("passes the caller's timezone through so 9am means the user's 9am", () => {
+  it("passes the caller's timezone through so the run time means the user's local time", () => {
     const params = buildFirstTaskParams({
       ...input,
       timezone: "America/Los_Angeles",
@@ -46,8 +49,11 @@ describe("buildFirstTaskParams timezone", () => {
     expect(params.timezone).toBe("America/Los_Angeles");
   });
 
-  it("omits timezone when none is known (API default zone)", () => {
+  it("omits timezone when none is known, and builds the cron in UTC to match", () => {
     const params = buildFirstTaskParams(input);
     expect(params).not.toHaveProperty("timezone");
+    expect(params.schedule).toBe(
+      getFirstTaskSchedule(input.now, { utc: true }),
+    );
   });
 });

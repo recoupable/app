@@ -1,6 +1,7 @@
 import { useId } from "react";
 import type { DistributionComponent } from "@/lib/intelligent-ui/representations/schemas";
 import { computeDistribution } from "@/lib/intelligent-ui/representations/computeDistribution";
+import { formatDistributionNumber } from "@/lib/intelligent-ui/representations/formatDistributionNumber";
 import { formatReportingPeriod } from "@/lib/intelligent-ui/representations/formatReportingPeriod";
 
 export default function DistributionView({
@@ -10,7 +11,6 @@ export default function DistributionView({
 }) {
   const id = useId();
   const { ranked, maximum, total } = computeDistribution(component);
-  const number = new Intl.NumberFormat("en");
   return (
     <figure
       aria-labelledby={`${id}-title`}
@@ -47,7 +47,7 @@ export default function DistributionView({
               />
             </div>
             <span className="col-start-2 row-start-1 text-right font-mono text-xs tabular-nums sm:col-start-3">
-              {number.format(item.value)}
+              {formatDistributionNumber(item.value)}
               <span className="sr-only"> {component.measure.unit}</span>
             </span>
           </li>
@@ -58,7 +58,7 @@ export default function DistributionView({
         className="mt-6 space-y-1 text-xs leading-5 text-muted-foreground"
       >
         <p>
-          {number.format(total)} supplied {component.measure.unit} ·{" "}
+          {formatDistributionNumber(total)} supplied {component.measure.unit} ·{" "}
           {formatReportingPeriod(
             component.measure.periodStart,
             component.measure.periodEnd,

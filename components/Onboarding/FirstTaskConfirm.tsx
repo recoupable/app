@@ -1,30 +1,45 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useConfirmFirstTask } from "@/hooks/useConfirmFirstTask";
-import { getFirstTaskSchedule } from "@/lib/onboarding/getFirstTaskSchedule";
-import { getCronHumanPreview } from "@/lib/tasks/getCronHumanPreview";
-import { getTaskNextRun } from "@/lib/tasks/getTaskNextRun";
-import { formatScheduledActionDate } from "@/lib/utils/formatScheduledActionDate";
+import FirstTaskOffer from "./FirstTaskOffer";
+import FirstTaskScheduled from "./FirstTaskScheduled";
 
 interface FirstTaskConfirmProps {
   catalogName?: string;
+  /** False when the account already has an active task: ask, don't create. */
+  autoCreate: boolean;
 }
 
 /**
- * The one question after the pre-run report (chat#1867): "get this every
- * Monday?" Confirm creates the enabled weekly task; decline creates
- * nothing. Success shows the next-run time from the created row.
+ * Shown once the pre-run report finishes (chat#1867). The monthly task is
+ * created without a click — an account counts as onboarded only with a
+ * recurring task (recoupable/app#1941) — and the old "get this every
+ * Monday?" question becomes a way to turn it off. A second report in the
+ * same visit (another artist) asks instead of creating. `autoCreate` is read
+ * once, on mount, so a tasks refetch can never turn the question into a create.
  */
-const FirstTaskConfirm = ({ catalogName }: FirstTaskConfirmProps) => {
-  const { confirm, decline, phase, task } = useConfirmFirstTask({
-    catalogName,
-  });
+const FirstTaskConfirm = ({
+  catalogName,
+  autoCreate,
+}: FirstTaskConfirmProps) => {
+  const [autoCreateOnMount] = useState(autoCreate);
+  const { confirm, turnOff, phase, task, hasStarted, isTurningOff } =
+    useConfirmFirstTask({ catalogName, autoCreate: autoCreateOnMount });
+
+  // Strict Mode runs effects twice; the ref keeps it to one create.
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (!autoCreateOnMount || hasStarted || startedRef.current) return;
+    startedRef.current = true;
+    confirm();
+  }, [autoCreateOnMount, hasStarted, confirm]);
 
   if (phase === "declined") {
     return (
       <p className="text-sm text-muted-foreground" role="status">
-        No task created. You can set up a weekly report anytime from{" "}
+        Monthly report turned off. You can set it up again anytime from{" "}
         <Link href="/tasks" className="underline hover:text-foreground">
           Tasks
         </Link>
@@ -33,56 +48,39 @@ const FirstTaskConfirm = ({ catalogName }: FirstTaskConfirmProps) => {
     );
   }
 
-  if (phase === "scheduled") {
-    const nextRunAt = task ? getTaskNextRun(task) : null;
-    const nextRun = nextRunAt
-      ? formatScheduledActionDate(nextRunAt)
-      : getCronHumanPreview(getFirstTaskSchedule());
+  if (phase === "offer") return <FirstTaskOffer onAccept={confirm} />;
+
+  if (phase === "failed") {
     return (
-      <div role="status">
-        <p className="text-sm font-medium text-foreground">
-          Weekly report scheduled.
+      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+        <p className="text-sm text-foreground" role="alert">
+          We couldn&apos;t set up your monthly report.
         </p>
-        <p className="text-sm text-muted-foreground">
-          Next run: {nextRun}.{" "}
-          <Link href="/tasks" className="underline hover:text-foreground">
-            View your tasks
-          </Link>
-        </p>
+        <button
+          type="button"
+          onClick={confirm}
+          className="shrink-0 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:opacity-90"
+        >
+          Try again
+        </button>
       </div>
     );
   }
 
-  const isCreating = phase === "creating";
+  if (phase === "scheduled") {
+    return (
+      <FirstTaskScheduled
+        task={task}
+        onTurnOff={turnOff}
+        isTurningOff={isTurningOff}
+      />
+    );
+  }
+
   return (
-    <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-      <div>
-        <p className="text-sm font-medium text-foreground">
-          Get this every Monday?
-        </p>
-        <p className="text-xs text-muted-foreground">
-          We&apos;ll run this report every Monday at 9am as a scheduled task.
-        </p>
-      </div>
-      <div className="flex shrink-0 gap-2">
-        <button
-          type="button"
-          onClick={decline}
-          disabled={isCreating}
-          className="rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Not now
-        </button>
-        <button
-          type="button"
-          onClick={confirm}
-          disabled={isCreating}
-          className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isCreating ? "Scheduling..." : "Yes, every Monday"}
-        </button>
-      </div>
-    </div>
+    <p className="animate-pulse text-sm text-muted-foreground" role="status">
+      Setting up your monthly report...
+    </p>
   );
 };
 

@@ -14,6 +14,7 @@ const input = {
   recipientEmail: "manager@example.com",
   catalogName: "Debut",
   timezone: "America/New_York",
+  now: new Date(2026, 7, 14, 15, 20),
 };
 
 describe("createWeeklyReportTask", () => {
@@ -24,7 +25,7 @@ describe("createWeeklyReportTask", () => {
     );
   });
 
-  it("POSTs the shared weekly report task to /api/tasks", async () => {
+  it("POSTs the shared monthly report task to /api/tasks", async () => {
     const createdTask = { id: "task-1" };
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -48,8 +49,8 @@ describe("createWeeklyReportTask", () => {
     );
     const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
     const body = JSON.parse(String(init.body));
-    expect(body.title).toBe("Weekly Catalog Report: Del Water Gap");
-    expect(body.schedule).toBe("0 9 * * 1");
+    expect(body.title).toBe("Monthly Catalog Report: Del Water Gap");
+    expect(body.schedule).toBe("20 15 14 * *");
     expect(body.artist_account_id).toBe("artist-1");
     expect(body.model).toBe(DEFAULT_MODEL);
     expect(body.timezone).toBe("America/New_York");

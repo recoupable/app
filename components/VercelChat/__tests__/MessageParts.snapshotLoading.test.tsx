@@ -76,12 +76,14 @@ it("does not load the visual module when gated off; pending and failed loading r
     role: "assistant" as const,
     parts: [{ type: "text" as const, text: "Ordinary prose remains." }, part],
   };
+  const reload = vi.fn();
   const view = () => (
     <VercelChatContext.Provider
       value={
         {
           messages: [message],
           status: "ready",
+          reload,
           intelligentUI: binding,
         } as unknown as React.ContextType<typeof VercelChatContext>
       }
@@ -104,6 +106,12 @@ it("does not load the visual module when gated off; pending and failed loading r
       "Ordinary prose remains.\n\nThe accepted deterministic answer.",
     ),
   );
+  message.parts = [part];
+  rerender(view());
+  fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+  expect(reload).toHaveBeenCalledTimes(1);
+  message.parts = [{ type: "text", text: "Ordinary prose remains." }, part];
+  rerender(view());
   await vi.waitFor(() => expect(moduleLoad.attempts).toBe(1));
   vi.spyOn(console, "error").mockImplementation(() => {});
   await act(async () => {
@@ -118,4 +126,8 @@ it("does not load the visual module when gated off; pending and failed loading r
   expect(writeText).toHaveBeenLastCalledWith(
     "Ordinary prose remains.\n\nThe accepted deterministic answer.",
   );
+  message.parts = [part];
+  rerender(view());
+  fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+  expect(reload).toHaveBeenCalledTimes(2);
 });

@@ -223,9 +223,12 @@
           return;
         if (event.data?.type === "recoup-music-continue") enter();
         if (event.data?.type === "recoup-music-minimize") {
+          const restoreFocus = document.activeElement === frame;
           panel.classList.add("collapsed");
           toggle.hidden = false;
+          toggle.setAttribute("aria-label", "Open music player");
           toggle.setAttribute("aria-expanded", "false");
+          if (restoreFocus) toggle.focus();
         }
         if (
           event.data?.type === "recoup-music-resize" &&
@@ -581,14 +584,6 @@
       showSavedAudio();
       return;
     }
-    if (continueButton && parentOrigin) continueButton.hidden = false;
-    if (!parentOrigin) showPlayer();
-
-    document.body.dataset.connected = "true";
-    if (intro) intro.textContent = "Spotify connected. You’re ready to go.";
-    connect.hidden = true;
-    play.hidden = false;
-    play.disabled = true;
     disconnect.hidden = false;
     disconnect.onclick = () => {
       if (player) player.disconnect();
@@ -616,6 +611,20 @@
       }
       return session.access_token;
     }
+    const recoverSession = (message) => {
+      document.body.dataset.sessionRecovery = "true";
+      // Keep independent artist audio and no-music controls available without
+      // presenting the Spotify session as connected.
+      if (activateSavedAudio()) showPlayer();
+      say(message);
+    };
+    let accessToken;
+    try {
+      accessToken = await getToken();
+    } catch (error) {
+      recoverSession(error.message);
+      return;
+    }
     const notifyPlayback = (event) => {
       if (playerConfig && parentOrigin)
         window.parent.postMessage(
@@ -623,13 +632,12 @@
           parentOrigin,
         );
     };
-    if (playerConfig)
-      notifyPlayback(session.fanCapture ? "fan_captured" : "capture_failed");
     let lastPlayback = "";
     let product = "unknown";
+    let profileResponse;
     try {
-      const profileResponse = await fetch("https://api.spotify.com/v1/me", {
-        headers: { Authorization: "Bearer " + (await getToken()) },
+      profileResponse = await fetch("https://api.spotify.com/v1/me", {
+        headers: { Authorization: "Bearer " + accessToken },
       });
       if (profileResponse.ok) {
         const profile = await profileResponse.json();
@@ -639,6 +647,21 @@
     } catch {
       /* An unavailable profile is unknown, never evidence of a free account. */
     }
+    if (profileResponse?.status === 401) {
+      recoverSession(
+        "Your Spotify session is no longer valid. Disconnect and reconnect.",
+      );
+      return;
+    }
+    if (continueButton && parentOrigin) continueButton.hidden = false;
+    if (!parentOrigin) showPlayer();
+    document.body.dataset.connected = "true";
+    if (intro) intro.textContent = "Spotify connected. You’re ready to go.";
+    connect.hidden = true;
+    play.hidden = false;
+    play.disabled = true;
+    if (playerConfig)
+      notifyPlayback(session.fanCapture ? "fan_captured" : "capture_failed");
     document.body.dataset.spotifyProduct = product;
     const accountLabel = document.getElementById("spotify-account");
     if (accountLabel) {

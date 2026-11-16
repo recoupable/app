@@ -9,19 +9,19 @@ describe("getWeeklyReportErrorMessage", () => {
       "Please select an artist first.",
     );
     expect(getWeeklyReportErrorMessage(new Error("EMAIL_REQUIRED"))).toBe(
-      "Add an email address to your account to receive your weekly report.",
+      "Add an email address to your account to receive your monthly report.",
     );
     expect(getWeeklyReportErrorMessage(new Error("AUTH_REQUIRED"))).toBe(
-      "Please sign in to schedule your weekly report.",
+      "Please sign in to schedule your monthly report.",
     );
   });
 
   it("falls back to a retry message for anything else", () => {
     expect(getWeeklyReportErrorMessage(new Error("HTTP 500: boom"))).toBe(
-      "Couldn't schedule the weekly report. Please try again.",
+      "Couldn't schedule the monthly report. Please try again.",
     );
     expect(getWeeklyReportErrorMessage("nope")).toBe(
-      "Couldn't schedule the weekly report. Please try again.",
+      "Couldn't schedule the monthly report. Please try again.",
     );
   });
 });

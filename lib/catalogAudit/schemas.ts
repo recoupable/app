@@ -159,7 +159,8 @@ export function parsePrepared(
     initial.stage !== "audit" ||
     initial.status !== "partial" ||
     initial.rule_version !== "context-catalog-audit-v1" ||
-    initial.data?.brief_id !== briefId ||
+    typeof initial.data?.brief_id !== "string" ||
+    initial.data.brief_id.toLowerCase() !== briefId.toLowerCase() ||
     typeof initial.summary !== "string" ||
     initial.source_refs.length !==
       Object.keys(result.snapshot.sources).length ||

@@ -12,7 +12,9 @@ import { isArtistProfileReviewed } from "@/lib/onboarding/isArtistProfileReviewe
  * - artists:  the account has at least one rostered artist
  * - socials:  every artist has a linked social or a saved No profile yet choice
  * - catalog:  the account has claimed at least one catalog
- * - task:     the account has at least one enabled scheduled task
+ * - task:     the account has at least one scheduled task, on or paused —
+ *             turning the auto-created report off is a decision, and setup
+ *             would otherwise create it again (recoupable/app#1941)
  */
 export function getOnboardingCheckpoints(
   state: OnboardingAccountState,
@@ -28,7 +30,9 @@ export function getOnboardingCheckpoints(
     { id: "catalog", complete: state.catalogs.length > 0 },
     {
       id: "task",
-      complete: state.tasks.some((task) => task.enabled === true),
+      complete: state.tasks.some(
+        (task) => task.enabled === true || task.enabled === false,
+      ),
     },
   ];
 }

@@ -210,6 +210,68 @@ it("lets visitors play immediately with optional music collapsed", async () => {
   expect(panel.classList.add).toHaveBeenCalledWith("collapsed");
 });
 
+it.each([true, false])(
+  "restores minimize labels and only moves focus out of the player (focused=%s)",
+  async (playerFocused) => {
+    const h = harness(false);
+    h.ctx.document.body.dataset.spotifyPlayer = "false";
+    const game = { inert: false, focus: vi.fn() };
+    const toggle = {
+      hidden: true,
+      setAttribute: vi.fn(),
+      focus: vi.fn(),
+      onclick: () => {},
+    };
+    const panel = {
+      classList: { add: vi.fn(), toggle: vi.fn(() => false) },
+    };
+    const frame = { contentWindow: { postMessage: vi.fn() } };
+    Object.assign(h.nodes, {
+      experience: game,
+      "music-entrance": { hidden: false },
+      "music-toggle": toggle,
+      "music-panel": panel,
+      "music-frame": frame,
+    });
+    Object.assign(h.ctx.document, {
+      activeElement: playerFocused ? frame : game,
+    });
+    await h.run();
+    toggle.onclick();
+    expect(toggle.setAttribute).toHaveBeenLastCalledWith(
+      "aria-expanded",
+      "true",
+    );
+    panel.classList.add.mockClear();
+    toggle.setAttribute.mockClear();
+    const handler = h.ctx.window.addEventListener.mock.calls.find(
+      ([name]) => name === "message",
+    )![1];
+    const data = { type: "recoup-music-minimize" };
+    handler({ source: {}, origin: "https://example.test", data });
+    handler({ source: frame.contentWindow, origin: "https://evil.test", data });
+    expect(panel.classList.add).not.toHaveBeenCalled();
+    expect(toggle.setAttribute).not.toHaveBeenCalled();
+    expect(toggle.focus).not.toHaveBeenCalled();
+
+    handler({
+      source: frame.contentWindow,
+      origin: "https://example.test",
+      data,
+    });
+    expect(panel.classList.add).toHaveBeenCalledWith("collapsed");
+    expect(toggle.hidden).toBe(false);
+    expect(toggle.setAttribute).toHaveBeenCalledWith("aria-expanded", "false");
+    expect(toggle.setAttribute).toHaveBeenCalledWith(
+      "aria-label",
+      "Open music player",
+    );
+    expect(toggle.focus).toHaveBeenCalledTimes(playerFocused ? 1 : 0);
+    expect(game.focus).not.toHaveBeenCalled();
+    expect(h.ctx.location.reload).not.toHaveBeenCalled();
+  },
+);
+
 it("uses same-tab authorization and preserves only a local site return path", async () => {
   const h = harness(false);
   h.ctx.location.search =

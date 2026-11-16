@@ -32,7 +32,11 @@ export const answerSchema = z
               type: z.literal("representation"),
               id: identifierSchema,
               componentId: identifierSchema,
-              benefit: z.enum(["show-distribution", "navigate-time"]),
+              benefit: z.enum([
+                "show-distribution",
+                "navigate-time",
+                "select-records",
+              ]),
             })
             .strict(),
           z

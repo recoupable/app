@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import React from "react";
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -38,6 +39,7 @@ const details = {
 };
 beforeEach(() => {
   vi.clearAllMocks();
+  auth.getAccessToken.mockResolvedValue("token");
   auth.authenticated = true;
   auth.user.id = "alice";
   load.mockResolvedValue(details);
@@ -150,4 +152,91 @@ it("shows organization access outside collapsed details", async () => {
     /Includes personal and organization workspaces/,
   );
   expect(disclosure.closest("details")).toBeNull();
+});
+
+it.each(["account", "interaction", "issuer", "sign-out"])(
+  "does not submit a decision after %s changes while awaiting its token",
+  async (change) => {
+    const issuer = "https://api.example/api/oauth";
+    const view = render(<OAuthConsent issuer={issuer} interaction="first" />);
+    await screen.findByRole("button", { name: "Allow access" });
+    let finishToken!: (value: string) => void;
+    auth.getAccessToken.mockImplementationOnce(
+      () =>
+        new Promise<string>((resolve) => {
+          finishToken = resolve;
+        }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Allow access" }));
+    if (change === "account") auth.user.id = "bob";
+    if (change === "sign-out") auth.authenticated = false;
+    view.rerender(
+      <OAuthConsent
+        issuer={
+          change === "issuer" ? "https://other.example/api/oauth" : issuer
+        }
+        interaction={change === "interaction" ? "second" : "first"}
+      />,
+    );
+    await act(async () => {
+      finishToken("late-token");
+    });
+    expect(decide).not.toHaveBeenCalled();
+  },
+);
+
+it("keeps the next interaction usable while the old decision is pending or fails", async () => {
+  const issuer = "https://api.example/api/oauth";
+  const view = render(<OAuthConsent issuer={issuer} interaction="first" />);
+  await screen.findByRole("button", { name: "Allow access" });
+  let failDecision!: (error: Error) => void;
+  decide.mockImplementationOnce(
+    () =>
+      new Promise((_, reject) => {
+        failDecision = reject;
+      }),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Allow access" }));
+  await waitFor(() => expect(decide).toHaveBeenCalledTimes(1));
+  load.mockResolvedValue({
+    ...details,
+    clientName: "Next agent",
+    csrf: "next-nonce",
+  });
+  view.rerender(<OAuthConsent issuer={issuer} interaction="second" />);
+  await screen.findByText("Next agent");
+  expect(
+    (screen.getByRole("button", { name: "Allow access" }) as HTMLButtonElement)
+      .disabled,
+  ).toBe(false);
+  await act(async () => {
+    failDecision(new Error("Old decision failed"));
+  });
+  expect(screen.queryByRole("alert")).toBeNull();
+  expect(screen.getByRole("button", { name: "Allow access" })).toBeDefined();
+});
+
+it("does not redirect for a decision belonging to the previous interaction", async () => {
+  const issuer = "https://api.example/api/oauth";
+  const view = render(<OAuthConsent issuer={issuer} interaction="first" />);
+  await screen.findByRole("button", { name: "Allow access" });
+  let finishDecision!: (url: string) => void;
+  decide.mockImplementationOnce(
+    () =>
+      new Promise<string>((resolve) => {
+        finishDecision = resolve;
+      }),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Allow access" }));
+  await waitFor(() => expect(decide).toHaveBeenCalledTimes(1));
+  view.rerender(<OAuthConsent issuer={issuer} interaction="second" />);
+  const originalUrl = window.location.href;
+  try {
+    await act(async () => {
+      finishDecision("#stale-consent-response");
+    });
+    expect(window.location.href).toBe(originalUrl);
+  } finally {
+    window.history.replaceState(null, "", originalUrl);
+  }
 });

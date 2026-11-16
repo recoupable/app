@@ -12,8 +12,18 @@ describe("findExistingWeeklyReportTask", () => {
     expect(findExistingWeeklyReportTask([existing])?.id).toBe("abc");
   });
 
-  it("ignores disabled tasks — a paused schedule is not an active report", () => {
+  it("ignores disabled tasks by default — the home module shows running reports", () => {
     expect(findExistingWeeklyReportTask([task({ enabled: false })])).toBeNull();
+  });
+
+  // "Turn off" pauses the auto-created report (recoupable/app#1941); setup
+  // must show it rather than pre-run and create another one.
+  it("falls back to a paused task for setup, so a turned-off report is not recreated", () => {
+    expect(
+      findExistingWeeklyReportTask([task({ id: "off", enabled: false })], {
+        includePaused: true,
+      })?.id,
+    ).toBe("off");
   });
 
   it("returns null for an empty or missing list, so first-run still pre-runs", () => {

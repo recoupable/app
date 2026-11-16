@@ -6,6 +6,8 @@ import { selectPresentation } from "@/lib/intelligent-ui/presentation/selectPres
 import { describeConcentration } from "@/lib/intelligent-ui/representations/describeConcentration";
 import { getRepresentationText } from "@/lib/intelligent-ui/representations/getRepresentationText";
 import { getTimelineStateKey } from "@/lib/intelligent-ui/representations/getTimelineStateKey";
+import CollectionView from "./CollectionView";
+import { getCollectionText } from "@/lib/intelligent-ui/representations/getCollectionText";
 import MarkdownPart from "./MarkdownPart";
 import DistributionView from "./DistributionView";
 import TimelineView from "./TimelineView";
@@ -13,7 +15,7 @@ import TimelineView from "./TimelineView";
 export default function AnswerRenderer({
   surface,
   onInspectEvidence,
-  capabilities = { distribution: true, timeline: true },
+  capabilities = { distribution: true, timeline: true, collection: true },
   resolveAudioAsset,
   stateScope,
 }: {
@@ -91,6 +93,15 @@ export default function AnswerRenderer({
         const component = surface.components.find(
           (item) => item.id === part.componentId,
         );
+        if (decision.mode === "text" && component?.type === "collection")
+          return (
+            <p
+              key={part.id}
+              className="whitespace-pre-wrap text-sm leading-7 [overflow-wrap:anywhere]"
+            >
+              {getCollectionText(component)}
+            </p>
+          );
         if (decision.mode === "text")
           return component &&
             (component.type === "distribution" ||
@@ -99,6 +110,18 @@ export default function AnswerRenderer({
               {getRepresentationText(component)}
             </p>
           ) : null;
+        if (decision.component.type === "collection")
+          return (
+            <CollectionView
+              key={JSON.stringify([
+                scope,
+                surface.id,
+                decision.component,
+                surface.evidence,
+              ])}
+              component={decision.component}
+            />
+          );
         if (decision.component.type === "distribution")
           return (
             <DistributionView key={part.id} component={decision.component} />

@@ -19,7 +19,7 @@ const CatalogTaskSetup = ({ catalogId }: CatalogTaskSetupProps) => {
     missing: "This catalog is no longer available to this account.",
     workspace:
       "This catalog isn't available in the selected workspace. Switch to its workspace and try again.",
-    unsupported: `Weekly reports for “${catalogName}” aren't available yet. The current weekly report follows one artist's discography and can't preserve this catalog's exact scope.`,
+    unsupported: `Weekly reports for “${catalogName}” aren't available yet. The current monthly report follows one artist's discography and can't preserve this catalog's exact scope.`,
   }[state];
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-8">

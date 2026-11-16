@@ -29,4 +29,11 @@ export const conversationExamples: ConversationExample[] = [
     scenarioId: "supplier",
     prompt: "Which supplier makes sense for 500 studio bags?",
   },
+  {
+    id: "select-records",
+    label: "Select records",
+    scenarioId: "collection",
+    prompt:
+      "Let me mark the recordings I want to inspect in this supplied table.",
+  },
 ];
