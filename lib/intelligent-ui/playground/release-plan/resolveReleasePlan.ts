@@ -1,3 +1,4 @@
+import { DATE_YEAR_RANGE } from "./limits";
 import { calendarDate } from "./calendarDate";
 import {
   releasePlanEditsSchema,
@@ -27,7 +28,7 @@ export function resolveReleasePlan(input: unknown): ResolvedPlan {
       task.anchor === "release" ? edits.releaseDate : visit(task.anchor).date;
     const proposedDate = calendarDate(anchorDate, task.offsetDays);
     if (!proposedDate)
-      throw new Error(`${taskLabels[id]} falls outside 1900–2100.`);
+      throw new Error(`${taskLabels[id]} falls outside ${DATE_YEAR_RANGE}.`);
     const date = task.manualDate ?? proposedDate;
     if (date > edits.releaseDate)
       conflicts.push(

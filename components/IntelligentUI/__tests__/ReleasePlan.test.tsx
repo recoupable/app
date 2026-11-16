@@ -34,6 +34,25 @@ const save = () =>
   fireEvent.click(screen.getByRole("button", { name: "Save local version" }));
 
 describe("local release plan editor", () => {
+  it("exposes the supported date and offset bounds on every native input", () => {
+    const { container } = render(<ReleasePlanLab />);
+    const dates = container.querySelectorAll('input[type="date"]');
+    expect(dates).toHaveLength(4);
+    for (const input of dates) {
+      expect(input.getAttribute("min")).toBe("1900-01-01");
+      expect(input.getAttribute("max")).toBe("2100-12-31");
+    }
+    const offsets = container.querySelectorAll('input[type="number"]');
+    expect(offsets).toHaveLength(3);
+    for (const input of offsets) {
+      expect(input.getAttribute("min")).toBe("-365");
+      expect(input.getAttribute("max")).toBe("365");
+      expect(input.getAttribute("step")).toBe("1");
+    }
+    expect(
+      screen.getByText(/Offsets range from −365 to 365 days/),
+    ).toBeTruthy();
+  });
   it("requires review before saving, invalidates review on edit and restores exact saved edits after remount", () => {
     const view = render(<ReleasePlanLab />);
     expect(

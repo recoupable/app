@@ -1,3 +1,4 @@
+import { DATE_RANGE_MESSAGE, MIN_OFFSET_DAYS, MAX_OFFSET_DAYS } from "./limits";
 import { z } from "zod";
 import { calendarDate } from "./calendarDate";
 
@@ -5,7 +6,7 @@ export const taskIds = ["artwork", "documentation", "review"] as const;
 export const dateSchema = z
   .string()
   .refine((date) => calendarDate(date) !== null, {
-    message: "Use a real calendar date from 1900 through 2100.",
+    message: DATE_RANGE_MESSAGE,
   });
 const zoneSchema = z
   .string()
@@ -24,7 +25,7 @@ const taskSchema = z
   .object({
     id: z.enum(taskIds),
     anchor: z.enum(["release", ...taskIds]),
-    offsetDays: z.number().int().min(-365).max(365),
+    offsetDays: z.number().int().min(MIN_OFFSET_DAYS).max(MAX_OFFSET_DAYS),
     manualDate: dateSchema.nullable(),
   })
   .strict();

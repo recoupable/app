@@ -1,3 +1,9 @@
+import {
+  MIN_DATE,
+  MAX_DATE,
+  MIN_OFFSET_DAYS,
+  MAX_OFFSET_DAYS,
+} from "@/lib/intelligent-ui/playground/release-plan/limits";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -56,8 +62,8 @@ export default function ReleasePlanTaskFields({
                 <Input
                   id={`offset-${task.id}`}
                   type="number"
-                  min={-365}
-                  max={365}
+                  min={MIN_OFFSET_DAYS}
+                  max={MAX_OFFSET_DAYS}
                   step={1}
                   value={Number.isNaN(task.offsetDays) ? "" : task.offsetDays}
                   onChange={(event) =>
@@ -74,8 +80,8 @@ export default function ReleasePlanTaskFields({
               <Input
                 id={`manual-${task.id}`}
                 type="date"
-                min="1900-01-01"
-                max="2100-12-31"
+                min={MIN_DATE}
+                max={MAX_DATE}
                 value={task.manualDate ?? ""}
                 onChange={(event) =>
                   update({ manualDate: event.target.value || null })

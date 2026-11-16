@@ -7,7 +7,7 @@ import { getReleasePlanKey } from "../getReleasePlanKey";
 import { readReleasePlan } from "../readReleasePlan";
 import { saveReleasePlan } from "../saveReleasePlan";
 import { getReleasePlanText } from "../getReleasePlanText";
-import type { PlanStorage } from "../types";
+import { dateSchema, type PlanStorage } from "../types";
 
 function setup() {
   const values = new Map<string, string>();
@@ -56,6 +56,7 @@ describe("date-only release planning", () => {
     "01/02/2026",
     "2026-03-08T00:00:00Z",
     "1899-12-31",
+    "2101-01-01",
   ])("rejects invalid date %s", (date) =>
     expect(calendarDate(date)).toBeNull(),
   );
@@ -64,6 +65,24 @@ describe("date-only release planning", () => {
     fixture.initial.releaseDate = "1900-01-01";
     expect(() => resolveReleasePlan(fixture.initial)).toThrow("outside");
     expect(calendarDate("2100-12-31", 1)).toBeNull();
+    expect(calendarDate("1900-01-01", -1)).toBeNull();
+  });
+  it.each(["1900-01-01", "2100-12-31"])(
+    "accepts the inclusive date boundary %s",
+    (date) => {
+      expect(calendarDate(date)).toBe(date);
+      expect(dateSchema.parse(date)).toBe(date);
+    },
+  );
+  it.each([
+    [-365, "2025-11-20"],
+    [365, "2027-11-20"],
+  ])("resolves the inclusive offset boundary %i", (offsetDays, expected) => {
+    const { fixture } = setup();
+    fixture.initial.tasks[0].offsetDays = offsetDays as number;
+    const result = resolveReleasePlan(fixture.initial);
+    expect(result.tasks[0].date).toBe(expected);
+    expect(result.conflicts.length).toBe(offsetDays === 365 ? 1 : 0);
   });
   it("preserves manual dates and follows their actual date for dependent tasks", () => {
     const { fixture } = setup();

@@ -13,11 +13,14 @@ source is visible in the editor. No private intake or customer data is used.
 
 ## Dates, dependencies and review
 
-Dates are ISO Gregorian calendar dates, 1900–2100, with an explicit IANA timezone
+Dates are ISO Gregorian calendar dates within `MIN_DATE`–`MAX_DATE`, defined in
+[`limits.ts`](./limits.ts), with an explicit IANA timezone
 (or UTC). They have no time of day or instant. Offset calculations use UTC calendar
 fields as a date carrier, never host-local parsing or elapsed 24-hour arithmetic.
 Weekends count; changing the timezone does not shift dates. DST does not change the
-number of planning days. Task offsets are integers from −365 through 365.
+number of planning days. Task offsets are integers within `MIN_OFFSET_DAYS`–
+`MAX_OFFSET_DAYS` from that same module. Native input attributes, validation,
+calendar arithmetic and displayed bounds all use these constants.
 
 Three known task IDs form a small dependency graph. A date is relative to the
 release date or another task's effective date. Unknown/missing/duplicate tasks,
@@ -73,8 +76,10 @@ review invalidation, fallback and development gating. Run:
 pnpm exec vitest run lib/intelligent-ui/playground/release-plan components/IntelligentUI/__tests__/ReleasePlan.test.tsx components/IntelligentUI/__tests__/Playground.test.tsx
 ```
 
-Native keyboard/focus, date-control behavior, small-screen/zoom layout, screen-reader
-announcements and real-browser reload/session-storage behavior remain pending. No
-browser/CUA, listener, build or deployment is part of this source slice. The Docs
-native lease remains held. Root owns final qualification and merge; local tests do
-not establish full #2212 acceptance or backend persistence authority.
+Current source reviews, CI and commit-bound native acceptance are tracked in
+[App PR #2391](https://github.com/recoupable/app/pull/2391). Revalidate the affected
+keyboard/focus, date-control, layout and local-storage paths after source changes;
+old browser evidence is not automatically proof for a successor commit. Unit tests
+do not establish screen-reader speech, true browser tab duplication, full #2212
+acceptance or backend persistence authority. Final qualification and merge remain
+with the coordinating review.
