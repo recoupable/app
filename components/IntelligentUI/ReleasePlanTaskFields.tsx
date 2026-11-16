@@ -39,7 +39,7 @@ export default function ReleasePlanTaskFields({
                   onChange={(event) =>
                     update({ anchor: event.target.value as typeof task.anchor })
                   }
-                  className="min-h-11 w-full rounded-md border border-input bg-background px-2 text-base focus-visible:ring-2 focus-visible:ring-ring"
+                  className="min-h-11 w-full rounded-md border border-muted-foreground bg-background px-2 text-base focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <option value="release">Release date</option>
                   {taskIds
@@ -63,7 +63,7 @@ export default function ReleasePlanTaskFields({
                   onChange={(event) =>
                     update({ offsetDays: event.target.valueAsNumber })
                   }
-                  className="min-h-11 focus-visible:ring-2 focus-visible:ring-ring"
+                  className="min-h-11 border-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
             </div>
@@ -80,7 +80,7 @@ export default function ReleasePlanTaskFields({
                 onChange={(event) =>
                   update({ manualDate: event.target.value || null })
                 }
-                className="min-h-11 focus-visible:ring-2 focus-visible:ring-ring"
+                className="min-h-11 border-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
               />
               <p className="text-sm text-muted-foreground">
                 A manual date stays fixed. Clear it to follow the offset again.

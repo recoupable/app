@@ -100,7 +100,7 @@ export default function ReleasePlanEditor({
               onChange={(event) =>
                 editor.update({ ...editor.edits, goal: event.target.value })
               }
-              className="min-h-11 focus-visible:ring-2 focus-visible:ring-ring"
+              className="min-h-11 border-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -118,7 +118,7 @@ export default function ReleasePlanEditor({
                     releaseDate: event.target.value,
                   })
                 }
-                className="min-h-11 focus-visible:ring-2 focus-visible:ring-ring"
+                className="min-h-11 border-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
             <div className="space-y-2">
@@ -134,7 +134,7 @@ export default function ReleasePlanEditor({
                   })
                 }
                 aria-describedby="zone-help"
-                className="min-h-11 focus-visible:ring-2 focus-visible:ring-ring"
+                className="min-h-11 border-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
               />
               <p id="zone-help" className="text-sm text-muted-foreground">
                 For example, America/New_York or UTC.
