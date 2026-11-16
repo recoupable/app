@@ -5,6 +5,7 @@ const reference = z.object({ source_id: id, version: id }).strict();
 const common = z
   .object({
     id,
+    withheld: z.literal(false).optional(),
     summary: z.string().max(32000).optional(),
     evidence_gap: z.string().max(32000).optional(),
     depends_on: z.array(id).optional(),
@@ -64,7 +65,7 @@ export const collections = [
   "outcomes",
 ] as const;
 
-const receiptSchema = z
+export const receiptSchema = z
   .object({
     case_id: z.string().uuid(),
     revision: z.number().int().positive(),
@@ -105,102 +106,6 @@ export const pageSchema = z
   );
 export type AuditPage = z.infer<typeof pageSchema>;
 
-export function validateSnapshot(snapshot: AuditSnapshot, workspaceId: string) {
-  if (snapshot.workspace_id.toLowerCase() !== workspaceId.toLowerCase())
-    throw new Error("Unexpected workspace");
-  const ids = new Set<string>();
-  for (const name of collections)
-    for (const [key, entry] of Object.entries(snapshot[name])) {
-      if (entry.id !== key || ids.has(key))
-        throw new Error("Invalid audit record");
-      ids.add(key);
-      if (entry.withheld === true) continue;
-      if (name !== "sources") {
-        const record = entry as AuditAssessment;
-        if (!record.source_refs.length && !record.evidence_gap)
-          throw new Error("Missing evidence gap");
-        for (const ref of record.source_refs) {
-          const evidence = snapshot.sources[ref.source_id];
-          if (
-            !evidence ||
-            (!record.stale &&
-              (evidence.withheld === true ||
-                evidence.status !== "active" ||
-                evidence.version !== ref.version))
-          )
-            throw new Error("Invalid evidence reference");
-        }
-      }
-    }
-}
-
-export function parsePrepared(
-  raw: unknown,
-  workspaceId: string,
-  briefId: string,
-) {
-  const result = z
-    .object({
-      state: z.literal("prepared"),
-      persisted: z.literal(false),
-      external_actions: z.literal("unsupported"),
-      snapshot: snapshotSchema,
-    })
-    .strict()
-    .parse(raw);
-  validateSnapshot(result.snapshot, workspaceId);
-  const initial = result.snapshot.assessments["assessment:context"] as
-    | AuditAssessment
-    | undefined;
-  if (
-    result.snapshot.revision !== 0 ||
-    !initial ||
-    initial.withheld === true ||
-    initial.stage !== "audit" ||
-    initial.status !== "partial" ||
-    initial.rule_version !== "context-catalog-audit-v1" ||
-    typeof initial.data?.brief_id !== "string" ||
-    initial.data.brief_id.toLowerCase() !== briefId.toLowerCase() ||
-    typeof initial.summary !== "string" ||
-    initial.source_refs.length !==
-      Object.keys(result.snapshot.sources).length ||
-    new Set(initial.source_refs.map((ref) => ref.source_id)).size !==
-      initial.source_refs.length ||
-    collections.some((name) =>
-      Object.values(result.snapshot[name]).some(
-        (record) => record.withheld === true,
-      ),
-    )
-  )
-    throw new Error("Invalid prepared audit");
-  return result.snapshot;
-}
-
-export function parseReceipt(
-  raw: unknown,
-  workspaceId: string,
-  caseId: string,
-  revision?: number,
-) {
-  const result = receiptSchema.parse(raw);
-  validateSnapshot(result.snapshot, workspaceId);
-  const withheldIds = collections
-    .flatMap((name) =>
-      Object.values(result.snapshot[name])
-        .filter((record) => record.withheld === true)
-        .map((record) => record.id),
-    )
-    .sort();
-  if (
-    result.case_id.toLowerCase() !== caseId.toLowerCase() ||
-    result.snapshot.case_id.toLowerCase() !== caseId.toLowerCase() ||
-    result.snapshot.revision !== result.revision ||
-    (revision !== undefined && result.revision !== revision) ||
-    (result.state === "partial") !== withheldIds.length > 0 ||
-    (result.state === "partial") === result.snapshot_usable_for_save ||
-    JSON.stringify(withheldIds) !==
-      JSON.stringify([...result.withheld_record_ids].sort())
-  )
-    throw new Error("Invalid audit receipt");
-  return result;
-}
+export { validateSnapshot } from "./validateSnapshot";
+export { parsePrepared } from "./parsePrepared";
+export { parseReceipt } from "./parseReceipt";

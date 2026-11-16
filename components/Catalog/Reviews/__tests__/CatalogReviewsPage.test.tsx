@@ -481,6 +481,9 @@ describe("workspace and response boundaries", () => {
     await Promise.resolve();
     await Promise.resolve();
     expect(aborted?.aborted).toBe(true);
+    state.organizationId = organization;
+    view.rerender(<CatalogReviewsPage />);
+    await screen.findByRole("button", { name: "Prepare audit" });
     expect(screen.queryByText("Assessment summary")).toBeNull();
   });
 

@@ -14,7 +14,15 @@ export default function CatalogAuditDetails({
   saved: boolean;
 }) {
   const assessments = Object.values(snapshot.assessments).filter(
-    (record) => record.withheld !== true,
+    (record) =>
+      record.withheld !== true &&
+      (record.id === "assessment:context" ||
+        !record.depends_on?.includes("assessment:context") ||
+        (Object.prototype.hasOwnProperty.call(
+          snapshot.assessments,
+          "assessment:context",
+        ) &&
+          snapshot.assessments["assessment:context"].withheld !== true)),
   ) as AuditAssessment[];
   const sources = Object.values(snapshot.sources).filter(
     (record) => record.withheld !== true,
@@ -125,7 +133,7 @@ export default function CatalogAuditDetails({
             </li>
           ))}
         </ul>
-        {manifest.success && (
+        {manifest.success ? (
           <div className="mt-5 space-y-3">
             <h3 className="font-medium">Assessment citations</h3>
             <p className="text-xs text-muted-foreground">
@@ -138,8 +146,15 @@ export default function CatalogAuditDetails({
                 </li>
               ))}
             </ul>
+            {manifest.data.excludedTopics.length > 0 && (
+              <p>Excluded topics: {manifest.data.excludedTopics.join(", ")}</p>
+            )}
             <AssessmentEvidenceReferences documents={manifest.data.documents} />
           </div>
+        ) : (
+          <p className="mt-3">
+            Source-version details are unavailable for this assessment.
+          </p>
         )}
         {!sources.length && (
           <p className="mt-3">No source details are available.</p>

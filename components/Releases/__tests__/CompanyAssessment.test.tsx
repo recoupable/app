@@ -26,6 +26,7 @@ it("previews, saves and reopens the same workspace-scoped assessment", async () 
               snapshot: {
                 id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
                 state: "saved",
+                superseded: false,
                 brief,
               },
             },
@@ -213,6 +214,9 @@ it("keeps the save confirmation when the returned snapshot is superseded", async
   await screen.findByText(
     "Assessment saved. Keep its ID to reopen later. Newer evidence is available.",
   );
+  expect(
+    screen.queryByRole("link", { name: "Start catalog audit" }),
+  ).toBeNull();
 });
 
 const manifest = {

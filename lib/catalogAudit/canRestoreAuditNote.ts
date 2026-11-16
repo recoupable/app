@@ -1,5 +1,5 @@
 import { stableJson } from "./stableJson";
-import type { AuditAssessment, AuditSnapshot, AuditSource } from "./schemas";
+import type { AuditSnapshot } from "./schemas";
 
 /** A newer usable case may have dropped withdrawn evidence instead of redacting it. */
 export function canRestoreAuditNote(
@@ -7,7 +7,7 @@ export function canRestoreAuditNote(
   current: AuditSnapshot,
   noteId: string,
 ) {
-  const note = previous.assessments[noteId] as AuditAssessment | undefined;
+  const note = previous.assessments[noteId];
   const original = previous.assessments["assessment:context"];
   const retained = current.assessments["assessment:context"];
   if (
@@ -22,8 +22,8 @@ export function canRestoreAuditNote(
   )
     return false;
   return note.source_refs.every((ref) => {
-    const before = previous.sources[ref.source_id] as AuditSource | undefined;
-    const after = current.sources[ref.source_id] as AuditSource | undefined;
+    const before = previous.sources[ref.source_id];
+    const after = current.sources[ref.source_id];
     return (
       before &&
       after &&

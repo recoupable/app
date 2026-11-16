@@ -37,3 +37,8 @@ Existing Catalog Reviews and Company Assessment suites retain the broader scope,
 redaction, uncertain-write and unsaved-note recovery coverage. These tests add the
 released API source binding; they do not establish browser or intended-account
 acceptance.
+
+The two exported entries are independent producer scenarios, not successive reads
+of one stored brief. The producer reuses synthetic IDs across scenarios and supplies
+different topic fixtures. Their differing topics are intentional source output; do
+not rewrite one response to make it look like the other scenario's stored state.

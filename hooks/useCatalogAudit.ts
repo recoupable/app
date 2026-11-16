@@ -251,6 +251,12 @@ export function useCatalogAudit({
   };
   const open = (caseId: string) => {
     if (pending.current && pending.current.case_id !== caseId) return;
+    if (!pending.current && note.trim()) {
+      setNotice(
+        "Save or clear your unsaved note before opening another audit.",
+      );
+      return;
+    }
     return run(async () => {
       clearCurrent();
       const result = parseReceipt(

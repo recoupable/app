@@ -17,7 +17,14 @@ export default function ReleaseCasesPage() {
   const { selectedOrgId, isInitialized } = useOrganization();
   const accountId =
     authenticated && isInitialized ? (userData?.account_id ?? null) : null;
+  const sessionKey = JSON.stringify([
+    user?.id,
+    ready,
+    authenticated,
+    apiSelection,
+  ]);
   const cases = useReleaseCases({
+    sessionKey,
     accountId,
     organizationId: selectedOrgId,
     getAccessToken,
@@ -50,7 +57,7 @@ export default function ReleaseCasesPage() {
       <h1 className="font-heading text-2xl font-semibold">Releases</h1>
       {accountId && (
         <CatalogReleaseStreams
-          key={JSON.stringify([accountId, selectedOrgId])}
+          key={JSON.stringify([sessionKey, accountId, selectedOrgId])}
           accountId={accountId}
           organizationId={selectedOrgId}
           getAccessToken={getAccessToken}
@@ -68,7 +75,7 @@ export default function ReleaseCasesPage() {
           Refresh list
         </Button>
         <ReleaseIntakeForm
-          key={JSON.stringify([accountId, selectedOrgId])}
+          key={JSON.stringify([sessionKey, accountId, selectedOrgId])}
           disabled={!accountId || cases.busy}
           onAdd={cases.add}
         />

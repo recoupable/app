@@ -62,11 +62,18 @@ export default function CatalogReviewsPage() {
         <p role="alert">
           Catalog reviews use this app’s configured Context connection. Clear
           the API override to review catalogs.
+          <Link
+            className="ml-2 underline"
+            href={`?${new URLSearchParams([...query.entries()].filter(([key]) => key !== "api").concat([["api", "clear"]])).toString()}`}
+          >
+            Clear API override
+          </Link>
         </p>
       ) : invalid ? (
         <p role="alert">
-          This assessment link belongs to a different or unresolved workspace.
-          Select the original workspace, or open Catalog reviews from Catalogs.
+          This assessment link is invalid or belongs to a different or
+          unresolved workspace. Select the original workspace, or open Catalog
+          reviews from Catalogs.
         </p>
       ) : (
         <CatalogAuditWorkspace

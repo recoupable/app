@@ -60,15 +60,17 @@ function CompanyAssessmentSession({
             : "Save assessment snapshot"}
         </Button>
       </div>
-      {assessment.savedId && assessment.snapshot?.state === "saved" && (
-        <Button asChild variant="outline">
-          <Link
-            href={`/catalogs/reviews?${new URLSearchParams({ assessment: assessment.savedId, workspace: organizationId ?? "personal" })}`}
-          >
-            Start catalog audit
-          </Link>
-        </Button>
-      )}
+      {assessment.savedId &&
+        assessment.snapshot?.state === "saved" &&
+        assessment.snapshot.superseded === false && (
+          <Button asChild variant="outline">
+            <Link
+              href={`/catalogs/reviews?${new URLSearchParams({ assessment: assessment.savedId, workspace: organizationId ?? "personal" })}`}
+            >
+              Start catalog audit
+            </Link>
+          </Button>
+        )}
       {assessment.brief && (
         <div className="space-y-3">
           <div className="rounded-xl bg-muted/50 p-4">

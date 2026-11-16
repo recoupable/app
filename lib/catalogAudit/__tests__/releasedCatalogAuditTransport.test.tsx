@@ -35,6 +35,10 @@ function receipt(snapshot: AuditSnapshot) {
 }
 function install(upstream: (body: Body) => unknown | Promise<unknown>) {
   const payloads: string[] = [];
+  const assertionErrors: unknown[] = [];
+  afterEach(() => {
+    if (assertionErrors.length) throw assertionErrors[0];
+  });
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string, init: RequestInit) => {
@@ -49,17 +53,25 @@ function install(upstream: (body: Body) => unknown | Promise<unknown>) {
           }),
         );
       }
-      expect(url).toBe(`${api}/api/context`);
-      expect(init.cache).toBe("no-store");
-      expect(init.redirect).toBe("error");
-      const headers = new Headers(init.headers);
-      expect(headers.get("authorization")).toBe("Bearer synthetic-token");
-      expect(headers.has("cookie")).toBe(false);
-      const text = new TextDecoder().decode(init.body as ArrayBuffer);
-      payloads.push(text);
-      const body = JSON.parse(text) as Body;
-      expect(body.organization_id).toBe(owner);
-      expect(body).not.toHaveProperty("account_id");
+      try {
+        expect(url).toBe(`${api}/api/context`);
+        expect(init.cache).toBe("no-store");
+        expect(init.redirect).toBe("error");
+        const headers = new Headers(init.headers);
+        expect(headers.get("authorization")).toBe("Bearer synthetic-token");
+        expect(headers.has("cookie")).toBe(false);
+        const text = new TextDecoder().decode(init.body as ArrayBuffer);
+        payloads.push(text);
+        const body = JSON.parse(text) as Body;
+        expect(body.organization_id).toBe(owner);
+        expect(body).not.toHaveProperty("account_id");
+      } catch (error) {
+        assertionErrors.push(error);
+        throw error;
+      }
+      const body = JSON.parse(
+        new TextDecoder().decode(init.body as ArrayBuffer),
+      ) as Body;
       const result = await upstream(body);
       return result instanceof Response ? result : Response.json(result);
     }),
@@ -240,6 +252,12 @@ it.each([503, 401, 403])(
     });
     act(() => result.current.setNote("Keep this unsaved note"));
     const before = result.current.snapshot;
+    await act(async () => {
+      await result.current.open(original.case_id);
+    });
+    expect(result.current.snapshot).toEqual(before);
+    expect(result.current.note).toBe("Keep this unsaved note");
+    expect(result.current.notice).toContain("Save or clear your unsaved note");
     await act(async () => {
       await result.current.loadList();
     });
