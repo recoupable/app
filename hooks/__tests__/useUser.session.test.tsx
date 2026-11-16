@@ -110,9 +110,44 @@ it("ignores a profile-save result after switching actors", async () => {
   await waitFor(() =>
     expect(result.current.userData?.account_id).toBe("account-b"),
   );
+  act(() => result.current.setName("Actor B unsaved edit"));
   await act(async () => {
     finish({ account_id: "account-a" });
     await saving;
   });
   expect(result.current.userData?.account_id).toBe("account-b");
+  expect(result.current.name).toBe("Actor B unsaved edit");
+});
+it("hides every previous-actor profile field before the next bootstrap resolves", async () => {
+  state.ensure
+    .mockResolvedValueOnce({
+      account_id: "account-a",
+      name: "Private A",
+      image: "private-image",
+      instruction: "private-instruction",
+      organization: "private-org",
+      job_title: "private-job",
+      role_type: "private-role",
+      company_name: "private-company",
+    })
+    .mockImplementationOnce(() => new Promise(() => {}));
+  const { result, rerender } = renderHook(() => useUser());
+  await waitFor(() => expect(result.current.name).toBe("Private A"));
+  act(() => result.current.setIsModalOpen(true));
+  const staleSetName = result.current.setName;
+  state.id = "actor-b";
+  rerender();
+  for (const field of [
+    "name",
+    "image",
+    "instruction",
+    "organization",
+    "jobTitle",
+    "roleType",
+    "companyName",
+  ] as const)
+    expect(result.current[field]).toBe("");
+  expect(result.current.isModalOpen).toBe(false);
+  act(() => staleSetName("Late actor A edit"));
+  expect(result.current.name).toBe("");
 });
