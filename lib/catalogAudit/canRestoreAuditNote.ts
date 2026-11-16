@@ -1,3 +1,4 @@
+import { stableJson } from "./stableJson";
 import type { AuditAssessment, AuditSnapshot, AuditSource } from "./schemas";
 
 /** A newer usable case may have dropped withdrawn evidence instead of redacting it. */
@@ -17,7 +18,7 @@ export function canRestoreAuditNote(
     original.withheld === true ||
     retained.withheld === true ||
     retained.stale ||
-    JSON.stringify(original) !== JSON.stringify(retained)
+    stableJson(original) !== stableJson(retained)
   )
     return false;
   return note.source_refs.every((ref) => {

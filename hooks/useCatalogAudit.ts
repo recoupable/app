@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { NEW_API_BASE_URL } from "@/lib/consts";
 import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import { canRestoreAuditNote } from "@/lib/catalogAudit/canRestoreAuditNote";
 import { canContinueAudit } from "@/lib/catalogAudit/canContinueAudit";
@@ -76,7 +77,10 @@ export function useCatalogAudit({
     };
   }, []);
   const isCurrent = useCallback(
-    () => active.current && getClientApiBaseUrl() === apiSelection,
+    () =>
+      active.current &&
+      apiSelection === NEW_API_BASE_URL.replace(/\/+$/, "") &&
+      getClientApiBaseUrl() === apiSelection,
     [apiSelection],
   );
   const request = useCallback(
@@ -135,7 +139,11 @@ export function useCatalogAudit({
     setSaved(false);
     setNote("");
   };
-  const run = async (operation: () => Promise<void>, saving = false) => {
+  const run = async (
+    operation: () => Promise<void>,
+    saving = false,
+    listOnly = false,
+  ) => {
     if (inFlight.current || !isCurrent()) return;
     const epoch = generation.current;
     inFlight.current = true;
@@ -150,6 +158,12 @@ export function useCatalogAudit({
         status === 401 ||
         status === 403 ||
         (saving && (status === 400 || status === 422));
+      if (listOnly && status !== 401 && status !== 403) {
+        setNotice(
+          "Saved audits could not be refreshed. Your open audit and draft are unchanged. Try again.",
+        );
+        return;
+      }
       clearCurrent();
       // A successful HTTP response can still lose its receipt. Catalog 409 also
       // covers storage failures, not just CAS conflicts: retain the frozen write.
@@ -188,26 +202,30 @@ export function useCatalogAudit({
     }
   };
   const loadList = (after?: string) =>
-    run(async () => {
-      const result = pageSchema.parse(
-        await request({
-          action: "list_catalog_cases",
-          limit: 50,
-          ...(after ? { after_id: after } : {}),
-        }),
-      );
-      if (
-        after &&
-        result.cases.some(
-          (item) =>
-            item.case_id === after ||
-            items.some((old) => old.case_id === item.case_id),
+    run(
+      async () => {
+        const result = pageSchema.parse(
+          await request({
+            action: "list_catalog_cases",
+            limit: 50,
+            ...(after ? { after_id: after } : {}),
+          }),
+        );
+        if (
+          after &&
+          result.cases.some(
+            (item) =>
+              item.case_id === after ||
+              items.some((old) => old.case_id === item.case_id),
+          )
         )
-      )
-        throw new Error("Repeated catalog page");
-      setItems(after ? [...items, ...result.cases] : result.cases);
-      setNextId(result.next_id);
-    });
+          throw new Error("Repeated catalog page");
+        setItems(after ? [...items, ...result.cases] : result.cases);
+        setNextId(result.next_id);
+      },
+      false,
+      true,
+    );
   // This component remounts for every actor/session/workspace/connection change.
   useEffect(() => {
     void loadList();

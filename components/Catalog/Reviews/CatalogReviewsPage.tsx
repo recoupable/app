@@ -1,4 +1,5 @@
 "use client";
+import { NEW_API_BASE_URL } from "@/lib/consts";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
@@ -57,7 +58,12 @@ export default function CatalogReviewsPage() {
           off.
         </p>
       </div>
-      {invalid ? (
+      {apiSelection !== NEW_API_BASE_URL.replace(/\/+$/, "") ? (
+        <p role="alert">
+          Catalog reviews use this app’s configured Context connection. Clear
+          the API override to review catalogs.
+        </p>
+      ) : invalid ? (
         <p role="alert">
           This assessment link belongs to a different or unresolved workspace.
           Select the original workspace, or open Catalog reviews from Catalogs.

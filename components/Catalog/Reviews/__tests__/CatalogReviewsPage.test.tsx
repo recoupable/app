@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { NEW_API_BASE_URL } from "@/lib/consts";
 import React from "react";
 import {
   cleanup,
@@ -168,7 +169,7 @@ beforeEach(() => {
   state.accountId = account;
   state.organizationId = organization;
   state.initialized = true;
-  state.api = "https://api.example";
+  state.api = NEW_API_BASE_URL;
   state.query = `assessment=${brief}&workspace=${organization}`;
   state.token.mockReset().mockResolvedValue("token");
 });

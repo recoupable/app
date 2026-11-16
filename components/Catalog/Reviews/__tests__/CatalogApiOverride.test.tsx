@@ -76,67 +76,73 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it.each(["override", "clear"])(
-  "loads after %s query synchronizes later than the initial page render",
-  async (mode) => {
-    if (mode === "clear")
-      window.sessionStorage.setItem(
-        API_OVERRIDE_STORAGE_KEY,
-        "https://old-preview.example",
-      );
-    applyQuery(mode);
-    const fetcher = vi.fn(async (url, init) => {
-      // The override only invalidates scope; it never receives credentials or Context requests.
-      expect(url).toBe("/api/context");
-      expect(init.headers.Authorization).toBe("Bearer token");
-      return Response.json(page(freshId));
-    });
-    vi.stubGlobal("fetch", fetcher);
-    render(<Harness />);
-    await screen.findByRole("button", { name: /Audit bbbbbbbb/ });
-    expect(getClientApiBaseUrl()).toBe(
-      mode === "clear" ? NEW_API_BASE_URL : "https://preview.example",
-    );
-    expect(screen.queryByText("Loading audit…")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
-    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
-  },
-);
+it("blocks requests when an override synchronizes after the page render", async () => {
+  applyQuery("override");
+  const fetcher = vi.fn();
+  vi.stubGlobal("fetch", fetcher);
+  render(<Harness />);
+  await screen.findByText(/Clear the API override/);
+  expect(fetcher).not.toHaveBeenCalled();
+  expect(screen.queryByRole("button", { name: "Refresh" })).toBeNull();
+});
 
-it.each(["override", "clear"])(
-  "aborts stale reads and lists again after a live %s query update",
-  async (mode) => {
-    if (mode === "clear")
-      window.sessionStorage.setItem(
-        API_OVERRIDE_STORAGE_KEY,
-        "https://old-preview.example",
-      );
-    let resolve!: (value: Response) => void;
-    let staleSignal: AbortSignal | undefined;
-    let calls = 0;
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async (url, init) => {
-        expect(url).toBe("/api/context");
-        if (++calls === 1) {
-          staleSignal = init.signal;
-          return new Promise<Response>((done) => {
-            resolve = done;
-          });
-        }
-        return Response.json(page(freshId));
-      }),
-    );
-    const view = render(<Harness />);
-    await waitFor(() => expect(calls).toBe(1));
-    applyQuery(mode);
-    view.rerender(<Harness />);
-    await screen.findByRole("button", { name: /Audit bbbbbbbb/ });
-    expect(staleSignal?.aborted).toBe(true);
-    await act(async () => resolve(Response.json(page(staleId))));
-    expect(screen.queryByRole("button", { name: /Audit cccccccc/ })).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
-    await waitFor(() => expect(calls).toBe(3));
-    expect(screen.queryByText("Loading audit…")).toBeNull();
-  },
-);
+it("loads through the configured proxy after clearing a stored override", async () => {
+  window.sessionStorage.setItem(
+    API_OVERRIDE_STORAGE_KEY,
+    "https://old-preview.example",
+  );
+  applyQuery("clear");
+  const fetcher = vi.fn(async (url, init) => {
+    expect(url).toBe("/api/context");
+    expect(init.headers.Authorization).toBe("Bearer token");
+    return Response.json(page(freshId));
+  });
+  vi.stubGlobal("fetch", fetcher);
+  render(<Harness />);
+  await screen.findByRole("button", { name: /Audit bbbbbbbb/ });
+  expect(getClientApiBaseUrl()).toBe(NEW_API_BASE_URL);
+  fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
+});
+
+it("aborts an in-flight default read on override and reloads only after clearing", async () => {
+  let resolve!: (value: Response) => void;
+  let staleSignal: AbortSignal | undefined;
+  const fetcher = vi.fn(async (url, init) => {
+    expect(url).toBe("/api/context");
+    if (fetcher.mock.calls.length === 1) {
+      staleSignal = init.signal;
+      return new Promise<Response>((done) => {
+        resolve = done;
+      });
+    }
+    return Response.json(page(freshId));
+  });
+  vi.stubGlobal("fetch", fetcher);
+  const view = render(<Harness />);
+  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+  applyQuery("override");
+  view.rerender(<Harness />);
+  await screen.findByText(/Clear the API override/);
+  expect(staleSignal?.aborted).toBe(true);
+  await act(async () => resolve(Response.json(page(staleId))));
+  expect(screen.queryByRole("button", { name: /Audit cccccccc/ })).toBeNull();
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  applyQuery("clear");
+  view.rerender(<Harness />);
+  await screen.findByRole("button", { name: /Audit bbbbbbbb/ });
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});
+
+it("permits an override equal to the normal client default", async () => {
+  window.sessionStorage.setItem(
+    API_OVERRIDE_STORAGE_KEY,
+    NEW_API_BASE_URL + "/",
+  );
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => Response.json(page(freshId))),
+  );
+  render(<Harness />);
+  await screen.findByRole("button", { name: /Audit bbbbbbbb/ });
+});

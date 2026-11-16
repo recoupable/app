@@ -7,6 +7,10 @@ import { parsePrepared, parseReceipt, type AuditSnapshot } from "../schemas";
 import fixture from "./fixtures/released-catalog-audit.json";
 
 const api = "https://api.fixture.invalid";
+vi.mock("@/lib/consts", () => ({
+  NEW_API_BASE_URL: "https://api.fixture.invalid",
+  API_PUBLIC_BASE_URL: "https://api.fixture.invalid",
+}));
 vi.mock("@/lib/api/getClientApiBaseUrl", () => ({
   getClientApiBaseUrl: () => "https://api.fixture.invalid",
 }));
@@ -214,3 +218,34 @@ it("accepts an equivalent mixed-case brief UUID without rewriting retained evide
     parsePrepared(response, owner, "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"),
   ).toThrow("Invalid prepared audit");
 });
+
+it.each([503, 401, 403])(
+  "handles list failure %s without losing drafts except on auth loss",
+  async (status) => {
+    let lists = 0;
+    install((body) => {
+      if (body.action === "list_catalog_cases")
+        return ++lists === 1 ? emptyPage : new Response(null, { status });
+      if (body.action === "prepare_catalog_audit")
+        return fixture.prepare.response;
+      return receipt({ ...(body.snapshot as AuditSnapshot), revision: 1 });
+    });
+    const { result } = mount();
+    await waitFor(() => expect(result.current.busy).toBe(false));
+    await act(async () => {
+      await result.current.prepare(briefId);
+    });
+    await act(async () => {
+      await result.current.save();
+    });
+    act(() => result.current.setNote("Keep this unsaved note"));
+    const before = result.current.snapshot;
+    await act(async () => {
+      await result.current.loadList();
+    });
+    expect(result.current.snapshot).toEqual(status === 503 ? before : null);
+    expect(result.current.note).toBe(
+      status === 503 ? "Keep this unsaved note" : "",
+    );
+  },
+);
