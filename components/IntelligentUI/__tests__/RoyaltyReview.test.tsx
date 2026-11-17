@@ -40,8 +40,19 @@ it("renders the supplied amounts and opens citations with keyboard focus restora
       }
     />,
   );
-  const table = screen.getByRole("table");
+  const answer = within(
+    screen.getByRole("article", { name: "Recoup response" }),
+  );
+  const table = answer.getByRole("table");
+  expect(within(table).getAllByRole("columnheader")).toHaveLength(2);
   expect(within(table).getAllByText("USD 100")).toHaveLength(2);
+  expect(
+    answer.getByText(/Statement period 2024-01-01 to 2024-03-31/),
+  ).toBeTruthy();
+  expect(
+    answer.getByText(/already reflected in the receipt amount/),
+  ).toBeTruthy();
+  expect(answer.getByText(/posted 2024-06-03/)).toBeTruthy();
   expect(within(table).getByText("USD -3")).toBeTruthy();
   expect(within(table).getByText("USD 97")).toBeTruthy();
   expect(screen.getByText("Current payable: Unknown.")).toBeTruthy();
