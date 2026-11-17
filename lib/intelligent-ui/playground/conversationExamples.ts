@@ -1,3 +1,4 @@
+import { royaltyLabel, royaltyPrompt } from "./royalty/royaltyConstants";
 import type { ScenarioId } from "./scenarios";
 
 export type ConversationExample = {
@@ -35,5 +36,11 @@ export const conversationExamples: ConversationExample[] = [
     scenarioId: "collection",
     prompt:
       "Let me mark the recordings I want to inspect in this supplied table.",
+  },
+  {
+    id: "royalty-review",
+    label: royaltyLabel,
+    scenarioId: "royalty",
+    prompt: royaltyPrompt,
   },
 ];

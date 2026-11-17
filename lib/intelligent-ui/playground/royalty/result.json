@@ -1,0 +1,108 @@
+{
+  "schema_version": "1",
+  "status": "ok",
+  "allocations": [
+    {
+      "allocation_id": "ALLOC-A",
+      "stage": "statement_to_remittance",
+      "from_id": "ST-A",
+      "to_id": "PAY-A",
+      "from_amount": "100",
+      "from_currency": "USD",
+      "to_amount": "100",
+      "to_currency": "USD",
+      "fx_rate": "1",
+      "adjustments": "0",
+      "status": "allocated_statement",
+      "evidence_refs": [
+        "synthetic-remittance:allocation-1",
+        "synthetic-remittance:page-1",
+        "synthetic-royalty:page-1"
+      ]
+    },
+    {
+      "allocation_id": "ALLOC-B",
+      "stage": "remittance_to_receipt",
+      "from_id": "PAY-A",
+      "to_id": "BANK-A",
+      "from_amount": "100",
+      "from_currency": "USD",
+      "to_amount": "97",
+      "to_currency": "USD",
+      "fx_rate": "1",
+      "adjustments": "-3",
+      "status": "verified_receipt",
+      "evidence_refs": [
+        "synthetic-bank:fee-row",
+        "synthetic-bank:reference-A",
+        "synthetic-bank:row-2",
+        "synthetic-remittance:page-1"
+      ]
+    }
+  ],
+  "completion_scope": [
+    "statement_to_remittance",
+    "remittance_to_receipt"
+  ],
+  "unverified_allocation_ids": [],
+  "unmatched_required_records": 0,
+  "missing_required_stages": [],
+  "arithmetic_limits": "Inputs <=24 coefficient/integer digits and <=18 fractional places; <=10000 records per collection; Decimal precision 128.",
+  "unresolved": [],
+  "residuals": [
+    {
+      "stage": "statement_to_remittance",
+      "side": "from",
+      "id": "ST-A",
+      "currency": "USD",
+      "amount": "100",
+      "allocated": "100",
+      "unallocated": "0",
+      "evidence_refs": [
+        "synthetic-royalty:page-1"
+      ]
+    },
+    {
+      "stage": "statement_to_remittance",
+      "side": "to",
+      "id": "PAY-A",
+      "currency": "USD",
+      "amount": "100",
+      "allocated": "100",
+      "unallocated": "0",
+      "evidence_refs": [
+        "synthetic-remittance:page-1"
+      ]
+    },
+    {
+      "stage": "remittance_to_receipt",
+      "side": "from",
+      "id": "PAY-A",
+      "currency": "USD",
+      "amount": "100",
+      "allocated": "100",
+      "unallocated": "0",
+      "evidence_refs": [
+        "synthetic-remittance:page-1"
+      ]
+    },
+    {
+      "stage": "remittance_to_receipt",
+      "side": "to",
+      "id": "BANK-A",
+      "currency": "USD",
+      "amount": "97",
+      "allocated": "97",
+      "unallocated": "0",
+      "evidence_refs": [
+        "synthetic-bank:row-2"
+      ]
+    }
+  ],
+  "verified_receipts_by_currency": {
+    "USD": "97"
+  },
+  "current_payable": null,
+  "receiving_account_access": "supplied_statement_only",
+  "limitations": "Paid labels and historical credits do not establish current payable or bank receipt. Unallocated amounts are unmatched, not automatically debts."
+}
