@@ -1,3 +1,4 @@
+import { royaltyLabel, royaltyPrompt } from "./royalty/royaltyConstants";
 import type { ScenarioId } from "./scenarios";
 
 export type ConversationExample = {
@@ -38,9 +39,8 @@ export const conversationExamples: ConversationExample[] = [
   },
   {
     id: "royalty-review",
-    label: "Royalty reconciliation",
+    label: royaltyLabel,
     scenarioId: "royalty",
-    prompt:
-      "How does this supplied royalty statement reconcile to the bank receipt, and what is payable now?",
+    prompt: royaltyPrompt,
   },
 ];

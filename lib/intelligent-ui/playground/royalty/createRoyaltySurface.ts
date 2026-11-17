@@ -1,3 +1,4 @@
+import { royaltyLabel, royaltyRevision } from "./royaltyConstants";
 import type { Surface } from "../../schema";
 import result from "./result.json";
 import { createRoyaltyEvidence } from "./createRoyaltyEvidence";
@@ -11,8 +12,8 @@ export function createRoyaltySurface(): Surface {
   return {
     schemaVersion: 1,
     id: "synthetic-royalty-review",
-    revision: 2,
-    title: "Royalty reconciliation",
+    revision: royaltyRevision,
+    title: royaltyLabel,
     description:
       "Review a pinned synthetic statement-to-receipt reconciliation.",
     context: {
@@ -27,7 +28,7 @@ export function createRoyaltySurface(): Surface {
     evidence: createRoyaltyEvidence(refs),
     fallbackText: `${opening}\n\n${amounts}\n\n${boundary}`,
     answer: {
-      revision: 2,
+      revision: royaltyRevision,
       parts: [
         {
           type: "markdown",

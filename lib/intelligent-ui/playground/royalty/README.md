@@ -9,6 +9,11 @@ payment, account connection, storage write or backend tool is added.
 `source-pin.json` identifies the Skills producer revision and input/script hashes.
 This is a deliberately narrow static fixture adapter, not a parser for arbitrary
 producer output. The independent Catalog work owns producer qualification.
+The fixed result passes the pinned v1 consumer acceptance schema. Hash tests
+lock the qualified input/result bytes; changing either requires explicit source
+qualification and review. The adapter accepts no runtime output or user input.
+Malformed, partial, other-version or newly repinned producer output is outside
+this example's acceptance scope. It must not be fed into this adapter.
 The evidence inspector's observation timestamps record this UI fixture capture,
 not the dates of the historical transactions or a live bank observation.
 
@@ -21,6 +26,10 @@ records establishes a current balance, debt or authorization to pay.
 Every allocation evidence reference opens its matching supplied records; the
 method citation exposes the complete result and source pin. Synthetic references
 are identifiers, not external bank/document URLs.
+Allocations and records are joined by stable IDs. Fee kind and amount come from
+the original input allocation's adjustment record, not from a sign-based guess.
+Dates come from the original statement/receipt records. Exact decimal strings
+remain strings; no floating-point arithmetic or repeat fee deduction occurs.
 
 Validation: `RoyaltyReview.test.tsx` checks the monetary values, unknown payable,
 citation preservation, source dialog and Escape focus return. The shared example
