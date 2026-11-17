@@ -1,0 +1,21 @@
+{
+  "repository": "recoupable/skills",
+  "revision": "67c76fdbcef4f83e074e69c83bee8462561c00db",
+  "files": [
+    {
+      "source": "skills/recoup-catalog-reconcile-royalties/scripts/reconcile-remittances.py",
+      "file": "reconcile-remittances.py",
+      "sha256": "5857a68a6a448f078db24ad3094eadc7ecfdac1c6f2cc59b99e9fd900b521ef6"
+    },
+    {
+      "source": "skills/recoup-catalog-reconcile-royalties/scripts/_finance.py",
+      "file": "_finance.py",
+      "sha256": "2a4ae5221636361fc2dca99dcb72d08ac0648320644002f9cb091ad955dcbc45"
+    },
+    {
+      "source": "skills/recoup-catalog-reconcile-royalties/fixtures/finance/remittance-input.json",
+      "file": "input.json",
+      "sha256": "fb2f83bb8326ceab23571bf66424acbfe15071cdf7f7224fac49d7b90c98393f"
+    }
+  ]
+}

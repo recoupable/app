@@ -1,0 +1,81 @@
+{
+  "schema_version": "1",
+  "receiving_account_access": "supplied_statement_only",
+  "statements": [
+    {
+      "id": "ST-A",
+      "amount": "100",
+      "currency": "USD",
+      "period_start": "2024-01-01",
+      "period_end": "2024-03-31",
+      "evidence_refs": [
+        "synthetic-royalty:page-1"
+      ],
+      "source_record_id": "synthetic:ST-A"
+    }
+  ],
+  "remittances": [
+    {
+      "id": "PAY-A",
+      "amount": "100",
+      "currency": "USD",
+      "status": "Paid",
+      "date": "2024-06-01",
+      "receiving_account_ref": "ACCOUNT-A",
+      "evidence_refs": [
+        "synthetic-remittance:page-1"
+      ],
+      "source_record_id": "synthetic:PAY-A"
+    }
+  ],
+  "receipts": [
+    {
+      "id": "BANK-A",
+      "amount": "97",
+      "currency": "USD",
+      "status": "posted",
+      "date": "2024-06-03",
+      "account_ref": "ACCOUNT-A",
+      "evidence_status": "observed",
+      "evidence_refs": [
+        "synthetic-bank:row-2"
+      ],
+      "source_record_id": "synthetic:BANK-A"
+    }
+  ],
+  "allocations": [
+    {
+      "allocation_id": "ALLOC-A",
+      "stage": "statement_to_remittance",
+      "from_id": "ST-A",
+      "to_id": "PAY-A",
+      "from_amount": "100",
+      "to_amount": "100",
+      "evidence_refs": [
+        "synthetic-remittance:allocation-1"
+      ]
+    },
+    {
+      "allocation_id": "ALLOC-B",
+      "stage": "remittance_to_receipt",
+      "from_id": "PAY-A",
+      "to_id": "BANK-A",
+      "from_amount": "100",
+      "to_amount": "97",
+      "adjustments": [
+        {
+          "kind": "fee",
+          "amount": "-3",
+          "currency": "USD",
+          "evidence_refs": [
+            "synthetic-bank:fee-row"
+          ],
+          "adjustment_id": "FEE-1"
+        }
+      ],
+      "evidence_refs": [
+        "synthetic-bank:reference-A"
+      ]
+    }
+  ]
+}

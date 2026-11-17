@@ -36,4 +36,11 @@ export const conversationExamples: ConversationExample[] = [
     prompt:
       "Let me mark the recordings I want to inspect in this supplied table.",
   },
+  {
+    id: "royalty-review",
+    label: "Royalty reconciliation",
+    scenarioId: "royalty",
+    prompt:
+      "How does this supplied royalty statement reconcile to the bank receipt, and what is payable now?",
+  },
 ];

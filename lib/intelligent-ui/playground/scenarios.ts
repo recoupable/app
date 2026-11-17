@@ -1,3 +1,4 @@
+import { royaltyScenario } from "./royalty/royaltyScenario";
 import { collectionScenario } from "./collectionScenario";
 import type { PlaygroundScenario } from "./scenarioTypes";
 import { getCompletedExample } from "./getCompletedExample";
@@ -16,4 +17,5 @@ export const playgroundScenarios: PlaygroundScenario[] = [
   listeningScenario,
   songScenario,
   collectionScenario,
+  royaltyScenario,
 ];

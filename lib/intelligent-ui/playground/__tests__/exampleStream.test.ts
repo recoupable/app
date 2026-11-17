@@ -15,6 +15,7 @@ const expectedComponents: Record<string, string[]> = {
   release: ["checklist", "collection", "metrics", "summary"],
   sourcing: ["checklist", "collection", "metrics", "summary"],
   supplier: [],
+  royalty: [],
   listening: ["distribution"],
   song: ["timeline"],
   collection: ["collection"],
@@ -41,7 +42,9 @@ describe("synthetic example streams", () => {
         expectedComponents[scenario.id],
       );
       if (
-        ["supplier", "listening", "song", "collection"].includes(scenario.id)
+        ["supplier", "listening", "song", "collection", "royalty"].includes(
+          scenario.id,
+        )
       ) {
         expect(surface?.answer?.revision).toBe(surface?.revision);
         expect(surface?.answer?.parts.length).toBeGreaterThan(1);
