@@ -1,8 +1,4 @@
-import {
-  getToolOrDynamicToolName,
-  isToolOrDynamicToolUIPart,
-  UIMessage,
-} from "ai";
+import { getToolOrDynamicToolName, isToolUIPart, UIMessage } from "ai";
 
 interface SendEmailResult {
   emailId: string;
@@ -17,13 +13,13 @@ interface SendEmailResult {
  * @returns Array of send email results with emailId and messageId
  */
 export function extractSendEmailResults(
-  responseMessages: UIMessage[]
+  responseMessages: UIMessage[],
 ): SendEmailResult[] {
   const results: SendEmailResult[] = [];
 
   for (const message of responseMessages) {
     for (const part of message.parts) {
-      const isDynamicTool = isToolOrDynamicToolUIPart(part);
+      const isDynamicTool = isToolUIPart(part);
       if (!isDynamicTool) continue;
       const isSendEmailTool = getToolOrDynamicToolName(part) === "send_email";
       if (!isSendEmailTool) continue;

@@ -62,7 +62,8 @@ vi.mock("@/lib/api/getClientApiBaseUrl", () => ({
   getClientApiBaseUrl: () => ext.origin,
 }));
 vi.mock("next/navigation", () => ({ useParams: () => ({ chatId: "chat" }) }));
-vi.mock("@ai-sdk/react", () => ({
+vi.mock("@ai-sdk/react", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ai-sdk/react")>()),
   useChat: () => ({
     messages: ext.messages,
     status: "ready",

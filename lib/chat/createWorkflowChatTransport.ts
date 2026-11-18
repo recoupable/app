@@ -7,7 +7,7 @@ import {
 import {
   WorkflowChatTransport,
   type WorkflowChatTransportOptions,
-} from "@workflow/ai";
+} from "@ai-sdk/workflow";
 import type { createSnapshotConsumer } from "@/lib/intelligent-ui/chat/createSnapshotConsumer";
 import { settleSnapshotReconnect } from "@/lib/intelligent-ui/chat/settleSnapshotReconnect";
 import type { CatalogSurfaceRequest } from "@/lib/intelligent-ui/chat/getChatCatalogHost";
@@ -247,6 +247,7 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
   const observeStream = (
     stream: ReadableStream<UIMessageChunk>,
     finish: () => void,
+    allowNoActiveStream = false,
   ) => {
     const reader = stream.getReader();
     return new ReadableStream<UIMessageChunk>({
@@ -259,7 +260,15 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
           } else controller.enqueue(result.value);
         } catch (error) {
           finish();
-          controller.error(error);
+          // Workflow reconnect is lazy: the HTTP 204 rejection happens on
+          // reader.read(), after reconnectToStream has already returned.
+          if (
+            allowNoActiveStream &&
+            error instanceof Error &&
+            error.message.startsWith("Failed to fetch chat: 204")
+          )
+            controller.close();
+          else controller.error(error);
         }
       },
       async cancel(reason) {
@@ -353,7 +362,8 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
           ),
         ).reconnectToStream({ ...options, abortSignal: signal });
         const filtered = filterStream(stream, pending?.filter);
-        const observed = filtered && observeStream(filtered, completion.finish);
+        const observed =
+          filtered && observeStream(filtered, completion.finish, true);
         return observed && pending
           ? await settleSnapshotReconnect(observed, pending.signal)
           : observed;

@@ -814,3 +814,114 @@ it("ignores a superseded default history error after the selected workspace chan
   expect(harness.current().hasError).toBe(false);
   expect(harness.current().messages[0].id).toBe("saved-assistant");
 });
+
+it("starts the newly ready scope while its predecessor HTTP response settles late", async () => {
+  vi.stubEnv("NEXT_PUBLIC_RECOUP_INTELLIGENT_UI_CHAT", "false");
+  const oldStream = pendingResponse();
+  const newHistory: UIMessage = {
+    id: "new-scope-history",
+    role: "assistant",
+    parts: [{ type: "text", text: "New scope only" }],
+  };
+  let historyCalls = 0;
+  let streamCalls = 0;
+  let oldSignal: AbortSignal | undefined;
+  const fetch = vi.fn().mockImplementation(async (url, init) => {
+    if (url === historyUrl)
+      return Response.json({
+        messages: ++historyCalls === 1 ? [saved] : [newHistory],
+      });
+    if (url === streamUrl) {
+      streamCalls++;
+      if (streamCalls === 1) {
+        oldSignal = init.signal;
+        return oldStream.promise;
+      }
+      expect(new Headers(init.headers).get("Authorization")).toBe(
+        "Bearer new-scope-token",
+      );
+      return workflowResponse([
+        { type: "text-start", id: "continued" },
+        { type: "text-delta", id: "continued", delta: "New resumed content" },
+        { type: "text-end", id: "continued" },
+        { type: "finish" },
+      ]);
+    }
+    throw new Error(`Unexpected synthetic URL: ${url}`);
+  });
+  vi.stubGlobal("fetch", fetch);
+  const harness = mount();
+  await waitFor(() => expect(streamCalls).toBe(1));
+  external.getAccessToken.mockResolvedValue("new-scope-token");
+  external.organizationId = "new-ready-workspace";
+  harness.rerenderScope();
+  await waitFor(() => expect(harness.current().messages).toEqual([newHistory]));
+  expect(oldSignal?.aborted).toBe(true);
+  await act(async () => {
+    oldStream.resolve(
+      workflowResponse([
+        { type: "start", messageId: "stale" },
+        { type: "finish" },
+      ]),
+    );
+  });
+  await waitFor(() => expect(streamCalls).toBe(2));
+  await waitFor(() =>
+    expect(harness.current().isGeneratingResponse).toBe(false),
+  );
+  expect(harness.current().messages.map((message) => message.id)).toEqual([
+    "new-scope-history",
+  ]);
+  expect(harness.current().messages[0].parts).toContainEqual(
+    expect.objectContaining({ type: "text", text: "New resumed content" }),
+  );
+});
+
+it("restarts a committed request scope when its matching cached history remains ready", async () => {
+  vi.stubEnv("NEXT_PUBLIC_RECOUP_INTELLIGENT_UI_CHAT", "false");
+  const oldResponse = pendingResponse();
+  const refreshedHistory = pendingResponse();
+  let historyCalls = 0;
+  let streamCalls = 0;
+  let oldSignal: AbortSignal | undefined;
+  let latest!: ReturnType<typeof useVercelChat>;
+  const fetch = vi.fn().mockImplementation(async (url, init) => {
+    if (url === historyUrl)
+      return ++historyCalls === 1
+        ? Response.json({ messages: [saved] })
+        : refreshedHistory.promise;
+    if (url === streamUrl) {
+      streamCalls++;
+      expect(new Headers(init.headers).get("Authorization")).toBe(
+        "Bearer synthetic-token",
+      );
+      if (streamCalls === 1) {
+        oldSignal = init.signal;
+        return oldResponse.promise;
+      }
+      return workflowResponse([{ type: "finish" }]);
+    }
+    throw new Error(`Unexpected synthetic URL: ${url}`);
+  });
+  vi.stubGlobal("fetch", fetch);
+  function Harness({ bootstrap }: { bootstrap: boolean }) {
+    latest = useVercelChat({
+      id: hostScope.chatId,
+      sessionId: hostScope.sessionId,
+      isNewChatBootstrap: bootstrap,
+    });
+    return null;
+  }
+  const view = render(<Harness bootstrap />);
+  await waitFor(() => expect(streamCalls).toBe(1));
+  // Bootstrap ownership changes the committed request scope, but not the
+  // authenticated history key. Keep its refresh pending: readiness stays true.
+  view.rerender(<Harness bootstrap={false} />);
+  await waitFor(() => expect(oldSignal?.aborted).toBe(true));
+  await act(async () => {
+    oldResponse.resolve(workflowResponse([{ type: "finish" }]));
+  });
+  await waitFor(() => expect(streamCalls).toBe(2));
+  await waitFor(() => expect(latest.isGeneratingResponse).toBe(false));
+  expect(latest.messages).toEqual([saved]);
+});

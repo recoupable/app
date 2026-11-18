@@ -5,6 +5,7 @@ import type { ChatAdmissionMetadata } from "@/lib/chat/createChatRequestLifecycl
 import type { CatalogQueryInput } from "@/lib/intelligent-ui/chat/getChatCatalogHost";
 import { createChatSubmissionGuard } from "@/lib/chat/createChatSubmissionGuard";
 import { useChat } from "@ai-sdk/react";
+import { ResumableChat } from "@/lib/chat/ResumableChat";
 import { useMessageLoader } from "./useMessageLoader";
 import { useUserProvider } from "@/providers/UserProvder";
 import { useArtistProvider } from "@/providers/ArtistProvider";
@@ -521,6 +522,34 @@ export function useVercelChat({
     [id, artistId, organizationId, accountIdOverride, model],
   );
 
+  const resumableChat = useMemo(
+    () =>
+      new ResumableChat({
+        id,
+        transport,
+        generateId: generateUUID,
+        captureResumeScope: () => {
+          const scope = committedScope.current;
+          const generation = scopeGeneration.current;
+          return () =>
+            mounted.current &&
+            committedScope.current === scope &&
+            scopeGeneration.current === generation;
+        },
+        onError: (error) => {
+          console.error("An error occurred, please try again!", error);
+          toast.error("An error occurred, please try again!");
+        },
+      }),
+    [id, transport],
+  );
+  useLayoutEffect(
+    () => () => {
+      void resumableChat.stop();
+    },
+    [resumableChat],
+  );
+
   const {
     messages,
     status,
@@ -529,25 +558,20 @@ export function useVercelChat({
     setMessages,
     regenerate,
   } = useChat({
-    id,
-    transport,
-    // Re-attach to an in-progress response, so returning to a chat mid-turn
-    // keeps rendering instead of showing a frozen half-message. Gated to an
-    // authenticated visit to an existing chat — resuming unconditionally
-    // 401s/404s on every cold load and surfaces as an error toast
-    // (chat#1949 F4a).
-    resume:
-      fileScopeReady &&
-      shouldResumeStream({ authenticated, routeChatId: chatId }) &&
-      historyReadiness?.scopeKey === historyLoadScope &&
-      historyReadiness.state === "ready",
+    chat: resumableChat,
     experimental_throttle: 100,
-    generateId: generateUUID,
-    onError: (e) => {
-      console.error("An error occurred, please try again!", e);
-      toast.error("An error occurred, please try again!");
-    },
   });
+  const canResume =
+    fileScopeReady &&
+    shouldResumeStream({ authenticated, routeChatId: chatId }) &&
+    historyReadiness?.scopeKey === historyLoadScope &&
+    historyReadiness.state === "ready";
+  // SDK useChat watches only the resume boolean. A committed scope can change
+  // while that stays true, or become ready before the prior reader settles.
+  useEffect(() => {
+    if (canResume) void resumableChat.resumeStream();
+  }, [canResume, requestScope, historyLoadScope, resumableChat]);
+
   const setScopedMessages = useCallback(
     (value: UIMessage[] | ((previous: UIMessage[]) => UIMessage[])) => {
       if (isActionCurrent()) setMessages(value);

@@ -1,3 +1,4 @@
+import { ResumableChat } from "@/lib/chat/ResumableChat";
 // @vitest-environment jsdom
 import React from "react";
 import {
@@ -7,7 +8,6 @@ import {
   waitFor,
   fireEvent,
 } from "@testing-library/react";
-import { Chat } from "@ai-sdk/react";
 import { MessageEditor } from "@/components/VercelChat/message-editor";
 import { ChatInput } from "@/components/VercelChat/ChatInput";
 import NewChatBootstrap from "@/components/VercelChat/NewChatBootstrap";
@@ -669,7 +669,7 @@ it("reconnects an accepted cut through captured authenticated GET cursor and nev
       ]);
     }),
   );
-  const chat = new Chat({
+  const chat = new ResumableChat({
     id: "chat",
     transport: createWorkflowChatTransport({
       baseUrl: "https://recoup.invalid",
@@ -1723,7 +1723,7 @@ it.each(["throws", "rejects"] as const)(
       if (failure === "throws") throw new Error("Synthetic refresh error");
       return Promise.reject(new Error("Synthetic refresh error"));
     });
-    const chat = new Chat({
+    const chat = new ResumableChat({
       id: "chat",
       transport: createWorkflowChatTransport({
         baseUrl: "https://recoup.invalid",
@@ -1847,11 +1847,11 @@ it("operation-owned completion ignores a superseded reader and captures the new 
     getAccessToken: async () => "synthetic-token",
     captureStreamEnd: () => currentRefresh,
   });
-  const oldChat = new Chat({ id: "old-chat", transport });
+  const oldChat = new ResumableChat({ id: "old-chat", transport });
   const oldSend = oldChat.sendMessage({ text: "Old" });
   await waitFor(() => expect(oldChat.status).toBe("streaming"));
   currentRefresh = newRefresh;
-  const newChat = new Chat({ id: "new-chat", transport });
+  const newChat = new ResumableChat({ id: "new-chat", transport });
   await newChat.sendMessage({ text: "New" });
   reader.enqueue({ type: "finish" });
   reader.close();
@@ -2289,10 +2289,10 @@ it.each(["older admission", "older unknown"] as const)(
       getAccessToken: async () => "synthetic-token",
       requestLifecycle: lifecycle,
     });
-    const first = new Chat({ id: "first", transport });
+    const first = new ResumableChat({ id: "first", transport });
     const firstSend = first.sendMessage({ text: "Older" });
     await waitFor(() => expect(posts).toBe(1));
-    const second = new Chat({ id: "second", transport });
+    const second = new ResumableChat({ id: "second", transport });
     await second.sendMessage({ text: "Newer" });
     older.resolve(response());
     await firstSend;

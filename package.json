@@ -15,12 +15,13 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "3.0.80",
-    "@ai-sdk/gateway": "^3.0.96",
-    "@ai-sdk/google": "3.0.80",
-    "@ai-sdk/mcp": "^0.0.11",
-    "@ai-sdk/openai": "3.0.66",
-    "@ai-sdk/react": "3.0.243",
+    "@ai-sdk/anthropic": "4.0.39",
+    "@ai-sdk/gateway": "4.0.55",
+    "@ai-sdk/google": "4.0.46",
+    "@ai-sdk/mcp": "2.0.33",
+    "@ai-sdk/openai": "4.0.43",
+    "@ai-sdk/react": "4.0.72",
+    "@ai-sdk/workflow": "1.0.70",
     "@browserbasehq/stagehand": "^2.5.2",
     "@coinbase/cdp-sdk": "^1.4.0",
     "@coinbase/onchainkit": "^0.38.8",
@@ -62,8 +63,7 @@
     "@uiw/react-heat-map": "^2.3.2",
     "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.3.2",
-    "@workflow/ai": "4.2.0",
-    "ai": "6.0.241",
+    "ai": "7.0.69",
     "apify-client": "^2.9.7",
     "class-variance-authority": "^0.7.1",
     "classnames": "^2.5.1",
@@ -118,7 +118,7 @@
     "viem": "2.x",
     "wagmi": "^2.15.4",
     "x402-mcp": "^0.1.1",
-    "zod": "^3.25.0"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",
@@ -140,5 +140,8 @@
     "tailwindcss": "^4.1.17",
     "typescript": "^5",
     "vitest": "^4.0.8"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
