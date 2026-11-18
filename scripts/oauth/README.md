@@ -62,3 +62,11 @@ These checks complement the API's disposable-PostgreSQL HTTP-controller tests.
 They do not verify real Privy login, production storage, an actual approval or a
 named agent host. Native component fixtures must retain those same boundaries;
 a narrow component container is not a mobile viewport test.
+
+## Opt-in selected Context connections
+
+The full-scope consent screen offers an explicit **Choose one workspace for Context tools** action. It fetches the version-2 workspace choices without an approval ticket, then obtains a fresh ticket for the chosen personal or organization workspace. Changing the selection immediately invalidates the displayed ticket. A failed preview keeps a route back to a fresh requested-permissions preview. Account, interaction and issuer changes retain the existing session guards.
+
+The API must support selected Context consent before this companion UI is deployed. Until chosen, the existing consent remains unchanged. Connected Agents identifies selected Context connections separately from full tool access and shows their workspace. A new workspace or capability set requires a new approval; existing connections are not modified.
+
+The bounded API contract freezes `context-workspace-v1` and checks current membership. Graded-role downgrades and the wider business-tool catalog remain open requirements in Mono208/212. Synthetic Chromium fixtures include mobile and desktop selected-workspace layouts; these are not real identity, named-agent, or production-operation evidence.

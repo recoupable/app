@@ -234,6 +234,7 @@ export default function OAuthConsentSession({
                         variant="ghost"
                         disabled={busy}
                         onClick={() => {
+                          setLoaded(undefined);
                           setSelection(undefined);
                           setSelectedMode(false);
                         }}
@@ -248,7 +249,10 @@ export default function OAuthConsentSession({
                       variant="outline"
                       disabled={busy}
                       className="h-auto min-h-11 w-full whitespace-normal"
-                      onClick={() => setSelectedMode(true)}
+                      onClick={() => {
+                        setLoaded(undefined);
+                        setSelectedMode(true);
+                      }}
                     >
                       Choose one workspace for Context tools
                     </Button>
@@ -342,7 +346,23 @@ export default function OAuthConsentSession({
                   </div>
                 </>
               ) : (
-                !error && <p role="status">Loading requested permissions…</p>
+                <>
+                  {!error && (
+                    <p role="status">Loading requested permissions…</p>
+                  )}
+                  {selectedMode && error && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setLoaded(undefined);
+                        setSelection(undefined);
+                        setSelectedMode(false);
+                      }}
+                    >
+                      Back to requested permissions
+                    </Button>
+                  )}
+                </>
               )}
             </>
           )}

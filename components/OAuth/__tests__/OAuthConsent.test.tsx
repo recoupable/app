@@ -325,3 +325,34 @@ it("requires an explicit workspace and discards its ticket when selection change
     ),
   );
 });
+
+it("keeps a route back to fresh consent when a selected preview fails", async () => {
+  load.mockResolvedValue({
+    ...details,
+    permissions: [{ scope: "mcp:tools", description: "Full business tools" }],
+  });
+  loadSelected.mockRejectedValueOnce(
+    new Error("Workspace no longer available"),
+  );
+  render(
+    <OAuthConsent issuer="https://api.example/api/oauth" interaction="full" />,
+  );
+  fireEvent.click(
+    await screen.findByRole("button", {
+      name: "Choose one workspace for Context tools",
+    }),
+  );
+  await screen.findByRole("alert");
+  expect(screen.queryByRole("button", { name: "Allow access" })).toBeNull();
+  load.mockResolvedValue({
+    ...details,
+    csrf: "fresh-ticket",
+    permissions: [{ scope: "mcp:tools", description: "Full business tools" }],
+  });
+  fireEvent.click(
+    screen.getByRole("button", { name: "Back to requested permissions" }),
+  );
+  await screen.findByRole("button", { name: "Allow access" });
+  expect(screen.queryByRole("alert")).toBeNull();
+  expect(decide).not.toHaveBeenCalled();
+});
