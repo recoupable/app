@@ -1,3 +1,4 @@
+import { selectedContextSchema } from "./selectedContextSchema";
 import { z } from "zod";
 import { createConsentClient } from "./createConsentClient";
 const listSchema = z.object({
@@ -8,6 +9,7 @@ const listSchema = z.object({
         clientId: z.string(),
         clientName: z.string(),
         scopes: z.array(z.string()),
+        selectedContext: selectedContextSchema.optional(),
         createdAt: z.number(),
         expiresAt: z.number().nullable(),
       }),

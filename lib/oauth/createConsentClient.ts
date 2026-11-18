@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  selectedContextSchema,
+  type WorkspaceSelection,
+} from "./selectedContextSchema";
 
 const metadataSchema = z.object({
   csrf: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
@@ -13,7 +17,23 @@ const metadataSchema = z.object({
     .array(z.object({ scope: z.string(), description: z.string() }))
     .min(1),
 });
-export type ConsentMetadata = z.infer<typeof metadataSchema>;
+const selectedMetadataSchema = metadataSchema
+  .extend({
+    consent_version: z.literal(2),
+    csrf: metadataSchema.shape.csrf.optional(),
+    selectedContext: selectedContextSchema.optional(),
+    workspaces: z.array(
+      z.object({
+        kind: z.enum(["personal", "organization"]),
+        organizationId: z.string().uuid().nullable(),
+        name: z.string(),
+      }),
+    ),
+  })
+  .refine((value) => !!value.csrf === !!value.selectedContext);
+export type ConsentMetadata =
+  | z.infer<typeof metadataSchema>
+  | z.infer<typeof selectedMetadataSchema>;
 
 /** Only the server-configured issuer receives Privy credentials or controls resumption. */
 export function createConsentClient(issuer: string, interaction: string) {
@@ -35,8 +55,9 @@ export function createConsentClient(issuer: string, interaction: string) {
     token: string,
     body?: unknown,
     signal?: AbortSignal,
+    query = "",
   ) => {
-    const response = await fetch(endpoint, {
+    const response = await fetch(endpoint + query, {
       method: body ? "POST" : "GET",
       credentials: "include",
       cache: "no-store",
@@ -58,10 +79,43 @@ export function createConsentClient(issuer: string, interaction: string) {
     async load(token: string, signal?: AbortSignal) {
       return metadataSchema.parse(await request(token, undefined, signal));
     },
-    async decide(token: string, csrf: string, decision: "approve" | "deny") {
+    async loadSelected(
+      token: string,
+      selection?: WorkspaceSelection,
+      signal?: AbortSignal,
+    ) {
+      const query = new URLSearchParams({ consent_version: "2", ...selection });
+      const result = selectedMetadataSchema.parse(
+        await request(token, undefined, signal, `?${query}`),
+      );
+      if (
+        selection &&
+        (!result.selectedContext ||
+          result.selectedContext.kind !== selection.workspace_kind ||
+          (selection.workspace_kind === "organization" &&
+            result.selectedContext.organizationId !==
+              selection.organization_id) ||
+          (selection.workspace_kind === "personal" &&
+            result.selectedContext.ownerId !== result.accountId))
+      )
+        throw new Error("Workspace preview does not match selection");
+      return result;
+    },
+    async decide(
+      token: string,
+      csrf: string,
+      decision: "approve" | "deny",
+      selection?: WorkspaceSelection,
+    ) {
       const { redirectUrl } = z
         .object({ redirectUrl: z.string().url() })
-        .parse(await request(token, { csrf, decision }));
+        .parse(
+          await request(token, {
+            csrf,
+            decision,
+            ...(selection ? { consent_version: 2, ...selection } : {}),
+          }),
+        );
       const resume = new URL(redirectUrl);
       if (
         resume.origin !== base.origin ||
