@@ -88,6 +88,8 @@ export function createConsentClient(issuer: string, interaction: string) {
       const result = selectedMetadataSchema.parse(
         await request(token, undefined, signal, `?${query}`),
       );
+      if (!selection && result.csrf)
+        throw new Error("Choose a workspace before approval");
       if (
         selection &&
         (!result.selectedContext ||
@@ -107,15 +109,13 @@ export function createConsentClient(issuer: string, interaction: string) {
       decision: "approve" | "deny",
       selection?: WorkspaceSelection,
     ) {
-      const { redirectUrl } = z
-        .object({ redirectUrl: z.string().url() })
-        .parse(
-          await request(token, {
-            csrf,
-            decision,
-            ...(selection ? { consent_version: 2, ...selection } : {}),
-          }),
-        );
+      const { redirectUrl } = z.object({ redirectUrl: z.string().url() }).parse(
+        await request(token, {
+          csrf,
+          decision,
+          ...(selection ? { consent_version: 2, ...selection } : {}),
+        }),
+      );
       const resume = new URL(redirectUrl);
       if (
         resume.origin !== base.origin ||

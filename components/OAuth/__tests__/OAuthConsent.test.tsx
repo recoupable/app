@@ -297,10 +297,17 @@ it("requires an explicit workspace and discards its ticket when selection change
         finish = resolve;
       }),
   );
-  fireEvent.change(screen.getByLabelText("Workspace for Context tools"), {
-    target: { value: org },
-  });
-  expect(screen.queryByRole("button", { name: "Allow access" })).toBeNull();
+  const workspaceSelect = screen.getByLabelText("Workspace for Context tools");
+  workspaceSelect.focus();
+  fireEvent.change(workspaceSelect, { target: { value: org } });
+  expect(screen.getByLabelText("Workspace for Context tools")).toBe(
+    workspaceSelect,
+  );
+  expect(document.activeElement).toBe(workspaceSelect);
+  expect(
+    (screen.getByRole("button", { name: "Allow access" }) as HTMLButtonElement)
+      .disabled,
+  ).toBe(true);
   await waitFor(() =>
     expect(loadSelected).toHaveBeenLastCalledWith(
       "token",

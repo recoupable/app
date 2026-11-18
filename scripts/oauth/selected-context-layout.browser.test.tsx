@@ -1,5 +1,11 @@
 import React from "react";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { page } from "vitest/browser";
 import OAuthConsent from "../../components/OAuth/OAuthConsent";
@@ -31,13 +37,22 @@ vi.mock("@/lib/oauth/createConsentClient", () => ({
       load: async () => base,
       loadSelected: async (
         _token: string,
-        selection?: { workspace_kind: string },
+        selection?: { workspace_kind: string; organization_id?: string },
       ) => ({
         ...base,
         consent_version: 2,
         csrf: selection ? "selected-nonce" : undefined,
         selectedContext: selection
-          ? { kind: selection.workspace_kind }
+          ? {
+              version: 1,
+              capabilityVersion: "context-workspace-v1",
+              mode: "selected_context",
+              kind: selection.workspace_kind,
+              ownerId:
+                selection.organization_id ??
+                "00000000-0000-4000-8000-000000000001",
+              organizationId: selection.organization_id ?? null,
+            }
           : undefined,
         permissions: [
           {
@@ -102,7 +117,22 @@ it.each([
     fireEvent.change(select, {
       target: { value: "22222222-2222-4222-8222-222222222222" },
     });
-    await screen.findByLabelText("Workspace for Context tools");
+    await waitFor(() =>
+      expect(
+        (
+          screen.getByRole("button", {
+            name: "Allow access",
+          }) as HTMLButtonElement
+        ).disabled,
+      ).toBe(false),
+    );
+    expect(
+      (
+        screen.getByLabelText(
+          "Workspace for Context tools",
+        ) as HTMLSelectElement
+      ).value,
+    ).toBe("22222222-2222-4222-8222-222222222222");
     expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(width);
     expect(screen.queryByText("Full business tools")).toBeNull();
     await page.screenshot({

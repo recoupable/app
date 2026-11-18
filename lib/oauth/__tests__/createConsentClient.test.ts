@@ -72,53 +72,69 @@ it.each([30, null])(
   },
 );
 
-it("requires a versioned selected preview and sends the same explicit selection for approval", async () => {
-  const selectedContext = {
-    version: 1,
-    capabilityVersion: "context-workspace-v1",
-    mode: "selected_context",
-    kind: "personal",
-    ownerId: "00000000-0000-4000-8000-000000000001",
-    organizationId: null,
-  };
-  const metadata = {
-    csrf: "a".repeat(43),
-    clientId: "client",
-    clientName: "Agent",
-    clientVerified: false,
-    accountId: selectedContext.ownerId,
-    context: "personal",
-    accessDurationDays: null,
-    expiresIn: 300,
-    permissions: [{ scope: "mcp:tools", description: "Context tools" }],
-    consent_version: 2,
-    selectedContext,
-    workspaces: [
-      { kind: "personal", organizationId: null, name: "Personal workspace" },
-    ],
-  };
-  const fetcher = vi.fn().mockResolvedValue(Response.json(metadata));
-  vi.stubGlobal("fetch", fetcher);
-  const client = createConsentClient(issuer, "id");
-  const selection = { workspace_kind: "personal" } as const;
-  expect(await client.loadSelected("token", selection)).toMatchObject({
-    selectedContext,
-  });
-  expect(fetcher.mock.calls[0][0]).toBe(
-    `${issuer}/interaction/id?consent_version=2&workspace_kind=personal`,
-  );
-  fetcher.mockResolvedValue(
-    Response.json({ redirectUrl: `${issuer}/auth/resume` }),
-  );
-  await client.decide("token", metadata.csrf, "approve", selection);
-  expect(JSON.parse(fetcher.mock.calls[1][1].body)).toEqual({
-    csrf: metadata.csrf,
-    decision: "approve",
-    consent_version: 2,
-    workspace_kind: "personal",
-  });
-  fetcher.mockResolvedValue(
-    Response.json({ ...metadata, consent_version: undefined }),
-  );
-  await expect(client.loadSelected("token", selection)).rejects.toThrow();
-});
+it.each(["personal", "organization"] as const)(
+  "binds the %s preview and approval to the explicit selection",
+  async (kind) => {
+    const selectedContext = {
+      version: 1,
+      capabilityVersion: "context-workspace-v1",
+      mode: "selected_context",
+      kind,
+      ownerId:
+        kind === "personal"
+          ? "00000000-0000-4000-8000-000000000001"
+          : "00000000-0000-4000-8000-000000000002",
+      organizationId:
+        kind === "personal" ? null : "00000000-0000-4000-8000-000000000002",
+    };
+    const metadata = {
+      csrf: "a".repeat(43),
+      clientId: "client",
+      clientName: "Agent",
+      clientVerified: false,
+      accountId: "00000000-0000-4000-8000-000000000001",
+      context: "personal",
+      accessDurationDays: null,
+      expiresIn: 300,
+      permissions: [{ scope: "mcp:tools", description: "Context tools" }],
+      consent_version: 2,
+      selectedContext,
+      workspaces: [
+        { kind: "personal", organizationId: null, name: "Personal workspace" },
+      ],
+    };
+    const fetcher = vi
+      .fn()
+      .mockImplementation(async () => Response.json(metadata));
+    vi.stubGlobal("fetch", fetcher);
+    const client = createConsentClient(issuer, "id");
+    const selection =
+      kind === "personal"
+        ? { workspace_kind: "personal" as const }
+        : {
+            workspace_kind: "organization" as const,
+            organization_id: selectedContext.organizationId!,
+          };
+    await expect(client.loadSelected("token")).rejects.toThrow();
+    expect(await client.loadSelected("token", selection)).toMatchObject({
+      selectedContext,
+    });
+    expect(fetcher.mock.calls[1][0]).toBe(
+      `${issuer}/interaction/id?consent_version=2&workspace_kind=${kind}${kind === "organization" ? `&organization_id=${selectedContext.organizationId}` : ""}`,
+    );
+    fetcher.mockResolvedValue(
+      Response.json({ redirectUrl: `${issuer}/auth/resume` }),
+    );
+    await client.decide("token", metadata.csrf, "approve", selection);
+    expect(JSON.parse(fetcher.mock.calls[2][1].body)).toEqual({
+      csrf: metadata.csrf,
+      decision: "approve",
+      consent_version: 2,
+      ...selection,
+    });
+    fetcher.mockResolvedValue(
+      Response.json({ ...metadata, consent_version: undefined }),
+    );
+    await expect(client.loadSelected("token", selection)).rejects.toThrow();
+  },
+);

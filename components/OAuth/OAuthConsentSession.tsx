@@ -44,13 +44,19 @@ export default function OAuthConsentSession({
     };
   }, []);
   const userId = user?.id;
-  const metadata =
+  const sessionMetadata =
     loaded?.userId === userId &&
     loaded?.issuer === issuer &&
-    loaded?.interaction === interaction &&
-    loaded?.selectionKey === selectionKey
+    loaded?.interaction === interaction
       ? loaded.metadata
       : undefined;
+  // Keep workspace choices mounted, but never retain an earlier approval ticket.
+  const metadata =
+    loaded?.selectionKey === selectionKey
+      ? sessionMetadata
+      : selectedMode && sessionMetadata && "consent_version" in sessionMetadata
+        ? { ...sessionMetadata, csrf: undefined, selectedContext: undefined }
+        : undefined;
 
   useEffect(() => {
     if (!ready || !authenticated || !userId) return;
