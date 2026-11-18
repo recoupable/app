@@ -207,7 +207,19 @@ export default function OAuthConsentSession({
                             ? selection.organization_id
                             : (selection?.workspace_kind ?? "")
                         }
-                        onChange={(event) =>
+                        onChange={(event) => {
+                          setLoaded((previous) =>
+                            previous && "consent_version" in previous.metadata
+                              ? {
+                                  ...previous,
+                                  metadata: {
+                                    ...previous.metadata,
+                                    csrf: undefined,
+                                    selectedContext: undefined,
+                                  },
+                                }
+                              : undefined,
+                          );
                           setSelection(
                             event.target.value === "personal"
                               ? { workspace_kind: "personal" }
@@ -215,8 +227,8 @@ export default function OAuthConsentSession({
                                   workspace_kind: "organization",
                                   organization_id: event.target.value,
                                 },
-                          )
-                        }
+                          );
+                        }}
                       >
                         <option value="" disabled>
                           Choose a workspace

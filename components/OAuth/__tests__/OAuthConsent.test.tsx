@@ -315,6 +315,46 @@ it("requires an explicit workspace and discards its ticket when selection change
       expect.any(AbortSignal),
     ),
   );
+  let finishPersonal!: (value: unknown) => void;
+  loadSelected.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finishPersonal = resolve;
+      }),
+  );
+  fireEvent.change(workspaceSelect, { target: { value: "personal" } });
+  expect(
+    (screen.getByRole("button", { name: "Allow access" }) as HTMLButtonElement)
+      .disabled,
+  ).toBe(true);
+  await waitFor(() =>
+    expect(loadSelected).toHaveBeenLastCalledWith(
+      "token",
+      { workspace_kind: "personal" },
+      expect.any(AbortSignal),
+    ),
+  );
+  await act(async () =>
+    finishPersonal({
+      ...choices,
+      csrf: "fresh-personal-ticket",
+      selectedContext: { kind: "personal" },
+    }),
+  );
+  loadSelected.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  fireEvent.change(workspaceSelect, { target: { value: org } });
+  await waitFor(() =>
+    expect(loadSelected).toHaveBeenLastCalledWith(
+      "token",
+      { workspace_kind: "organization", organization_id: org },
+      expect.any(AbortSignal),
+    ),
+  );
   await act(async () =>
     finish({
       ...choices,
