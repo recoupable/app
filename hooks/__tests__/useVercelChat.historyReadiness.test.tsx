@@ -989,58 +989,64 @@ it.each([false, true])(
   },
 );
 
-it("keeps an admitted send out of the retry draft when protocol readback fails", async () => {
-  const fetch = vi.fn(async (input: unknown, init?: RequestInit) => {
-    if (String(input) === streamUrl)
-      return workflowResponse([{ type: "finish" }]);
-    if (String(input) === historyUrl) return Response.json({ messages: [] });
-    if (
-      String(input) ===
-      "https://recoup.invalid/api/chat?streamLifecycle=explicit-stop-v1"
-    ) {
-      expect(init?.method).toBe("POST");
+it.each([
+  [503, "stream_continuation_evidence_unavailable"],
+  [409, "chat_stream_ownership_lost"],
+])(
+  "keeps an admitted send out of the retry draft when protocol readback fails (%s)",
+  async (status, error) => {
+    const fetch = vi.fn(async (input: unknown, init?: RequestInit) => {
+      if (String(input) === streamUrl)
+        return workflowResponse([{ type: "finish" }]);
+      if (String(input) === historyUrl) return Response.json({ messages: [] });
+      if (
+        String(input) ===
+        "https://recoup.invalid/api/chat?streamLifecycle=explicit-stop-v1"
+      ) {
+        expect(init?.method).toBe("POST");
+        expect(
+          new Headers(init?.headers).get("X-Recoup-Stream-Continuation"),
+        ).toBe("canonical-base-v1");
+        return Response.json(
+          {
+            status: "error",
+            error,
+            admission: "admitted",
+            runId: "synthetic-run",
+          },
+          { status },
+        );
+      }
+      throw Error("Unexpected synthetic request");
+    });
+    vi.stubGlobal("fetch", fetch);
+    const harness = mount();
+    await waitFor(() =>
       expect(
-        new Headers(init?.headers).get("X-Recoup-Stream-Continuation"),
-      ).toBe("canonical-base-v1");
-      return Response.json(
-        {
-          status: "error",
-          error: "stream_continuation_evidence_unavailable",
-          admission: "admitted",
-          runId: "synthetic-run",
-        },
-        { status: 503 },
-      );
-    }
-    throw Error("Unexpected synthetic request");
-  });
-  vi.stubGlobal("fetch", fetch);
-  const harness = mount();
-  await waitFor(() =>
+        fetch.mock.calls.filter(([url]) => String(url) === streamUrl),
+      ).toHaveLength(1),
+    );
+    await waitFor(() => expect(harness.current().status).toBe("ready"));
+    await act(async () => {
+      harness.current().setInput("Start a real task only once");
+    });
+    await act(async () => {
+      await harness.current().handleSendMessage({
+        preventDefault() {},
+      } as React.FormEvent<HTMLFormElement>);
+    });
+    await waitFor(() => expect(harness.current().status).toBe("error"));
+    expect(harness.current().hasFailedSubmission).toBe(false);
+    expect(harness.current().input).toBe("");
+    expect(harness.current().messages).toHaveLength(1);
+    expect(harness.current().messages[0].role).toBe("user");
+    await act(async () => {
+      await harness.current().retrySendMessage({
+        preventDefault() {},
+      } as React.FormEvent<HTMLFormElement>);
+    });
     expect(
-      fetch.mock.calls.filter(([url]) => String(url) === streamUrl),
-    ).toHaveLength(1),
-  );
-  await waitFor(() => expect(harness.current().status).toBe("ready"));
-  await act(async () => {
-    harness.current().setInput("Start a real task only once");
-  });
-  await act(async () => {
-    await harness.current().handleSendMessage({
-      preventDefault() {},
-    } as React.FormEvent<HTMLFormElement>);
-  });
-  await waitFor(() => expect(harness.current().status).toBe("error"));
-  expect(harness.current().hasFailedSubmission).toBe(false);
-  expect(harness.current().input).toBe("");
-  expect(harness.current().messages).toHaveLength(1);
-  expect(harness.current().messages[0].role).toBe("user");
-  await act(async () => {
-    await harness.current().retrySendMessage({
-      preventDefault() {},
-    } as React.FormEvent<HTMLFormElement>);
-  });
-  expect(
-    fetch.mock.calls.filter(([, init]) => init?.method === "POST"),
-  ).toHaveLength(1);
-});
+      fetch.mock.calls.filter(([, init]) => init?.method === "POST"),
+    ).toHaveLength(1);
+  },
+);

@@ -145,3 +145,30 @@ it.each(["stop", "scope"])(
     expect(cancel).toHaveBeenCalledTimes(1);
   },
 );
+
+it("keeps the actual bare409 promotion-loss response unknown", async () => {
+  const response = Response.json(
+    {
+      status: "error",
+      error: "Another workflow is already running for this chat",
+    },
+    { status: 409 },
+  );
+  expect((await classifyChatAdmissionFailure(response)).outcome).toBe(
+    "unknown",
+  );
+});
+it("recognizes explicit ownership-loss admission without implying a successful stream", async () => {
+  const response = Response.json(
+    {
+      status: "error",
+      error: "chat_stream_ownership_lost",
+      admission: "admitted",
+      runId: "created-run",
+    },
+    { status: 409 },
+  );
+  expect((await classifyChatAdmissionFailure(response)).outcome).toBe(
+    "admitted",
+  );
+});

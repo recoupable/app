@@ -186,44 +186,50 @@ it("a transport with no capable consumer does not advertise", async () => {
   expect(fetch).toHaveBeenCalledTimes(1);
 });
 
-it("does not reject or resubmit a POST that was admitted before readback failed", async () => {
-  const fetch = vi.fn(async () =>
-    Response.json(
-      {
-        status: "error",
-        error: "stream_continuation_evidence_unavailable",
-        admission: "admitted",
-        runId: "synthetic-run",
-      },
-      { status: 503 },
-    ),
-  );
-  vi.stubGlobal("fetch", fetch);
-  const lifecycle = createChatRequestLifecycle(),
-    onAccepted = vi.fn(),
-    onRejected = vi.fn(),
-    onError = vi.fn();
-  const chat = new ResumableChat({
-    messages: [fixture.seed as UIMessage],
-    onError,
-    transport: createWorkflowChatTransport({
-      baseUrl: "https://recoup.invalid",
-      continuationProtocol: "canonical-base-v1",
-      requestLifecycle: lifecycle,
-      getIds: () => ({ chatId: "chat", sessionId: "session" }),
-      getAccessToken: async () => "synthetic",
-    }),
-  });
-  await chat.sendMessage(undefined, {
-    metadata: { isCurrent: () => true, onAccepted, onRejected },
-  });
-  expect(fetch).toHaveBeenCalledTimes(1);
-  expect(onAccepted).toHaveBeenCalledExactlyOnceWith({
-    chatId: "chat",
-    sessionId: "session",
-  });
-  expect(onRejected).not.toHaveBeenCalled();
-  expect(lifecycle.hasUnknownAdmission()).toBe(false);
-  expect(chat.status).toBe("error");
-  expect(onError).toHaveBeenCalledTimes(1);
-});
+it.each([
+  [503, "stream_continuation_evidence_unavailable"],
+  [409, "chat_stream_ownership_lost"],
+])(
+  "does not reject or resubmit a POST that was admitted before readback failed (%s)",
+  async (status, error) => {
+    const fetch = vi.fn(async () =>
+      Response.json(
+        {
+          status: "error",
+          error,
+          admission: "admitted",
+          runId: "synthetic-run",
+        },
+        { status },
+      ),
+    );
+    vi.stubGlobal("fetch", fetch);
+    const lifecycle = createChatRequestLifecycle(),
+      onAccepted = vi.fn(),
+      onRejected = vi.fn(),
+      onError = vi.fn();
+    const chat = new ResumableChat({
+      messages: [fixture.seed as UIMessage],
+      onError,
+      transport: createWorkflowChatTransport({
+        baseUrl: "https://recoup.invalid",
+        continuationProtocol: "canonical-base-v1",
+        requestLifecycle: lifecycle,
+        getIds: () => ({ chatId: "chat", sessionId: "session" }),
+        getAccessToken: async () => "synthetic",
+      }),
+    });
+    await chat.sendMessage(undefined, {
+      metadata: { isCurrent: () => true, onAccepted, onRejected },
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(onAccepted).toHaveBeenCalledExactlyOnceWith({
+      chatId: "chat",
+      sessionId: "session",
+    });
+    expect(onRejected).not.toHaveBeenCalled();
+    expect(lifecycle.hasUnknownAdmission()).toBe(false);
+    expect(chat.status).toBe("error");
+    expect(onError).toHaveBeenCalledTimes(1);
+  },
+);

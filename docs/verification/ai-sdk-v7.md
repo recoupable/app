@@ -76,9 +76,10 @@ the failed response was SSE. Error classification consumes at most8192 bytes and
 five seconds, respects Stop/scope abort, and distinguishes admitted, proven
 not-admitted, and unknown. Truncated/malformed/oversized/stalled protocol failures
 remain unknown: retain the user message and attachments, hide retry/discard, block
-another send and require confirmed Stop. Parsed legacy non-protocol4xx denials
-retain their existing pre-admission behavior; protocol errors need an explicit
-admission outcome. No arbitrary response bytes are exposed in the SDK/UI error. Synthetic hook tests retain the user message, clear
+another send and require confirmed Stop. Only an explicit `admission: "not_admitted"` proves rejection; bare4xx errors
+remain unknown too. The post-start `chat_stream_ownership_lost`409 with explicit
+`admission: "admitted"` and real run ID confirms creation, never successful SSE
+or confirmed cancellation. No arbitrary response bytes are exposed in the SDK/UI error. Synthetic hook tests retain the user message, clear
 the accepted draft, and make a retry-draft action a no-op.
 
 `continuation-v1/projection-step.json` preserves the frozen API dfb906dd synthetic

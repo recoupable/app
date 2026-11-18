@@ -417,7 +417,14 @@ it.each([false, true])(
   async (dev) => {
     environment(dev);
     const f = fixture(() =>
-      Response.json({ error: "Running in another tab" }, { status: 409 }),
+      Response.json(
+        {
+          status: "error",
+          error: "Running in another tab",
+          admission: "not_admitted",
+        },
+        { status: 409 },
+      ),
     );
     const h = await mount();
     await draft(h);
@@ -709,7 +716,12 @@ it("retries the original rejected payload while retaining newer composer text an
     h.current().setTextAttachments([newerText]);
   });
   await act(async () => {
-    admission.resolve(Response.json({ error: "Busy" }, { status: 409 }));
+    admission.resolve(
+      Response.json(
+        { status: "error", error: "Busy", admission: "not_admitted" },
+        { status: 409 },
+      ),
+    );
     await send;
   });
   expect(h.current().input).toBe("Newer draft");
@@ -734,7 +746,12 @@ it("retries the original rejected payload while retaining newer composer text an
 });
 
 it("explicit discard releases a newer draft without deleting messages or attachments", async () => {
-  const f = fixture(() => Response.json({ error: "Busy" }, { status: 409 }));
+  const f = fixture(() =>
+    Response.json(
+      { status: "error", error: "Busy", admission: "not_admitted" },
+      { status: 409 },
+    ),
+  );
   const h = await mount();
   await draft(h);
   await act(async () => {
@@ -863,7 +880,12 @@ it.each([false, true])(
 it("keeps programmatic append rejection recoverable and excludes its optimistic ID from retry history", async () => {
   let reject = true;
   const f = fixture(() =>
-    reject ? Response.json({ error: "Busy" }, { status: 409 }) : response(),
+    reject
+      ? Response.json(
+          { status: "error", error: "Busy", admission: "not_admitted" },
+          { status: 409 },
+        )
+      : response(),
   );
   const h = await mount();
   await act(async () => {
@@ -892,7 +914,12 @@ it("keeps programmatic append rejection recoverable and excludes its optimistic 
 it("edits a rejected unpersisted message locally without DELETE or implicit regeneration", async () => {
   let reject = true;
   const f = fixture(() =>
-    reject ? Response.json({ error: "Busy" }, { status: 409 }) : response(),
+    reject
+      ? Response.json(
+          { status: "error", error: "Busy", admission: "not_admitted" },
+          { status: 409 },
+        )
+      : response(),
   );
   const h = await mount();
   await draft(h);
@@ -925,7 +952,12 @@ it("edits a rejected unpersisted message locally without DELETE or implicit rege
 
 it("retains a deep-link auto-send rejection for explicit retry without automatic resubmission", async () => {
   external.routeChatId = undefined;
-  const f = fixture(() => Response.json({ error: "Busy" }, { status: 409 }));
+  const f = fixture(() =>
+    Response.json(
+      { status: "error", error: "Busy", admission: "not_admitted" },
+      { status: 409 },
+    ),
+  );
   const h = await mount("ready", { sessionId: "session" }, [
     {
       id: "initial-query",
@@ -1020,6 +1052,7 @@ it("keeps a second tab's rejected turn recoverable while one accepted run is act
         {
           status: "error",
           error: "Another workflow is already running for this chat",
+          admission: "not_admitted",
         },
         { status: 409 },
       );
@@ -1278,7 +1311,12 @@ it.each(["sessionId", "workflowChatId"] as const)(
 );
 
 it("keeps retained retry, discard, edit, input and message setters from mutating a new scope", async () => {
-  const f = fixture(() => Response.json({ error: "Busy" }, { status: 409 }));
+  const f = fixture(() =>
+    Response.json(
+      { status: "error", error: "Busy", admission: "not_admitted" },
+      { status: 409 },
+    ),
+  );
   const h = await mount();
   await draft(h);
   const old = h.current();
@@ -1446,7 +1484,10 @@ it.each(["denied", "unknown then stopped"] as const)(
     fixture(() => {
       if (outcome === "unknown then stopped")
         throw new TypeError("Failed to fetch");
-      return Response.json({ error: "Busy" }, { status: 409 });
+      return Response.json(
+        { status: "error", error: "Busy", admission: "not_admitted" },
+        { status: 409 },
+      );
     });
     const h = await mount(
       "ready",
@@ -1779,7 +1820,10 @@ it.each(["denied", "unknown"] as const)(
     external.routeChatId = undefined;
     fixture(() => {
       if (outcome === "unknown") throw new TypeError("Failed to fetch");
-      return Response.json({ error: "Busy" }, { status: 409 });
+      return Response.json(
+        { status: "error", error: "Busy", admission: "not_admitted" },
+        { status: 409 },
+      );
     });
     const h = await mount("ready", { sessionId: "session" }, history);
     act(() => h.current().setInput("Unaccepted"));
@@ -2399,7 +2443,12 @@ it("resends the edited persisted question only after successful deletion through
 });
 
 it("retains the edited text in recovery when resend admission fails after successful deletion", async () => {
-  const f = fixture(() => Response.json({ error: "Busy" }, { status: 409 }));
+  const f = fixture(() =>
+    Response.json(
+      { status: "error", error: "Busy", admission: "not_admitted" },
+      { status: 409 },
+    ),
+  );
   const h = await mount();
   const saved = h.current().messages.find((m) => m.role === "user")!;
   const ui = render(
@@ -2418,7 +2467,7 @@ it("retains the edited text in recovery when resend admission fails after succes
   expect(h.current().failedDraftPreview).toBe("Edited recovery text");
 });
 
-it.each(["truncated", "oversized", "network"])(
+it.each(["truncated", "oversized", "network", "bare409"])(
   "unknown %s admission retains message/files and blocks Retry/Send until Stop confirmation",
   async (kind) => {
     let stopped = false;
@@ -2431,6 +2480,14 @@ it.each(["truncated", "oversized", "network"])(
     const f = fixture(
       () => {
         if (kind === "network") throw new TypeError("Lost response");
+        if (kind === "bare409")
+          return Response.json(
+            {
+              status: "error",
+              error: "Another workflow is already running for this chat",
+            },
+            { status: 409 },
+          );
         return new Response(
           kind === "truncated" ? body.slice(0, -1) : body + " ".repeat(9000),
           { status: 503 },

@@ -56,17 +56,10 @@ export async function classifyChatAdmissionFailure(
         "stream_continuation_upgrade_required",
         "stream_continuation_evidence_unavailable",
         "stream_continuation_invalid",
+        "chat_stream_ownership_lost",
       ].includes(body.error)
     )
       return result("admitted");
-    // Preserve the existing API's bounded, parsed pre-admission 4xx errors.
-    // Protocol errors require their explicit outcome even when they use409.
-    if (
-      !Object.hasOwn(body, "admission") &&
-      !body.error.startsWith("stream_continuation_") &&
-      [400, 401, 403, 404, 409, 422, 429].includes(response.status)
-    )
-      return result("not_admitted");
     return result("unknown");
   } catch {
     // Keep a private bounded diagnostic; never put arbitrary server bytes into

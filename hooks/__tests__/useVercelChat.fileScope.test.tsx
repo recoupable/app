@@ -12,7 +12,7 @@ const ext = vi.hoisted(() => ({
   send: vi.fn(),
   files: [{ id: "draft.txt", path: "draft.txt", mime_type: "text/plain" }],
   messages: [],
-  lifecycle: { cancelAll: vi.fn() },
+  lifecycle: { cancelAll: vi.fn(), hasUnknownAdmission: () => false },
   snapshots: { captureSendIntent: () => () => true },
 }));
 vi.mock("@privy-io/react-auth", () => ({
