@@ -1,5 +1,5 @@
 import type { UIMessage, UIMessageChunk } from "ai";
-import { isAdmittedContinuationFailure } from "./isAdmittedContinuationFailure";
+import { classifyChatAdmissionFailure } from "./classifyChatAdmissionFailure";
 import {
   createChatRequestLifecycle,
   type ChatRequestLifecycle,
@@ -136,12 +136,28 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
   ): WorkflowChatTransportOptions<UI_MESSAGE> => {
     let ids: ReturnType<typeof getIds> | undefined;
     let admitted = false;
+    let failureSettled = false;
+    const canPublish = () =>
+      !signal?.aborted && (!metadata || metadata.isCurrent());
     const reject = (error: unknown) => {
-      if (!admitted && metadata)
+      if (!admitted && !failureSettled && metadata && canPublish())
         metadata.onRejected(
           error instanceof Error ? error : new Error(String(error)),
         );
+      failureSettled = true;
       operation.settle();
+    };
+    const unknown = () => {
+      if (admitted || failureSettled) return;
+      failureSettled = true;
+      operation.markUnknown();
+      operation.settle();
+      if (canPublish())
+        metadata?.onUnknown?.(
+          new Error(
+            "Could not confirm whether this message started. Use Stop before sending again.",
+          ),
+        );
     };
     const check = () => {
       signal?.throwIfAborted();
@@ -161,51 +177,47 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
           // preparation. Stop leaves it attached until the server confirms.
           operation.dispatched();
           const response = await fetch(url.toString(), init);
-          if (
-            init?.method === "POST" &&
-            (await isAdmittedContinuationFailure(response))
-          ) {
-            // A run exists even though its stored protocol could not be read.
-            // Acknowledge admission without treating the failed response as SSE.
-            admitted = true;
-            operation.admit();
-            operation.settle();
-            if (ids) metadata?.onAccepted(ids);
+          if (init?.method === "POST" && !response.ok) {
+            const result = await classifyChatAdmissionFailure(response, signal);
+            check();
+            if (result.outcome === "admitted") {
+              admitted = true;
+              operation.admit();
+              operation.settle();
+              if (ids) metadata?.onAccepted(ids);
+            } else if (result.outcome === "unknown") unknown();
+            else
+              reject(
+                Object.assign(new Error("Message was not accepted"), {
+                  status: response.status,
+                }),
+              );
+            // The bounded classifier owns the error body. SDK receives a finite,
+            // sanitized error and cannot hang rereading a stalled/oversized body.
+            return Response.json(
+              {
+                status: "error",
+                error:
+                  result.outcome === "admitted"
+                    ? "Message started, but its response is unavailable."
+                    : result.outcome === "unknown"
+                      ? "Could not confirm message admission. Use Stop before sending again."
+                      : "Message was not accepted.",
+              },
+              { status: response.status },
+            );
           }
           if (init?.method !== "POST" && response.ok && response.body)
             onStreamAccepted?.();
           if (
             init?.method === "POST" &&
-            response.ok &&
             (!response.body || !response.headers.get("x-workflow-run-id"))
           )
-            operation.markUnknown();
-          if (
-            init?.method === "POST" &&
-            !admitted &&
-            (!response.ok ||
-              !response.body ||
-              !response.headers.get("x-workflow-run-id"))
-          ) {
-            reject(
-              Object.assign(
-                new Error(
-                  response.ok
-                    ? "Could not confirm message admission"
-                    : "Message was not accepted",
-                ),
-                response.ok ? {} : { status: response.status },
-              ),
-            );
-          }
+            unknown();
           return response;
         } catch (error) {
-          if (
-            init?.method === "POST" &&
-            !(error instanceof DOMException && error.name === "AbortError")
-          )
-            operation.markUnknown();
-          reject(error);
+          if (init?.method === "POST") unknown();
+          else operation.settle();
           throw error;
         }
       },

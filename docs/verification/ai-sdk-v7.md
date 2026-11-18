@@ -52,7 +52,7 @@ are relative to an existing canonical base. Treating it as fresh replay drops
 saved text and invalidates those spans. The negotiated start metadata control is
 `recoupStream: { version: 1, mode: "continuation", base }`. The decoder requires a
 matching assistant ID and canonical message, rejects raw custom/reasoning-file
-parts and nested reserved controls, and bounds the complete marker to 1 MiB UTF-8,
+parts and reserved controls nested in actual message metadata, and bounds the complete marker to 1 MiB UTF-8,
 2048 parts, depth32 and50000 visited values. It preserves original/proof payloads
 inside canonical observations; this is not proof or account authorization.
 
@@ -62,7 +62,9 @@ is ahead. Marker-free starts retain full-replay semantics. Invalid/unknown marke
 fail before publishing the base. Absolute raw event cursors remain transport-owned.
 Only the `useVercelChat` consumer opts in with
 `X-Recoup-Stream-Continuation: canonical-base-v1`; the shared transport defaults
-to no advertisement, including the plain-SDK first-task report consumer.
+to no advertisement, including the plain-SDK first-task report consumer. Queued send/regeneration
+capture scope before waiting for cancellation and never rebind an old intent to
+the next workspace.
 
 The API must bind an explicit protocol to durable run input and gate every
 initial/read/resume/terminal response after existing authority checks, including
@@ -70,7 +72,13 @@ old clients connecting at a nonzero cursor. Header support alone grants nothing.
 Unsupported required mode returns409; unknown stored input cannot default to safe
 legacy. A post-start protocol failure reporting `admission: "admitted"` and a
 bounded run ID acknowledges the sent draft without resubmitting it or pretending
-the failed response was SSE. Synthetic hook tests retain the user message, clear
+the failed response was SSE. Error classification consumes at most8192 bytes and
+five seconds, respects Stop/scope abort, and distinguishes admitted, proven
+not-admitted, and unknown. Truncated/malformed/oversized/stalled protocol failures
+remain unknown: retain the user message and attachments, hide retry/discard, block
+another send and require confirmed Stop. Parsed legacy non-protocol4xx denials
+retain their existing pre-admission behavior; protocol errors need an explicit
+admission outcome. No arbitrary response bytes are exposed in the SDK/UI error. Synthetic hook tests retain the user message, clear
 the accepted draft, and make a retry-draft action a no-op.
 
 `continuation-v1/projection-step.json` preserves the frozen API dfb906dd synthetic

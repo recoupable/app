@@ -46,15 +46,15 @@ export class ResumableChat extends Chat<UIMessage> {
     message,
     request,
   ) => {
+    const isScopeCurrent = this.options.captureResumeScope?.() ?? (() => true);
+    if (!isScopeCurrent()) return;
     const intent = ++this.resumeIntent;
     const previous = this.resume;
     if (previous) {
       previous.controller.abort();
       await previous.done;
     }
-    if (intent !== this.resumeIntent) return;
-    const isScopeCurrent = this.options.captureResumeScope?.() ?? (() => true);
-    if (!isScopeCurrent()) return;
+    if (intent !== this.resumeIntent || !isScopeCurrent()) return;
     if (message != null) {
       let parts: UIMessage["parts"];
       if ("text" in message || "files" in message) {
@@ -110,15 +110,15 @@ export class ResumableChat extends Chat<UIMessage> {
     messageId,
     ...request
   } = {}) => {
+    const isScopeCurrent = this.options.captureResumeScope?.() ?? (() => true);
+    if (!isScopeCurrent()) return;
     const intent = ++this.resumeIntent;
     const previous = this.resume;
     if (previous) {
       previous.controller.abort();
       await previous.done;
     }
-    if (intent !== this.resumeIntent) return;
-    const isScopeCurrent = this.options.captureResumeScope?.() ?? (() => true);
-    if (!isScopeCurrent()) return;
+    if (intent !== this.resumeIntent || !isScopeCurrent()) return;
     const index =
       messageId == null
         ? this.messages.length - 1

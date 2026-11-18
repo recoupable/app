@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import type { UIMessageChunk } from "ai";
+import type { UIMessage, UIMessageChunk } from "ai";
 import { decodeContinuationStart } from "../decodeContinuationStart";
 import fixture from "../__fixtures__/continuation-v1/projection-step.json";
 const marker = () => ({
@@ -35,16 +35,6 @@ const invalidCases: ReadonlyArray<readonly [string, () => unknown]> = [
       base: {
         ...fixture.seed,
         metadata: { nested: { recoupStream: marker() } },
-      },
-    }),
-  ],
-  [
-    "nested data control",
-    () => ({
-      ...marker(),
-      base: {
-        ...fixture.seed,
-        parts: [{ type: "data-control", data: { recoupStream: {} } }],
       },
     }),
   ],
@@ -155,4 +145,32 @@ it("rejects control metadata outside a start", async () => {
       messageMetadata: { recoupStream: marker() },
     }),
   ).rejects.toThrow();
+});
+
+it("preserves opaque recoupStream provider payload keys inside canonical observations", async () => {
+  const base = structuredClone(fixture.result.responseMessage) as UIMessage;
+  const observation = base.parts.find(
+    (part) => part.type === "data-recoup-sdk-observation",
+  );
+  if (!observation || !("data" in observation))
+    throw Error("Missing fixture observation");
+  const original = {
+    type: "custom",
+    kind: "provider.content",
+    providerMetadata: {
+      provider: { recoupStream: { ordinary: "opaque value" } },
+    },
+  };
+  (observation.data as Record<string, unknown>).original = original;
+  const input = start({ ...marker(), base });
+  const decoded = await decodeContinuationStart(input);
+  expect(decoded.base).toEqual(base);
+  expect(decoded.chunk).toEqual({
+    type: "start",
+    messageId: "assistant",
+    messageMetadata: { kept: 7 },
+  });
+  expect((observation.data as Record<string, unknown>).original).toEqual(
+    original,
+  );
 });

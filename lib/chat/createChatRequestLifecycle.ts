@@ -85,4 +85,6 @@ export interface ChatAdmissionMetadata {
   isCurrent: () => boolean;
   onAccepted: (ids: { chatId: string; sessionId?: string }) => void;
   onRejected: (error: Error & { status?: number }) => void;
+  /** Dispatched request may have started; retain its message and block resubmit. */
+  onUnknown?: (error: Error) => void;
 }

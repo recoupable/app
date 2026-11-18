@@ -31,7 +31,7 @@ export async function decodeContinuationStart(chunk: UIMessageChunk): Promise<{
   let values = 0;
   let stringUnits = 0;
   const seen = new Set<object>();
-  const visit = (value: unknown, depth: number) => {
+  const visit = (value: unknown, depth: number, controlMetadata = false) => {
     if (++values > 50_000 || depth > 32) throw invalid();
     if (value === null || typeof value === "boolean") return;
     if (typeof value === "string") {
@@ -51,8 +51,12 @@ export async function decodeContinuationStart(chunk: UIMessageChunk): Promise<{
       if (!descriptor.enumerable || !("value" in descriptor)) throw invalid();
       if (!Array.isArray(value)) stringUnits += key.length;
       if (stringUnits > 1_048_576) throw invalid();
-      if (key === "recoupStream") throw invalid();
-      visit(descriptor.value, depth + 1);
+      if (controlMetadata && key === "recoupStream") throw invalid();
+      visit(
+        descriptor.value,
+        depth + 1,
+        controlMetadata || (depth === 1 && key === "metadata"),
+      );
     }
     seen.delete(value);
   };

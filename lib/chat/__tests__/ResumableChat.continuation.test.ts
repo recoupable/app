@@ -204,3 +204,50 @@ it("ordinary send Stop cancels its source and produces one aborted finish", asyn
   expect(onFinish).toHaveBeenCalledTimes(1);
   expect(onFinish.mock.calls[0][0].isAbort).toBe(true);
 });
+
+it.each(["send", "regenerate"] as const)(
+  "does not rebind queued stale %s after waiting for cancellation",
+  async (method) => {
+    let generation = 1;
+    let release!: () => void;
+    let cancelling = false;
+    const cancelled = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const sendMessages = vi.fn();
+    const chat = new ResumableChat({
+      messages: [base],
+      captureResumeScope: () => {
+        const captured = generation;
+        return () => captured === generation;
+      },
+      transport: {
+        sendMessages,
+        reconnectToStream: async () =>
+          new ReadableStream({
+            start(c) {
+              c.enqueue(start);
+            },
+            cancel() {
+              cancelling = true;
+              return cancelled;
+            },
+          }),
+      },
+    });
+    const previous = chat.resumeStream();
+    await vi.waitFor(() => expect(chat.status).toBe("streaming"));
+    const queued =
+      method === "send"
+        ? chat.sendMessage({ text: "stale user" })
+        : chat.regenerate();
+    await vi.waitFor(() => expect(cancelling).toBe(true));
+    generation++;
+    release();
+    await previous;
+    await queued;
+    expect(chat.messages).toEqual([base]);
+    expect(sendMessages).not.toHaveBeenCalled();
+    expect(chat.status).toBe("ready");
+  },
+);

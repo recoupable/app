@@ -31,6 +31,7 @@ interface VercelChatContextType {
   sendErrorStatus?: number;
   failedDraftPreview?: string;
   hasFailedSubmission?: boolean;
+  hasUnknownAdmission?: boolean;
   retrySendMessage?: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
   discardFailedSubmission?: () => void;
   stopState?: {
@@ -155,6 +156,7 @@ export function VercelChatProvider({
     sendErrorStatus,
     failedDraftPreview,
     hasFailedSubmission,
+    hasUnknownAdmission,
     retrySendMessage,
     discardFailedSubmission,
     stopState,
@@ -217,6 +219,7 @@ export function VercelChatProvider({
     sendErrorStatus,
     failedDraftPreview,
     hasFailedSubmission,
+    hasUnknownAdmission,
     retrySendMessage,
     discardFailedSubmission,
     stopState,

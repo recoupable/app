@@ -879,6 +879,12 @@ export function useVercelChat({
         setPreparing(false);
         onDispatch(acceptedIds);
       },
+      onUnknown: (error) => {
+        if (!canPublish()) return;
+        setFailedDraft(undefined);
+        setSendError(error.message);
+        setSendErrorStatus(undefined);
+      },
       onRejected: (error) => {
         if (!canPublish()) return;
         pendingAdmissionIds.current.delete(messageId);
@@ -1029,6 +1035,7 @@ export function useVercelChat({
       preparing ||
       stopState.status === "stopping" ||
       stoppingRef.current ||
+      requestLifecycle.hasUnknownAdmission() ||
       stopBlockedRef.current ||
       stopState.status === "error" ||
       (failedDraftRef.current && retryDraft !== failedDraftRef.current)
@@ -1150,6 +1157,7 @@ export function useVercelChat({
         ? failedDraft.input || "Attached files"
         : undefined,
     hasFailedSubmission: !!failedDraft,
+    hasUnknownAdmission: requestLifecycle.hasUnknownAdmission(),
     retrySendMessage: async (event: React.FormEvent<HTMLFormElement>) => {
       if (!isActionCurrent()) return;
       if (failedDraftRef.current)

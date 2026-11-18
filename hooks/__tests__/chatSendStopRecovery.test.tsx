@@ -304,15 +304,14 @@ async function mountBootstrap(initialMessages?: UIMessage[]) {
   return { ...view, current: () => bootstrapCurrent! };
 }
 
-it.each([409, 429, 503, 401, "network"])(
+it.each([409, 429, 503, 401])(
   "retains draft and both attachments on %s; manual retry sends once without DELETE",
   async (status) => {
     let rejected = true;
     const f = fixture(() => {
       if (!rejected) return response();
-      if (status === "network") throw new TypeError("Network unavailable");
       return Response.json(
-        { error: "Not accepted" },
+        { status: "error", error: "Not accepted", admission: "not_admitted" },
         { status: Number(status) },
       );
     });
@@ -777,7 +776,18 @@ it("keeps unknown admission plus Stopfalse retryable without replaying either dr
   });
   expect(f.posts()).toHaveLength(1);
   expect(h.current().input).toBe("Newer draft");
-  expect(h.current().failedDraftPreview).toBe("Retain this draft");
+  expect(h.current().failedDraftPreview).toBeUndefined();
+  expect(h.current().hasUnknownAdmission).toBe(true);
+  expect(
+    h
+      .current()
+      .messages.some((message) =>
+        message.parts.some(
+          (part) =>
+            part.type === "text" && part.text.includes("Retain this draft"),
+        ),
+      ),
+  ).toBe(true);
   stopped = true;
   await act(async () => {
     await h.current().stop();
@@ -1338,7 +1348,14 @@ it.each([
   "uses actionable send copy for %i and keeps its status out of product text",
   async (status, message) => {
     fixture(() =>
-      Response.json({ status: "error", error: "Synthetic denial" }, { status }),
+      Response.json(
+        {
+          status: "error",
+          error: "Synthetic denial",
+          admission: "not_admitted",
+        },
+        { status },
+      ),
     );
     const h = await mount();
     await draft(h);
@@ -1447,7 +1464,14 @@ it.each(["denied", "unknown then stopped"] as const)(
       await act(async () => {
         await h.current().stop();
       });
-    fireEvent.click(h.getByRole("button", { name: "Discard failed message" }));
+    if (outcome === "denied")
+      fireEvent.click(
+        h.getByRole("button", { name: "Discard failed message" }),
+      );
+    else
+      expect(
+        h.queryByRole("button", { name: "Discard failed message" }),
+      ).toBeNull();
     const button = h.getByRole("button", {
       name: "Send message",
     }) as HTMLButtonElement;
@@ -1480,11 +1504,19 @@ it("quality recovery keeps original uncertainty visible beside confirmed Stop", 
   const alert = h.getByRole("alert");
   expect(alert.textContent).toContain("Response stopped.");
   expect(alert.textContent).toContain(
-    "Couldn’t confirm this message was sent. Please retry.",
+    "Could not confirm whether this message started. Use Stop before sending again.",
   );
-  expect(alert.textContent).toContain("Original");
-  expect(h.current().hasFailedSubmission).toBe(true);
-  expect(h.getByRole("button", { name: "Retry" })).toBeTruthy();
+  expect(
+    h
+      .current()
+      .messages.some((message) =>
+        message.parts.some(
+          (part) => part.type === "text" && part.text === "Original",
+        ),
+      ),
+  ).toBe(true);
+  expect(h.current().hasFailedSubmission).toBe(false);
+  expect(h.queryByRole("button", { name: "Retry" })).toBeNull();
   expect(h.current().input).toBe("Newer draft");
 });
 
@@ -1754,7 +1786,8 @@ it.each(["denied", "unknown"] as const)(
     await act(async () => {
       await h.current().handleSendMessage(event());
     });
-    expect(h.current().hasFailedSubmission).toBe(true);
+    expect(h.current().hasFailedSubmission).toBe(outcome === "denied");
+    expect(h.current().hasUnknownAdmission).toBe(outcome === "unknown");
     expect(external.refetchCredits).not.toHaveBeenCalled();
   },
 );
@@ -2069,7 +2102,7 @@ it.each([
   [false, "discard then Send"],
   [true, "discard then Send"],
 ] as const)(
-  "review later confirmed admission supersedes earlier unknown response after %s recovery (%s)",
+  "review unknown admission requires confirmed Stop before an explicit new send (dev=%s, recovery=%s)",
   async (dev, recovery) => {
     environment(dev);
     let posts = 0;
@@ -2078,7 +2111,7 @@ it.each([
         if (++posts === 1) throw new TypeError("Lost POST response");
         return response();
       },
-      () => Response.json({ success: true, stopped: false }),
+      () => Response.json({ success: true, stopped: true }),
     );
     const h = await mount();
     await draft(h);
@@ -2093,21 +2126,20 @@ it.each([
         await h.current().handleSendMessage(event());
       }
     });
-    expect(f.posts()).toHaveLength(2);
+    expect(f.posts()).toHaveLength(1);
     expect(h.current().hasFailedSubmission).toBe(false);
+    expect(h.current().hasUnknownAdmission).toBe(true);
     await act(async () => {
       await h.current().stop();
     });
-    expect(h.current().stopState?.status).toBe("inactive");
-    expect(h.current().stopState?.message).toContain(
-      "No active response was found",
-    );
-    expect(f.posts()).toHaveLength(2);
+    expect(h.current().stopState?.status).toBe("stopped");
+    expect(h.current().stopState?.message).toContain("Response stopped");
+    expect(f.posts()).toHaveLength(1);
     act(() => h.current().setInput("Explicit follow-up"));
     await act(async () => {
       await h.current().handleSendMessage(event());
     });
-    expect(f.posts()).toHaveLength(3);
+    expect(f.posts()).toHaveLength(2);
     expect(f.calls.some((call) => call.method === "DELETE")).toBe(false);
   },
 );
@@ -2150,7 +2182,7 @@ it.each([
   [false, "missing body"],
   [true, "missing body"],
 ] as const)(
-  "review pinned Workflow SDK does not admit a rejected response (dev=%s, response=%s)",
+  "review pinned Workflow SDK preserves unknown admission for an invalid response (dev=%s, response=%s)",
   async (dev, kind) => {
     environment(dev);
     external.routeChatId = undefined;
@@ -2170,11 +2202,13 @@ it.each([
     await act(async () => {
       await h.current().handleSendMessage(event());
     });
-    expect(h.current().hasFailedSubmission).toBe(true);
+    expect(h.current().hasFailedSubmission).toBe(false);
+    expect(h.current().hasUnknownAdmission).toBe(true);
     expect(h.current().input).toBe("Retain this draft");
     expect(h.current().attachments).toEqual([image]);
     expect(h.current().textAttachments).toEqual([textFile]);
-    expect(h.current().messages).toEqual([]);
+    expect(h.current().messages).toHaveLength(1);
+    expect(h.current().messages[0].role).toBe("user");
     expect(external.addOptimisticConversation).not.toHaveBeenCalled();
     expect(external.refetchCredits).not.toHaveBeenCalled();
     expect(f.posts()).toHaveLength(1);
@@ -2383,3 +2417,66 @@ it("retains the edited text in recovery when resend admission fails after succes
   expect(f.posts()).toHaveLength(1);
   expect(h.current().failedDraftPreview).toBe("Edited recovery text");
 });
+
+it.each(["truncated", "oversized", "network"])(
+  "unknown %s admission retains message/files and blocks Retry/Send until Stop confirmation",
+  async (kind) => {
+    let stopped = false;
+    const body = JSON.stringify({
+      status: "error",
+      error: "stream_continuation_evidence_unavailable",
+      admission: "admitted",
+      runId: "run",
+    });
+    const f = fixture(
+      () => {
+        if (kind === "network") throw new TypeError("Lost response");
+        return new Response(
+          kind === "truncated" ? body.slice(0, -1) : body + " ".repeat(9000),
+          { status: 503 },
+        );
+      },
+      () => Response.json({ success: true, stopped }),
+    );
+    const h = await mount(
+      "ready",
+      { sessionId: "session" },
+      undefined,
+      true,
+      true,
+    );
+    await draft(h);
+    await act(async () => {
+      await h.current().handleSendMessage(event());
+    });
+    expect(h.current().hasUnknownAdmission).toBe(true);
+    expect(h.current().hasFailedSubmission).toBe(false);
+    expect(h.current().input).toBe("Retain this draft");
+    expect(h.current().attachments).toEqual([image]);
+    expect(h.current().textAttachments).toEqual([textFile]);
+    expect(
+      h.current().messages.filter((message) => message.role === "user"),
+    ).toHaveLength(2);
+    expect(h.queryByRole("button", { name: "Retry" })).toBeNull();
+    expect(h.getByRole("button", { name: "Confirm Stop" })).toBeTruthy();
+    expect(
+      (h.getByRole("button", { name: "Send message" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    await act(async () => {
+      await h.current().retrySendMessage?.(event());
+      await h.current().handleSendMessage(event());
+      await h.current().stop();
+      await h.current().handleSendMessage(event());
+    });
+    expect(f.posts()).toHaveLength(1);
+    expect(h.current().stopState?.status).toBe("error");
+    stopped = true;
+    await act(async () => {
+      await h.current().stop();
+    });
+    expect(h.current().hasUnknownAdmission).toBe(false);
+    expect(f.posts()).toHaveLength(1);
+    expect(h.current().attachments).toEqual([image]);
+  },
+);
