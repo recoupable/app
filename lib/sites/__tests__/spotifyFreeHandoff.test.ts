@@ -185,3 +185,24 @@ it("requests the API-configured permissions for registered-player authorization"
     "streaming user-read-playback-state",
   );
 });
+
+it("does not turn unconfigured audio mode into permission for uploaded playback", async () => {
+  const h = listeningHarness("free");
+  const audio = addUploadedAudio(h);
+  h.storage.clear();
+  const dataset = h.ctx.document.body.dataset as Record<string, string>;
+  const config = JSON.parse(dataset.playerConfig);
+  dataset.playerConfig = JSON.stringify({
+    ...config,
+    capabilities: {
+      version: 1,
+      spotify: { clientConfiguration: "unconfigured" },
+    },
+  });
+  await h.run();
+  expect(h.nodes["spotify-connect"].disabled).toBe(true);
+  expect(dataset.playbackSource).not.toBe("audio");
+  expect(audio.play).not.toHaveBeenCalled();
+  expect(h.fetch).not.toHaveBeenCalled();
+  expect(h.head.appendChild).not.toHaveBeenCalled();
+});

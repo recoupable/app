@@ -5,6 +5,28 @@ const dsp = z
   .url()
   .refine((value) => new URL(value).protocol === "https:");
 const configSchema = z.object({
+  capabilities: z.preprocess(
+    (value) =>
+      value &&
+      typeof value === "object" &&
+      "version" in value &&
+      value.version === 1
+        ? value
+        : undefined,
+    z
+      .object({
+        version: z.literal(1),
+        spotify: z.object({
+          clientConfiguration: z.enum(["configured", "unconfigured"]),
+          releaseConfigured: z.boolean(),
+          premiumEligibility: z.literal("unknown"),
+          tokenStatus: z.literal("unknown"),
+          scopeStatus: z.literal("unknown"),
+          playbackSupport: z.literal("unknown"),
+        }),
+      })
+      .optional(),
+  ),
   playerId: z.string().uuid(),
   name: z.string().max(120),
   artwork: dsp.nullable().optional(),

@@ -15,8 +15,13 @@ export async function GET(
       if (value) campaign.set(key, value.slice(0, 100));
     }
     const suffix = campaign.size ? `?${escape(campaign.toString())}` : "";
+    const spotifyUnconfigured =
+      config.capabilities?.spotify.clientConfiguration === "unconfigured";
+    const spotifyLabel = spotifyUnconfigured
+      ? "Open player"
+      : "Sign in with Spotify";
     return new Response(
-      `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(config.name)} · Recoup</title><link rel="stylesheet" href="/release-listen.css"></head><body><main>${config.artwork ? `<img src="${escape(config.artwork)}" alt="${escape(config.name)} artwork">` : ""}<h1>${escape(config.name)}</h1><p>Choose where to listen.</p>${config.spotifyUrl ? `<a class="spotify" href="/listen/${id}/spotify${suffix}">Sign in with Spotify</a><a class="fallback" href="${escape(config.spotifyUrl)}" rel="noopener noreferrer">Open Spotify</a>` : ""}${config.appleUrl ? `<a class="apple" href="/listen/${id}/apple_music${suffix}">Sign in with Apple</a><a class="fallback" href="${escape(config.appleUrl)}" rel="noopener noreferrer">Open Apple Music</a>` : ""}</main></body></html>`,
+      `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(config.name)} · Recoup</title><link rel="stylesheet" href="/release-listen.css"></head><body><main>${config.artwork ? `<img src="${escape(config.artwork)}" alt="${escape(config.name)} artwork">` : ""}<h1>${escape(config.name)}</h1><p>Choose where to listen.</p>${config.spotifyUrl ? `${spotifyUnconfigured ? "<p>Spotify sign-in is unavailable.</p>" : ""}${!spotifyUnconfigured || config.freePlayback === "audio" ? `<a class="spotify" href="/listen/${id}/spotify${suffix}">${spotifyLabel}</a>` : ""}<a class="fallback" href="${escape(config.spotifyUrl)}" rel="noopener noreferrer">Open Spotify</a>` : ""}${config.appleUrl ? `<a class="apple" href="/listen/${id}/apple_music${suffix}">Sign in with Apple</a><a class="fallback" href="${escape(config.appleUrl)}" rel="noopener noreferrer">Open Apple Music</a>` : ""}</main></body></html>`,
       {
         headers: {
           "Content-Type": "text/html; charset=utf-8",

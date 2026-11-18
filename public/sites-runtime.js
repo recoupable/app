@@ -480,6 +480,9 @@
     const config = await configResponse.json();
     if (
       !config.configured ||
+      (playerConfig?.capabilities?.version === 1 &&
+        playerConfig.capabilities.spotify.clientConfiguration ===
+          "unconfigured") ||
       (document.body.dataset.fanSite === "true" && !fanConnectUrl)
     ) {
       connect.disabled = true;
