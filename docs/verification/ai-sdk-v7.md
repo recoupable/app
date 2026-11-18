@@ -19,14 +19,15 @@ Composio's ai v5 peer, are not resolved or represented as peer-clean here.
 
 ## Resume contract
 
-`ResumableChat` owns cold resume through the exported `Chat` extension APIs and
-public `readUIMessageStream`. It never mutates private SDK state. Ordinary sends
-and regeneration stay in the SDK; admitted chunks retain the App's streaming
-feedback even before a text delta arrives.
+`ResumableChat` owns send, regeneration and cold-resume assembly through the
+exported `Chat` extension APIs and public `readUIMessageStream`. It never mutates
+private SDK state. FileList conversion uses the public SDK helper; user editing,
+message IDs, regeneration truncation, callbacks and scope/Stop behavior have
+focused controls. Admitted chunks retain streaming feedback before a text delta.
 
 A no-start continuation seeds the last saved assistant after the first filtered
 byte arrives. It retains prose, metadata, tools and unrelated data parts. An
-explicit start instead opens fresh replay state; a later start creates another
+unmarked explicit start instead opens fresh replay state; a later start creates another
 boundary. A start can replace the current assistant, but cannot overwrite an
 unrelated user or older assistant. Empty/transient-only resumes create no blank
 assistant. Scope disposal suppresses stale publication and callbacks while
@@ -43,6 +44,44 @@ durability and snapshot filtering remain owned by the existing transport and
 lifecycle. This does not implement client tool execution or change server wire
 storage. No provider calls, browser acceptance, authenticated checks, merge or
 deployment are part of this qualification.
+
+## Canonical continuation protocol
+
+An explicit same-assistant API start can precede a delta whose fallback indexes
+are relative to an existing canonical base. Treating it as fresh replay drops
+saved text and invalidates those spans. The negotiated start metadata control is
+`recoupStream: { version: 1, mode: "continuation", base }`. The decoder requires a
+matching assistant ID and canonical message, rejects raw custom/reasoning-file
+parts and nested reserved controls, and bounds the complete marker to 1 MiB UTF-8,
+2048 parts, depth32 and50000 visited values. It preserves original/proof payloads
+inside canonical observations; this is not proof or account authorization.
+
+Both send and resume validate/remove the control before SDK assembly, callbacks
+or message persistence, then rebuild from that exact base even when local history
+is ahead. Marker-free starts retain full-replay semantics. Invalid/unknown markers
+fail before publishing the base. Absolute raw event cursors remain transport-owned.
+Only the `useVercelChat` consumer opts in with
+`X-Recoup-Stream-Continuation: canonical-base-v1`; the shared transport defaults
+to no advertisement, including the plain-SDK first-task report consumer.
+
+The API must bind an explicit protocol to durable run input and gate every
+initial/read/resume/terminal response after existing authority checks, including
+old clients connecting at a nonzero cursor. Header support alone grants nothing.
+Unsupported required mode returns409; unknown stored input cannot default to safe
+legacy. A post-start protocol failure reporting `admission: "admitted"` and a
+bounded run ID acknowledges the sent draft without resubmitting it or pretending
+the failed response was SSE. Synthetic hook tests retain the user message, clear
+the accepted draft, and make a retry-draft action a no-op.
+
+`continuation-v1/projection-step.json` preserves the frozen API dfb906dd synthetic
+step fixture. Tests initially wrap it in the agreed proposed envelope; this is
+not a claim that dfb906dd emits that envelope. Default/snapshot send and resume,
+original/partial/fully saved histories, every event cut, byte fragmentation,
+invalid marker rejection, start-only bases and exact message equality are covered.
+The actual new API producer envelope and frozen paired-source qualification remain
+required, as does independent review of the App successor. Legacy App6's fully
+saved replay already duplicates parts without the marker; unconditional marker
+emission additionally retains control metadata and is not accepted compatibility.
 
 ## Evidence and remaining release gates
 
@@ -73,7 +112,7 @@ recorded in the draft PR; the next step after source review is coordinated wire
 qualification and explicit release approval. Earlier native acceptance holds
 remain separate and unchanged.
 
-Local delivery checks on Node 24.18.0 / pnpm 9.15.0: 3,005 tests passed (one
+Earlier d472 delivery checks on Node 24.18.0 / pnpm 9.15.0: 3,005 tests passed (one
 existing performance skip), full nonincremental TypeScript passed, lint completed
 with zero errors and 54 warnings, changed-file formatting and contributor-path
 checks passed. The production webpack build passed using nonfunctional synthetic

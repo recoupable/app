@@ -259,6 +259,7 @@ export function useVercelChat({
     snapshotConsumer,
     requestLifecycle,
   } = useChatTransport({
+    continuationProtocol: "canonical-base-v1",
     chatId: transportChatId,
     sessionId,
     workspaceStatus,

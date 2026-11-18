@@ -31,7 +31,7 @@ export async function decodeContinuationStart(chunk: UIMessageChunk): Promise<{
   let values = 0;
   let stringUnits = 0;
   const seen = new Set<object>();
-  const visit = (value: unknown, depth: number, controlMetadata = false) => {
+  const visit = (value: unknown, depth: number) => {
     if (++values > 50_000 || depth > 32) throw invalid();
     if (value === null || typeof value === "boolean") return;
     if (typeof value === "string") {
@@ -49,14 +49,10 @@ export async function decodeContinuationStart(chunk: UIMessageChunk): Promise<{
     for (const [key, descriptor] of Object.entries(descriptors)) {
       if (Array.isArray(value) && key === "length") continue;
       if (!descriptor.enumerable || !("value" in descriptor)) throw invalid();
-      stringUnits += key.length;
+      if (!Array.isArray(value)) stringUnits += key.length;
       if (stringUnits > 1_048_576) throw invalid();
-      if (controlMetadata && key === "recoupStream") throw invalid();
-      visit(
-        descriptor.value,
-        depth + 1,
-        controlMetadata || (depth === 1 && key === "metadata"),
-      );
+      if (key === "recoupStream") throw invalid();
+      visit(descriptor.value, depth + 1);
     }
     seen.delete(value);
   };
@@ -94,8 +90,10 @@ export async function decodeContinuationStart(chunk: UIMessageChunk): Promise<{
   } catch {
     throw invalid();
   }
-  const { recoupStream: _control, ...remaining } = metadata;
-  const { messageMetadata: _metadata, ...start } = chunk;
+  const remaining = { ...metadata };
+  delete remaining.recoupStream;
+  const start = { ...chunk };
+  delete start.messageMetadata;
   return {
     chunk: Object.keys(remaining).length
       ? { ...start, messageMetadata: remaining }

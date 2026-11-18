@@ -1,5 +1,11 @@
 import { Chat } from "@ai-sdk/react";
-import type { ChatInit, ChatRequestOptions, UIMessage } from "ai";
+import {
+  convertFileListToFileUIParts,
+  type ChatInit,
+  type ChatRequestOptions,
+  type UIMessage,
+  type UIMessageChunk,
+} from "ai";
 import { readResumedMessages } from "./readResumedMessages";
 
 type Options = Pick<
@@ -10,7 +16,7 @@ type Options = Pick<
   captureResumeScope?: () => () => boolean;
 };
 
-/** App-owned cold resume; ordinary sends/regeneration remain in the SDK.
+/** App-owned message assembly shared by send, regeneration and cold resume.
  * Only exported/protected SDK extension APIs and the public message setter are
  * used. Workflow still owns HTTP reconnection, raw cursors and authentication.
  */
@@ -24,31 +30,7 @@ export class ResumableChat extends Chat<UIMessage> {
   private readonly options: Options;
 
   constructor(options: Options) {
-    let markStreaming = () => {};
-    super({
-      ...options,
-      transport: {
-        ...options.transport,
-        reconnectToStream: (request) =>
-          options.transport.reconnectToStream(request),
-        sendMessages: async (request) => {
-          const isCurrent = options.captureResumeScope?.() ?? (() => true);
-          const stream = await options.transport.sendMessages(request);
-          return stream.pipeThrough(
-            new TransformStream({
-              transform(chunk, output) {
-                // Preserve the app's admitted-stream feedback before the first text
-                // token. SDK 7 otherwise remains submitted after a start-only chunk.
-                if (!request.abortSignal?.aborted && isCurrent())
-                  markStreaming();
-                output.enqueue(chunk);
-              },
-            }),
-          );
-        },
-      },
-    });
-    markStreaming = () => this.setStatus({ status: "streaming" });
+    super(options);
     this.options = options;
     const sdkStop = this.stop;
     this.stop = async () => {
@@ -58,17 +40,107 @@ export class ResumableChat extends Chat<UIMessage> {
       await sdkStop();
       await resume?.done;
     };
-    const sdkSend = this.sendMessage;
-    this.sendMessage = async (...args) => {
-      if (this.resume) await this.stop();
-      return sdkSend(...args);
-    };
-    const sdkRegenerate = this.regenerate;
-    this.regenerate = async (...args) => {
-      if (this.resume) await this.stop();
-      return sdkRegenerate(...args);
-    };
   }
+
+  override sendMessage: Chat<UIMessage>["sendMessage"] = async (
+    message,
+    request,
+  ) => {
+    const intent = ++this.resumeIntent;
+    const previous = this.resume;
+    if (previous) {
+      previous.controller.abort();
+      await previous.done;
+    }
+    if (intent !== this.resumeIntent) return;
+    const isScopeCurrent = this.options.captureResumeScope?.() ?? (() => true);
+    if (!isScopeCurrent()) return;
+    if (message != null) {
+      let parts: UIMessage["parts"];
+      if ("text" in message || "files" in message) {
+        const files = Array.isArray(message.files)
+          ? message.files
+          : await convertFileListToFileUIParts(message.files);
+        parts = [
+          ...files,
+          ...("text" in message && message.text != null
+            ? [{ type: "text" as const, text: message.text }]
+            : []),
+        ];
+      } else parts = message.parts;
+      if (intent !== this.resumeIntent || !isScopeCurrent()) return;
+      const prepared: UIMessage = {
+        id:
+          message.messageId ??
+          ("id" in message ? message.id : undefined) ??
+          this.generateId(),
+        role: ("role" in message ? message.role : undefined) ?? "user",
+        parts,
+        metadata: message.metadata,
+      };
+      if (message.messageId != null) {
+        const index = this.messages.findIndex(
+          (item) => item.id === message.messageId,
+        );
+        if (index < 0 || this.messages[index].role !== "user")
+          throw new Error(
+            "Edited message must identify an existing user message",
+          );
+        this.messages = [...this.messages.slice(0, index), prepared];
+      } else this.messages = [...this.messages, prepared];
+    }
+    if (intent !== this.resumeIntent || !isScopeCurrent()) return;
+    return this.consumeStream(
+      (signal) =>
+        this.options.transport.sendMessages({
+          ...request,
+          chatId: this.id,
+          messages: this.messages,
+          abortSignal: signal,
+          trigger: "submit-message",
+          messageId:
+            message?.messageId ??
+            (message == null ? this.lastMessage?.id : undefined),
+        }),
+      isScopeCurrent,
+    );
+  };
+
+  override regenerate: Chat<UIMessage>["regenerate"] = async ({
+    messageId,
+    ...request
+  } = {}) => {
+    const intent = ++this.resumeIntent;
+    const previous = this.resume;
+    if (previous) {
+      previous.controller.abort();
+      await previous.done;
+    }
+    if (intent !== this.resumeIntent) return;
+    const isScopeCurrent = this.options.captureResumeScope?.() ?? (() => true);
+    if (!isScopeCurrent()) return;
+    const index =
+      messageId == null
+        ? this.messages.length - 1
+        : this.messages.findIndex((item) => item.id === messageId);
+    if (index < 0) throw new Error("Message to regenerate was not found");
+    this.messages = this.messages.slice(
+      0,
+      this.messages[index].role === "assistant" ? index : index + 1,
+    );
+    return this.consumeStream(
+      (signal) =>
+        this.options.transport.sendMessages({
+          ...request,
+          chatId: this.id,
+          messages: this.messages,
+          abortSignal: signal,
+          trigger: "regenerate-message",
+          messageId,
+        }),
+      isScopeCurrent,
+    );
+  };
 
   override resumeStream = (request?: ChatRequestOptions): Promise<void> => {
     const isScopeCurrent = this.options.captureResumeScope?.() ?? (() => true);
@@ -86,6 +158,24 @@ export class ResumableChat extends Chat<UIMessage> {
     if (!isScopeCurrent()) return Promise.resolve();
     if (this.status === "submitted" || this.status === "streaming")
       return Promise.resolve();
+    this.resumeIntent++;
+    return this.consumeStream(
+      (signal) =>
+        this.options.transport.reconnectToStream({
+          ...request,
+          chatId: this.id,
+          abortSignal: signal,
+        }),
+      isScopeCurrent,
+    );
+  };
+
+  private consumeStream(
+    open: (
+      signal: AbortSignal,
+    ) => Promise<ReadableStream<UIMessageChunk> | null>,
+    isScopeCurrent: () => boolean,
+  ): Promise<void> {
     const controller = new AbortController();
     const current = () => !controller.signal.aborted && isScopeCurrent();
     const run = async () => {
@@ -109,11 +199,7 @@ export class ResumableChat extends Chat<UIMessage> {
       try {
         if (!current()) return;
         this.setStatus({ status: "submitted", error: undefined });
-        const stream = await this.options.transport.reconnectToStream({
-          ...request,
-          chatId: this.id,
-          abortSignal: controller.signal,
-        });
+        const stream = await open(controller.signal);
         if (!stream) return;
         if (!current()) {
           controller.abort();
@@ -167,12 +253,12 @@ export class ResumableChat extends Chat<UIMessage> {
       } catch (error) {
         // A fatal parser error aborts upstream too; its reason is the error,
         // unlike an expected scope/Stop abort.
-        failed =
-          !controller.signal.aborted ||
-          !(
+        failed = !(
+          (error instanceof Error && error.name === "AbortError") ||
+          (controller.signal.aborted &&
             controller.signal.reason instanceof DOMException &&
-            controller.signal.reason.name === "AbortError"
-          );
+            controller.signal.reason.name === "AbortError")
+        );
         isDisconnect =
           failed &&
           error instanceof TypeError &&
@@ -213,5 +299,5 @@ export class ResumableChat extends Chat<UIMessage> {
       });
     this.resume = { controller, done, isScopeCurrent };
     return done;
-  };
+  }
 }

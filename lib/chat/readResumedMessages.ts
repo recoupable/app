@@ -1,3 +1,4 @@
+import { decodeContinuationStart } from "./decodeContinuationStart";
 import { readUIMessageStream, type UIMessage, type UIMessageChunk } from "ai";
 
 /** Split only at explicit message starts; retain at most one boundary chunk.
@@ -32,10 +33,17 @@ export async function* readResumedMessages({
         : await reader.read();
       boundary = undefined;
       if (first.done || controller.signal.aborted) break;
+      const decoded = await decodeContinuationStart(first.value);
       const seed =
-        firstSegment && first.value.type !== "start" ? getSeed() : undefined;
+        decoded.base ??
+        (firstSegment && first.value.type !== "start" ? getSeed() : undefined);
       firstSegment = false;
-      let pending: UIMessageChunk | undefined = first.value;
+      if (decoded.base) {
+        onChunk(decoded.chunk);
+        if (controller.signal.aborted) break;
+        yield structuredClone(decoded.base);
+      }
+      let pending: UIMessageChunk | undefined = decoded.chunk;
       let started = false;
       const segment = new ReadableStream<UIMessageChunk>({
         async pull(output) {
@@ -57,9 +65,11 @@ export async function* readResumedMessages({
             output.close();
             return;
           }
+          const firstChunk = !started;
           started = true;
-          onChunk(next.value);
-          output.enqueue(next.value);
+          const decodedChunk = await decodeContinuationStart(next.value);
+          if (!(firstChunk && decoded.base)) onChunk(decodedChunk.chunk);
+          output.enqueue(decodedChunk.chunk);
         },
       });
       for await (const message of readUIMessageStream({

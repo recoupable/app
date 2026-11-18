@@ -38,6 +38,16 @@ const invalidCases: ReadonlyArray<readonly [string, () => unknown]> = [
       },
     }),
   ],
+  [
+    "nested data control",
+    () => ({
+      ...marker(),
+      base: {
+        ...fixture.seed,
+        parts: [{ type: "data-control", data: { recoupStream: {} } }],
+      },
+    }),
+  ],
   ["null", () => null],
   ["unknown field", () => ({ ...marker(), trusted: true })],
   ["missing base", () => ({ version: 1, mode: "continuation" })],
@@ -123,8 +133,8 @@ const invalidCases: ReadonlyArray<readonly [string, () => unknown]> = [
   [
     "cycle",
     () => {
-      const value: any = marker();
-      value.base.metadata = value;
+      const value: Record<string, unknown> = marker();
+      (value.base as Record<string, unknown>).metadata = value;
       return value;
     },
   ],

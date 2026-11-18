@@ -1,4 +1,5 @@
 import type { UIMessage, UIMessageChunk } from "ai";
+import { isAdmittedContinuationFailure } from "./isAdmittedContinuationFailure";
 import {
   createChatRequestLifecycle,
   type ChatRequestLifecycle,
@@ -16,6 +17,8 @@ import { isChatIntelligentUIEnabled } from "@/lib/intelligent-ui/chat/isChatInte
 interface CreateWorkflowChatTransportOptions {
   /** recoup-api origin, e.g. `https://api.recoupable.dev`. */
   baseUrl: string;
+  /** Advertise only when every consuming path uses the continuation decoder. */
+  continuationProtocol?: "canonical-base-v1";
   /** Reads the ids current as of the request, not as of transport construction. */
   getIds: () => { sessionId: string | undefined; chatId: string };
   /** Privy access token for both the POST and every reconnect. */
@@ -57,6 +60,7 @@ interface CreateWorkflowChatTransportOptions {
  */
 export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
   baseUrl,
+  continuationProtocol,
   getIds,
   getAccessToken,
   waitForWorkspace,
@@ -102,6 +106,9 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
     if (!token) throw new Error("Please sign in to resume this response");
     return {
       "Content-Type": "application/json",
+      ...(continuationProtocol
+        ? { "X-Recoup-Stream-Continuation": continuationProtocol }
+        : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
   };
@@ -154,6 +161,17 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
           // preparation. Stop leaves it attached until the server confirms.
           operation.dispatched();
           const response = await fetch(url.toString(), init);
+          if (
+            init?.method === "POST" &&
+            (await isAdmittedContinuationFailure(response))
+          ) {
+            // A run exists even though its stored protocol could not be read.
+            // Acknowledge admission without treating the failed response as SSE.
+            admitted = true;
+            operation.admit();
+            operation.settle();
+            if (ids) metadata?.onAccepted(ids);
+          }
           if (init?.method !== "POST" && response.ok && response.body)
             onStreamAccepted?.();
           if (
@@ -164,6 +182,7 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
             operation.markUnknown();
           if (
             init?.method === "POST" &&
+            !admitted &&
             (!response.ok ||
               !response.body ||
               !response.headers.get("x-workflow-run-id"))
@@ -217,6 +236,9 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${recoupAccessToken}`,
+              ...(continuationProtocol
+                ? { "X-Recoup-Stream-Continuation": continuationProtocol }
+                : {}),
             },
             body: {
               ...requestBody,
