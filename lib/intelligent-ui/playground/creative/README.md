@@ -40,7 +40,7 @@ pnpm exec vitest run components/IntelligentUI/__tests__/VideoComparison.test.tsx
 ```
 
 The image, audio and video comparisons are bounded authored slices of #2213.
-Signed URL expiry, real generation/access services, accepted variants in an owning
+Signed URL refresh, real generation/access services, accepted variants in an owning
 backend and actual follow-up submission remain outside it. Native image inspection,
 keyboard/responsive and slow-network acceptance remain pending a browser lease;
 source tests do not prove these. No claim is made for native playback, physical
@@ -119,3 +119,35 @@ layout, caption/text-alternative accessibility review, media failure/delay/recov
 seeking and real browser storage/reinspection. No browser or listener was used for
 this source slice. Offline decoded frames and synthetic DOM events do not replace
 native acceptance; the Docs exclusive lease remains separate.
+
+## Host access deadlines (source-only successor to App #2390)
+
+An optional `accessExpiresAt` is a host-supplied Unix epoch millisecond deadline,
+not asset identity, an authorization grant or a model-supplied URL. The host's
+existing exact-revision allowlist still owns all media URLs. Missing deadlines
+retain the existing static fixture behavior; nonfinite or elapsed deadlines fail
+closed. A clock subscription handles successive deadlines and rechecks after
+focus/visibility changes. The audio/video labs also expose an explicitly simulated
+expired state. No expiration or availability result is asserted for a real account.
+
+Expiry removes media, pauses it, detaches its source and resets loading. Effective
+readiness/follow-up is withheld while the saved exact choice and revision-bound
+notes remain unchanged. A host-supplied renewed deadline resets readiness: Inspect
+and fresh media readiness are required, without autoplay or selecting new bytes.
+Unknown revisions remain rejected. Deadlines are not saved in local drafts.
+
+There is intentionally no Refresh button or automatic refresh attempt. Existing
+`createSignedUrlForKey` is a server-only storage-key-to-URL helper, not an authorized
+session/revision-bound creative resolver: it supplies neither an exact asset/version
+receipt nor expiry and request-generation/session correlation. Importing it into
+this fixture would invent authorization. Safe live refresh still needs an owning
+host contract binding actor/session, exact asset revision, allowed URL, expiry,
+denial/revocation and stale-result rejection. No async resolver is added here, so
+out-of-order refresh-result handling and actual signed-URL renewal remain unimplemented.
+This is host-deadline invalidation, not completed private-media access recovery.
+
+`CreativeExpiry.test.tsx` uses a controlled clock and synthetic media events to
+check expiry, preserved drafts, same-revision reinspection, replaced revisions,
+multiple deadlines and timer cleanup. No network, browser or provider is used.
+Actual playback interruption, real URL expiry, slow-network and private-asset
+acceptance remain separate.

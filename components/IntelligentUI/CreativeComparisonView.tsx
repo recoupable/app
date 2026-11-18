@@ -23,6 +23,7 @@ export default function CreativeComparisonView({
       creativeRefKey(asset.ref),
       asset.status,
       asset.preview,
+      asset.accessExpiresAt,
     ]),
   );
   const [previousSignature, setPreviousSignature] = useState(signature);
@@ -68,11 +69,12 @@ export default function CreativeComparisonView({
               <CreativeAssetPreview
                 key={`${signature}:${key}`}
                 asset={asset}
-                onReady={() =>
+                onReady={() => {
+                  if (!resolveCreativeAsset(asset)) return;
                   setInspected((previous) =>
                     previous.includes(key) ? previous : [...previous, key],
-                  )
-                }
+                  );
+                }}
                 onFailure={() =>
                   setFailed((previous) =>
                     previous.includes(key) ? previous : [...previous, key],
@@ -95,9 +97,10 @@ export default function CreativeComparisonView({
                 aria-pressed={selected && available}
                 disabled={!ready || !available || !inspected.includes(key)}
                 className="min-h-11 rounded-lg border border-border px-4 text-sm disabled:opacity-50 aria-pressed:bg-brand-lime aria-pressed:text-[#182E28] focus-visible:ring-2 focus-visible:ring-ring"
-                onClick={() =>
-                  update({ ...draft, selection: selected ? null : asset.ref })
-                }
+                onClick={() => {
+                  if (!resolveCreativeAsset(asset)) return;
+                  update({ ...draft, selection: selected ? null : asset.ref });
+                }}
               >
                 {selected && available
                   ? `Clear choice: ${asset.label}`

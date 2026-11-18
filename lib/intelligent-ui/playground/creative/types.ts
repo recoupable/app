@@ -14,7 +14,9 @@ export type CreativeAsset = {
   label: string;
   caption: string;
   provenance: string;
-  status: "available" | "processing" | "unavailable" | "withdrawn";
+  status: "available" | "processing" | "unavailable" | "withdrawn" | "expired";
+  /** Host-supplied Unix epoch milliseconds; never persisted as revision identity. */
+  accessExpiresAt?: number;
   preview:
     | "light-wordmark"
     | "dark-wordmark"

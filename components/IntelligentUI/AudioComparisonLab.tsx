@@ -36,7 +36,13 @@ export default function AudioComparisonLab() {
             }
           >
             {(
-              ["available", "processing", "unavailable", "withdrawn"] as const
+              [
+                "available",
+                "processing",
+                "unavailable",
+                "withdrawn",
+                "expired",
+              ] as const
             ).map((value) => (
               <option key={value} value={value}>
                 {value}
