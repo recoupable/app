@@ -403,3 +403,30 @@ it("keeps a route back to fresh consent when a selected preview fails", async ()
   expect(screen.queryByRole("alert")).toBeNull();
   expect(decide).not.toHaveBeenCalled();
 });
+
+it("allows returning to default consent while the first selected preview is pending", async () => {
+  load.mockResolvedValue({
+    ...details,
+    permissions: [{ scope: "mcp:tools", description: "Full business tools" }],
+  });
+  loadSelected.mockImplementationOnce(() => new Promise(() => {}));
+  render(
+    <OAuthConsent issuer="https://api.example/api/oauth" interaction="full" />,
+  );
+  fireEvent.click(
+    await screen.findByRole("button", {
+      name: "Choose one workspace for Context tools",
+    }),
+  );
+  await waitFor(() => expect(loadSelected).toHaveBeenCalledOnce());
+  const signal = loadSelected.mock.calls[0][2] as AbortSignal;
+  fireEvent.click(
+    screen.getByRole("button", { name: "Back to requested permissions" }),
+  );
+  await screen.findByRole("button", {
+    name: "Choose one workspace for Context tools",
+  });
+  expect(signal.aborted).toBe(true);
+  expect(load).toHaveBeenCalledTimes(2);
+  expect(decide).not.toHaveBeenCalled();
+});

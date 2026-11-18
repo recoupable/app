@@ -96,7 +96,7 @@ export function createConsentClient(issuer: string, interaction: string) {
           result.selectedContext.kind !== selection.workspace_kind ||
           (selection.workspace_kind === "organization" &&
             result.selectedContext.organizationId !==
-              selection.organization_id) ||
+              selection.organization_id.toLowerCase()) ||
           (selection.workspace_kind === "personal" &&
             result.selectedContext.ownerId !== result.accountId))
       )

@@ -368,7 +368,7 @@ export default function OAuthConsentSession({
                   {!error && (
                     <p role="status">Loading requested permissions…</p>
                   )}
-                  {selectedMode && error && (
+                  {selectedMode && (
                     <Button
                       variant="ghost"
                       onClick={() => {

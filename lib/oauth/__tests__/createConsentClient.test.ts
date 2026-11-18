@@ -83,9 +83,9 @@ it.each(["personal", "organization"] as const)(
       ownerId:
         kind === "personal"
           ? "00000000-0000-4000-8000-000000000001"
-          : "00000000-0000-4000-8000-000000000002",
+          : "abcdef00-0000-4000-8000-000000000002",
       organizationId:
-        kind === "personal" ? null : "00000000-0000-4000-8000-000000000002",
+        kind === "personal" ? null : "abcdef00-0000-4000-8000-000000000002",
     };
     const metadata = {
       csrf: "a".repeat(43),
@@ -113,14 +113,14 @@ it.each(["personal", "organization"] as const)(
         ? { workspace_kind: "personal" as const }
         : {
             workspace_kind: "organization" as const,
-            organization_id: selectedContext.organizationId!,
+            organization_id: selectedContext.organizationId!.toUpperCase(),
           };
     await expect(client.loadSelected("token")).rejects.toThrow();
     expect(await client.loadSelected("token", selection)).toMatchObject({
       selectedContext,
     });
     expect(fetcher.mock.calls[1][0]).toBe(
-      `${issuer}/interaction/id?consent_version=2&workspace_kind=${kind}${kind === "organization" ? `&organization_id=${selectedContext.organizationId}` : ""}`,
+      `${issuer}/interaction/id?consent_version=2&workspace_kind=${kind}${kind === "organization" ? `&organization_id=${selectedContext.organizationId!.toUpperCase()}` : ""}`,
     );
     fetcher.mockResolvedValue(
       Response.json({ redirectUrl: `${issuer}/auth/resume` }),

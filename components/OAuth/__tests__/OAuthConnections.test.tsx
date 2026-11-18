@@ -261,3 +261,25 @@ it("does not send a disconnect after its sign-in session ends while awaiting a t
   });
   expect(revoke).not.toHaveBeenCalled();
 });
+
+it("shows only Context access badges for selected connections with co-requested scopes", async () => {
+  load.mockResolvedValue({
+    connections: [
+      {
+        id: "a".repeat(64),
+        clientId: "client",
+        clientName: "Selected agent",
+        scopes: ["mcp:tools", "mcp:read", "mcp:write"],
+        createdAt: 1,
+        expiresAt: null,
+        selectedContext: { kind: "personal" },
+      },
+    ],
+    truncated: false,
+  });
+  render(<OAuthConnections issuer="https://api.example/api/oauth" />);
+  await screen.findByText("Context tools · one workspace");
+  expect(screen.queryByText("Read access")).toBeNull();
+  expect(screen.queryByText("Write access")).toBeNull();
+  expect(screen.queryByText("Full tool access")).toBeNull();
+});

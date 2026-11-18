@@ -209,16 +209,18 @@ export default function OAuthConnectionsSession({
                           : "Full tool access"}
                       </span>
                     )}
-                    {connection.scopes.includes("mcp:read") && (
-                      <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
-                        Read access
-                      </span>
-                    )}
-                    {connection.scopes.includes("mcp:write") && (
-                      <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
-                        Write access
-                      </span>
-                    )}
+                    {!connection.selectedContext &&
+                      connection.scopes.includes("mcp:read") && (
+                        <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
+                          Read access
+                        </span>
+                      )}
+                    {!connection.selectedContext &&
+                      connection.scopes.includes("mcp:write") && (
+                        <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
+                          Write access
+                        </span>
+                      )}
                   </div>
                   <Button
                     variant="ghost"
