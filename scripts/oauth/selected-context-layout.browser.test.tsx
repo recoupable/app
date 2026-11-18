@@ -107,7 +107,6 @@ it.each([
     expect(screen.queryByText("Full business tools")).toBeNull();
     await page.screenshot({
       path: `__screenshots__/selected-context-${name}.png`,
-      fullPage: true,
     });
   },
 );
