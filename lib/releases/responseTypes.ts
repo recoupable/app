@@ -2,6 +2,7 @@ import type {
   CompanyAssessmentBrief,
   CompanyAssessmentSnapshot,
 } from "./assessmentTypes";
+import type { ExecutionSummary, ExecutionTrace } from "./executionTypes";
 import type { ReleaseCase, ReleaseCaseItem } from "./types";
 
 export interface ReleaseCaseResponses {
@@ -16,4 +17,6 @@ export interface ReleaseCaseResponses {
   };
   read_release_case: ReleaseCase;
   review_release_case: unknown;
+  list_executions: { executions: ExecutionSummary[] };
+  read_execution: { execution: ExecutionTrace };
 }
