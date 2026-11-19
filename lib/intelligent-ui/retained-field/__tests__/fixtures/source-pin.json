@@ -1,0 +1,7 @@
+{
+  "repository": "recoupable/api",
+  "commit": "4ca23de6a6cea3226c2f0392a454eb57861aedf8",
+  "path": "scripts/proposals/catalog-retained-selection/fixtures/fieldContext.json",
+  "sha256": "ed979fc2ea72c3a3e51deb2ba259980f171a550b88fb488afb783a70e02ec322",
+  "qualification": "Synthetic producer output. Not an authorization receipt or live disclosure proof."
+}
