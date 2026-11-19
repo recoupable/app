@@ -1,0 +1,9 @@
+export const MIN_YEAR = 1900;
+export const MAX_YEAR = 2100;
+export const MIN_DATE = `${MIN_YEAR}-01-01`;
+export const MAX_DATE = `${MAX_YEAR}-12-31`;
+export const MAX_OFFSET_DAYS = 365;
+export const MIN_OFFSET_DAYS = -MAX_OFFSET_DAYS;
+export const DATE_RANGE_MESSAGE = `Use a real calendar date from ${MIN_YEAR} through ${MAX_YEAR}.`;
+export const DATE_YEAR_RANGE = `${MIN_YEAR}–${MAX_YEAR}`;
+export const OFFSET_RANGE_LABEL = `${String(MIN_OFFSET_DAYS).replace("-", "−")} to ${MAX_OFFSET_DAYS}`;

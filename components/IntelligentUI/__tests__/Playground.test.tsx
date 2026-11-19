@@ -26,9 +26,31 @@ beforeEach(() => {
   theme.resolvedTheme = undefined;
   theme.setTheme.mockReset();
 });
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllEnvs();
+});
 
 describe("lab navigation", () => {
+  it("offers and opens release planning only with the development opt-in", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("VERCEL_ENV", "development");
+    vi.stubEnv("NEXT_PUBLIC_VERCEL_ENV", "development");
+    vi.stubEnv("NEXT_PUBLIC_RECOUP_INTELLIGENT_UI_CHAT", "true");
+    const { rerender } = render(<Playground />);
+    fireEvent.change(screen.getByRole("combobox", { name: "Example" }), {
+      target: { value: "release-plan" },
+    });
+    expect(
+      screen.getByRole("region", { name: "Local release plan" }),
+    ).toBeTruthy();
+    vi.stubEnv("NODE_ENV", "production");
+    rerender(<Playground />);
+    expect(screen.queryByRole("option", { name: "Release plan" })).toBeNull();
+    expect(
+      screen.queryByRole("region", { name: "Local release plan" }),
+    ).toBeNull();
+  });
   it("keeps the server theme control stable even when a browser theme is known", () => {
     theme.resolvedTheme = "dark";
     expect(renderToString(<PlaygroundThemeToggle />)).toContain(
