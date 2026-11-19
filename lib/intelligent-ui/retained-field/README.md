@@ -62,3 +62,12 @@ Run focused tests with `pnpm exec vitest run lib/intelligent-ui/retained-field
 lib/intelligent-ui/descriptors/__tests__/descriptors.test.ts`. Tests qualify local
 shape/binding/projection/refusal only, not API adapter authority, SQL transaction
 locking, disclosure, production deployment or native/account acceptance.
+
+The API-generated synthetic inner payload is copied byte-for-byte into
+`__tests__/fixtures/api-fieldContext.json`; `source-pin.json` records API commit
+`4ca23de6a6cea3226c2f0392a454eb57861aedf8`, original path and SHA-256.
+`producerCompatibility.test.ts` verifies that hash and consumes the payload with
+unchanged values, periods, refs and document revision through the proposed outer
+envelope. The test derives its expected selection from this synthetic fixture; it
+therefore qualifies shape/projection compatibility, **not** independent receipt
+origin or authority. Default and unavailable disclosure still withhold all output.

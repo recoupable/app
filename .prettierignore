@@ -1,2 +1,4 @@
 # Canonical Catalog files must remain byte-identical; hash checked in tests.
 lib/intelligent-ui/playground/catalog/scenario/vendor/
+# Pinned synthetic API output; preserve exact producer bytes.
+lib/intelligent-ui/retained-field/__tests__/fixtures/api-fieldContext.json

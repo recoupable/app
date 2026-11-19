@@ -1,0 +1,77 @@
+{
+  "contract": "catalog-retained-field-projection/1",
+  "workspaceId": "10000000-0000-4000-8000-000000000001",
+  "catalogId": "10000000-0000-4000-8000-000000000003",
+  "field": "current_streams",
+  "method": {
+    "recipe": "catalog-retained-stream-fields/1",
+    "recipeHash": "65a06a785aa496e1232fe3a9f1606595f19c1a152b710ca30c4c06612f01864a",
+    "evaluatorSha256": "163563e15dd92d473aa51899c54c96300f20d27072b83e39ffb01c84f3adc64e",
+    "helperSha256": "91dcca66c8dec0851c1f6e110257a63b730e9b7ae33a60bceb0e9ffcf318dd81"
+  },
+  "query": {
+    "since": "2026-10-24",
+    "days": 1,
+    "timezone": "UTC"
+  },
+  "asOf": "2026-10-27T00:00:00Z",
+  "semantics": "historical_snapshot",
+  "items": [
+    {
+      "ref": {
+        "workspaceId": "10000000-0000-4000-8000-000000000001",
+        "authority": "context",
+        "kind": "recording",
+        "id": "10000000-0000-4000-8000-000000000004",
+        "sourceVersionIds": [
+          "10000000-0000-4000-8000-000000000006"
+        ]
+      },
+      "binding": {
+        "ownerId": "10000000-0000-4000-8000-000000000001",
+        "requestId": "10000000-0000-4000-8000-000000000002",
+        "subjectId": "10000000-0000-4000-8000-000000000004",
+        "catalogId": "10000000-0000-4000-8000-000000000003",
+        "resultId": "10000000-0000-4000-8000-000000000005",
+        "revision": 7,
+        "topic": "catalog_retained_streams",
+        "sourceVersionIds": [
+          "10000000-0000-4000-8000-000000000006"
+        ]
+      },
+      "value": {
+        "state": "known",
+        "amount": 100
+      },
+      "periods": {
+        "previous": {
+          "start": "2026-10-23",
+          "end_exclusive": "2026-10-24"
+        },
+        "current": {
+          "start": "2026-10-24",
+          "end_exclusive": "2026-10-25"
+        },
+        "days": 1,
+        "timezone": "UTC"
+      },
+      "coverage": {
+        "comparisonState": "comparable",
+        "absentDateCount": 0,
+        "nullDateCount": 0,
+        "missingDateCount": 0
+      },
+      "source": {
+        "provider": "luminate",
+        "metric": "daily_streams",
+        "platform": "all_dsps",
+        "territory": "worldwide",
+        "timezone": "UTC",
+        "retrievalRange": {
+          "earliest": "2026-10-25T01:00:00Z",
+          "latest": "2026-10-25T01:00:00Z"
+        }
+      }
+    }
+  ]
+}
