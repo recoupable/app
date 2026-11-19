@@ -12,6 +12,7 @@ import type { WorkspaceStatus } from "@/components/VercelChat/WorkspaceStatusInd
 import type { CatalogSurfaceRequest } from "@/lib/intelligent-ui/chat/getChatCatalogHost";
 
 interface UseChatTransportOptions {
+  continuationProtocol?: "canonical-base-v1";
   /** Chat row id (also the AI SDK `useChat({ id })` instance id). */
   chatId: string;
   /**
@@ -38,6 +39,7 @@ interface UseChatTransportOptions {
  * job — see `createWorkflowChatTransport`.
  */
 export function useChatTransport({
+  continuationProtocol,
   chatId,
   sessionId,
   workspaceStatus = "ready",
@@ -110,6 +112,7 @@ export function useChatTransport({
     () =>
       createWorkflowChatTransport({
         baseUrl,
+        continuationProtocol,
         requestLifecycle,
         captureStreamEnd: () => live.current.onStreamEnd,
         getIds: () => ({
@@ -128,7 +131,7 @@ export function useChatTransport({
             ? live.current.devCatalogSurface
             : undefined,
       }),
-    [baseUrl, snapshotConsumer, requestLifecycle],
+    [baseUrl, snapshotConsumer, requestLifecycle, continuationProtocol],
   );
 
   return {

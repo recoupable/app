@@ -1,3 +1,4 @@
+import { ResumableChat } from "@/lib/chat/ResumableChat";
 import { Chat } from "@ai-sdk/react";
 import type { UIMessage, UIMessageChunk } from "ai";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -25,7 +26,7 @@ function fixture(messages: UIMessage[] = []) {
   const scopeKey = consumer.syncScope().key!;
   const received: UIMessageChunk[] = [];
   const saved = consumer.hydrate(messages, scopeKey);
-  const chat: Chat<UIMessage> = new Chat({
+  const chat: Chat<UIMessage> = new ResumableChat({
     id: hostScope.chatId,
     messages: saved,
     onData: (part) => {

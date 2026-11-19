@@ -1,7 +1,7 @@
 import {
   ToolUIPart,
   UIMessage,
-  isToolOrDynamicToolUIPart,
+  isToolUIPart,
   UIMessagePart,
   UIDataTypes,
   UITools,
@@ -226,7 +226,7 @@ export function MessageParts({
           }
         }
 
-        if (isToolOrDynamicToolUIPart(part)) {
+        if (isToolUIPart(part)) {
           const { state } = part as ToolUIPart;
           // `output-error` is terminal. Routing it to the call branch — the
           // loading one — rendered a skeleton that could never resolve

@@ -1,3 +1,4 @@
+import { ResumableChat } from "@/lib/chat/ResumableChat";
 import { Chat } from "@ai-sdk/react";
 import type { UIMessage } from "ai";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -37,7 +38,7 @@ it.each(["unavailable", "pending-session"])(
         ]),
       );
     vi.stubGlobal("fetch", fetch);
-    const chat: Chat<UIMessage> = new Chat({
+    const chat: Chat<UIMessage> = new ResumableChat({
       id: "placeholder",
       onData: (part) => {
         received.push(part);
@@ -93,7 +94,7 @@ it.each(["actorId", "accountId", "workspaceId", "subject"] as const)(
         ]),
       );
     vi.stubGlobal("fetch", fetch);
-    const chat: Chat<UIMessage> = new Chat({
+    const chat: Chat<UIMessage> = new ResumableChat({
       id: "placeholder",
       onData: (part) => {
         received.push(part);
@@ -145,7 +146,7 @@ it("cannot revive a stopped send when provisioning subsequently completes", asyn
     ]);
   });
   vi.stubGlobal("fetch", fetch);
-  const chat: Chat<UIMessage> = new Chat({
+  const chat: Chat<UIMessage> = new ResumableChat({
     id: "placeholder",
     onData: (part) => {
       received.push(part);
@@ -192,7 +193,7 @@ it("freezes an already-selected request scope before async authentication/respon
     ]);
   });
   vi.stubGlobal("fetch", fetch);
-  const chat: Chat<UIMessage> = new Chat({
+  const chat: Chat<UIMessage> = new ResumableChat({
     id: hostScope.chatId,
     onData: (part) => {
       received.push(part);
@@ -226,7 +227,7 @@ it("does not revive a pending request after an actor changes away and back", asy
         ]),
       ),
   );
-  const chat = new Chat({
+  const chat = new ResumableChat({
     id: "placeholder",
     onData: (part) => {
       received.push(part);
@@ -282,7 +283,7 @@ it.each(["fresh-getter", "render-lagging-getter"])(
     );
     vi.stubGlobal("fetch", fetch);
     const received: unknown[] = [];
-    const chat: Chat<UIMessage> = new Chat({
+    const chat: Chat<UIMessage> = new ResumableChat({
       id: hostScope.chatId,
       onData: (part) => {
         received.push(part);
@@ -341,7 +342,7 @@ it("does not derive a no-start target from unbound raw SDK history", async () =>
         workflowResponse([chatSnapshotPart(2), { type: "finish" }]),
       ),
   );
-  const chat = new Chat({
+  const chat = new ResumableChat({
     id: hostScope.chatId,
     messages: raw,
     onData: (part) => {
@@ -385,7 +386,7 @@ it("can resume a bound ordinary-text history answer before its first UI fragment
         workflowResponse([chatSnapshotPart(1), { type: "finish" }]),
       ),
   );
-  const chat = new Chat({
+  const chat = new ResumableChat({
     id: hostScope.chatId,
     messages: loaded,
     onData: (part) => {
@@ -433,7 +434,7 @@ it.each(["stop", "unmount"])(
       });
     });
     vi.stubGlobal("fetch", fetch);
-    const chat = new Chat({
+    const chat = new ResumableChat({
       id: hostScope.chatId,
       onData: (part) => {
         received.push(part);
@@ -476,7 +477,7 @@ it("propagates a reconnect failure before the first chunk without swallowing the
       .fn()
       .mockResolvedValue(new Response("Synthetic failure", { status: 500 })),
   );
-  const chat = new Chat({
+  const chat = new ResumableChat({
     id: hostScope.chatId,
     transport: createWorkflowChatTransport({
       baseUrl: "https://recoup.invalid",

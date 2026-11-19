@@ -1,11 +1,11 @@
-import { Chat } from "@ai-sdk/react";
+import { ResumableChat } from "@/lib/chat/ResumableChat";
 import type { ChatInit, UIMessage } from "ai";
 import { createWorkflowChatTransport } from "@/lib/chat/createWorkflowChatTransport";
 
 export function syntheticChat(
   options: Pick<ChatInit<UIMessage>, "messages" | "onData"> = {},
 ) {
-  return new Chat({
+  return new ResumableChat({
     id: "synthetic-chat",
     transport: createWorkflowChatTransport({
       baseUrl: "https://recoup.invalid",

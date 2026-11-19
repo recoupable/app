@@ -1,0 +1,471 @@
+{
+  "seed": {
+    "id": "assistant",
+    "role": "assistant",
+    "parts": [
+      {
+        "type": "text",
+        "text": "prior",
+        "state": "done"
+      }
+    ]
+  },
+  "chunks": [
+    {
+      "type": "start-step"
+    },
+    {
+      "type": "data-recoup-sdk-observation",
+      "id": "assistant:projection:0",
+      "data": {
+        "version": 1,
+        "originRunId": "run",
+        "originStepId": "step",
+        "assistantMessageId": "assistant",
+        "ordinal": 0,
+        "original": {
+          "type": "custom",
+          "kind": "provider.synthetic",
+          "providerMetadata": {
+            "provider": {
+              "opaque": "kept"
+            }
+          }
+        },
+        "fallback": {
+          "partIndex": 3,
+          "text": "This view cannot display additional model content."
+        }
+      }
+    },
+    {
+      "type": "text-start",
+      "id": "assistant:projection:0:fallback"
+    },
+    {
+      "type": "text-delta",
+      "id": "assistant:projection:0:fallback",
+      "delta": "This view cannot display additional model content."
+    },
+    {
+      "type": "text-end",
+      "id": "assistant:projection:0:fallback"
+    },
+    {
+      "type": "data-recoup-sdk-observation",
+      "id": "assistant:projection:1",
+      "data": {
+        "version": 1,
+        "originRunId": "run",
+        "originStepId": "step",
+        "assistantMessageId": "assistant",
+        "ordinal": 1,
+        "original": {
+          "type": "reasoning-file",
+          "mediaType": "image/png",
+          "url": "data:image/png;base64,AA=="
+        },
+        "fallback": {
+          "partIndex": 5,
+          "text": "This view cannot display a reasoning attachment."
+        }
+      }
+    },
+    {
+      "type": "text-start",
+      "id": "assistant:projection:1:fallback"
+    },
+    {
+      "type": "text-delta",
+      "id": "assistant:projection:1:fallback",
+      "delta": "This view cannot display a reasoning attachment."
+    },
+    {
+      "type": "text-end",
+      "id": "assistant:projection:1:fallback"
+    },
+    {
+      "type": "finish-step"
+    },
+    {
+      "type": "message-metadata",
+      "messageMetadata": {
+        "selectedModelId": "synthetic/model",
+        "modelId": "synthetic/model",
+        "lastStepUsage": {
+          "inputTokens": 1,
+          "inputTokenDetails": {
+            "noCacheTokens": 1,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0
+          },
+          "outputTokens": 1,
+          "outputTokenDetails": {
+            "textTokens": 1,
+            "reasoningTokens": 0
+          },
+          "totalTokens": 2
+        },
+        "totalMessageUsage": {
+          "inputTokens": 1,
+          "inputTokenDetails": {
+            "noCacheTokens": 1,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0
+          },
+          "outputTokens": 1,
+          "outputTokenDetails": {
+            "textTokens": 1,
+            "reasoningTokens": 0
+          },
+          "totalTokens": 2
+        },
+        "lastStepCost": 0.001,
+        "totalMessageCost": 0.001,
+        "lastStepFinishReason": "stop",
+        "lastStepRawFinishReason": "stop",
+        "stepFinishReasons": [
+          {
+            "finishReason": "stop",
+            "rawFinishReason": "stop"
+          }
+        ]
+      }
+    }
+  ],
+  "result": {
+    "finishReason": "stop",
+    "responseMessage": {
+      "id": "assistant",
+      "role": "assistant",
+      "parts": [
+        {
+          "type": "text",
+          "text": "prior",
+          "state": "done"
+        },
+        {
+          "type": "step-start"
+        },
+        {
+          "type": "data-recoup-sdk-observation",
+          "id": "assistant:projection:0",
+          "data": {
+            "version": 1,
+            "originRunId": "run",
+            "originStepId": "step",
+            "assistantMessageId": "assistant",
+            "ordinal": 0,
+            "original": {
+              "type": "custom",
+              "kind": "provider.synthetic",
+              "providerMetadata": {
+                "provider": {
+                  "opaque": "kept"
+                }
+              }
+            },
+            "fallback": {
+              "partIndex": 3,
+              "text": "This view cannot display additional model content."
+            }
+          }
+        },
+        {
+          "type": "text",
+          "text": "This view cannot display additional model content.",
+          "state": "done"
+        },
+        {
+          "type": "data-recoup-sdk-observation",
+          "id": "assistant:projection:1",
+          "data": {
+            "version": 1,
+            "originRunId": "run",
+            "originStepId": "step",
+            "assistantMessageId": "assistant",
+            "ordinal": 1,
+            "original": {
+              "type": "reasoning-file",
+              "mediaType": "image/png",
+              "url": "data:image/png;base64,AA=="
+            },
+            "fallback": {
+              "partIndex": 5,
+              "text": "This view cannot display a reasoning attachment."
+            }
+          }
+        },
+        {
+          "type": "text",
+          "text": "This view cannot display a reasoning attachment.",
+          "state": "done"
+        }
+      ],
+      "metadata": {
+        "selectedModelId": "synthetic/model",
+        "modelId": "synthetic/model",
+        "lastStepUsage": {
+          "inputTokens": 1,
+          "inputTokenDetails": {
+            "noCacheTokens": 1,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0
+          },
+          "outputTokens": 1,
+          "outputTokenDetails": {
+            "textTokens": 1,
+            "reasoningTokens": 0
+          },
+          "totalTokens": 2
+        },
+        "totalMessageUsage": {
+          "inputTokens": 1,
+          "inputTokenDetails": {
+            "noCacheTokens": 1,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0
+          },
+          "outputTokens": 1,
+          "outputTokenDetails": {
+            "textTokens": 1,
+            "reasoningTokens": 0
+          },
+          "totalTokens": 2
+        },
+        "lastStepCost": 0.001,
+        "totalMessageCost": 0.001,
+        "lastStepFinishReason": "stop",
+        "lastStepRawFinishReason": "stop",
+        "stepFinishReasons": [
+          {
+            "finishReason": "stop",
+            "rawFinishReason": "stop"
+          }
+        ]
+      }
+    },
+    "responseMessages": [
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "custom",
+            "kind": "provider.synthetic",
+            "providerOptions": {
+              "provider": {
+                "opaque": "kept"
+              }
+            }
+          },
+          {
+            "type": "reasoning-file",
+            "data": "AA==",
+            "mediaType": "image/png"
+          }
+        ]
+      }
+    ],
+    "aborted": false,
+    "nativeResponseMessage": {
+      "id": "assistant",
+      "role": "assistant",
+      "parts": [
+        {
+          "type": "text",
+          "text": "prior",
+          "state": "done"
+        },
+        {
+          "type": "step-start"
+        },
+        {
+          "type": "custom",
+          "kind": "provider.synthetic",
+          "providerMetadata": {
+            "provider": {
+              "opaque": "kept"
+            }
+          }
+        },
+        {
+          "type": "reasoning-file",
+          "mediaType": "image/png",
+          "url": "data:image/png;base64,AA=="
+        }
+      ],
+      "metadata": {
+        "selectedModelId": "synthetic/model",
+        "modelId": "synthetic/model",
+        "lastStepUsage": {
+          "inputTokens": 1,
+          "inputTokenDetails": {
+            "noCacheTokens": 1,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0
+          },
+          "outputTokens": 1,
+          "outputTokenDetails": {
+            "textTokens": 1,
+            "reasoningTokens": 0
+          },
+          "totalTokens": 2
+        },
+        "totalMessageUsage": {
+          "inputTokens": 1,
+          "inputTokenDetails": {
+            "noCacheTokens": 1,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0
+          },
+          "outputTokens": 1,
+          "outputTokenDetails": {
+            "textTokens": 1,
+            "reasoningTokens": 0
+          },
+          "totalTokens": 2
+        },
+        "lastStepCost": 0.001,
+        "totalMessageCost": 0.001,
+        "lastStepFinishReason": "stop",
+        "lastStepRawFinishReason": "stop",
+        "stepFinishReasons": [
+          {
+            "finishReason": "stop",
+            "rawFinishReason": "stop"
+          }
+        ]
+      }
+    },
+    "generatedProjectionObservations": {
+      "contract": "recoup-sdk-projection/v1",
+      "observations": [
+        {
+          "observation": {
+            "type": "data-recoup-sdk-observation",
+            "id": "assistant:projection:0",
+            "data": {
+              "version": 1,
+              "originRunId": "run",
+              "originStepId": "step",
+              "assistantMessageId": "assistant",
+              "ordinal": 0,
+              "original": {
+                "type": "custom",
+                "kind": "provider.synthetic",
+                "providerMetadata": {
+                  "provider": {
+                    "opaque": "kept"
+                  }
+                }
+              },
+              "fallback": {
+                "partIndex": 3,
+                "text": "This view cannot display additional model content."
+              }
+            }
+          },
+          "events": [
+            {
+              "type": "data-recoup-sdk-observation",
+              "id": "assistant:projection:0",
+              "data": {
+                "version": 1,
+                "originRunId": "run",
+                "originStepId": "step",
+                "assistantMessageId": "assistant",
+                "ordinal": 0,
+                "original": {
+                  "type": "custom",
+                  "kind": "provider.synthetic",
+                  "providerMetadata": {
+                    "provider": {
+                      "opaque": "kept"
+                    }
+                  }
+                },
+                "fallback": {
+                  "partIndex": 3,
+                  "text": "This view cannot display additional model content."
+                }
+              }
+            },
+            {
+              "type": "text-start",
+              "id": "assistant:projection:0:fallback"
+            },
+            {
+              "type": "text-delta",
+              "id": "assistant:projection:0:fallback",
+              "delta": "This view cannot display additional model content."
+            },
+            {
+              "type": "text-end",
+              "id": "assistant:projection:0:fallback"
+            }
+          ],
+          "canonicalWrite": "requires-readback"
+        },
+        {
+          "observation": {
+            "type": "data-recoup-sdk-observation",
+            "id": "assistant:projection:1",
+            "data": {
+              "version": 1,
+              "originRunId": "run",
+              "originStepId": "step",
+              "assistantMessageId": "assistant",
+              "ordinal": 1,
+              "original": {
+                "type": "reasoning-file",
+                "mediaType": "image/png",
+                "url": "data:image/png;base64,AA=="
+              },
+              "fallback": {
+                "partIndex": 5,
+                "text": "This view cannot display a reasoning attachment."
+              }
+            }
+          },
+          "events": [
+            {
+              "type": "data-recoup-sdk-observation",
+              "id": "assistant:projection:1",
+              "data": {
+                "version": 1,
+                "originRunId": "run",
+                "originStepId": "step",
+                "assistantMessageId": "assistant",
+                "ordinal": 1,
+                "original": {
+                  "type": "reasoning-file",
+                  "mediaType": "image/png",
+                  "url": "data:image/png;base64,AA=="
+                },
+                "fallback": {
+                  "partIndex": 5,
+                  "text": "This view cannot display a reasoning attachment."
+                }
+              }
+            },
+            {
+              "type": "text-start",
+              "id": "assistant:projection:1:fallback"
+            },
+            {
+              "type": "text-delta",
+              "id": "assistant:projection:1:fallback",
+              "delta": "This view cannot display a reasoning attachment."
+            },
+            {
+              "type": "text-end",
+              "id": "assistant:projection:1:fallback"
+            }
+          ],
+          "canonicalWrite": "requires-readback"
+        }
+      ]
+    }
+  },
+  "scope": "Actual runAgentStep with actual Gateway/SDK and synthetic fetch; no real provider or production World. App transport qualification remains separate."
+}

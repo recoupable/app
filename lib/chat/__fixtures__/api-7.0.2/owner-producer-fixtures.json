@@ -1,0 +1,833 @@
+{
+  "apiHead": "fe8a8738b51de6ab6293cee793cc3accfa9134ec",
+  "sdk": "7.0.2",
+  "node": "v24.18.0",
+  "networkAttempts": 0,
+  "sourcePins": [
+    {
+      "path": "package.json",
+      "sha256": "8ecf5abbdc3320c9f18e54a929b0b1ead97cabf5eb0811004bf55c5108a06489"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "13613be49e4e4c5554dbfcf3ee62876c908b3aac107c707abfdd5349ac88ab4a"
+    },
+    {
+      "path": "app/lib/workflows/runAgentStep.ts",
+      "sha256": "cb467e9323cb5e1559d7cb14b7d29ce574b59a37744a41355014daae973d63f5"
+    },
+    {
+      "path": "app/lib/workflows/runAgentWorkflow.ts",
+      "sha256": "f29efffce58a6bd884e07f10bc5d6b38fe523ac08591163cc28bfb1b8c424dc5"
+    },
+    {
+      "path": "lib/chat/handleChatWorkflowStream.ts",
+      "sha256": "3e00073e9f103a274ee868af569c1e4facd395ce28af2b93181c2a4f9332798d"
+    },
+    {
+      "path": "lib/chat/handleResumeChatStream.ts",
+      "sha256": "b9e7c311f2c413dfbdb8a1e57cd1c5b9f808924203ec40a6af7beaf9be0b7b1b"
+    },
+    {
+      "path": "lib/chat/getChatWorkflowReadable.ts",
+      "sha256": "ad05790ed6ceebaebcdff3f2398fc6cc1b86bdc64784154a4ed9f2ff52fc09e2"
+    },
+    {
+      "path": "lib/agent/tools/AgentContext.ts",
+      "sha256": "3efe96c87d4506fad12b3421aa541f12057cbed1853c025ab1c9494731445588"
+    },
+    {
+      "path": "lib/agent/tools/agentContextSchema.ts",
+      "sha256": "048b36aec76f5dc7340bc46a4b493497fd43fa3ceeb4a9a6501748b97a7f5511"
+    },
+    {
+      "path": "lib/agent/tools/buildToolsContext.ts",
+      "sha256": "7a13075182582561d824273ad12a0db5e13398d9d156fe2743c2986bb4b9ba75"
+    },
+    {
+      "path": "lib/agent/messageMetadata/buildMessageMetadataCallback.ts",
+      "sha256": "a1ec93946817316c2af8f9885ce1e3b8f4d06bba2061b281386d3cf523925853"
+    },
+    {
+      "path": "lib/agent/messageMetadata/normalizeLanguageModelUsage.ts",
+      "sha256": "494a75e7c6bb4b7abede38ee887bcc711b4ded9fdc84276982b3bd4928e3c0e4"
+    },
+    {
+      "path": "lib/credits/handleChatCredits.ts",
+      "sha256": "1c454aca7d9c1e6c1743aff318d79c91c9c705674120f7d7434aa7fc37936e81"
+    }
+  ],
+  "fixtures": [
+    {
+      "scenario": "text",
+      "originalMessages": [
+        {
+          "id": "fixture-user",
+          "role": "user",
+          "parts": [
+            {
+              "type": "text",
+              "text": "fixture request"
+            }
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "type": "start-step"
+        },
+        {
+          "type": "text-start",
+          "id": "fixture-text"
+        },
+        {
+          "type": "text-delta",
+          "id": "fixture-text",
+          "delta": "fixture result"
+        },
+        {
+          "type": "text-end",
+          "id": "fixture-text"
+        },
+        {
+          "type": "finish-step"
+        },
+        {
+          "type": "message-metadata",
+          "messageMetadata": {
+            "selectedModelId": "fixture-model",
+            "modelId": "fixture-model",
+            "lastStepUsage": {
+              "inputTokens": 10,
+              "inputTokenDetails": {
+                "noCacheTokens": 6,
+                "cacheReadTokens": 3,
+                "cacheWriteTokens": 1
+              },
+              "outputTokens": 5,
+              "outputTokenDetails": {
+                "textTokens": 3,
+                "reasoningTokens": 2
+              },
+              "totalTokens": 15
+            },
+            "totalMessageUsage": {
+              "inputTokens": 10,
+              "inputTokenDetails": {
+                "noCacheTokens": 6,
+                "cacheReadTokens": 3,
+                "cacheWriteTokens": 1
+              },
+              "outputTokens": 5,
+              "outputTokenDetails": {
+                "textTokens": 3,
+                "reasoningTokens": 2
+              },
+              "totalTokens": 15
+            },
+            "lastStepCost": 0.001,
+            "totalMessageCost": 0.001,
+            "lastStepFinishReason": "stop",
+            "stepFinishReasons": [
+              {
+                "finishReason": "stop"
+              }
+            ]
+          }
+        }
+      ],
+      "serverResponseMessage": {
+        "id": "fixture-assistant",
+        "metadata": {
+          "selectedModelId": "fixture-model",
+          "modelId": "fixture-model",
+          "lastStepUsage": {
+            "inputTokens": 10,
+            "inputTokenDetails": {
+              "noCacheTokens": 6,
+              "cacheReadTokens": 3,
+              "cacheWriteTokens": 1
+            },
+            "outputTokens": 5,
+            "outputTokenDetails": {
+              "textTokens": 3,
+              "reasoningTokens": 2
+            },
+            "totalTokens": 15
+          },
+          "totalMessageUsage": {
+            "inputTokens": 10,
+            "inputTokenDetails": {
+              "noCacheTokens": 6,
+              "cacheReadTokens": 3,
+              "cacheWriteTokens": 1
+            },
+            "outputTokens": 5,
+            "outputTokenDetails": {
+              "textTokens": 3,
+              "reasoningTokens": 2
+            },
+            "totalTokens": 15
+          },
+          "lastStepCost": 0.001,
+          "totalMessageCost": 0.001,
+          "lastStepFinishReason": "stop",
+          "stepFinishReasons": [
+            {
+              "finishReason": "stop"
+            }
+          ]
+        },
+        "role": "assistant",
+        "parts": [
+          {
+            "type": "step-start"
+          },
+          {
+            "type": "text",
+            "text": "fixture result",
+            "state": "done"
+          }
+        ]
+      },
+      "status": 200,
+      "headers": {
+        "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, x-api-key",
+        "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "x-workflow-run-id, x-workflow-stream-tail-index",
+        "cache-control": "no-cache",
+        "connection": "keep-alive",
+        "content-type": "text/event-stream",
+        "x-accel-buffering": "no",
+        "x-vercel-ai-ui-message-stream": "v1",
+        "x-workflow-run-id": "fixture-run"
+      },
+      "sse": "data: {\"type\":\"start-step\"}\n\ndata: {\"type\":\"text-start\",\"id\":\"fixture-text\"}\n\ndata: {\"type\":\"text-delta\",\"id\":\"fixture-text\",\"delta\":\"fixture result\"}\n\ndata: {\"type\":\"text-end\",\"id\":\"fixture-text\"}\n\ndata: {\"type\":\"finish-step\"}\n\ndata: {\"type\":\"message-metadata\",\"messageMetadata\":{\"selectedModelId\":\"fixture-model\",\"modelId\":\"fixture-model\",\"lastStepUsage\":{\"inputTokens\":10,\"inputTokenDetails\":{\"noCacheTokens\":6,\"cacheReadTokens\":3,\"cacheWriteTokens\":1},\"outputTokens\":5,\"outputTokenDetails\":{\"textTokens\":3,\"reasoningTokens\":2},\"totalTokens\":15},\"totalMessageUsage\":{\"inputTokens\":10,\"inputTokenDetails\":{\"noCacheTokens\":6,\"cacheReadTokens\":3,\"cacheWriteTokens\":1},\"outputTokens\":5,\"outputTokenDetails\":{\"textTokens\":3,\"reasoningTokens\":2},\"totalTokens\":15},\"lastStepCost\":0.001,\"totalMessageCost\":0.001,\"lastStepFinishReason\":\"stop\",\"stepFinishReasons\":[{\"finishReason\":\"stop\"}]}}\n\ndata: [DONE]\n\n"
+    },
+    {
+      "scenario": "static-tool",
+      "originalMessages": [
+        {
+          "id": "fixture-user",
+          "role": "user",
+          "parts": [
+            {
+              "type": "text",
+              "text": "fixture request"
+            }
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "type": "start-step"
+        },
+        {
+          "type": "tool-input-available",
+          "toolCallId": "fixture-call",
+          "toolName": "probe",
+          "input": {
+            "value": "fixture"
+          }
+        },
+        {
+          "type": "tool-output-available",
+          "toolCallId": "fixture-call",
+          "output": {
+            "checked": true
+          }
+        },
+        {
+          "type": "finish-step"
+        },
+        {
+          "type": "message-metadata",
+          "messageMetadata": {
+            "selectedModelId": "fixture-model",
+            "modelId": "fixture-model",
+            "lastStepUsage": {
+              "inputTokens": 10,
+              "inputTokenDetails": {
+                "noCacheTokens": 6,
+                "cacheReadTokens": 3,
+                "cacheWriteTokens": 1
+              },
+              "outputTokens": 5,
+              "outputTokenDetails": {
+                "textTokens": 3,
+                "reasoningTokens": 2
+              },
+              "totalTokens": 15
+            },
+            "totalMessageUsage": {
+              "inputTokens": 10,
+              "inputTokenDetails": {
+                "noCacheTokens": 6,
+                "cacheReadTokens": 3,
+                "cacheWriteTokens": 1
+              },
+              "outputTokens": 5,
+              "outputTokenDetails": {
+                "textTokens": 3,
+                "reasoningTokens": 2
+              },
+              "totalTokens": 15
+            },
+            "lastStepCost": 0.001,
+            "totalMessageCost": 0.001,
+            "lastStepFinishReason": "tool-calls",
+            "stepFinishReasons": [
+              {
+                "finishReason": "tool-calls"
+              }
+            ]
+          }
+        }
+      ],
+      "serverResponseMessage": {
+        "id": "fixture-assistant",
+        "metadata": {
+          "selectedModelId": "fixture-model",
+          "modelId": "fixture-model",
+          "lastStepUsage": {
+            "inputTokens": 10,
+            "inputTokenDetails": {
+              "noCacheTokens": 6,
+              "cacheReadTokens": 3,
+              "cacheWriteTokens": 1
+            },
+            "outputTokens": 5,
+            "outputTokenDetails": {
+              "textTokens": 3,
+              "reasoningTokens": 2
+            },
+            "totalTokens": 15
+          },
+          "totalMessageUsage": {
+            "inputTokens": 10,
+            "inputTokenDetails": {
+              "noCacheTokens": 6,
+              "cacheReadTokens": 3,
+              "cacheWriteTokens": 1
+            },
+            "outputTokens": 5,
+            "outputTokenDetails": {
+              "textTokens": 3,
+              "reasoningTokens": 2
+            },
+            "totalTokens": 15
+          },
+          "lastStepCost": 0.001,
+          "totalMessageCost": 0.001,
+          "lastStepFinishReason": "tool-calls",
+          "stepFinishReasons": [
+            {
+              "finishReason": "tool-calls"
+            }
+          ]
+        },
+        "role": "assistant",
+        "parts": [
+          {
+            "type": "step-start"
+          },
+          {
+            "type": "tool-probe",
+            "toolCallId": "fixture-call",
+            "state": "output-available",
+            "input": {
+              "value": "fixture"
+            },
+            "output": {
+              "checked": true
+            }
+          }
+        ]
+      },
+      "status": 200,
+      "headers": {
+        "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, x-api-key",
+        "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "x-workflow-run-id, x-workflow-stream-tail-index",
+        "cache-control": "no-cache",
+        "connection": "keep-alive",
+        "content-type": "text/event-stream",
+        "x-accel-buffering": "no",
+        "x-vercel-ai-ui-message-stream": "v1",
+        "x-workflow-run-id": "fixture-run"
+      },
+      "sse": "data: {\"type\":\"start-step\"}\n\ndata: {\"type\":\"tool-input-available\",\"toolCallId\":\"fixture-call\",\"toolName\":\"probe\",\"input\":{\"value\":\"fixture\"}}\n\ndata: {\"type\":\"tool-output-available\",\"toolCallId\":\"fixture-call\",\"output\":{\"checked\":true}}\n\ndata: {\"type\":\"finish-step\"}\n\ndata: {\"type\":\"message-metadata\",\"messageMetadata\":{\"selectedModelId\":\"fixture-model\",\"modelId\":\"fixture-model\",\"lastStepUsage\":{\"inputTokens\":10,\"inputTokenDetails\":{\"noCacheTokens\":6,\"cacheReadTokens\":3,\"cacheWriteTokens\":1},\"outputTokens\":5,\"outputTokenDetails\":{\"textTokens\":3,\"reasoningTokens\":2},\"totalTokens\":15},\"totalMessageUsage\":{\"inputTokens\":10,\"inputTokenDetails\":{\"noCacheTokens\":6,\"cacheReadTokens\":3,\"cacheWriteTokens\":1},\"outputTokens\":5,\"outputTokenDetails\":{\"textTokens\":3,\"reasoningTokens\":2},\"totalTokens\":15},\"lastStepCost\":0.001,\"totalMessageCost\":0.001,\"lastStepFinishReason\":\"tool-calls\",\"stepFinishReasons\":[{\"finishReason\":\"tool-calls\"}]}}\n\ndata: [DONE]\n\n"
+    },
+    {
+      "scenario": "dynamic-tool",
+      "originalMessages": [
+        {
+          "id": "fixture-user",
+          "role": "user",
+          "parts": [
+            {
+              "type": "text",
+              "text": "fixture request"
+            }
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "type": "start-step"
+        },
+        {
+          "type": "tool-input-available",
+          "toolCallId": "fixture-call",
+          "toolName": "probe",
+          "input": {
+            "value": "fixture"
+          },
+          "dynamic": true
+        },
+        {
+          "type": "tool-output-available",
+          "toolCallId": "fixture-call",
+          "output": {
+            "checked": true
+          },
+          "dynamic": true
+        },
+        {
+          "type": "finish-step"
+        },
+        {
+          "type": "message-metadata",
+          "messageMetadata": {
+            "selectedModelId": "fixture-model",
+            "modelId": "fixture-model",
+            "lastStepUsage": {
+              "inputTokens": 10,
+              "inputTokenDetails": {
+                "noCacheTokens": 6,
+                "cacheReadTokens": 3,
+                "cacheWriteTokens": 1
+              },
+              "outputTokens": 5,
+              "outputTokenDetails": {
+                "textTokens": 3,
+                "reasoningTokens": 2
+              },
+              "totalTokens": 15
+            },
+            "totalMessageUsage": {
+              "inputTokens": 10,
+              "inputTokenDetails": {
+                "noCacheTokens": 6,
+                "cacheReadTokens": 3,
+                "cacheWriteTokens": 1
+              },
+              "outputTokens": 5,
+              "outputTokenDetails": {
+                "textTokens": 3,
+                "reasoningTokens": 2
+              },
+              "totalTokens": 15
+            },
+            "lastStepCost": 0.001,
+            "totalMessageCost": 0.001,
+            "lastStepFinishReason": "tool-calls",
+            "stepFinishReasons": [
+              {
+                "finishReason": "tool-calls"
+              }
+            ]
+          }
+        }
+      ],
+      "serverResponseMessage": {
+        "id": "fixture-assistant",
+        "metadata": {
+          "selectedModelId": "fixture-model",
+          "modelId": "fixture-model",
+          "lastStepUsage": {
+            "inputTokens": 10,
+            "inputTokenDetails": {
+              "noCacheTokens": 6,
+              "cacheReadTokens": 3,
+              "cacheWriteTokens": 1
+            },
+            "outputTokens": 5,
+            "outputTokenDetails": {
+              "textTokens": 3,
+              "reasoningTokens": 2
+            },
+            "totalTokens": 15
+          },
+          "totalMessageUsage": {
+            "inputTokens": 10,
+            "inputTokenDetails": {
+              "noCacheTokens": 6,
+              "cacheReadTokens": 3,
+              "cacheWriteTokens": 1
+            },
+            "outputTokens": 5,
+            "outputTokenDetails": {
+              "textTokens": 3,
+              "reasoningTokens": 2
+            },
+            "totalTokens": 15
+          },
+          "lastStepCost": 0.001,
+          "totalMessageCost": 0.001,
+          "lastStepFinishReason": "tool-calls",
+          "stepFinishReasons": [
+            {
+              "finishReason": "tool-calls"
+            }
+          ]
+        },
+        "role": "assistant",
+        "parts": [
+          {
+            "type": "step-start"
+          },
+          {
+            "type": "dynamic-tool",
+            "toolName": "probe",
+            "toolCallId": "fixture-call",
+            "state": "output-available",
+            "input": {
+              "value": "fixture"
+            },
+            "output": {
+              "checked": true
+            }
+          }
+        ]
+      },
+      "status": 200,
+      "headers": {
+        "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, x-api-key",
+        "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "x-workflow-run-id, x-workflow-stream-tail-index",
+        "cache-control": "no-cache",
+        "connection": "keep-alive",
+        "content-type": "text/event-stream",
+        "x-accel-buffering": "no",
+        "x-vercel-ai-ui-message-stream": "v1",
+        "x-workflow-run-id": "fixture-run"
+      },
+      "sse": "data: {\"type\":\"start-step\"}\n\ndata: {\"type\":\"tool-input-available\",\"toolCallId\":\"fixture-call\",\"toolName\":\"probe\",\"input\":{\"value\":\"fixture\"},\"dynamic\":true}\n\ndata: {\"type\":\"tool-output-available\",\"toolCallId\":\"fixture-call\",\"output\":{\"checked\":true},\"dynamic\":true}\n\ndata: {\"type\":\"finish-step\"}\n\ndata: {\"type\":\"message-metadata\",\"messageMetadata\":{\"selectedModelId\":\"fixture-model\",\"modelId\":\"fixture-model\",\"lastStepUsage\":{\"inputTokens\":10,\"inputTokenDetails\":{\"noCacheTokens\":6,\"cacheReadTokens\":3,\"cacheWriteTokens\":1},\"outputTokens\":5,\"outputTokenDetails\":{\"textTokens\":3,\"reasoningTokens\":2},\"totalTokens\":15},\"totalMessageUsage\":{\"inputTokens\":10,\"inputTokenDetails\":{\"noCacheTokens\":6,\"cacheReadTokens\":3,\"cacheWriteTokens\":1},\"outputTokens\":5,\"outputTokenDetails\":{\"textTokens\":3,\"reasoningTokens\":2},\"totalTokens\":15},\"lastStepCost\":0.001,\"totalMessageCost\":0.001,\"lastStepFinishReason\":\"tool-calls\",\"stepFinishReasons\":[{\"finishReason\":\"tool-calls\"}]}}\n\ndata: [DONE]\n\n"
+    },
+    {
+      "scenario": "continued-legacy-usage",
+      "originalMessages": [
+        {
+          "id": "fixture-user",
+          "role": "user",
+          "parts": [
+            {
+              "type": "text",
+              "text": "fixture request"
+            }
+          ]
+        },
+        {
+          "id": "fixture-assistant",
+          "role": "assistant",
+          "parts": [
+            {
+              "type": "text",
+              "text": "prior "
+            }
+          ],
+          "metadata": {
+            "totalMessageUsage": {
+              "inputTokens": 20,
+              "outputTokens": 10,
+              "totalTokens": 30,
+              "cachedInputTokens": 4,
+              "reasoningTokens": 2
+            },
+            "totalMessageCost": 0.002
+          }
+        }
+      ],
+      "chunks": [
+        {
+          "type": "start-step"
+        },
+        {
+          "type": "text-start",
+          "id": "fixture-text"
+        },
+        {
+          "type": "text-delta",
+          "id": "fixture-text",
+          "delta": "fixture result"
+        },
+        {
+          "type": "text-end",
+          "id": "fixture-text"
+        },
+        {
+          "type": "finish-step"
+        },
+        {
+          "type": "message-metadata",
+          "messageMetadata": {
+            "selectedModelId": "fixture-model",
+            "modelId": "fixture-model",
+            "lastStepUsage": {
+              "inputTokens": 10,
+              "inputTokenDetails": {
+                "noCacheTokens": 6,
+                "cacheReadTokens": 3,
+                "cacheWriteTokens": 1
+              },
+              "outputTokens": 5,
+              "outputTokenDetails": {
+                "textTokens": 3,
+                "reasoningTokens": 2
+              },
+              "totalTokens": 15
+            },
+            "totalMessageUsage": {
+              "inputTokens": 30,
+              "inputTokenDetails": {
+                "noCacheTokens": 6,
+                "cacheReadTokens": 7,
+                "cacheWriteTokens": 1
+              },
+              "outputTokens": 15,
+              "outputTokenDetails": {
+                "textTokens": 3,
+                "reasoningTokens": 4
+              },
+              "totalTokens": 45
+            },
+            "lastStepCost": 0.001,
+            "totalMessageCost": 0.003,
+            "lastStepFinishReason": "stop",
+            "stepFinishReasons": [
+              {
+                "finishReason": "stop"
+              }
+            ]
+          }
+        }
+      ],
+      "serverResponseMessage": {
+        "id": "fixture-assistant",
+        "role": "assistant",
+        "parts": [
+          {
+            "type": "text",
+            "text": "prior "
+          },
+          {
+            "type": "step-start"
+          },
+          {
+            "type": "text",
+            "text": "fixture result",
+            "state": "done"
+          }
+        ],
+        "metadata": {
+          "totalMessageUsage": {
+            "inputTokens": 30,
+            "outputTokens": 15,
+            "totalTokens": 45,
+            "cachedInputTokens": 4,
+            "reasoningTokens": 2,
+            "inputTokenDetails": {
+              "noCacheTokens": 6,
+              "cacheReadTokens": 7,
+              "cacheWriteTokens": 1
+            },
+            "outputTokenDetails": {
+              "textTokens": 3,
+              "reasoningTokens": 4
+            }
+          },
+          "totalMessageCost": 0.003,
+          "selectedModelId": "fixture-model",
+          "modelId": "fixture-model",
+          "lastStepUsage": {
+            "inputTokens": 10,
+            "inputTokenDetails": {
+              "noCacheTokens": 6,
+              "cacheReadTokens": 3,
+              "cacheWriteTokens": 1
+            },
+            "outputTokens": 5,
+            "outputTokenDetails": {
+              "textTokens": 3,
+              "reasoningTokens": 2
+            },
+            "totalTokens": 15
+          },
+          "lastStepCost": 0.001,
+          "lastStepFinishReason": "stop",
+          "stepFinishReasons": [
+            {
+              "finishReason": "stop"
+            }
+          ]
+        }
+      },
+      "status": 200,
+      "headers": {
+        "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, x-api-key",
+        "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "x-workflow-run-id, x-workflow-stream-tail-index",
+        "cache-control": "no-cache",
+        "connection": "keep-alive",
+        "content-type": "text/event-stream",
+        "x-accel-buffering": "no",
+        "x-vercel-ai-ui-message-stream": "v1",
+        "x-workflow-run-id": "fixture-run"
+      },
+      "sse": "data: {\"type\":\"start-step\"}\n\ndata: {\"type\":\"text-start\",\"id\":\"fixture-text\"}\n\ndata: {\"type\":\"text-delta\",\"id\":\"fixture-text\",\"delta\":\"fixture result\"}\n\ndata: {\"type\":\"text-end\",\"id\":\"fixture-text\"}\n\ndata: {\"type\":\"finish-step\"}\n\ndata: {\"type\":\"message-metadata\",\"messageMetadata\":{\"selectedModelId\":\"fixture-model\",\"modelId\":\"fixture-model\",\"lastStepUsage\":{\"inputTokens\":10,\"inputTokenDetails\":{\"noCacheTokens\":6,\"cacheReadTokens\":3,\"cacheWriteTokens\":1},\"outputTokens\":5,\"outputTokenDetails\":{\"textTokens\":3,\"reasoningTokens\":2},\"totalTokens\":15},\"totalMessageUsage\":{\"inputTokens\":30,\"inputTokenDetails\":{\"noCacheTokens\":6,\"cacheReadTokens\":7,\"cacheWriteTokens\":1},\"outputTokens\":15,\"outputTokenDetails\":{\"textTokens\":3,\"reasoningTokens\":4},\"totalTokens\":45},\"lastStepCost\":0.001,\"totalMessageCost\":0.003,\"lastStepFinishReason\":\"stop\",\"stepFinishReasons\":[{\"finishReason\":\"stop\"}]}}\n\ndata: [DONE]\n\n"
+    },
+    {
+      "scenario": "error",
+      "originalMessages": [
+        {
+          "id": "fixture-user",
+          "role": "user",
+          "parts": [
+            {
+              "type": "text",
+              "text": "fixture request"
+            }
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "type": "start-step"
+        },
+        {
+          "type": "error",
+          "errorText": "synthetic provider failure"
+        },
+        {
+          "type": "finish-step"
+        },
+        {
+          "type": "message-metadata",
+          "messageMetadata": {
+            "selectedModelId": "fixture-model",
+            "modelId": "fixture-model",
+            "lastStepUsage": {
+              "inputTokens": 10,
+              "inputTokenDetails": {
+                "noCacheTokens": 6,
+                "cacheReadTokens": 3,
+                "cacheWriteTokens": 1
+              },
+              "outputTokens": 5,
+              "outputTokenDetails": {
+                "textTokens": 3,
+                "reasoningTokens": 2
+              },
+              "totalTokens": 15
+            },
+            "totalMessageUsage": {
+              "inputTokens": 10,
+              "inputTokenDetails": {
+                "noCacheTokens": 6,
+                "cacheReadTokens": 3,
+                "cacheWriteTokens": 1
+              },
+              "outputTokens": 5,
+              "outputTokenDetails": {
+                "textTokens": 3,
+                "reasoningTokens": 2
+              },
+              "totalTokens": 15
+            },
+            "lastStepCost": 0.001,
+            "totalMessageCost": 0.001,
+            "lastStepFinishReason": "stop",
+            "stepFinishReasons": [
+              {
+                "finishReason": "stop"
+              }
+            ]
+          }
+        }
+      ],
+      "serverResponseMessage": {
+        "id": "fixture-assistant",
+        "metadata": {
+          "selectedModelId": "fixture-model",
+          "modelId": "fixture-model",
+          "lastStepUsage": {
+            "inputTokens": 10,
+            "inputTokenDetails": {
+              "noCacheTokens": 6,
+              "cacheReadTokens": 3,
+              "cacheWriteTokens": 1
+            },
+            "outputTokens": 5,
+            "outputTokenDetails": {
+              "textTokens": 3,
+              "reasoningTokens": 2
+            },
+            "totalTokens": 15
+          },
+          "totalMessageUsage": {
+            "inputTokens": 10,
+            "inputTokenDetails": {
+              "noCacheTokens": 6,
+              "cacheReadTokens": 3,
+              "cacheWriteTokens": 1
+            },
+            "outputTokens": 5,
+            "outputTokenDetails": {
+              "textTokens": 3,
+              "reasoningTokens": 2
+            },
+            "totalTokens": 15
+          },
+          "lastStepCost": 0.001,
+          "totalMessageCost": 0.001,
+          "lastStepFinishReason": "stop",
+          "stepFinishReasons": [
+            {
+              "finishReason": "stop"
+            }
+          ]
+        },
+        "role": "assistant",
+        "parts": [
+          {
+            "type": "step-start"
+          }
+        ]
+      },
+      "status": 200,
+      "headers": {
+        "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, x-api-key",
+        "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "x-workflow-run-id, x-workflow-stream-tail-index",
+        "cache-control": "no-cache",
+        "connection": "keep-alive",
+        "content-type": "text/event-stream",
+        "x-accel-buffering": "no",
+        "x-vercel-ai-ui-message-stream": "v1",
+        "x-workflow-run-id": "fixture-run"
+      },
+      "sse": "data: {\"type\":\"start-step\"}\n\ndata: {\"type\":\"error\",\"errorText\":\"synthetic provider failure\"}\n\ndata: {\"type\":\"finish-step\"}\n\ndata: {\"type\":\"message-metadata\",\"messageMetadata\":{\"selectedModelId\":\"fixture-model\",\"modelId\":\"fixture-model\",\"lastStepUsage\":{\"inputTokens\":10,\"inputTokenDetails\":{\"noCacheTokens\":6,\"cacheReadTokens\":3,\"cacheWriteTokens\":1},\"outputTokens\":5,\"outputTokenDetails\":{\"textTokens\":3,\"reasoningTokens\":2},\"totalTokens\":15},\"totalMessageUsage\":{\"inputTokens\":10,\"inputTokenDetails\":{\"noCacheTokens\":6,\"cacheReadTokens\":3,\"cacheWriteTokens\":1},\"outputTokens\":5,\"outputTokenDetails\":{\"textTokens\":3,\"reasoningTokens\":2},\"totalTokens\":15},\"lastStepCost\":0.001,\"totalMessageCost\":0.001,\"lastStepFinishReason\":\"stop\",\"stepFinishReasons\":[{\"finishReason\":\"stop\"}]}}\n\ndata: [DONE]\n\n"
+    }
+  ],
+  "gates": [
+    "Actual old/new App reader matrix pending",
+    "No-start replay identity pending App qualification",
+    "Explicit stop and abort paired transport qualification pending"
+  ]
+}

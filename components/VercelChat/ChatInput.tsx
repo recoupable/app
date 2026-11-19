@@ -29,6 +29,7 @@ export function ChatInput({
     sendError,
     failedDraftPreview,
     hasFailedSubmission,
+    hasUnknownAdmission,
     retrySendMessage,
     discardFailedSubmission,
     stopState,
@@ -48,7 +49,8 @@ export function ChatInput({
       isLoadingSignedUrls ||
       workspaceStatus === "off" ||
       stopState?.status === "error" ||
-      !!hasFailedSubmission);
+      !!hasFailedSubmission ||
+      !!hasUnknownAdmission);
 
   const handleSend = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -104,16 +106,17 @@ export function ChatInput({
                 </span>
               )}
             </span>
-            {stopState?.status === "error" ? (
+            {stopState?.status === "error" || hasUnknownAdmission ? (
               <button
                 type="button"
                 className={recoveryActionClassName}
                 onClick={() => void stop()}
               >
-                Retry Stop
+                {stopState?.status === "error" ? "Retry Stop" : "Confirm Stop"}
               </button>
             ) : (
               sendError &&
+              hasFailedSubmission &&
               !isGeneratingResponse && (
                 <button
                   type="button"
@@ -129,6 +132,7 @@ export function ChatInput({
               )
             )}
             {sendError &&
+              hasFailedSubmission &&
               !isGeneratingResponse &&
               stopState?.status !== "error" && (
                 <button

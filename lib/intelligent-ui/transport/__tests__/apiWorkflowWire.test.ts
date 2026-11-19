@@ -1,7 +1,7 @@
+import { ResumableChat } from "@/lib/chat/ResumableChat";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import path from "node:path";
 import { Chat } from "@ai-sdk/react";
 import type { UIMessage, UIMessageChunk } from "ai";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -36,7 +36,7 @@ function fixture(messages: UIMessage[] = []) {
   const scopeKey = consumer.syncScope().key!;
   const received: UIMessageChunk[] = [];
   const finished = vi.fn();
-  const chat: Chat<UIMessage> = new Chat({
+  const chat: Chat<UIMessage> = new ResumableChat({
     id: hostScope.chatId,
     messages: consumer.hydrate(messages, scopeKey),
     onData: (part) => received.push(structuredClone(part)),
@@ -109,6 +109,7 @@ function assertFinal({
     },
     {
       type: "reasoning",
+      id: "reason",
       text: "Synthetic reasoning, not a provider call.",
       state: "done",
     },
@@ -190,15 +191,17 @@ it("pins the actual API serializer capture, input, headers and every SSE record 
     "@workflow/ai": "4.2.0",
   });
   const require = createRequire(import.meta.url);
-  for (const name of ["ai", "@ai-sdk/react", "@workflow/ai"] as const) {
-    const packagePath =
-      name === "@workflow/ai"
-        ? path.resolve(path.dirname(require.resolve(name)), "../package.json")
-        : require.resolve(`${name}/package.json`);
+  // Keep the immutable v6 producer/capture provenance above. These are the
+  // current consumers qualified against those exact historical wire bytes.
+  const currentConsumers = {
+    ai: "7.0.69",
+    "@ai-sdk/react": "4.0.72",
+    "@ai-sdk/workflow": "1.0.70",
+  };
+  for (const [name, version] of Object.entries(currentConsumers)) {
+    const packagePath = require.resolve(`${name}/package.json`);
     const installed = JSON.parse(readFileSync(packagePath, "utf8"));
-    expect(installed.version).toBe(
-      wire.manifest.consumerSource.declaredVersions[name],
-    );
+    expect(installed.version).toBe(version);
   }
   expect(wire.manifest.producerSource).toEqual({
     repository: "recoupable/api",

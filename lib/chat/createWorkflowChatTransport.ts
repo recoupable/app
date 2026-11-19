@@ -1,4 +1,5 @@
 import type { UIMessage, UIMessageChunk } from "ai";
+import { classifyChatAdmissionFailure } from "./classifyChatAdmissionFailure";
 import {
   createChatRequestLifecycle,
   type ChatRequestLifecycle,
@@ -7,7 +8,7 @@ import {
 import {
   WorkflowChatTransport,
   type WorkflowChatTransportOptions,
-} from "@workflow/ai";
+} from "@ai-sdk/workflow";
 import type { createSnapshotConsumer } from "@/lib/intelligent-ui/chat/createSnapshotConsumer";
 import { settleSnapshotReconnect } from "@/lib/intelligent-ui/chat/settleSnapshotReconnect";
 import type { CatalogSurfaceRequest } from "@/lib/intelligent-ui/chat/getChatCatalogHost";
@@ -16,6 +17,8 @@ import { isChatIntelligentUIEnabled } from "@/lib/intelligent-ui/chat/isChatInte
 interface CreateWorkflowChatTransportOptions {
   /** recoup-api origin, e.g. `https://api.recoupable.dev`. */
   baseUrl: string;
+  /** Advertise only when every consuming path uses the continuation decoder. */
+  continuationProtocol?: "canonical-base-v1";
   /** Reads the ids current as of the request, not as of transport construction. */
   getIds: () => { sessionId: string | undefined; chatId: string };
   /** Privy access token for both the POST and every reconnect. */
@@ -57,6 +60,7 @@ interface CreateWorkflowChatTransportOptions {
  */
 export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
   baseUrl,
+  continuationProtocol,
   getIds,
   getAccessToken,
   waitForWorkspace,
@@ -102,6 +106,9 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
     if (!token) throw new Error("Please sign in to resume this response");
     return {
       "Content-Type": "application/json",
+      ...(continuationProtocol
+        ? { "X-Recoup-Stream-Continuation": continuationProtocol }
+        : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
   };
@@ -129,12 +136,28 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
   ): WorkflowChatTransportOptions<UI_MESSAGE> => {
     let ids: ReturnType<typeof getIds> | undefined;
     let admitted = false;
+    let failureSettled = false;
+    const canPublish = () =>
+      !signal?.aborted && (!metadata || metadata.isCurrent());
     const reject = (error: unknown) => {
-      if (!admitted && metadata)
+      if (!admitted && !failureSettled && metadata && canPublish())
         metadata.onRejected(
           error instanceof Error ? error : new Error(String(error)),
         );
+      failureSettled = true;
       operation.settle();
+    };
+    const unknown = () => {
+      if (admitted || failureSettled) return;
+      failureSettled = true;
+      operation.markUnknown();
+      operation.settle();
+      if (canPublish())
+        metadata?.onUnknown?.(
+          new Error(
+            "Could not confirm whether this message started. Use Stop before sending again.",
+          ),
+        );
     };
     const check = () => {
       signal?.throwIfAborted();
@@ -154,39 +177,47 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
           // preparation. Stop leaves it attached until the server confirms.
           operation.dispatched();
           const response = await fetch(url.toString(), init);
+          if (init?.method === "POST" && !response.ok) {
+            const result = await classifyChatAdmissionFailure(response, signal);
+            check();
+            if (result.outcome === "admitted") {
+              admitted = true;
+              operation.admit();
+              operation.settle();
+              if (ids) metadata?.onAccepted(ids);
+            } else if (result.outcome === "unknown") unknown();
+            else
+              reject(
+                Object.assign(new Error("Message was not accepted"), {
+                  status: response.status,
+                }),
+              );
+            // The bounded classifier owns the error body. SDK receives a finite,
+            // sanitized error and cannot hang rereading a stalled/oversized body.
+            return Response.json(
+              {
+                status: "error",
+                error:
+                  result.outcome === "admitted"
+                    ? "Message started, but its response is unavailable."
+                    : result.outcome === "unknown"
+                      ? "Could not confirm message admission. Use Stop before sending again."
+                      : "Message was not accepted.",
+              },
+              { status: response.status },
+            );
+          }
           if (init?.method !== "POST" && response.ok && response.body)
             onStreamAccepted?.();
           if (
             init?.method === "POST" &&
-            response.ok &&
             (!response.body || !response.headers.get("x-workflow-run-id"))
           )
-            operation.markUnknown();
-          if (
-            init?.method === "POST" &&
-            (!response.ok ||
-              !response.body ||
-              !response.headers.get("x-workflow-run-id"))
-          ) {
-            reject(
-              Object.assign(
-                new Error(
-                  response.ok
-                    ? "Could not confirm message admission"
-                    : "Message was not accepted",
-                ),
-                response.ok ? {} : { status: response.status },
-              ),
-            );
-          }
+            unknown();
           return response;
         } catch (error) {
-          if (
-            init?.method === "POST" &&
-            !(error instanceof DOMException && error.name === "AbortError")
-          )
-            operation.markUnknown();
-          reject(error);
+          if (init?.method === "POST") unknown();
+          else operation.settle();
           throw error;
         }
       },
@@ -217,6 +248,9 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${recoupAccessToken}`,
+              ...(continuationProtocol
+                ? { "X-Recoup-Stream-Continuation": continuationProtocol }
+                : {}),
             },
             body: {
               ...requestBody,
@@ -247,6 +281,7 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
   const observeStream = (
     stream: ReadableStream<UIMessageChunk>,
     finish: () => void,
+    allowNoActiveStream = false,
   ) => {
     const reader = stream.getReader();
     return new ReadableStream<UIMessageChunk>({
@@ -259,7 +294,15 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
           } else controller.enqueue(result.value);
         } catch (error) {
           finish();
-          controller.error(error);
+          // Workflow reconnect is lazy: the HTTP 204 rejection happens on
+          // reader.read(), after reconnectToStream has already returned.
+          if (
+            allowNoActiveStream &&
+            error instanceof Error &&
+            error.message.startsWith("Failed to fetch chat: 204")
+          )
+            controller.close();
+          else controller.error(error);
         }
       },
       async cancel(reason) {
@@ -353,7 +396,8 @@ export function createWorkflowChatTransport<UI_MESSAGE extends UIMessage>({
           ),
         ).reconnectToStream({ ...options, abortSignal: signal });
         const filtered = filterStream(stream, pending?.filter);
-        const observed = filtered && observeStream(filtered, completion.finish);
+        const observed =
+          filtered && observeStream(filtered, completion.finish, true);
         return observed && pending
           ? await settleSnapshotReconnect(observed, pending.signal)
           : observed;

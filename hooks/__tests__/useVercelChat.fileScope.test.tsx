@@ -12,7 +12,7 @@ const ext = vi.hoisted(() => ({
   send: vi.fn(),
   files: [{ id: "draft.txt", path: "draft.txt", mime_type: "text/plain" }],
   messages: [],
-  lifecycle: { cancelAll: vi.fn() },
+  lifecycle: { cancelAll: vi.fn(), hasUnknownAdmission: () => false },
   snapshots: { captureSendIntent: () => () => true },
 }));
 vi.mock("@privy-io/react-auth", () => ({
@@ -62,7 +62,8 @@ vi.mock("@/lib/api/getClientApiBaseUrl", () => ({
   getClientApiBaseUrl: () => ext.origin,
 }));
 vi.mock("next/navigation", () => ({ useParams: () => ({ chatId: "chat" }) }));
-vi.mock("@ai-sdk/react", () => ({
+vi.mock("@ai-sdk/react", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@ai-sdk/react")>()),
   useChat: () => ({
     messages: ext.messages,
     status: "ready",

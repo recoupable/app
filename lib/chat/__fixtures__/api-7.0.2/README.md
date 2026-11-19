@@ -1,0 +1,11 @@
+# Frozen API SDK 7.0.2 producer fixtures
+
+`owner-producer-fixtures.json` is a verbatim copy of the API owner's synthetic producer artifact received on 2026-11-18. SHA-256: `3e5d87123e1bfc9dad699bf5a8655acd1b7973f09dd46b0a166d012937a8d6ba`.
+
+Source API commit: `fe8a8738b51de6ab6293cee793cc3accfa9134ec`; producer SDK: `ai@7.0.2`; producer runtime: Node `v24.18.0`. The artifact retains its 13 source pins and all five scenarios, headers, SSE strings and JSON-serialized expected messages. Receipt source: Mono's ignored `.local/audits/sdk7-mixed-reader-harness-2026-11-18/api-owner-producer-fixtures.json` and accompanying `HANDOFF.md`.
+
+The owner generator uses the real SDK, compiled application metadata callback and CORS helper with synthetic model/tool execution and workflow ID. It reconstructs response assembly; it does not execute the durable workflow or production HTTP route. Source pins establish correspondence to the commit, not independent execution of those routes or ledger writes.
+
+The integration test splits the exact saved SSE string at an event boundary, then fragments UTF-8 response bytes into tiny buffers. The two responses concatenate to the original string without reserializing its JSON. A third, explicitly synthetic finish-only response closes the workflow. Raw cursor assertions count wire chunks, including non-rendered finish-step and metadata events, not byte fragments or displayed parts.
+
+Only `continued-legacy-usage` has an original saved assistant. Other successful fixtures receive an explicitly synthetic empty admitted assistant with the owner's expected ID. Tests compare entire JSON-serialized messages (optional undefined properties do not exist across this fixture's JSON boundary), preserve saved parts/identity, and check cumulative metadata. A direct SDK Chat negative control retains the unadapted cold-resume identity failure. Fetch is stubbed and unexpected calls throw; no provider, browser, live route, billing or deployment qualification is claimed. The error fixture is also consumed on both paths with an explicitly synthetic saved text prefix: App terminates at the owner error, preserves that history, reports one error, aborts its upstream signal and does not publish later metadata or a successful completion. Existing coordinator tests cover stop and scope disposal separately.
