@@ -350,3 +350,37 @@ it.each([401, 403, 404])(
     expect(screen.queryByText("private diagnostic")).toBeNull();
   },
 );
+
+it("does not display a substituted saved assessment or replace its reopen ID", async () => {
+  const requested = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+  const other = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () =>
+      Response.json({
+        snapshot: { id: other, state: "saved", superseded: false, brief },
+      }),
+    ),
+  );
+  render(
+    <CompanyAssessment
+      requestId="request"
+      organizationId="org"
+      getAccessToken={async () => "token"}
+    />,
+  );
+  fireEvent.change(screen.getByLabelText("Saved assessment ID"), {
+    target: { value: requested },
+  });
+  fireEvent.click(
+    screen.getByRole("button", { name: "Open saved assessment" }),
+  );
+  await screen.findByText(
+    "The response did not match the requested saved assessment. Reopen using its original ID.",
+  );
+  expect(screen.queryByText(brief.text)).toBeNull();
+  expect(screen.queryByText(`Saved assessment: ${other}`)).toBeNull();
+  expect(
+    (screen.getByLabelText("Saved assessment ID") as HTMLInputElement).value,
+  ).toBe(requested);
+});
