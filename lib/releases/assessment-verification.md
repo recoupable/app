@@ -85,26 +85,11 @@ A feature PR, local fixture, CI result or automatic preview build does not compl
 hosted web/MCP acceptance. No manual deployment, production write, credential
 rotation, paid action, client import or merge is part of this change.
 
-## Exact snapshot reopen identity — November 18, 2026
+## Captured-reference recovery — November 18, 2026
 
-The saved-assessment hook captures the requested brief ID before awaiting access
-or readback. It withholds a response for a different snapshot, clears prior text
-and capture eligibility, and preserves the entered ID for explicit recovery. UUID
-letter casing and surrounding input whitespace do not change the intended ID.
-Editing the input while a request is pending does not retarget that request.
-
-This repairs a concrete source-substitution case within App #2231/#2207 using the
-existing Context `save_brief`/`read_brief` private snapshot path. Tests use the real
-hook/request adapter and mounted viewer with synthetic HTTP responses: save/reopen
-after hook loss preserves the exact snapshot and document/source versions; missing
-or denied reads withhold prior content without looking up another source. This is
-not a new ArtifactRef, generic file resolver, mutable working-surface store, public
-upload fallback, cross-host authority proof, or live persistence acceptance. The
-separate selected-evidence check remains limited to its existing API-supported
-company-onboarding contract. Broader destination and artifact coverage in #2231
-remains incomplete.
-
-### Captured-reference recovery
+This recovery flow builds on the exact saved-ID readback check merged separately
+in [App #2406](https://github.com/recoupable/app/pull/2406). That safety fix is
+already on main; this change adds only local reference recovery and validation.
 
 The evidence selection panel now accepts the exact JSON emitted by **Captured
 evidence references** after the user reopens its original saved assessment.
