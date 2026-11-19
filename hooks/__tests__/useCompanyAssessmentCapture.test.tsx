@@ -27,6 +27,7 @@ it("invalidates snapshot synchronously before awaiting a new request and never r
         : Promise.resolve("token"),
     ),
   );
+  act(() => result.current.setOpenId(snapshot.id));
   await act(async () => result.current.run("read_brief"));
   const old = result.current.snapshot!;
   expect(result.current.isCurrentSnapshot(old)).toBe(true);
@@ -58,8 +59,10 @@ it("keeps a previous snapshot ineligible after an unsuccessful read", async () =
   const { result } = renderHook(() =>
     useCompanyAssessment("request", "org", async () => "token"),
   );
+  act(() => result.current.setOpenId(snapshot.id));
   await act(async () => result.current.run("read_brief"));
   const old = result.current.snapshot!;
+  act(() => result.current.setOpenId(snapshot.id));
   await act(async () => result.current.run("read_brief"));
   expect(result.current.snapshot).toBeNull();
   expect(result.current.isCurrentSnapshot(old)).toBe(false);

@@ -84,3 +84,48 @@ pnpm lint
 A feature PR, local fixture, CI result or automatic preview build does not complete
 hosted web/MCP acceptance. No manual deployment, production write, credential
 rotation, paid action, client import or merge is part of this change.
+
+## Exact snapshot reopen identity — November 18, 2026
+
+The saved-assessment hook captures the requested brief ID before awaiting access
+or readback. It withholds a response for a different snapshot, clears prior text
+and capture eligibility, and preserves the entered ID for explicit recovery. UUID
+letter casing and surrounding input whitespace do not change the intended ID.
+Editing the input while a request is pending does not retarget that request.
+
+This repairs a concrete source-substitution case within App #2231/#2207 using the
+existing Context `save_brief`/`read_brief` private snapshot path. Tests use the real
+hook/request adapter and mounted viewer with synthetic HTTP responses: save/reopen
+after hook loss preserves the exact snapshot and document/source versions; missing
+or denied reads withhold prior content without looking up another source. This is
+not a new ArtifactRef, generic file resolver, mutable working-surface store, public
+upload fallback, cross-host authority proof, or live persistence acceptance. The
+separate selected-evidence check remains limited to its existing API-supported
+company-onboarding contract. Broader destination and artifact coverage in #2231
+remains incomplete.
+
+### Captured-reference recovery
+
+The evidence selection panel now accepts the exact JSON emitted by **Captured
+evidence references** after the user reopens its original saved assessment.
+Recovery parses only `brief_id` and the existing `selected_evidence` tuple, rejects
+extra fields/malformed input and a different brief ID, then calls the existing
+current-auth/current-organization `read_brief` validation. It preserves document,
+result, subject, topic, document version and source-version identities without
+reconstructing them from labels. Checked evidence is withheld until the exact
+server response passes `readAssessmentEvidenceValidation`; editing the recovery
+input or changing the assessment/workspace invalidates pending validation.
+
+This is an explicit local reference roundtrip through the existing private Context
+brief destination. Copying references is not a server save acknowledgement. The
+historical assessment summary remains distinct from checked selection results.
+There is no new working-surface store, generic artifact reference, model dispatch,
+public upload, provider call or Files/path-move support. Unsupported/superseded
+snapshots cannot enter this selection path. #2207 durable surface saves and #2231
+broad artifact/destination acceptance remain incomplete.
+
+`CompanyAssessmentRecovery.test.tsx` exercises capture → unmount → reopen → paste →
+server revalidation, exact request fields/current organization, no-store, malformed
+and foreign references, access denial, unavailable evidence, superseded/mismatched
+responses, and delayed edit/workspace invalidation. These are synthetic mounted
+component tests, not authenticated runtime or cross-host acceptance.

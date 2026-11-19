@@ -40,6 +40,7 @@ export function useCompanyAssessment(
   );
   const run = async (action: "brief" | "save_brief" | "read_brief") => {
     if (inFlight.current) return;
+    const requestedBriefId = openId.trim();
     inFlight.current = true;
     const revision = ++generation.current;
     acceptedSnapshot.current = null;
@@ -76,8 +77,15 @@ export function useCompanyAssessment(
                 },
                 revision,
               )
-            : await request({ action, brief_id: openId.trim() }, revision);
+            : await request({ action, brief_id: requestedBriefId }, revision);
         if (revision !== generation.current) return;
+        if (
+          action === "read_brief" &&
+          result.snapshot.id.toLowerCase() !== requestedBriefId.toLowerCase()
+        )
+          throw new ReleaseCaseRequestError(
+            "The response did not match the requested saved assessment. Reopen using its original ID.",
+          );
         setRetrySave(false);
         if (
           result.snapshot.brief &&
