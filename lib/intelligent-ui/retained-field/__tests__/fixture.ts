@@ -1,7 +1,6 @@
 import type { FieldContext, RetainedFieldRequest } from "../schemas";
 import { projectRetainedField } from "../projectRetainedField";
-export const id = (n: number) =>
-  `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+import { id } from "./id";
 export function fixture() {
   const method = {
     recipe: "catalog-retained-stream-fields/1" as const,

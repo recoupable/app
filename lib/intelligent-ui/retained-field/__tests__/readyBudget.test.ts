@@ -3,7 +3,8 @@ import { consumeRetainedField } from "../consumeRetainedField";
 import { projectRetainedField } from "../projectRetainedField";
 import { fieldContextSchema } from "../schemas";
 import { fitsRetainedFieldBudget } from "../fitsRetainedFieldBudget";
-import { fixture, id } from "./fixture";
+import { fixture } from "./fixture";
+import { id } from "./id";
 
 it("withholds a valid eight-item projection whose complete ready JSON exceeds 32 KiB", () => {
   const f = fixture();

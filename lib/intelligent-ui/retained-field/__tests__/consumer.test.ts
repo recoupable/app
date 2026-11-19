@@ -5,7 +5,8 @@ import { projectRetainedField } from "../projectRetainedField";
 import { fieldContextSchema } from "../schemas";
 import { surfaceSchema } from "../../schema";
 import { objectRefKey } from "../../descriptors/objectRefKey";
-import { fixture, id } from "./fixture";
+import { fixture } from "./fixture";
+import { id } from "./id";
 import { resolveSelection } from "../../descriptors/resolveSelection";
 
 describe("offline retained field consumer", () => {

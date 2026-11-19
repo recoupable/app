@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { equalParsedProjection } from "./equalParsedProjection";
 import { surfaceSchema } from "../schema";
 import { identifierSchema, revisionSchema } from "../contractValues";
 import { fitsRetainedFieldBudget } from "./fitsRetainedFieldBudget";
@@ -95,8 +96,7 @@ export function consumeRetainedField(input: unknown, admission?: Admission) {
       surface.id,
       surface.revision,
     );
-    if (JSON.stringify(surface) !== JSON.stringify(projection.surface))
-      return unavailable;
+    if (!equalParsedProjection(surface, projection.surface)) return unavailable;
     const ready = {
       state: "ready" as const,
       fieldContext,
