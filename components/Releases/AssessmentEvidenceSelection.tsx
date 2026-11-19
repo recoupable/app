@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import type { CompanyAssessmentSnapshot } from "@/lib/releases/assessmentTypes";
 import { getAssessmentEvidenceChoices } from "@/lib/releases/assessmentEvidence/getAssessmentEvidenceChoices";
 import { captureAssessmentEvidence } from "@/lib/releases/assessmentEvidence/captureAssessmentEvidence";
+import { parseCapturedAssessmentEvidence } from "@/lib/releases/assessmentEvidence/parseCapturedAssessmentEvidence";
 
 export default function AssessmentEvidenceSelection({
   snapshot,
@@ -24,6 +25,8 @@ export default function AssessmentEvidenceSelection({
   const [captured, setCaptured] =
     useState<ReturnType<typeof captureAssessmentEvidence>>(null);
   const [unavailable, setUnavailable] = useState(false);
+  const [recoveryText, setRecoveryText] = useState("");
+  const [recoveryError, setRecoveryError] = useState(false);
   const validation = useAssessmentEvidenceValidation(
     organizationId,
     getAccessToken,
@@ -171,6 +174,69 @@ export default function AssessmentEvidenceSelection({
           />
         </label>
       )}
+      <details>
+        <summary className="cursor-pointer font-medium">
+          Recover a captured selection
+        </summary>
+        <p className="mt-2 text-muted-foreground">
+          Reopen the original saved assessment, then paste its captured
+          references. Recovery checks current access and the exact evidence
+          versions. It does not save a working view or send a follow-up to chat.
+        </p>
+        <label className="mt-2 block">
+          References to recover
+          <textarea
+            value={recoveryText}
+            maxLength={65536}
+            disabled={busy}
+            onChange={(event) => {
+              validation.invalidate();
+              setCaptured(null);
+              setRecoveryError(false);
+              setRecoveryText(event.target.value);
+            }}
+            className="mt-2 min-h-32 w-full rounded-lg border border-border bg-background p-3 font-mono text-xs"
+          />
+        </label>
+        <Button
+          variant="outline"
+          className="min-h-11"
+          disabled={
+            disabled ||
+            !recoveryText.trim() ||
+            validation.status.state === "pending"
+          }
+          onClick={() => {
+            validation.invalidate();
+            setCaptured(null);
+            const recovered = parseCapturedAssessmentEvidence(recoveryText);
+            if (
+              !snapshot ||
+              !isCurrentSnapshot(snapshot) ||
+              !recovered ||
+              recovered.brief_id !== snapshot.id
+            ) {
+              setRecoveryError(true);
+              return;
+            }
+            setRecoveryError(false);
+            setUnavailable(false);
+            setSelectedIds(
+              recovered.selected_evidence.map((row) => row.documentId),
+            );
+            setCaptured(recovered);
+            void validation.validate(recovered);
+          }}
+        >
+          Recover and check exact evidence
+        </Button>
+        {recoveryError && (
+          <p role="status">
+            References could not be recovered. Use the original captured
+            references and reopen their saved assessment.
+          </p>
+        )}
+      </details>
     </section>
   );
 }

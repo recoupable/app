@@ -84,3 +84,33 @@ pnpm lint
 A feature PR, local fixture, CI result or automatic preview build does not complete
 hosted web/MCP acceptance. No manual deployment, production write, credential
 rotation, paid action, client import or merge is part of this change.
+
+## Captured-reference recovery — November 18, 2026
+
+This recovery flow builds on the exact saved-ID readback check merged separately
+in [App #2406](https://github.com/recoupable/app/pull/2406). That safety fix is
+already on main; this change adds only local reference recovery and validation.
+
+The evidence selection panel now accepts the exact JSON emitted by **Captured
+evidence references** after the user reopens its original saved assessment.
+Recovery parses only `brief_id` and the existing `selected_evidence` tuple, rejects
+extra fields/malformed input and a different brief ID, then calls the existing
+current-auth/current-organization `read_brief` validation. It preserves document,
+result, subject, topic, document version and source-version identities without
+reconstructing them from labels. Checked evidence is withheld until the exact
+server response passes `readAssessmentEvidenceValidation`; editing the recovery
+input or changing the assessment/workspace invalidates pending validation.
+
+This is an explicit local reference roundtrip through the existing private Context
+brief destination. Copying references is not a server save acknowledgement. The
+historical assessment summary remains distinct from checked selection results.
+There is no new working-surface store, generic artifact reference, model dispatch,
+public upload, provider call or Files/path-move support. Unsupported/superseded
+snapshots cannot enter this selection path. #2207 durable surface saves and #2231
+broad artifact/destination acceptance remain incomplete.
+
+`CompanyAssessmentRecovery.test.tsx` exercises capture → unmount → reopen → paste →
+server revalidation, exact request fields/current organization, no-store, malformed
+and foreign references, access denial, unavailable evidence, superseded/mismatched
+responses, and delayed edit/workspace invalidation. These are synthetic mounted
+component tests, not authenticated runtime or cross-host acceptance.
