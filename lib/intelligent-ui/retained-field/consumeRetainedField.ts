@@ -97,12 +97,20 @@ export function consumeRetainedField(input: unknown, admission?: Admission) {
     );
     if (JSON.stringify(surface) !== JSON.stringify(projection.surface))
       return unavailable;
-    return {
+    const ready = {
       state: "ready" as const,
       fieldContext,
       ...projection,
       descriptors: indexDescriptors(projection.collection.items),
     };
+    // JSON.stringify(Map) would hide the index contents. Count those too, along
+    // with every duplicated numeric/text projection, before releasing anything.
+    return fitsRetainedFieldBudget("ready", {
+      ...ready,
+      descriptors: [...ready.descriptors],
+    })
+      ? ready
+      : unavailable;
   } catch {
     return unavailable;
   }

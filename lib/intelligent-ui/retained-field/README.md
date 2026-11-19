@@ -53,8 +53,13 @@ projections are returned together or not at all; there is no fallback or local c
 Previously returned JavaScript objects cannot be revoked by this pure function. The
 owning host must clear them on invalidation; this module makes no erasure claim.
 
-Normalized ready JSON including state is bounded to 32 KiB, full received part to
-256 KiB, and displayed text to 24 KiB UTF-8. Excess is rejected, never truncated.
+Normalized inner ready JSON including state is bounded to 32 KiB, full received
+part to 256 KiB, and displayed text to 24 KiB UTF-8. Additionally, the complete
+App ready result (companion, collection, surface, text and descriptor index entries)
+must fit 32 KiB before any output is returned. Index entries are counted explicitly
+because ordinary JSON serialization hides Map contents. This conservative App
+output limit may refuse an otherwise valid eight-item inner payload; it does not
+change the API inner-response contract. Excess is rejected, never truncated.
 The consumer stores no controls or working state and performs no external action.
 Mutable durable working-surface save/reopen remains separate and incomplete.
 
