@@ -121,3 +121,34 @@ describe("ensureAccount", () => {
     await expect(recovering).resolves.toEqual(account("recovered"));
   });
 });
+
+it("does not share an in-flight bootstrap across actors with identical identifiers", async () => {
+  const { ensureAccount, fetchOrCreateAccount } = await loadModules();
+  let finish!: (value: AccountWithDetails) => void;
+  fetchOrCreateAccount
+    .mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    )
+    .mockResolvedValueOnce(account("account-b"));
+  const first = ensureAccount({
+    actorId: "actor-a",
+    email: "same@example.test",
+    accessToken: "token-a",
+  });
+  await tick();
+  const second = ensureAccount({
+    actorId: "actor-b",
+    email: "same@example.test",
+    accessToken: "token-b",
+  });
+  expect(second).not.toBe(first);
+  finish(account("account-a"));
+  await expect(first).resolves.toEqual(account("account-a"));
+  await expect(second).resolves.toEqual(account("account-b"));
+  expect(fetchOrCreateAccount).toHaveBeenLastCalledWith(
+    expect.objectContaining({ accessToken: "token-b" }),
+  );
+});

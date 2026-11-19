@@ -1,4 +1,5 @@
 "use client";
+import { useClientApiBaseUrl } from "@/hooks/useClientApiBaseUrl";
 import { usePrivy } from "@privy-io/react-auth";
 import { useUserProvider } from "@/providers/UserProvder";
 import { useOrganization } from "@/providers/OrganizationProvider";
@@ -10,18 +11,30 @@ import CompanyAssessment from "./CompanyAssessment";
 import ReleaseIntakeForm from "./ReleaseIntakeForm";
 import CatalogReleaseStreams from "./CatalogReleaseStreams";
 export default function ReleaseCasesPage() {
-  const { ready, authenticated, getAccessToken, login } = usePrivy();
+  const { ready, authenticated, user, getAccessToken, login } = usePrivy();
+  const apiSelection = useClientApiBaseUrl();
   const { userData } = useUserProvider();
   const { selectedOrgId, isInitialized } = useOrganization();
   const accountId =
     authenticated && isInitialized ? (userData?.account_id ?? null) : null;
+  const sessionKey = JSON.stringify([
+    user?.id,
+    ready,
+    authenticated,
+    apiSelection,
+  ]);
   const cases = useReleaseCases({
+    sessionKey,
     accountId,
     organizationId: selectedOrgId,
     getAccessToken,
   });
   const current = cases.current;
   const currentKey = JSON.stringify([
+    user?.id,
+    ready,
+    authenticated,
+    apiSelection,
     accountId,
     selectedOrgId,
     current?.request_id,
@@ -44,7 +57,7 @@ export default function ReleaseCasesPage() {
       <h1 className="font-heading text-2xl font-semibold">Releases</h1>
       {accountId && (
         <CatalogReleaseStreams
-          key={JSON.stringify([accountId, selectedOrgId])}
+          key={JSON.stringify([sessionKey, accountId, selectedOrgId])}
           accountId={accountId}
           organizationId={selectedOrgId}
           getAccessToken={getAccessToken}
@@ -62,7 +75,7 @@ export default function ReleaseCasesPage() {
           Refresh list
         </Button>
         <ReleaseIntakeForm
-          key={JSON.stringify([accountId, selectedOrgId])}
+          key={JSON.stringify([sessionKey, accountId, selectedOrgId])}
           disabled={!accountId || cases.busy}
           onAdd={cases.add}
         />

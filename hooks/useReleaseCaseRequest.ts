@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useLayoutEffect, useRef } from "react";
 import type { ReleaseCaseResponses } from "@/lib/releases/responseTypes";
 import {
   RELEASE_CASE_ERROR,
@@ -10,7 +10,7 @@ export function useReleaseCaseRequest(
   getGeneration: () => number,
 ) {
   const tokenReader = useRef(getAccessToken);
-  useEffect(() => {
+  useLayoutEffect(() => {
     tokenReader.current = getAccessToken;
   }, [getAccessToken]);
   const request = useCallback(

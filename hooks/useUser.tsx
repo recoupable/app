@@ -1,8 +1,9 @@
 import { usePrivy } from "@privy-io/react-auth";
 import { usePathname, useRouter } from "next/navigation";
 import { isPublicRoute } from "@/lib/routes/isPublicRoute";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Address } from "viem";
+import { useActorProfileForm } from "./useActorProfileForm";
 import { usePublicUpload } from "./usePublicUpload";
 import { useAccount } from "wagmi";
 import { AccountWithDetails } from "@/lib/supabase/accounts/getAccountWithDetails";
@@ -14,18 +15,42 @@ const useUser = () => {
   const { address: wagmiAddress } = useAccount();
   const address = (user?.wallet?.address as Address) || wagmiAddress;
   const email = user?.email?.address;
-  const [userData, setUserData] = useState<AccountWithDetails | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [instruction, setInstruction] = useState("");
-  const [name, setName] = useState("");
-  const [image, setImage] = useState("");
-  const [organization, setOrganization] = useState("");
-  const [jobTitle, setJobTitle] = useState("");
-  const [roleType, setRoleType] = useState("");
-  const [companyName, setCompanyName] = useState("");
+  const actorId = ready ? (user?.id ?? null) : null;
+  const [accountState, setAccountState] = useState<{
+    actorId: string;
+    data: AccountWithDetails;
+  } | null>(null);
+  const userData =
+    actorId && accountState?.actorId === actorId ? accountState.data : null;
+  const activeActor = useRef(actorId);
+  useLayoutEffect(() => {
+    activeActor.current = actorId;
+    return () => {
+      activeActor.current = null;
+    };
+  }, [actorId]);
+  const {
+    isModalOpen,
+    setIsModalOpen,
+    instruction,
+    setInstruction,
+    name,
+    setName,
+    image,
+    setImage,
+    organization,
+    setOrganization,
+    jobTitle,
+    setJobTitle,
+    roleType,
+    setRoleType,
+    companyName,
+    setCompanyName,
+    updating,
+    setUpdating,
+  } = useActorProfileForm(actorId);
   const imageUpload = usePublicUpload(userData?.account_id ?? "profile");
   const imageRef = useRef<HTMLInputElement>(null);
-  const [updating, setUpdating] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -63,7 +88,7 @@ const useUser = () => {
     setUpdating(true);
     try {
       const accessToken = await getAccessToken();
-      if (!accessToken) {
+      if (!accessToken || !actorId || activeActor.current !== actorId) {
         return;
       }
 
@@ -78,7 +103,8 @@ const useUser = () => {
         roleType,
         companyName,
       });
-      setUserData(data);
+      if (activeActor.current !== actorId) return;
+      setAccountState({ actorId, data });
       setIsModalOpen(false);
     } catch {
       // Error handled silently
@@ -99,7 +125,8 @@ const useUser = () => {
   const signOut = async () => {
     imageUpload.cancel();
     setIsModalOpen(false);
-    setUserData(null);
+    activeActor.current = null;
+    setAccountState(null);
     setName("");
     setInstruction("");
     setImage("");
@@ -114,19 +141,21 @@ const useUser = () => {
   useEffect(() => {
     // Wait for Privy to resolve so we never POST /api/accounts before the
     // identifying payload (email) is known (chat#1875).
-    if (!ready) return;
+    if (!actorId) return;
     if (!email && !address) return;
     let cancelled = false;
     const init = async () => {
       const accessToken = await getAccessToken();
+      if (cancelled || activeActor.current !== actorId || !accessToken) return;
       const data = await ensureAccount({
+        actorId,
         email,
         wallet: address,
         accessToken,
       });
-      if (cancelled) return;
+      if (cancelled || activeActor.current !== actorId) return;
 
-      setUserData(data);
+      setAccountState({ actorId, data });
       setImage(data.image || "");
       setInstruction(data.instruction || "");
       setName(data.name || "");
@@ -135,11 +164,25 @@ const useUser = () => {
       setRoleType(data.role_type || "");
       setCompanyName(data.company_name || "");
     };
-    init();
+    void init().catch(() => {
+      // Keep the current actor unresolved if account bootstrap fails.
+    });
     return () => {
       cancelled = true;
     };
-  }, [ready, email, address, getAccessToken]);
+  }, [
+    actorId,
+    email,
+    address,
+    getAccessToken,
+    setCompanyName,
+    setImage,
+    setInstruction,
+    setJobTitle,
+    setName,
+    setOrganization,
+    setRoleType,
+  ]);
 
   return {
     address,

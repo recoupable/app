@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import type { ReleaseCaseState as State } from "@/lib/releases/state";
 import { createReleaseCaseState as empty } from "@/lib/releases/createReleaseCaseState";
 import {
@@ -10,6 +10,7 @@ import { useReleaseCaseRequest } from "./useReleaseCaseRequest";
 import { useReleaseCaseReview } from "./useReleaseCaseReview";
 import { useReleaseCaseIntake } from "./useReleaseCaseIntake";
 interface Options {
+  sessionKey?: string;
   accountId: string | null;
   organizationId: string | null;
   getAccessToken: () => Promise<string | null>;
@@ -19,8 +20,9 @@ export function useReleaseCases({
   accountId,
   organizationId,
   getAccessToken,
+  sessionKey,
 }: Options) {
-  const scope = JSON.stringify([accountId, organizationId]);
+  const scope = JSON.stringify([sessionKey, accountId, organizationId]);
   const [state, setState] = useState<State>(() => empty(scope));
   const generation = useRef(0);
   const getGeneration = useCallback(() => generation.current, []);
@@ -62,7 +64,7 @@ export function useReleaseCases({
       }),
     [request, run],
   );
-  useEffect(() => {
+  useLayoutEffect(() => {
     const revision = ++generation.current;
     // Responses are hidden synchronously by scope; start the new fetch after commit.
     void Promise.resolve().then(() => {
