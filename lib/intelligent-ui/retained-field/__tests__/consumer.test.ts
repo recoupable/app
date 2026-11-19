@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { fitsRetainedFieldBudget } from "../fitsRetainedFieldBudget";
 import { consumeRetainedField } from "../consumeRetainedField";
 import { projectRetainedField } from "../projectRetainedField";
 import { fieldContextSchema } from "../schemas";
@@ -316,18 +317,24 @@ describe("offline retained field consumer", () => {
         fieldContext: { ...f.part.data.fieldContext, method },
       },
     };
-    expect(consumeRetainedField(part, f.admission)).toEqual({
+    expect(consumeRetainedField(f.part, f.admission).state).toBe("ready");
+    const admission = {
+      ...f.admission,
+      request: { ...f.admission.request, method },
+    };
+    // The changed literal is intentionally invalid on both sides of this input.
+    expect(consumeRetainedField(part, admission as typeof f.admission)).toEqual(
+      { state: "unavailable" },
+    );
+  });
+  it("directly refuses the UTF-8 budget of an oversized part (separate from strict unknown-key rejection)", () => {
+    const f = fixture();
+    const oversized = { ...f.part, padding: "界".repeat(90000) };
+    expect(fitsRetainedFieldBudget("part", f.part)).toBe(true);
+    expect(fitsRetainedFieldBudget("part", oversized)).toBe(false);
+    expect(consumeRetainedField(oversized, f.admission)).toEqual({
       state: "unavailable",
     });
-  });
-  it("rejects full data part UTF-8 excess rather than stripping unknown material", () => {
-    const f = fixture();
-    expect(
-      consumeRetainedField(
-        { ...f.part, padding: "界".repeat(90000) },
-        f.admission,
-      ),
-    ).toEqual({ state: "unavailable" });
   });
   it("rejects amount attached to unknown, more than eight items and two source versions", () => {
     const f = fixture();
@@ -361,18 +368,21 @@ describe("offline retained field consumer", () => {
       }).success,
     ).toBe(false);
   });
-  it("never changes field amounts based on display text", () => {
+  it("rejects a changed display amount instead of publishing it as a typed value", () => {
     const f = fixture();
     const component = f.part.data.surface.components[0];
     if (component.type !== "collection") throw new Error("Expected collection");
+    const before = consumeRetainedField(f.part, f.admission);
+    expect(before.state).toBe("ready");
+    if (before.state === "ready")
+      expect(before.collection.items[0].field.value).toEqual({
+        state: "known",
+        amount: 0,
+      });
     component.rows[0].values.value = "27 streams";
     expect(consumeRetainedField(f.part, f.admission)).toEqual({
       state: "unavailable",
     });
-    expect(
-      projectRetainedField(f.part.data.fieldContext, "retained-1", 1).collection
-        .items[0].field.value,
-    ).toEqual({ state: "known", amount: 0 });
   });
 });
 

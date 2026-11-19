@@ -16,14 +16,17 @@ contracts are reused instead of copied.
 ## Proposed offline producer handshake
 
 ```ts
-{
-  type: "data-retained-field-snapshot",
-  capability: "retained-field-companion/1",
+import type { Surface } from "../schema";
+import type { FieldContext } from "./schemas";
+
+type RetainedFieldPart = {
+  type: "data-retained-field-snapshot";
+  capability: "retained-field-companion/1";
   data: {
-    surface: /* existing strict schema-v1 surface */,
-    fieldContext: /* strict catalog-retained-field-projection/1, no state */
-  }
-}
+    surface: Surface; // existing strict schema-v1 surface
+    fieldContext: FieldContext; // catalog-retained-field-projection/1 without state
+  };
+};
 ```
 
 This is a separate, explicitly versioned envelope, not a silent new schema-v1 field.
@@ -76,3 +79,10 @@ unchanged values, periods, refs and document revision through the proposed outer
 envelope. The test derives its expected selection from this synthetic fixture; it
 therefore qualifies shape/projection compatibility, **not** independent receipt
 origin or authority. Default and unavailable disclosure still withhold all output.
+
+Coverage validation follows the pinned evaluator/helper: absent and null dates are
+disjoint, their sum equals missing dates across the two periods, and a comparable
+known value has no gaps. Incomplete comparisons are unknown and have at least one
+missing date. Counts cannot exceed the actual two-period length. Retrieval must
+end at or before `asOf`, and the current period must have ended by that evaluation
+time. These consistency checks do not prove provider freshness or authorization.

@@ -144,8 +144,14 @@ export const fieldContextSchema = z
   .superRefine((value, ctx) => {
     const fail = () =>
       ctx.addIssue({ code: "custom", message: "Field context mismatch" });
+    // Zod may still run this refinement after a child string refinement fails.
+    if (!query.safeParse(value.query).success) return fail();
     const start = Date.parse(`${value.query.since}T00:00:00Z`);
     const span = value.query.days * 86400000;
+    if (![start, start - span, start + span].every(Number.isFinite))
+      return fail();
+    const asOf = Date.parse(value.asOf);
+    if (!Number.isFinite(asOf) || start + span > asOf) return fail();
     const day = (time: number) => new Date(time).toISOString().slice(0, 10);
     if (
       new Set(value.items.map((row) => row.binding.subjectId)).size !==
@@ -170,6 +176,14 @@ export const fieldContextSchema = z
         periods.previous.end_exclusive !== value.query.since ||
         (item.value.state === "known") !==
           (coverage.comparisonState === "comparable") ||
+        coverage.absentDateCount > 2 * value.query.days ||
+        coverage.nullDateCount > 2 * value.query.days ||
+        coverage.missingDateCount > 2 * value.query.days ||
+        coverage.missingDateCount !==
+          coverage.absentDateCount + coverage.nullDateCount ||
+        (coverage.comparisonState === "comparable") !==
+          (coverage.missingDateCount === 0) ||
+        Date.parse(source.retrievalRange.latest) > asOf ||
         Date.parse(source.retrievalRange.earliest) >
           Date.parse(source.retrievalRange.latest)
       )
