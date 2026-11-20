@@ -191,23 +191,36 @@ export default function OAuthConnectionsSession({
                     </p>
                   </div>
                 </div>
+                {connection.selectedContext && (
+                  <p className="mt-4 break-all text-xs leading-5 text-muted-foreground">
+                    {connection.selectedContext.kind === "personal"
+                      ? "Personal workspace"
+                      : `Organization workspace: ${connection.selectedContext.organizationId}`}
+                    . Changing workspace or adding tools requires a new
+                    connection approval.
+                  </p>
+                )}
                 <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                   <div className="flex flex-wrap gap-2">
                     {connection.scopes.includes("mcp:tools") && (
                       <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
-                        Full tool access
+                        {connection.selectedContext
+                          ? "Context tools · one workspace"
+                          : "Full tool access"}
                       </span>
                     )}
-                    {connection.scopes.includes("mcp:read") && (
-                      <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
-                        Read access
-                      </span>
-                    )}
-                    {connection.scopes.includes("mcp:write") && (
-                      <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
-                        Write access
-                      </span>
-                    )}
+                    {!connection.selectedContext &&
+                      connection.scopes.includes("mcp:read") && (
+                        <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
+                          Read access
+                        </span>
+                      )}
+                    {!connection.selectedContext &&
+                      connection.scopes.includes("mcp:write") && (
+                        <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 text-xs font-medium">
+                          Write access
+                        </span>
+                      )}
                   </div>
                   <Button
                     variant="ghost"

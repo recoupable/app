@@ -11,7 +11,7 @@ import {
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import OAuthConsent from "../OAuthConsent";
 
-const { auth, load, decide } = vi.hoisted(() => ({
+const { auth, load, loadSelected, decide } = vi.hoisted(() => ({
   auth: {
     ready: true,
     authenticated: true,
@@ -21,11 +21,12 @@ const { auth, load, decide } = vi.hoisted(() => ({
     getAccessToken: vi.fn(async () => "token"),
   },
   load: vi.fn(),
+  loadSelected: vi.fn(),
   decide: vi.fn(),
 }));
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
 vi.mock("@/lib/oauth/createConsentClient", () => ({
-  createConsentClient: () => ({ load, decide }),
+  createConsentClient: () => ({ load, loadSelected, decide }),
 }));
 const details = {
   csrf: "nonce",
@@ -239,4 +240,193 @@ it("does not redirect for a decision belonging to the previous interaction", asy
   } finally {
     window.history.replaceState(null, "", originalUrl);
   }
+});
+
+it("requires an explicit workspace and discards its ticket when selection changes", async () => {
+  const org = "22222222-2222-4222-8222-222222222222";
+  load.mockResolvedValue({
+    ...details,
+    permissions: [{ scope: "mcp:tools", description: "Full business tools" }],
+  });
+  const choices = {
+    ...details,
+    csrf: undefined,
+    consent_version: 2,
+    permissions: [{ scope: "mcp:tools", description: "Context tools" }],
+    workspaces: [
+      { kind: "personal", organizationId: null, name: "Personal workspace" },
+      { kind: "organization", organizationId: org, name: "Test label" },
+    ],
+  };
+  loadSelected.mockResolvedValue(choices);
+  render(
+    <OAuthConsent issuer="https://api.example/api/oauth" interaction="full" />,
+  );
+  fireEvent.click(
+    await screen.findByRole("button", {
+      name: "Choose one workspace for Context tools",
+    }),
+  );
+  await screen.findByLabelText("Workspace for Context tools");
+  expect(
+    (screen.getByRole("button", { name: "Allow access" }) as HTMLButtonElement)
+      .disabled,
+  ).toBe(true);
+  expect(screen.queryByText("Full business tools")).toBeNull();
+  loadSelected.mockResolvedValue({
+    ...choices,
+    csrf: "personal-ticket",
+    selectedContext: { kind: "personal" },
+  });
+  fireEvent.change(screen.getByLabelText("Workspace for Context tools"), {
+    target: { value: "personal" },
+  });
+  await waitFor(() =>
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Allow access",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false),
+  );
+  let finish!: (value: unknown) => void;
+  loadSelected.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const workspaceSelect = screen.getByLabelText("Workspace for Context tools");
+  workspaceSelect.focus();
+  fireEvent.change(workspaceSelect, { target: { value: org } });
+  expect(screen.getByLabelText("Workspace for Context tools")).toBe(
+    workspaceSelect,
+  );
+  expect(document.activeElement).toBe(workspaceSelect);
+  expect(
+    (screen.getByRole("button", { name: "Allow access" }) as HTMLButtonElement)
+      .disabled,
+  ).toBe(true);
+  await waitFor(() =>
+    expect(loadSelected).toHaveBeenLastCalledWith(
+      "token",
+      { workspace_kind: "organization", organization_id: org },
+      expect.any(AbortSignal),
+    ),
+  );
+  let finishPersonal!: (value: unknown) => void;
+  loadSelected.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finishPersonal = resolve;
+      }),
+  );
+  fireEvent.change(workspaceSelect, { target: { value: "personal" } });
+  expect(
+    (screen.getByRole("button", { name: "Allow access" }) as HTMLButtonElement)
+      .disabled,
+  ).toBe(true);
+  await waitFor(() =>
+    expect(loadSelected).toHaveBeenLastCalledWith(
+      "token",
+      { workspace_kind: "personal" },
+      expect.any(AbortSignal),
+    ),
+  );
+  await act(async () =>
+    finishPersonal({
+      ...choices,
+      csrf: "fresh-personal-ticket",
+      selectedContext: { kind: "personal" },
+    }),
+  );
+  loadSelected.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  fireEvent.change(workspaceSelect, { target: { value: org } });
+  await waitFor(() =>
+    expect(loadSelected).toHaveBeenLastCalledWith(
+      "token",
+      { workspace_kind: "organization", organization_id: org },
+      expect.any(AbortSignal),
+    ),
+  );
+  await act(async () =>
+    finish({
+      ...choices,
+      csrf: "org-ticket",
+      selectedContext: { kind: "organization" },
+    }),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Allow access" }));
+  await waitFor(() =>
+    expect(decide).toHaveBeenCalledExactlyOnceWith(
+      "token",
+      "org-ticket",
+      "approve",
+      { workspace_kind: "organization", organization_id: org },
+    ),
+  );
+});
+
+it("keeps a route back to fresh consent when a selected preview fails", async () => {
+  load.mockResolvedValue({
+    ...details,
+    permissions: [{ scope: "mcp:tools", description: "Full business tools" }],
+  });
+  loadSelected.mockRejectedValueOnce(
+    new Error("Workspace no longer available"),
+  );
+  render(
+    <OAuthConsent issuer="https://api.example/api/oauth" interaction="full" />,
+  );
+  fireEvent.click(
+    await screen.findByRole("button", {
+      name: "Choose one workspace for Context tools",
+    }),
+  );
+  await screen.findByRole("alert");
+  expect(screen.queryByRole("button", { name: "Allow access" })).toBeNull();
+  load.mockResolvedValue({
+    ...details,
+    csrf: "fresh-ticket",
+    permissions: [{ scope: "mcp:tools", description: "Full business tools" }],
+  });
+  fireEvent.click(
+    screen.getByRole("button", { name: "Back to requested permissions" }),
+  );
+  await screen.findByRole("button", { name: "Allow access" });
+  expect(screen.queryByRole("alert")).toBeNull();
+  expect(decide).not.toHaveBeenCalled();
+});
+
+it("allows returning to default consent while the first selected preview is pending", async () => {
+  load.mockResolvedValue({
+    ...details,
+    permissions: [{ scope: "mcp:tools", description: "Full business tools" }],
+  });
+  loadSelected.mockImplementationOnce(() => new Promise(() => {}));
+  render(
+    <OAuthConsent issuer="https://api.example/api/oauth" interaction="full" />,
+  );
+  fireEvent.click(
+    await screen.findByRole("button", {
+      name: "Choose one workspace for Context tools",
+    }),
+  );
+  await waitFor(() => expect(loadSelected).toHaveBeenCalledOnce());
+  const signal = loadSelected.mock.calls[0][2] as AbortSignal;
+  fireEvent.click(
+    screen.getByRole("button", { name: "Back to requested permissions" }),
+  );
+  await screen.findByRole("button", {
+    name: "Choose one workspace for Context tools",
+  });
+  expect(signal.aborted).toBe(true);
+  expect(load).toHaveBeenCalledTimes(2);
+  expect(decide).not.toHaveBeenCalled();
 });
