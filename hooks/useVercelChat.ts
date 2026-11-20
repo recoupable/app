@@ -40,7 +40,7 @@ import { getChatPath } from "@/lib/chat/getChatPath";
 import { useInitialMessageAutoSend } from "./useInitialMessageAutoSend";
 import { usePersistSelectedModel } from "./usePersistSelectedModel";
 import shouldResumeStream from "@/lib/chat/shouldResumeStream";
-import type { WorkspaceStatus } from "@/components/VercelChat/WorkspaceStatusIndicator";
+import type { WorkspaceStatus } from "@/lib/chat/WorkspaceStatus";
 import { getChatCatalogHost } from "@/lib/intelligent-ui/chat/getChatCatalogHost";
 import type { SnapshotHostScope } from "@/lib/intelligent-ui/chat/getSnapshotScopeKey";
 

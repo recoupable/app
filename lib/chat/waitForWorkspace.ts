@@ -1,4 +1,4 @@
-import type { WorkspaceStatus } from "@/components/VercelChat/WorkspaceStatusIndicator";
+import type { WorkspaceStatus } from "@/lib/chat/WorkspaceStatus";
 
 /**
  * Resolves once the workspace reports `ready`; rejects on `off`, the terminal

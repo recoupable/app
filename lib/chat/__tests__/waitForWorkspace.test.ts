@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { waitForWorkspace } from "@/lib/chat/waitForWorkspace";
-import type { WorkspaceStatus } from "@/components/VercelChat/WorkspaceStatusIndicator";
+import type { WorkspaceStatus } from "@/lib/chat/WorkspaceStatus";
 
 describe("waitForWorkspace", () => {
   afterEach(() => vi.useRealTimers());

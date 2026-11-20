@@ -1,4 +1,4 @@
-import { ConnectorInfo } from "@/hooks/useConnectors";
+import type { ConnectorInfo } from "@/lib/composio/ConnectorInfo";
 import { ConnectorCard } from "./ConnectorCard";
 
 interface ConnectorsSectionProps {

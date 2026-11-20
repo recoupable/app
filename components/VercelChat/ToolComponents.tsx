@@ -54,9 +54,8 @@ import UpdateTaskSuccess from "./tools/tasks/UpdateTaskSuccess";
 
 import CatalogStreamComparison from "./tools/catalog/CatalogStreamComparison";
 import CatalogSongsSkeleton from "./tools/catalog/CatalogSongsSkeleton";
-import CatalogSongsResult, {
-  CatalogSongsResult as CatalogSongsResultType,
-} from "./tools/catalog/CatalogSongsResult";
+import CatalogSongsResult from "./tools/catalog/CatalogSongsResult";
+import type { CatalogSongsResult as CatalogSongsResultType } from "@/lib/catalog/CatalogSongsResult";
 import {
   UpdateFileResult,
   UpdateFileResultType,

@@ -8,16 +8,6 @@ import { authorizeConnectorApi } from "@/lib/composio/api/authorizeConnectorApi"
 import { disconnectConnectorApi } from "@/lib/composio/api/disconnectConnectorApi";
 
 /**
- * Connector info from the API.
- */
-export interface ConnectorInfo {
-  slug: string;
-  name: string;
-  isConnected: boolean;
-  connectedAccountId?: string;
-}
-
-/**
  * Connectors visible to end users.
  * Only these connectors will be shown on the settings page.
  */

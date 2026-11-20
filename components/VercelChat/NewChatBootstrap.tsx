@@ -4,7 +4,7 @@ import type { UIMessage } from "ai";
 import { useRef } from "react";
 import { useNewChatBootstrap } from "@/hooks/useNewChatBootstrap";
 import { Chat } from "@/components/VercelChat/chat";
-import type { WorkspaceStatus } from "@/components/VercelChat/WorkspaceStatusIndicator";
+import type { WorkspaceStatus } from "@/lib/chat/WorkspaceStatus";
 import { generateUUID } from "@/lib/generateUUID";
 
 interface NewChatBootstrapProps {

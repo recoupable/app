@@ -8,7 +8,7 @@ import { getClientApiBaseUrl } from "@/lib/api/getClientApiBaseUrl";
 import { usePrivy } from "@privy-io/react-auth";
 import { createWorkflowChatTransport } from "@/lib/chat/createWorkflowChatTransport";
 import { waitForWorkspace } from "@/lib/chat/waitForWorkspace";
-import type { WorkspaceStatus } from "@/components/VercelChat/WorkspaceStatusIndicator";
+import type { WorkspaceStatus } from "@/lib/chat/WorkspaceStatus";
 import type { CatalogSurfaceRequest } from "@/lib/intelligent-ui/chat/getChatCatalogHost";
 
 interface UseChatTransportOptions {
